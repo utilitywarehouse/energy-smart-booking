@@ -81,8 +81,7 @@ func runServer(c *cli.Context) error {
 	apiHandler.Register(router)
 
 	chain := alice.New()
-	chain.Append(api.EnableCORS)
-	chain.Append(iam.HTTPHandler(true))
+	chain = chain.Append(api.EnableCORS, iam.HTTPHandler(true))
 	httpHandler := chain.Then(router)
 
 	httpServer := &http.Server{
