@@ -5,6 +5,8 @@ run:
   skip-files:
   silent: true
   timeout: 120s
+  build-tags:
+    - testing
 
 # output configuration options
 output:
