@@ -15,8 +15,6 @@ const (
 	httpServerPort = "http-server-port"
 
 	// Kafka
-	KafkaBrokers      = "kafka-brokers"
-	KafkaVersion      = "kafka-version"
 	optOutEventsTopic = "opt-out-events-topic"
 	batchSize         = "batch-size"
 
@@ -36,12 +34,12 @@ func main() {
 				Name: "api",
 				Flags: app.DefaultFlags().WithCustom(
 					&cli.StringSliceFlag{
-						Name:     KafkaBrokers,
+						Name:     app.KafkaBrokers,
 						EnvVars:  []string{"KAFKA_BROKERS"},
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     KafkaVersion,
+						Name:     app.KafkaVersion,
 						EnvVars:  []string{"KAFKA_VERSION"},
 						Required: true,
 					},
@@ -71,13 +69,18 @@ func main() {
 				Name: "projector",
 				Flags: app.DefaultFlags().WithCustom(
 					&cli.StringSliceFlag{
-						Name:     KafkaBrokers,
+						Name:     app.KafkaBrokers,
 						EnvVars:  []string{"KAFKA_BROKERS"},
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     KafkaVersion,
+						Name:     app.KafkaVersion,
 						EnvVars:  []string{"KAFKA_VERSION"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     app.KafkaConsumerGroup,
+						EnvVars:  []string{"KAFKA_CONSUMER_GROUP"},
 						Required: true,
 					},
 					&cli.StringFlag{
