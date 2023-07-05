@@ -146,7 +146,7 @@ func (a *accountRepoMock) AccountID(_ context.Context, accountNumber string) (st
 type identityClientMock struct {
 }
 
-func (i *identityClientMock) WhoAmI(_ context.Context, in *principal.Model) (identity.WhoAmIResult, error) {
+func (i *identityClientMock) WhoAmI(_ context.Context, _ *principal.Model) (identity.WhoAmIResult, error) {
 	staff := identity.StaffPrincipal{
 		ID:    "id",
 		Email: "email",

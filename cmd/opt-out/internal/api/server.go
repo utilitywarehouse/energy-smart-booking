@@ -91,7 +91,7 @@ func (s *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountId, err := s.accountsRepo.AccountID(ctx, accountNumber)
+	accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
 	if err != nil {
 		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -99,7 +99,7 @@ func (s *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve account from database to avoid sending duplicate events.
-	_, err = s.store.Get(ctx, accountId)
+	_, err = s.store.Get(ctx, accountID)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -121,7 +121,7 @@ func (s *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 		}
 
 		err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutAddedEvent{
-			AccountId:     accountId,
+			AccountId:     accountID,
 			AccountNumber: accountNumber,
 			AddedBy:       addedBy,
 		}, time.Now().UTC())
