@@ -80,7 +80,7 @@ func (s *OptOutServer) Register(router *mux.Router) {
 	router.HandleFunc(endpointAccount, s.remove).Methods(http.MethodDelete)
 }
 
-func (h *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
+func (s *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	accountNumber, ok := mux.Vars(r)["number"]
@@ -91,7 +91,7 @@ func (h *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountId, err := h.accountsRepo.AccountID(ctx, accountNumber)
+	accountId, err := s.accountsRepo.AccountID(ctx, accountNumber)
 	if err != nil {
 		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -99,7 +99,7 @@ func (h *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve account from database to avoid sending duplicate events.
-	_, err = h.store.Get(ctx, accountId)
+	_, err = s.store.Get(ctx, accountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -110,12 +110,17 @@ func (h *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 
 		var addedBy string
 
-		id, err := h.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+		id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+		if err != nil {
+			log.WithError(err).Error("failed to check principal identity from context")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		if id.Principal.Staff != nil {
 			addedBy = id.Principal.Staff.Email
 		}
 
-		err = h.publisher.Sink(ctx, &smart.AccountBookingOptOutAddedEvent{
+		err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutAddedEvent{
 			AccountId:     accountId,
 			AccountNumber: accountNumber,
 			AddedBy:       addedBy,
@@ -130,7 +135,7 @@ func (h *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
+func (s *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	accountNumber, ok := mux.Vars(r)["number"]
 	if !ok {
@@ -140,7 +145,7 @@ func (h *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountId, err := h.accountsRepo.AccountID(ctx, accountNumber)
+	accountId, err := s.accountsRepo.AccountID(ctx, accountNumber)
 	if err != nil {
 		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -148,7 +153,7 @@ func (h *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve account from database to avoid sending duplicate events.
-	acc, err := h.store.Get(ctx, accountId)
+	acc, err := s.store.Get(ctx, accountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -168,7 +173,7 @@ func (h *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(j)
 }
 
-func (h *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
+func (s *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	accountNumber, ok := mux.Vars(r)["number"]
 	if !ok {
@@ -178,7 +183,7 @@ func (h *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountId, err := h.accountsRepo.AccountID(ctx, accountNumber)
+	accountId, err := s.accountsRepo.AccountID(ctx, accountNumber)
 	if err != nil {
 		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -186,7 +191,7 @@ func (h *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve account from database to avoid sending duplicate events.
-	_, err = h.store.Get(ctx, accountId)
+	_, err = s.store.Get(ctx, accountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -199,12 +204,12 @@ func (h *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 
 	var removedBy string
 
-	id, err := h.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+	id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
 	if id.Principal.Staff != nil {
 		removedBy = id.Principal.Staff.Email
 	}
 
-	err = h.publisher.Sink(ctx, &smart.AccountBookingOptOutRemovedEvent{
+	err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutRemovedEvent{
 		AccountId:     accountId,
 		AccountNumber: accountNumber,
 		RemovedBy:     removedBy,
@@ -216,10 +221,10 @@ func (h *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *OptOutServer) list(w http.ResponseWriter, r *http.Request) {
+func (s *OptOutServer) list(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	list, err := h.store.List(ctx)
+	list, err := s.store.List(ctx)
 	if err != nil {
 		log.WithError(err).Error("failed to list all accounts")
 		w.WriteHeader(http.StatusInternalServerError)
