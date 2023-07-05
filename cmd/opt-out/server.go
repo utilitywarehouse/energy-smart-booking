@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
@@ -77,17 +77,17 @@ func runServer(c *cli.Context) error {
 	accountsRepo := accounts.NewAccountLookup(mn, accountsClient)
 
 	router := mux.NewRouter()
-	allowedCorsMethods := handlers.AllowedMethods([]string{http.MethodGet, http.MethodPost, http.MethodDelete, http.MethodOptions})
-	allowedCorsOrigins := handlers.AllowedOrigins([]string{"*"})
+	apiHandler := api.NewHandler(db, syncPublisher, accountsRepo, identityClient)
+	apiHandler.Register(router)
 
-	router.Use(api.EnableCORS)
-	router.Use(iam.HTTPHandler(false))
+	chain := alice.New()
+	chain.Append(api.EnableCORS)
+	chain.Append(iam.HTTPHandler(true))
+	httpHandler := chain.Then(router)
 
-	httpHandler := api.NewHandler(db, syncPublisher, accountsRepo, identityClient)
-	httpHandler.Register(router)
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Int(httpServerPort)),
-		Handler:      handlers.CORS(allowedCorsOrigins, allowedCorsMethods)(router),
+		Handler:      httpHandler,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

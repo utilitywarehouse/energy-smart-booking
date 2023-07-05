@@ -4,9 +4,9 @@ go 1.20
 
 require (
 	github.com/google/uuid v1.3.0
-	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v5 v5.4.1
+	github.com/justinas/alice v1.2.0
 	github.com/rubenv/sql-migrate v1.5.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
@@ -53,7 +53,6 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/envoyproxy/go-control-plane v0.11.1-0.20230524094728-9239064ad72f // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.1 // indirect
-	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/franela/goreq v0.0.0-20171204163338-bcd34c9993f8 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/go-logr/logr v1.2.4 // indirect
