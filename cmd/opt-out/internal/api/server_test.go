@@ -139,14 +139,14 @@ type accountRepoMock struct {
 	accountNumberID map[string]string
 }
 
-func (a *accountRepoMock) AccountID(ctx context.Context, accountNumber string) (string, error) {
+func (a *accountRepoMock) AccountID(_ context.Context, accountNumber string) (string, error) {
 	return a.accountNumberID[accountNumber], nil
 }
 
 type identityClientMock struct {
 }
 
-func (i *identityClientMock) WhoAmI(ctx context.Context, in *principal.Model) (identity.WhoAmIResult, error) {
+func (i *identityClientMock) WhoAmI(_ context.Context, in *principal.Model) (identity.WhoAmIResult, error) {
 	staff := identity.StaffPrincipal{
 		ID:    "id",
 		Email: "email",

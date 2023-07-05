@@ -145,7 +145,7 @@ func (s *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountId, err := s.accountsRepo.AccountID(ctx, accountNumber)
+	accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
 	if err != nil {
 		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -153,7 +153,7 @@ func (s *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve account from database to avoid sending duplicate events.
-	acc, err := s.store.Get(ctx, accountId)
+	acc, err := s.store.Get(ctx, accountID)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -183,7 +183,7 @@ func (s *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accountId, err := s.accountsRepo.AccountID(ctx, accountNumber)
+	accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
 	if err != nil {
 		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -191,7 +191,7 @@ func (s *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// retrieve account from database to avoid sending duplicate events.
-	_, err = s.store.Get(ctx, accountId)
+	_, err = s.store.Get(ctx, accountID)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -205,12 +205,17 @@ func (s *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 	var removedBy string
 
 	id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+	if err != nil {
+		log.WithError(err).Error("failed to check principal identity from context")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	if id.Principal.Staff != nil {
 		removedBy = id.Principal.Staff.Email
 	}
 
 	err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutRemovedEvent{
-		AccountId:     accountId,
+		AccountId:     accountID,
 		AccountNumber: accountNumber,
 		RemovedBy:     removedBy,
 	}, time.Now())
