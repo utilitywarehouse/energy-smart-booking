@@ -29,9 +29,8 @@ var gitHash string // populated at compile time
 
 func main() {
 	app := &cli.App{
-		Name:   appName,
-		Usage:  appDesc,
-		Before: app.Before,
+		Name:  appName,
+		Usage: appDesc,
 		Commands: []*cli.Command{
 			{
 				Name: "api",
@@ -65,6 +64,7 @@ func main() {
 						EnvVars: []string{"ACCOUNTS_API_HOST"},
 					},
 				),
+				Before: app.Before,
 				Action: runServer,
 			},
 			{
