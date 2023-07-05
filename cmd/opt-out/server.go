@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -76,6 +77,8 @@ func runServer(c *cli.Context) error {
 	accountsRepo := accounts.NewAccountLookup(mn, accountsClient)
 
 	router := mux.NewRouter()
+	allowedCorsMethods := handlers.AllowedMethods([]string{http.MethodGet, http.MethodOptions, http.MethodPost, http.MethodDelete})
+	allowedCorsOrigins := handlers.AllowedOrigins([]string{"*"})
 	router.Use(api.EnableCORS)
 	router.Use(iam.HTTPHandler(true))
 
@@ -83,7 +86,7 @@ func runServer(c *cli.Context) error {
 	httpHandler.Register(router)
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Int(httpServerPort)),
-		Handler:      router,
+		Handler:      handlers.CORS(allowedCorsMethods, allowedCorsOrigins)(router),
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
