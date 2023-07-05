@@ -81,7 +81,7 @@ func runServer(c *cli.Context) error {
 	allowedCorsOrigins := handlers.AllowedOrigins([]string{"*"})
 
 	router.Use(api.EnableCORS)
-	router.Use(iam.HTTPHandler(true))
+	router.Use(iam.HTTPHandler(false))
 
 	httpHandler := api.NewHandler(db, syncPublisher, accountsRepo, identityClient)
 	httpHandler.Register(router)

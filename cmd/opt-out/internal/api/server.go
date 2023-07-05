@@ -12,7 +12,6 @@ import (
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
-	"github.com/utilitywarehouse/uwos-go/v1/iam"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/identity"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/principal"
@@ -61,9 +60,6 @@ const (
 
 // Register registers the http handler in a http router.
 func (s *Handler) Register(router *mux.Router) {
-	router.Use(EnableCORS)
-	router.Use(iam.HTTPHandler(true))
-
 	router.HandleFunc(endpointAccounts, s.list).Methods(http.MethodGet)
 	router.HandleFunc(endpointAccount, s.add).Methods(http.MethodPost)
 	router.HandleFunc(endpointAccount, s.get).Methods(http.MethodGet)
