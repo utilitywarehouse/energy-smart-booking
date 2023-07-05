@@ -72,12 +72,30 @@ const (
 
 // Register registers the http handler in a http router.
 func (s *OptOutServer) Register(router *mux.Router) {
+	router.Use(EnableCORS)
 	router.Use(iam.HTTPHandler(true))
 
 	router.HandleFunc(endpointAccounts, s.list).Methods(http.MethodGet)
 	router.HandleFunc(endpointAccount, s.add).Methods(http.MethodPost)
 	router.HandleFunc(endpointAccount, s.get).Methods(http.MethodGet)
 	router.HandleFunc(endpointAccount, s.remove).Methods(http.MethodDelete)
+}
+
+// EnableCORS enables adding CORS headers.
+func EnableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if origin := r.Header.Get("Origin"); origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+			w.Header().Set("Access-Control-Allow-Headers",
+				"Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		}
+		// Stop here if its Preflighted OPTIONS request
+		if r.Method == "OPTIONS" {
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (s *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
