@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -39,29 +38,19 @@ type IDClient interface {
 	WhoAmI(ctx context.Context, in *principal.Model) (identity.WhoAmIResult, error)
 }
 
-type OptOutServer struct {
+type Handler struct {
 	store        AccountOptOutStore
 	publisher    publisher.SyncPublisher
 	accountsRepo AccountsRepository
 	idClient     IDClient
 }
 
-func New(port int, store AccountOptOutStore, sink publisher.SyncPublisher, accountsRepo AccountsRepository, idClient IDClient) *http.Server {
-	router := mux.NewRouter()
-	handler := &OptOutServer{
+func NewHandler(store AccountOptOutStore, sink publisher.SyncPublisher, accountsRepo AccountsRepository, idClient IDClient) *Handler {
+	return &Handler{
 		store:        store,
 		publisher:    sink,
 		accountsRepo: accountsRepo,
 		idClient:     idClient,
-	}
-	handler.Register(router)
-
-	return &http.Server{
-		Addr:              fmt.Sprintf(":%d", port),
-		Handler:           router,
-		ReadHeaderTimeout: 15 * time.Second,
-		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      15 * time.Second,
 	}
 }
 
@@ -71,7 +60,7 @@ const (
 )
 
 // Register registers the http handler in a http router.
-func (s *OptOutServer) Register(router *mux.Router) {
+func (s *Handler) Register(router *mux.Router) {
 	router.Use(EnableCORS)
 	router.Use(iam.HTTPHandler(true))
 
@@ -95,7 +84,7 @@ func EnableCORS(next http.Handler) http.Handler {
 	})
 }
 
-func (s *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
+func (s *Handler) add(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	accountNumber, ok := mux.Vars(r)["number"]
@@ -150,7 +139,7 @@ func (s *OptOutServer) add(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (s *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
+func (s *Handler) get(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	accountNumber, ok := mux.Vars(r)["number"]
 	if !ok {
@@ -188,7 +177,7 @@ func (s *OptOutServer) get(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(j)
 }
 
-func (s *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
+func (s *Handler) remove(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	accountNumber, ok := mux.Vars(r)["number"]
 	if !ok {
@@ -241,7 +230,7 @@ func (s *OptOutServer) remove(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *OptOutServer) list(w http.ResponseWriter, r *http.Request) {
+func (s *Handler) list(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	list, err := s.store.List(ctx)

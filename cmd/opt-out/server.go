@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
@@ -19,6 +21,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/accounts"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
+	"github.com/utilitywarehouse/uwos-go/v1/iam"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/identity"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"github.com/uw-labs/substrate"
@@ -71,7 +74,19 @@ func runServer(c *cli.Context) error {
 	}
 
 	accountsRepo := accounts.NewAccountLookup(mn, accountsClient)
-	httpServer := api.New(c.Int(httpServerPort), db, syncPublisher, accountsRepo, identityClient)
+
+	router := mux.NewRouter()
+	router.Use(api.EnableCORS)
+	router.Use(iam.HTTPHandler(true))
+
+	httpHandler := api.NewHandler(db, syncPublisher, accountsRepo, identityClient)
+	httpHandler.Register(router)
+	httpServer := &http.Server{
+		Addr:         fmt.Sprintf(":%d", c.Int(httpServerPort)),
+		Handler:      router,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
 
 	g, ctx := errgroup.WithContext(ctx)
 

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
@@ -53,8 +54,9 @@ func TestServer(t *testing.T) {
 		},
 	}
 	identityClient := identityClientMock{}
-
-	server := New(8080, s, &mockPublisher, &mockAccountsRepo, &identityClient)
+	router := mux.NewRouter()
+	httpHandler := NewHandler(s, &mockPublisher, &mockAccountsRepo, &identityClient)
+	httpHandler.Register(router)
 
 	err = s.Add(ctx, testAccountID, testAccountNumber, "user")
 	assert.NoError(t, err, "failed to add account")
@@ -65,7 +67,7 @@ func TestServer(t *testing.T) {
 	r.Header.Add("authorization", "Bearer token")
 	w := httptest.NewRecorder()
 
-	server.Handler.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 	var account Account
@@ -78,7 +80,7 @@ func TestServer(t *testing.T) {
 	r = httptest.NewRequest(http.MethodGet, endpointAccounts, nil)
 	r.Header.Add("authorization", "Bearer token")
 	w = httptest.NewRecorder()
-	server.Handler.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 	var accounts []Account
@@ -92,7 +94,7 @@ func TestServer(t *testing.T) {
 	r.Header.Add("authorization", "Bearer token")
 	w = httptest.NewRecorder()
 
-	server.Handler.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	assert.Equal(t, http.StatusCreated, w.Result().StatusCode)
 	// no msg should be published as account is already opt out
@@ -103,7 +105,7 @@ func TestServer(t *testing.T) {
 	r.Header.Add("authorization", "Bearer token")
 	w = httptest.NewRecorder()
 
-	server.Handler.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 	expectedEv := &smart.AccountBookingOptOutRemovedEvent{
@@ -124,7 +126,7 @@ func TestServer(t *testing.T) {
 	err = s.Remove(ctx, testAccountID)
 	assert.NoError(t, err)
 
-	server.Handler.ServeHTTP(w, r)
+	router.ServeHTTP(w, r)
 
 	expectedOptOutEv := &smart.AccountBookingOptOutAddedEvent{
 		AccountId:     testAccountID,
