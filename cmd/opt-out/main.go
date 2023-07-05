@@ -35,7 +35,7 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name: "api",
-				Flags: app.FlagBuilder{}.WithCustom(
+				Flags: app.DefaultFlags().WithCustom(
 					&cli.StringSliceFlag{
 						Name:     KafkaBrokers,
 						EnvVars:  []string{"KAFKA_BROKERS"},
@@ -69,7 +69,7 @@ func main() {
 			},
 			{
 				Name: "projector",
-				Flags: app.FlagBuilder{}.WithCustom(
+				Flags: app.DefaultFlags().WithCustom(
 					&cli.StringSliceFlag{
 						Name:     KafkaBrokers,
 						EnvVars:  []string{"KAFKA_BROKERS"},
