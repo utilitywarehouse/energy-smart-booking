@@ -9,7 +9,7 @@ jobs:
     name: Check changed files
     outputs:
       opt_out: ${{ steps.check_files.outputs.opt_out }}
-      .booking_services: ${{ steps.check_files.outputs.booking_services }}
+      booking_services: ${{ steps.check_files.outputs.booking_services }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
