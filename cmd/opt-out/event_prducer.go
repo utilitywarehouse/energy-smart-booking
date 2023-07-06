@@ -36,13 +36,13 @@ func runEventProducer(c *cli.Context) error {
 	}
 	for _, a := range accounts {
 		err = syncPublisher.Sink(ctx, &smart.AccountBookingOptOutAddedEvent{
-			AccountId:     a.ID,
-			AccountNumber: a.Number,
-			AddedBy:       a.AddedBy,
+			AccountId: a.ID,
+			AddedBy:   a.AddedBy,
 		}, a.AddedAt)
 		if err != nil {
 			return err
 		}
 	}
+	
 	return nil
 }
