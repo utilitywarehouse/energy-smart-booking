@@ -29,7 +29,7 @@ type OptOutRemoved struct {
 	RemovedAt time.Time
 }
 
-// Save returns the BQ query to save an held service.
+// Save returns the BQ query to save an optOut added event.
 func (a *OptOutAdded) Save() (map[string]bigquery.Value, string, error) {
 	return map[string]bigquery.Value{
 		"account_id":     a.ID,
@@ -39,7 +39,7 @@ func (a *OptOutAdded) Save() (map[string]bigquery.Value, string, error) {
 	}, a.ID, nil
 }
 
-// Save returns the BQ query to save an held service.
+// Save returns the BQ query to save an optOut removed event.
 func (a *OptOutRemoved) Save() (map[string]bigquery.Value, string, error) {
 	return map[string]bigquery.Value{
 		"account_id":     a.ID,
@@ -81,7 +81,7 @@ func (i *BigQueryIndexer) Handle(ctx context.Context, message substrate.Message)
 	}
 
 	if env.Message == nil {
-		logrus.Info("skipping empty meterpoint message")
+		logrus.Info("skipping empty message")
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}
@@ -94,7 +94,7 @@ func (i *BigQueryIndexer) Handle(ctx context.Context, message substrate.Message)
 	case *smart.AccountBookingOptOutAddedEvent:
 		accountNumber, err := i.AccountsRepo.AccountNumber(ctx, x.GetAccountId())
 		if err != nil {
-			return fmt.Errorf("failed to get account numbere for account id %s: %w", x.GetAccountId(), err)
+			return fmt.Errorf("failed to get account number for account id %s: %w", x.GetAccountId(), err)
 		}
 
 		i.OptOutAdded.Queue(&OptOutAdded{
@@ -106,7 +106,7 @@ func (i *BigQueryIndexer) Handle(ctx context.Context, message substrate.Message)
 	case *smart.AccountBookingOptOutRemovedEvent:
 		accountNumber, err := i.AccountsRepo.AccountNumber(ctx, x.GetAccountId())
 		if err != nil {
-			return fmt.Errorf("failed to get account numbere for account id %s: %w", x.GetAccountId(), err)
+			return fmt.Errorf("failed to get account number for account id %s: %w", x.GetAccountId(), err)
 		}
 
 		i.OptOutRemoved.Queue(&OptOutRemoved{
