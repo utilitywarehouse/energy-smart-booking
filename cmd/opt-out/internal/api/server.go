@@ -113,7 +113,7 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 
 			var addedBy string
 
-			id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+			id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(r.Context()))
 			if err != nil {
 				log.WithError(err).Error("failed to check principal identity from context")
 				w.WriteHeader(http.StatusInternalServerError)
@@ -209,7 +209,7 @@ func (s *Handler) remove(w http.ResponseWriter, r *http.Request) {
 
 	var removedBy string
 
-	id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+	id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(r.Context()))
 	if err != nil {
 		log.WithError(err).Error("failed to check principal identity from context")
 		w.WriteHeader(http.StatusInternalServerError)
