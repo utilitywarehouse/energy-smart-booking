@@ -35,7 +35,7 @@ func Handle(accountStore OptOutAccountStore, accountsRepo AccountsRepository) su
 			}
 
 			if env.Message == nil {
-				logrus.Info("skipping empty meterpoint message")
+				logrus.Info("skipping empty message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}
