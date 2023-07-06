@@ -18,6 +18,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/consumer"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/accounts"
+	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"golang.org/x/sync/errgroup"
@@ -50,6 +51,7 @@ func runProjector(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	opsServer.Add("accounts-api", grpchealth.NewCheckWithConnection(ctx, grpcConn, "", "", "unable to query accounts lookup api"))
 	defer grpcConn.Close()
 
 	accountsClient := accountService.NewNumberLookupServiceClient(grpcConn)
