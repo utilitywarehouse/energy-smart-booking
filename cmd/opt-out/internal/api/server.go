@@ -63,7 +63,7 @@ func (s *Handler) Register(ctx context.Context, router *mux.Router) {
 	router.HandleFunc(endpointAccounts, s.list).Methods(http.MethodGet)
 	router.Handle(endpointAccount, s.add(ctx)).Methods(http.MethodPost)
 	router.Handle(endpointAccount, s.get(ctx)).Methods(http.MethodGet)
-	router.HandleFunc(endpointAccount, s.remove).Methods(http.MethodDelete)
+	router.Handle(endpointAccount, s.remove(ctx)).Methods(http.MethodDelete)
 }
 
 // EnableCORS enables adding CORS headers.
@@ -178,57 +178,58 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 	})
 }
 
-func (s *Handler) remove(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	accountNumber, ok := mux.Vars(r)["number"]
-	if !ok {
-		log.Error("accountNumber not provided")
-		w.Write([]byte("accountNumber not provided"))
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (s *Handler) remove(ctx context.Context) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		accountNumber, ok := mux.Vars(r)["number"]
+		if !ok {
+			log.Error("accountNumber not provided")
+			w.Write([]byte("accountNumber not provided"))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
-	if err != nil {
-		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+		accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
+		if err != nil {
+			log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	// retrieve account from database to avoid sending duplicate events.
-	_, err = s.store.Get(ctx, accountID)
-	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if errors.Is(err, store.ErrAccountNotFound) {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
+		// retrieve account from database to avoid sending duplicate events.
+		_, err = s.store.Get(ctx, accountID)
+		if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
+			log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if errors.Is(err, store.ErrAccountNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
-	var removedBy string
+		var removedBy string
 
-	id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(r.Context()))
-	if err != nil {
-		log.WithError(err).Error("failed to check principal identity from context")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if id.Principal.Staff != nil {
-		removedBy = id.Principal.Staff.Email
-	}
+		id, err := s.idClient.WhoAmI(r.Context(), pdp.PrincipalFromCtx(r.Context()))
+		if err != nil {
+			log.WithError(err).Error("failed to check principal identity from context")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if id.Principal.Staff != nil {
+			removedBy = id.Principal.Staff.Email
+		}
 
-	err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutRemovedEvent{
-		AccountId:     accountID,
-		AccountNumber: accountNumber,
-		RemovedBy:     removedBy,
-	}, time.Now())
-	if err != nil {
-		log.WithError(err).Errorf("failed to publish opt out removed event for account %s", accountNumber)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+		err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutRemovedEvent{
+			AccountId:     accountID,
+			AccountNumber: accountNumber,
+			RemovedBy:     removedBy,
+		}, time.Now())
+		if err != nil {
+			log.WithError(err).Errorf("failed to publish opt out removed event for account %s", accountNumber)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	})
 }
 
 func (s *Handler) list(w http.ResponseWriter, r *http.Request) {
