@@ -26,11 +26,11 @@ func NewAccountOptOut(pool *pgxpool.Pool) *AccountOptOutStore {
 	return &AccountOptOutStore{pool: pool}
 }
 
-func (s *AccountOptOutStore) Add(ctx context.Context, id, number, addedBy string) error {
+func (s *AccountOptOutStore) Add(ctx context.Context, id, number, addedBy string, at time.Time) error {
 	q := `
 	INSERT INTO opt_out_account (id, number, added_by, created_at) 
 	VALUES ($1, $2, $3, $4);`
-	_, err := s.pool.Exec(ctx, q, id, number, addedBy, time.Now().UTC())
+	_, err := s.pool.Exec(ctx, q, id, number, addedBy, at)
 	if err != nil {
 		return err
 	}

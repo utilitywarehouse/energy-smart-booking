@@ -100,6 +100,36 @@ func main() {
 				),
 				Action: runProjector,
 			},
+			{
+				Name: "event-producer",
+				Flags: app.DefaultFlags().WithCustom(
+					&cli.StringFlag{
+						Name:     postgresDSN,
+						EnvVars:  []string{"POSTGRES_DSN"},
+						Required: true,
+					},
+					&cli.StringSliceFlag{
+						Name:     app.KafkaBrokers,
+						EnvVars:  []string{"KAFKA_BROKERS"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     app.KafkaVersion,
+						EnvVars:  []string{"KAFKA_VERSION"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     app.KafkaConsumerGroup,
+						EnvVars:  []string{"KAFKA_CONSUMER_GROUP"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:    optOutEventsTopic,
+						EnvVars: []string{"OPT_OUT_EVENTS_TOPIC"},
+					},
+				),
+				Action: runEventProducer,
+			},
 		},
 	}
 

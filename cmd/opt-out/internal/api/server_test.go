@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
@@ -58,7 +59,7 @@ func TestServer(t *testing.T) {
 	httpHandler := NewHandler(s, &mockPublisher, &mockAccountsRepo, &identityClient)
 	httpHandler.Register(ctx, router)
 
-	err = s.Add(ctx, testAccountID, testAccountNumber, "user")
+	err = s.Add(ctx, testAccountID, testAccountNumber, "user", time.Now())
 	assert.NoError(t, err, "failed to add account")
 
 	// test get account

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,7 @@ func TestAccountOptOut(t *testing.T) {
 	store := NewAccountOptOut(connect(ctx))
 	defer store.pool.Close()
 
-	err := store.Add(ctx, "id1", "account_no_1", "user")
+	err := store.Add(ctx, "id1", "account_no_1", "user", time.Now())
 	assert.NoError(err, "failed to add opt out account")
 
 	account, err := store.Get(ctx, "id1")

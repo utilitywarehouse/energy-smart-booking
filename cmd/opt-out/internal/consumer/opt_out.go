@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
@@ -16,7 +17,7 @@ import (
 )
 
 type OptOutAccountStore interface {
-	Add(ctx context.Context, id, number, addedBy string) error
+	Add(ctx context.Context, id, number, addedBy string, at time.Time) error
 	Get(ctx context.Context, id string) (*store.Account, error)
 	Remove(ctx context.Context, id string) error
 }
@@ -48,7 +49,7 @@ func Handle(accountStore OptOutAccountStore) substratemessage.BatchHandlerFunc {
 				if err == nil {
 					continue
 				}
-				err = accountStore.Add(ctx, x.GetAccountId(), x.GetAccountNumber(), x.GetAddedBy())
+				err = accountStore.Add(ctx, x.GetAccountId(), x.GetAccountNumber(), x.GetAddedBy(), env.OccurredAt.AsTime())
 				if err != nil {
 					return fmt.Errorf("failed to opt out account %s: %w", x.GetAccountId(), err)
 				}
