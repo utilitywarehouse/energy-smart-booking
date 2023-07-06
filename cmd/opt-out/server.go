@@ -78,7 +78,7 @@ func runServer(c *cli.Context) error {
 
 	router := mux.NewRouter()
 	apiHandler := api.NewHandler(db, syncPublisher, accountsRepo, identityClient)
-	apiHandler.Register(router)
+	apiHandler.Register(ctx, router)
 
 	chain := alice.New()
 	chain = chain.Append(api.EnableCORS, iam.HTTPHandler(true))

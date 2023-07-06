@@ -56,7 +56,7 @@ func TestServer(t *testing.T) {
 	identityClient := identityClientMock{}
 	router := mux.NewRouter()
 	httpHandler := NewHandler(s, &mockPublisher, &mockAccountsRepo, &identityClient)
-	httpHandler.Register(router)
+	httpHandler.Register(ctx, router)
 
 	err = s.Add(ctx, testAccountID, testAccountNumber, "user")
 	assert.NoError(t, err, "failed to add account")

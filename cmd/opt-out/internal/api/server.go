@@ -59,10 +59,10 @@ const (
 )
 
 // Register registers the http handler in a http router.
-func (s *Handler) Register(router *mux.Router) {
+func (s *Handler) Register(ctx context.Context, router *mux.Router) {
 	router.HandleFunc(endpointAccounts, s.list).Methods(http.MethodGet)
-	router.HandleFunc(endpointAccount, s.add).Methods(http.MethodPost)
-	router.HandleFunc(endpointAccount, s.get).Methods(http.MethodGet)
+	router.Handle(endpointAccount, s.add(ctx)).Methods(http.MethodPost)
+	router.Handle(endpointAccount, s.get(ctx)).Methods(http.MethodGet)
 	router.HandleFunc(endpointAccount, s.remove).Methods(http.MethodDelete)
 }
 
@@ -84,97 +84,98 @@ func EnableCORS(next http.Handler) http.Handler {
 	})
 }
 
-func (s *Handler) add(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+func (s *Handler) add(ctx context.Context) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		accountNumber, ok := mux.Vars(r)["number"]
+		if !ok {
+			log.Error("accountNumber not provided")
+			w.Write([]byte("accountNumber not provided"))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	accountNumber, ok := mux.Vars(r)["number"]
-	if !ok {
-		log.Error("accountNumber not provided")
-		w.Write([]byte("accountNumber not provided"))
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
-	if err != nil {
-		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// retrieve account from database to avoid sending duplicate events.
-	_, err = s.store.Get(ctx, accountID)
-	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if errors.Is(err, store.ErrAccountNotFound) {
-
-		var addedBy string
-
-		id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+		accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
 		if err != nil {
-			log.WithError(err).Error("failed to check principal identity from context")
+			log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		if id.Principal.Staff != nil {
-			addedBy = id.Principal.Staff.Email
-		}
 
-		err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutAddedEvent{
-			AccountId:     accountID,
-			AccountNumber: accountNumber,
-			AddedBy:       addedBy,
-		}, time.Now().UTC())
-		if err != nil {
-			log.WithError(err).Errorf("failed to publish opt out added event for account %s", accountNumber)
+		// retrieve account from database to avoid sending duplicate events.
+		_, err = s.store.Get(ctx, accountID)
+		if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
+			log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-	}
 
-	w.WriteHeader(http.StatusCreated)
+		if errors.Is(err, store.ErrAccountNotFound) {
+
+			var addedBy string
+
+			id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(ctx))
+			if err != nil {
+				log.WithError(err).Error("failed to check principal identity from context")
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			if id.Principal.Staff != nil {
+				addedBy = id.Principal.Staff.Email
+			}
+
+			err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutAddedEvent{
+				AccountId:     accountID,
+				AccountNumber: accountNumber,
+				AddedBy:       addedBy,
+			}, time.Now().UTC())
+			if err != nil {
+				log.WithError(err).Errorf("failed to publish opt out added event for account %s", accountNumber)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+
+		w.WriteHeader(http.StatusCreated)
+	})
 }
 
-func (s *Handler) get(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	accountNumber, ok := mux.Vars(r)["number"]
-	if !ok {
-		log.Error("accountNumber not provided")
-		w.Write([]byte("accountNumber not provided"))
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (s *Handler) get(ctx context.Context) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		accountNumber, ok := mux.Vars(r)["number"]
+		if !ok {
+			log.Error("accountNumber not provided")
+			w.Write([]byte("accountNumber not provided"))
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
-	if err != nil {
-		log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+		accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
+		if err != nil {
+			log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	// retrieve account from database to avoid sending duplicate events.
-	acc, err := s.store.Get(ctx, accountID)
-	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-		log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+		// retrieve account from database to avoid sending duplicate events.
+		acc, err := s.store.Get(ctx, accountID)
+		if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
+			log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	account := &Account{
-		ID:      acc.ID,
-		Number:  acc.Number,
-		AddedBy: acc.AddedBy,
-		AddedAt: acc.AddedAt,
-	}
+		account := &Account{
+			ID:      acc.ID,
+			Number:  acc.Number,
+			AddedBy: acc.AddedBy,
+			AddedAt: acc.AddedAt,
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	j, _ := json.Marshal(account)
-	_, _ = w.Write(j)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		j, _ := json.Marshal(account)
+		_, _ = w.Write(j)
+	})
 }
 
 func (s *Handler) remove(w http.ResponseWriter, r *http.Request) {
