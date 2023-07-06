@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"cloud.google.com/go/bigquery"
@@ -57,5 +60,18 @@ func runBigQueryIndexer(c *cli.Context) error {
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutEventsSource, &indexer)
 	})
 
-	return nil
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	g.Go(func() error {
+		defer log.Info("signal handler finished")
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-sigChan:
+			cancel()
+		}
+		return nil
+	})
+
+	return g.Wait()
 }
