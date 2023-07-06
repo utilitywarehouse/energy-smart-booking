@@ -10,12 +10,16 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	"github.com/utilitywarehouse/energy-pkg/substratemessage"
+	"github.com/utilitywarehouse/energy-services/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/consumer"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/accounts"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -36,6 +40,21 @@ func runProjector(c *cli.Context) error {
 
 	db := store.NewAccountOptOut(pool)
 
+	mn, err := machine.New()
+	if err != nil {
+		return err
+	}
+	defer mn.Close()
+
+	grpcConn, err := grpc.CreateConnection(ctx, c.String(accountsAPIHost))
+	if err != nil {
+		return err
+	}
+	defer grpcConn.Close()
+
+	accountsClient := accountService.NewNumberLookupServiceClient(grpcConn)
+	accountsRepo := accounts.NewAccountLookup(mn, accountsClient)
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
@@ -51,7 +70,7 @@ func runProjector(c *cli.Context) error {
 
 	g.Go(func() error {
 		defer logrus.Info("opt out events consumer finished")
-		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutEventsSource, consumer.Handle(db))
+		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutEventsSource, consumer.Handle(db, accountsRepo))
 	})
 
 	sigChan := make(chan os.Signal, 1)

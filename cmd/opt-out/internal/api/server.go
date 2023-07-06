@@ -124,9 +124,8 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 			}
 
 			err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutAddedEvent{
-				AccountId:     accountID,
-				AccountNumber: accountNumber,
-				AddedBy:       addedBy,
+				AccountId: accountID,
+				AddedBy:   addedBy,
 			}, time.Now().UTC())
 			if err != nil {
 				log.WithError(err).Errorf("failed to publish opt out added event for account %s", accountNumber)
@@ -220,9 +219,8 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 		}
 
 		err = s.publisher.Sink(ctx, &smart.AccountBookingOptOutRemovedEvent{
-			AccountId:     accountID,
-			AccountNumber: accountNumber,
-			RemovedBy:     removedBy,
+			AccountId: accountID,
+			RemovedBy: removedBy,
 		}, time.Now())
 		if err != nil {
 			log.WithError(err).Errorf("failed to publish opt out removed event for account %s", accountNumber)

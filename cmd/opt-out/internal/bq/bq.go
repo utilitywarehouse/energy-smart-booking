@@ -49,9 +49,14 @@ func (a *OptOutRemoved) Save() (map[string]bigquery.Value, string, error) {
 	}, a.ID, nil
 }
 
+type AccountsRepository interface {
+	AccountNumber(ctx context.Context, accountID string) (string, error)
+}
+
 type BigQueryIndexer struct {
 	OptOutAdded   indexer.BigQuery
 	OptOutRemoved indexer.BigQuery
+	AccountsRepo  AccountsRepository
 }
 
 func (i *BigQueryIndexer) PreHandle(_ context.Context) error {
@@ -69,7 +74,7 @@ func (i *BigQueryIndexer) PostHandle(ctx context.Context) error {
 	return i.OptOutRemoved.Commit(ctx)
 }
 
-func (i *BigQueryIndexer) Handle(_ context.Context, message substrate.Message) error {
+func (i *BigQueryIndexer) Handle(ctx context.Context, message substrate.Message) error {
 	var env energy_contracts.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err
@@ -87,16 +92,26 @@ func (i *BigQueryIndexer) Handle(_ context.Context, message substrate.Message) e
 	}
 	switch x := inner.(type) {
 	case *smart.AccountBookingOptOutAddedEvent:
+		accountNumber, err := i.AccountsRepo.AccountNumber(ctx, x.GetAccountId())
+		if err != nil {
+			return fmt.Errorf("failed to get account numbere for account id %s: %w", x.GetAccountId(), err)
+		}
+
 		i.OptOutAdded.Queue(&OptOutAdded{
 			ID:      x.GetAccountId(),
-			Number:  x.GetAccountNumber(),
+			Number:  accountNumber,
 			AddedBy: x.GetAddedBy(),
 			AddedAt: env.OccurredAt.AsTime(),
 		})
 	case *smart.AccountBookingOptOutRemovedEvent:
+		accountNumber, err := i.AccountsRepo.AccountNumber(ctx, x.GetAccountId())
+		if err != nil {
+			return fmt.Errorf("failed to get account numbere for account id %s: %w", x.GetAccountId(), err)
+		}
+
 		i.OptOutRemoved.Queue(&OptOutRemoved{
 			ID:        x.GetAccountId(),
-			Number:    x.GetAccountNumber(),
+			Number:    accountNumber,
 			RemovedBy: x.GetRemovedBy(),
 			RemovedAt: env.OccurredAt.AsTime(),
 		})

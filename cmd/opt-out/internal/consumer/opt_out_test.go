@@ -42,19 +42,22 @@ func TestOptOutConsumer(t *testing.T) {
 		}
 	}()
 	s := store.NewAccountOptOut(pool)
-	handler := Handle(s)
+	accountRepo := &accountRepoMock{
+		accountIDNumber: map[string]string{
+			"accountId1": "accountNumber",
+		},
+	}
+	handler := Handle(s, accountRepo)
 
 	msgs := []substrate.Message{}
 	optOutEv1, err := test_common.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
-		AccountId:     "accountId1",
-		AccountNumber: "accountNumber1",
+		AccountId: "accountId1",
 	})
 	assert.NoError(t, err)
 
 	optOutEv2, err := test_common.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
-		AccountId:     "accountId2",
-		AccountNumber: "accountNumber2",
-		AddedBy:       "user",
+		AccountId: "accountId2",
+		AddedBy:   "user",
 	})
 	assert.NoError(t, err)
 
@@ -66,8 +69,7 @@ func TestOptOutConsumer(t *testing.T) {
 	assert.Equal(t, 2, len(optOutAccounts))
 
 	optOutRemovedEv, err := test_common.MakeMessage(&smart.AccountBookingOptOutRemovedEvent{
-		AccountId:     "accountId1",
-		AccountNumber: "accountNumber1",
+		AccountId: "accountId1",
 	})
 
 	err = handler(ctx, []substrate.Message{optOutRemovedEv})
@@ -101,4 +103,12 @@ func MakeMessage(msg proto.Message) (substrate.Message, error) {
 	}
 
 	return message.NewMessage(bytes), nil
+}
+
+type accountRepoMock struct {
+	accountIDNumber map[string]string
+}
+
+func (a *accountRepoMock) AccountNumber(_ context.Context, accountNumber string) (string, error) {
+	return a.accountIDNumber[accountNumber], nil
 }

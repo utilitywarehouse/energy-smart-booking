@@ -110,9 +110,8 @@ func TestServer(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Result().StatusCode)
 	expectedEv := &smart.AccountBookingOptOutRemovedEvent{
-		AccountId:     testAccountID,
-		AccountNumber: testAccountNumber,
-		RemovedBy:     "email",
+		AccountId: testAccountID,
+		RemovedBy: "email",
 	}
 	assert.Equal(t, 1, len(mockPublisher.Msgs))
 	assert.Equal(t, expectedEv, mockPublisher.Msgs[0])
@@ -130,9 +129,8 @@ func TestServer(t *testing.T) {
 	router.ServeHTTP(w, r)
 
 	expectedOptOutEv := &smart.AccountBookingOptOutAddedEvent{
-		AccountId:     testAccountID,
-		AccountNumber: testAccountNumber,
-		AddedBy:       "email",
+		AccountId: testAccountID,
+		AddedBy:   "email",
 	}
 	assert.Equal(t, 1, len(mockPublisher.Msgs))
 	assert.Equal(t, expectedOptOutEv, mockPublisher.Msgs[0])

@@ -31,3 +31,13 @@ func (c *Client) AccountID(ctx context.Context, accountNumber string) (string, e
 
 	return resp.AccountId[0], nil
 }
+
+func (c *Client) AccountNumber(ctx context.Context, accountID string) (string, error) {
+	reqCtx := c.mai.ToCtx(ctx)
+	resp, err := c.numberLookupClient.AccountNumber(reqCtx, &accountService.AccountNumberRequest{AccountId: []string{accountID}})
+	if err != nil {
+		return "", err
+	}
+
+	return resp.AccountNumber[0], nil
+}

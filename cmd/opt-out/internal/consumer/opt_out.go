@@ -22,7 +22,11 @@ type OptOutAccountStore interface {
 	Remove(ctx context.Context, id string) error
 }
 
-func Handle(accountStore OptOutAccountStore) substratemessage.BatchHandlerFunc {
+type AccountsRepository interface {
+	AccountNumber(ctx context.Context, accountID string) (string, error)
+}
+
+func Handle(accountStore OptOutAccountStore, accountsRepo AccountsRepository) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -49,7 +53,12 @@ func Handle(accountStore OptOutAccountStore) substratemessage.BatchHandlerFunc {
 				if err == nil {
 					continue
 				}
-				err = accountStore.Add(ctx, x.GetAccountId(), x.GetAccountNumber(), x.GetAddedBy(), env.OccurredAt.AsTime())
+
+				accountNumber, err := accountsRepo.AccountNumber(ctx, x.GetAccountId())
+				if err != nil {
+					return fmt.Errorf("failed to get account number for account ID: %s: %w", x.GetAccountId(), err)
+				}
+				err = accountStore.Add(ctx, x.GetAccountId(), accountNumber, x.GetAddedBy(), env.OccurredAt.AsTime())
 				if err != nil {
 					return fmt.Errorf("failed to opt out account %s: %w", x.GetAccountId(), err)
 				}

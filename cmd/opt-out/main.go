@@ -104,6 +104,10 @@ func main() {
 						EnvVars:  []string{"POSTGRES_DSN"},
 						Required: true,
 					},
+					&cli.StringFlag{
+						Name:    accountsAPIHost,
+						EnvVars: []string{"ACCOUNTS_API_HOST"},
+					},
 				),
 				Action: runProjector,
 			},
@@ -188,6 +192,10 @@ func main() {
 						Name:    batchSize,
 						EnvVars: []string{"BATCH_SIZE"},
 						Value:   1,
+					},
+					&cli.StringFlag{
+						Name:    accountsAPIHost,
+						EnvVars: []string{"ACCOUNTS_API_HOST"},
 					},
 				),
 				Action: runBigQueryIndexer,

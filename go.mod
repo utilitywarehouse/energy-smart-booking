@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
-	github.com/utilitywarehouse/energy-contracts v1.75.1-0.20230704114351-1b4825b84cf6
+	github.com/utilitywarehouse/energy-contracts v1.76.0
 	github.com/utilitywarehouse/energy-pkg/app v1.1.29
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
 	github.com/utilitywarehouse/energy-pkg/ops v0.0.4
