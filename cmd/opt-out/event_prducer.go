@@ -43,6 +43,6 @@ func runEventProducer(c *cli.Context) error {
 			return err
 		}
 	}
-	
+
 	return nil
 }
