@@ -25,7 +25,7 @@ const (
 	// bigQuery
 	bigQueryProjectID          = "big-query-project-id"
 	bigQueryDatasetID          = "big-query-dataset-id"
-	bigQueryCredentialsFile    = "big-query-credentials-file"
+	bigQueryCredentialsFile    = "big-query-credentials-file" //nolint:gosec
 	bigQueryOptOutAddedTable   = "big-query-opt-out-added-table"
 	bigQueryOptOutRemovedTable = "big-query-opt-out-removed-table"
 )
