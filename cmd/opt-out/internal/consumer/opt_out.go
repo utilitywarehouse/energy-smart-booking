@@ -48,7 +48,7 @@ func Handle(accountStore OptOutAccountStore) substratemessage.BatchHandlerFunc {
 				if err == nil {
 					continue
 				}
-				err = accountStore.Add(ctx, x.GetAccountId(), x.GetAccountId(), x.GetAddedBy())
+				err = accountStore.Add(ctx, x.GetAccountId(), x.GetAccountNumber(), x.GetAddedBy())
 				if err != nil {
 					return fmt.Errorf("failed to opt out account %s: %w", x.GetAccountId(), err)
 				}
