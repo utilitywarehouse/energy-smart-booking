@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  check:
+    name: Check changed files
+    outputs:
+      opt_out: ${{ steps.check_files.outputs.opt_out }}
+      booking_services: ${{ steps.check_files.outputs.booking_services }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+
+      - name: check modified files
+        id: check_files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if [[ $file == cmd/opt-out/** ]]; then
+              echo "This modified file is under the 'cmd/opt-out' folder."
+              echo "::set-output name=opt_out::true"
+            elif [[ $file != cmd/** ]]; then
+              echo "This modified file applies for all booking services"
+              echo "::set-output name=booking_services::true"
+            fi
+          done
+
+  build_opt_out:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.opt_out == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/opt-out
+      service: energy-smart-booking-opt-out
+    secrets: inherit
+
+  build_booking_services:
+    needs: check
+    if: needs.check.outputs.booking_services == 'true'
+    uses: ./.github/workflows/energy_smart_booking_services.yml
+    secrets: inherit

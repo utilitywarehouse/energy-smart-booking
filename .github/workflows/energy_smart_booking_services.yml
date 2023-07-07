@@ -1,0 +1,12 @@
+name: Build energy-smart-booking-services
+
+on:
+  workflow_call:
+
+jobs:
+  opt-out:
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/opt-out
+      service: energy-smart-booking-opt-out
+    secrets: inherit
