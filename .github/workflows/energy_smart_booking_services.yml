@@ -10,3 +10,11 @@ jobs:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
     secrets: inherit
+
+  eligibility:
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/eligibility
+      service: energy-smart-booking-eligibility
+    secrets: inherit
+

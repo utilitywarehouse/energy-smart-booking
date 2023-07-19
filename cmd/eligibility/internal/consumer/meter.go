@@ -1,0 +1,94 @@
+package consumer
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	log "github.com/sirupsen/logrus"
+	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
+	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
+	"github.com/utilitywarehouse/energy-pkg/domain"
+	"github.com/utilitywarehouse/energy-pkg/metrics"
+	"github.com/utilitywarehouse/energy-pkg/substratemessage"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
+	"github.com/uw-labs/substrate"
+	"google.golang.org/protobuf/proto"
+)
+
+type MeterStore interface {
+	Add(ctx context.Context, meter *store.Meter) error
+	InstallMeter(ctx context.Context, meterID string, at time.Time) error
+	AddMeterType(ctx context.Context, meterID string, meterType string) error
+	UninstallMeter(ctx context.Context, meterID string, at time.Time) error
+	ReInstallMeter(ctx context.Context, meterID string) error
+	AddMeterCapacity(ctx context.Context, meterID string, cap float32) error
+}
+
+func HandleMeter(s MeterStore) substratemessage.BatchHandlerFunc {
+	return func(ctx context.Context, messages []substrate.Message) error {
+		for _, msg := range messages {
+			var env energy_contracts.Envelope
+			if err := proto.Unmarshal(msg.Data(), &env); err != nil {
+				return err
+			}
+
+			if env.Message == nil {
+				log.Info("skipping empty meter message")
+				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
+				continue
+			}
+
+			inner, err := env.Message.UnmarshalNew()
+			if err != nil {
+				return fmt.Errorf("error unmarshaling meter event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
+			}
+
+			switch x := inner.(type) {
+			case *platform.ElectricityMeterDiscoveredEvent:
+				err = s.Add(ctx, &store.Meter{
+					ID:         x.GetMeterId(),
+					Mpxn:       x.GetMpan(),
+					Msn:        x.GetMeterSerialNumber(),
+					SupplyType: domain.SupplyTypeElectricity,
+					MeterType:  x.GetMeterType().String(),
+				})
+			case *platform.ElectricityMeterTypeCorrectedEvent:
+				err = s.AddMeterType(ctx, x.GetMeterId(), x.GetMeterType().String())
+
+			case *platform.GasMeterDiscoveredEvent:
+				err = s.Add(ctx, &store.Meter{
+					ID:         x.GetMeterId(),
+					Mpxn:       x.GetMprn(),
+					Msn:        x.GetMeterSerialNumber(),
+					SupplyType: domain.SupplyTypeGas,
+					MeterType:  x.GetMeterType().String(),
+				})
+				if err != nil {
+					return fmt.Errorf("failed to process meter event %s: %w", env.Uuid, err)
+				}
+				if x.Capacity != nil {
+					err = s.AddMeterCapacity(ctx, x.GetMeterId(), x.GetCapacity())
+				}
+			case *platform.GasMeterTypeCorrectedEvent:
+				err = s.AddMeterType(ctx, x.GetMeterId(), x.GetMeterType().String())
+
+			case *platform.ElectricityMeterInstalledEvent, *platform.GasMeterInstalledEvent:
+				err = s.InstallMeter(ctx, x.(meterIdentifier).GetMeterId(), env.OccurredAt.AsTime())
+			case *platform.ElectricityMeterUninstalledEvent, *platform.GasMeterUninstalledEvent:
+				err = s.UninstallMeter(ctx, x.(meterIdentifier).GetMeterId(), env.OccurredAt.AsTime())
+			case *platform.ElectricityMeterErroneouslyUninstalledEvent, *platform.GasMeterErroneouslyUninstalledEvent:
+				err = s.ReInstallMeter(ctx, x.(meterIdentifier).GetMeterId())
+
+			}
+			if err != nil {
+				return fmt.Errorf("failed to process meter event %s: %w", env.Uuid, err)
+			}
+		}
+		return nil
+	}
+}
+
+type meterIdentifier interface {
+	GetMeterId() string
+}
