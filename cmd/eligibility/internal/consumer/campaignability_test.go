@@ -52,7 +52,7 @@ func TestCampaignabilityConsumer(t *testing.T) {
 
 	eligibility, err := s.Get(ctx, "occupancyID", "accountID")
 	assert.NoError(err, "failed to get campaignability")
-	expected := store.Eligibility{
+	expected := store.Campaignability{
 		OccupancyID: "occupancyID",
 		AccountID:   "accountID",
 		Reasons:     nil,
