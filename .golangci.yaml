@@ -4,7 +4,7 @@ run:
   tests: true
   skip-files:
   silent: true
-  timeout: 120s
+  timeout: 150s
   build-tags:
     - testing
 

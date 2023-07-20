@@ -8,12 +8,13 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/justinas/alice v1.2.0
+	github.com/lib/pq v1.10.9
 	github.com/rubenv/sql-migrate v1.5.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
-	github.com/utilitywarehouse/energy-contracts v1.80.0
+	github.com/utilitywarehouse/energy-contracts v1.80.1
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/domain v1.24.8
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
@@ -97,7 +98,6 @@ require (
 	github.com/klauspost/asmfmt v1.3.2 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/minio/asm2plan9s v0.0.0-20200509001527-cdd76441f9d8 // indirect
