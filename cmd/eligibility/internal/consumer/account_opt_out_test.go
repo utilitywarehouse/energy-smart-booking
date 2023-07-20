@@ -13,7 +13,7 @@ import (
 	"github.com/uw-labs/substrate"
 )
 
-func TestAccountPSRConsumer(t *testing.T) {
+func TestAccountOptOutConsumer(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 	container, err := postgres.SetupTestContainer(ctx)
@@ -38,35 +38,35 @@ func TestAccountPSRConsumer(t *testing.T) {
 	}()
 	s := store.NewAccount(pool)
 
-	handler := HandleAccountPSR(s)
+	handler := HandleAccountOptOut(s)
 
-	ev1, err := test_common.MakeMessage(&smart.AccountPSRCodesChangedEvent{
+	ev1, err := test_common.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
 		AccountId: "accountID",
-		Codes:     []string{"12", "45"},
 	})
 	assert.NoError(err)
 
 	err = handler(ctx, []substrate.Message{ev1})
-	assert.NoError(err, "failed to handle account psr event")
+	assert.NoError(err, "failed to handle account opt out event")
 
 	account, err := s.GetAccount(ctx, "accountID")
 	assert.NoError(err, "failed to get account")
 	expected := store.Account{
 		ID:       "accountID",
-		PSRCodes: []string{"12", "45"},
+		PSRCodes: nil,
+		OptOut:   true,
 	}
 	assert.Equal(expected, account, "mismatch")
 
-	ev2, err := test_common.MakeMessage(&smart.AccountPSRCodesRemovedEvent{
+	ev2, err := test_common.MakeMessage(&smart.AccountBookingOptOutRemovedEvent{
 		AccountId: "accountID",
 	})
 	assert.NoError(err)
 
 	err = handler(ctx, []substrate.Message{ev2})
-	assert.NoError(err, "failed to handle account psr event")
+	assert.NoError(err, "failed to handle account opt out event")
 
 	account, err = s.GetAccount(ctx, "accountID")
 	assert.NoError(err, "failed to get account")
-	expected.PSRCodes = nil
+	expected.OptOut = false
 	assert.Equal(expected, account, "mismatch")
 }

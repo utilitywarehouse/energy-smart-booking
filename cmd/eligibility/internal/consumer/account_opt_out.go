@@ -13,11 +13,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type AccountPSRStore interface {
-	AddPSRCodes(ctx context.Context, accountID string, codes []string) error
+type AccountOptOutStore interface {
+	AddOptOut(ctx context.Context, accountID string, optOut bool) error
 }
 
-func HandleAccountPSR(store AccountPSRStore) substratemessage.BatchHandlerFunc {
+func HandleAccountOptOut(store AccountOptOutStore) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -26,23 +26,23 @@ func HandleAccountPSR(store AccountPSRStore) substratemessage.BatchHandlerFunc {
 			}
 
 			if env.Message == nil {
-				log.Info("skipping empty account psr message")
+				log.Info("skipping empty account opt out message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}
 
 			inner, err := env.Message.UnmarshalNew()
 			if err != nil {
-				return fmt.Errorf("error unmarshaling account psr event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
+				return fmt.Errorf("error unmarshaling account opt out event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
 			}
 			switch x := inner.(type) {
-			case *smart.AccountPSRCodesChangedEvent:
-				err = store.AddPSRCodes(ctx, x.AccountId, x.GetCodes())
-			case *smart.AccountPSRCodesRemovedEvent:
-				err = store.AddPSRCodes(ctx, x.GetAccountId(), nil)
+			case *smart.AccountBookingOptOutAddedEvent:
+				err = store.AddOptOut(ctx, x.AccountId, true)
+			case *smart.AccountBookingOptOutRemovedEvent:
+				err = store.AddOptOut(ctx, x.GetAccountId(), false)
 			}
 			if err != nil {
-				return fmt.Errorf("failed to handle account psr codes event %s: %w", env.GetUuid(), err)
+				return fmt.Errorf("failed to handle account opt out event %s: %w", env.GetUuid(), err)
 			}
 		}
 		return nil
