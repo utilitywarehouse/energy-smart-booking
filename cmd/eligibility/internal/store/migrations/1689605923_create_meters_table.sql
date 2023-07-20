@@ -13,7 +13,5 @@ CREATE TABLE IF NOT EXISTS meters (
     UNIQUE(id)
 );
 
-CREATE INDEX meters_idx ON meters (id);
-
 -- +migrate Down
 DROP TABLE IF EXISTS meters;

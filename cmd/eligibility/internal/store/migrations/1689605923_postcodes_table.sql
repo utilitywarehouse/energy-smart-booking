@@ -7,7 +7,5 @@ CREATE TABLE IF NOT EXISTS postcodes (
     UNIQUE(post_code)
 );
 
-CREATE INDEX postcodes_idx ON postcodes (post_code);
-
 -- +migrate Down
 DROP TABLE IF EXISTS postcodes;

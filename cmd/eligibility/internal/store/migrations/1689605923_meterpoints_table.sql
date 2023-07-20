@@ -11,7 +11,5 @@ CREATE TABLE IF NOT EXISTS meterpoints (
     UNIQUE(mpxn)
 );
 
-CREATE INDEX meterpoints_idx ON meterpoints (mpxn);
-
 -- +migrate Down
 DROP TABLE IF EXISTS meterpoints;

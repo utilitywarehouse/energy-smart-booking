@@ -20,7 +20,7 @@ import (
 type ServiceStore interface {
 	Add(ctx context.Context, service *store.Service) error
 	Get(ctx context.Context, serviceID string) (store.Service, error)
-	AddStatDate(ctx context.Context, serviceID string, at time.Time) error
+	AddStartDate(ctx context.Context, serviceID string, at time.Time) error
 	AddEndDate(ctx context.Context, serviceID string, at time.Time) error
 }
 
@@ -78,13 +78,13 @@ func persistService(ctx context.Context, s ServiceStore, supplyType domain.Suppl
 	}
 
 	if service.GetStartDate() != nil {
-		err = s.AddStatDate(ctx, service.GetServiceId(), service.GetStartDate().AsTime())
+		err = s.AddStartDate(ctx, service.GetServiceId(), service.GetStartDate().AsTime())
 		if err != nil {
 			return err
 		}
 	}
 	if service.GetEndDate() != nil {
-		err = s.AddStatDate(ctx, service.GetServiceId(), service.GetEndDate().AsTime())
+		err = s.AddEndDate(ctx, service.GetServiceId(), service.GetEndDate().AsTime())
 		if err != nil {
 			return err
 		}

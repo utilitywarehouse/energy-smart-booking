@@ -24,7 +24,7 @@ func TestService(t *testing.T) {
 	startDate := date(2020, 2, 1)
 	assert.NoError(err, "failed to add service")
 
-	err = s.AddStatDate(ctx, "service1", startDate)
+	err = s.AddStartDate(ctx, "service1", startDate)
 	assert.NoError(err, "failed to add start date to service")
 
 	service, err := s.Get(ctx, "service1")

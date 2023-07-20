@@ -50,7 +50,7 @@ func (s *ServiceStore) Add(ctx context.Context, service *Service) error {
 	return err
 }
 
-func (s *ServiceStore) AddStatDate(ctx context.Context, serviceID string, at time.Time) error {
+func (s *ServiceStore) AddStartDate(ctx context.Context, serviceID string, at time.Time) error {
 	_, err := s.pool.Exec(ctx, `UPDATE services set start_date = $2 where id = $1`, serviceID, at)
 
 	return err

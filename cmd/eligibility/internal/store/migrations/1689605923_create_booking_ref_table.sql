@@ -7,7 +7,5 @@ CREATE TABLE IF NOT EXISTS booking_references (
     updated_at TIMESTAMP WITHOUT TIME ZONE
 );
 
-CREATE INDEX booking_ref_idx ON booking_references (mpxn);
-
 -- +migrate Down
 DROP TABLE IF EXISTS booking_references;

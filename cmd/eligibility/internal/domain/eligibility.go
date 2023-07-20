@@ -148,5 +148,5 @@ func MapIneligibleProtoToDomainReason(reason smart.IneligibleReason) (Ineligible
 		return IneligibleReasonMissingData, nil
 	}
 
-	return IneligibleReasonUnknown, fmt.Errorf("reson not mapped")
+	return IneligibleReasonUnknown, fmt.Errorf("reason not mapped")
 }

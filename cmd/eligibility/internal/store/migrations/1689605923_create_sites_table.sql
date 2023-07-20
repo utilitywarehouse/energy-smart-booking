@@ -7,7 +7,5 @@ CREATE TABLE IF NOT EXISTS sites (
     updated_at TIMESTAMP WITHOUT TIME ZONE
 );
 
-CREATE INDEX sites_idx ON sites (id);
-
 -- +migrate Down
 DROP TABLE IF EXISTS sites;

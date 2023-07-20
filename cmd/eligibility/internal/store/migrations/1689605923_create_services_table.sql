@@ -12,7 +12,5 @@ CREATE TABLE IF NOT EXISTS services (
     UNIQUE(id)
 );
 
-CREATE INDEX services_idx ON services (id);
-
 -- +migrate Down
 DROP TABLE IF EXISTS services;
