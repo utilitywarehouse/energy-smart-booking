@@ -39,14 +39,12 @@ func HandleAccountPSR(store AccountPSRStore) substratemessage.BatchHandlerFunc {
 			}
 			switch x := inner.(type) {
 			case *smart.AccountPSRCodesChangedEvent:
-				if len(x.GetCodes()) == 0 {
-					err = store.Remove(ctx, x.GetAccountId())
-				} else {
-					err = store.Add(ctx, x.AccountId, x.GetCodes())
-				}
-				if err != nil {
-					return fmt.Errorf("failed to update account psr codes for account %s, event %s: %w", x.GetAccountId(), env.GetUuid(), err)
-				}
+				err = store.Add(ctx, x.AccountId, x.GetCodes())
+			case *smart.AccountPSRCodesRemovedEvent:
+				err = store.Remove(ctx, x.GetAccountId())
+			}
+			if err != nil {
+				return fmt.Errorf("failed to handle account psr codes event %s: %w", env.GetUuid(), err)
 			}
 		}
 		return nil

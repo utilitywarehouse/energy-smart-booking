@@ -22,6 +22,8 @@ func TestAccountPSR(t *testing.T) {
 	assert.Equal([]string{"14", "31"}, codes, "mismatch")
 
 	err = store.Add(ctx, "accountID", []string{"27"})
+	assert.NoError(err, "failed to update account psr codes")
+
 	codes, err = store.GetPSRCodes(ctx, "accountID")
 	assert.NoError(err, "failed to retrieve account psr codes")
 	assert.Equal([]string{"27"}, codes, "mismatch")

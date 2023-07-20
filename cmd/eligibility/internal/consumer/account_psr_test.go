@@ -53,9 +53,8 @@ func TestAccountPSRConsumer(t *testing.T) {
 	assert.NoError(err, "failed to get account psr codes")
 	assert.Equal([]string{"12", "45"}, codes, "mismatch")
 
-	ev2, err := test_common.MakeMessage(&smart.AccountPSRCodesChangedEvent{
+	ev2, err := test_common.MakeMessage(&smart.AccountPSRCodesRemovedEvent{
 		AccountId: "accountID",
-		Codes:     nil,
 	})
 	assert.NoError(err)
 
