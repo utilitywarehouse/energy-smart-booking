@@ -90,6 +90,8 @@ func TestMeter(t *testing.T) {
 
 	// most recently installed meter should be returned
 	meter, err = s.Get(ctx, mpxn)
+	assert.NoError(err)
+	
 	expected = Meter{
 		ID:         meterID1,
 		Mpxn:       mpxn,
