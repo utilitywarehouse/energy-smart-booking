@@ -68,6 +68,8 @@ func TestMeter(t *testing.T) {
 
 	// reinstall meter
 	err = s.ReInstallMeter(ctx, meterID)
+	assert.NoError(err)
+
 	meter, err = s.Get(ctx, mpxn)
 	assert.NoError(err, "failed to get reinstalled meter")
 	assert.Equal(expected, meter, "mismatch")

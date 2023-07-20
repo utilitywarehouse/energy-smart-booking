@@ -23,10 +23,12 @@ func TestSite(t *testing.T) {
 	assert.Equal(Site{ID: "site1", PostCode: "postcode1"}, site, "mismatch")
 
 	err = store.Add(ctx, "site1", "postcode2", time.Now())
+	assert.NoError(err)
+
 	site, err = store.Get(ctx, "site1")
 	assert.NoError(err, "failed to retrieve site")
 	assert.Equal(Site{ID: "site1", PostCode: "postcode2"}, site, "mismatch")
 
-	site, err = store.Get(ctx, "site2")
+	_, err = store.Get(ctx, "site2")
 	assert.ErrorIs(err, ErrSiteNotFound)
 }

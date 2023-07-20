@@ -22,10 +22,12 @@ func TestBookingRef(t *testing.T) {
 	assert.Equal("ref1", ref, "mismatch")
 
 	err = store.Add(ctx, "mpxn1", "ref2")
+	assert.NoError(err)
+
 	ref, err = store.GetReference(ctx, "mpxn1")
 	assert.NoError(err, "failed to retrieve booking ref")
 	assert.Equal("ref2", ref, "mismatch")
 
-	ref, err = store.GetReference(ctx, "mpxn2")
+	_, err = store.GetReference(ctx, "mpxn2")
 	assert.ErrorIs(err, ErrBookingReferenceNotFound)
 }

@@ -28,11 +28,12 @@ func TestOccupancy(t *testing.T) {
 	// update occupancy
 	err = store.AddSite(ctx, "occupancy1", "site2")
 	assert.NoError(err, "failed to update occupancy")
+
 	occupancy, err = store.Get(ctx, "occupancy1")
 	assert.NoError(err, "failed to retrieve occupancy")
 	assert.Equal(Occupancy{ID: "occupancy1", SiteID: "site2", AccountID: "account1"}, occupancy, "mismatch")
 
-	occupancy, err = store.Get(ctx, "occupancy2")
+	_, err = store.Get(ctx, "occupancy2")
 	assert.ErrorIs(err, ErrOccupancyNotFound)
 
 	// get by accountID
