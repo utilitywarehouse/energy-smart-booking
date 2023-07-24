@@ -38,7 +38,7 @@ func TestSiteConsumer(t *testing.T) {
 	}()
 	s := store.NewSite(pool)
 
-	handler := HandleSite(s)
+	handler := HandleSite(s, nil, nil, true)
 
 	siteEv1, err := test_common.MakeMessage(&platform.SiteDiscoveredEvent{
 		SiteId: "siteID",

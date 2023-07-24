@@ -38,7 +38,7 @@ func TestWanCoverageConsumer(t *testing.T) {
 	}()
 	s := store.NewPostCode(pool)
 
-	handler := HandleWanCoverage(s)
+	handler := HandleWanCoverage(s, nil, nil, true)
 
 	wanCoverageEv1, err := test_common.MakeMessage(&smart.WanCoverageAtPostcodeStartedEvent{
 		Postcode: "postCode",

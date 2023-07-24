@@ -38,7 +38,7 @@ func TestAccountPSRConsumer(t *testing.T) {
 	}()
 	s := store.NewAccount(pool)
 
-	handler := HandleAccountPSR(s)
+	handler := HandleAccountPSR(s, nil, nil, true)
 
 	ev1, err := test_common.MakeMessage(&smart.AccountPSRCodesChangedEvent{
 		AccountId: "accountID",

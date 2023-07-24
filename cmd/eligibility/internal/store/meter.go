@@ -115,3 +115,16 @@ func (s *MeterStore) Get(ctx context.Context, mpxn string) (Meter, error) {
 
 	return meter, nil
 }
+
+func (s *MeterStore) GetMpxnByID(ctx context.Context, meterID string) (string, error) {
+	var mpxn string
+
+	if err := s.pool.QueryRow(ctx, `SELECT mpxn FROM meters WHERE id = $1;`, meterID).Scan(&mpxn); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrMeterNotFound
+		}
+		return "", err
+	}
+
+	return mpxn, nil
+}

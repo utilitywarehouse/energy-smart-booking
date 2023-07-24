@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -15,6 +16,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/substratemessage"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/consumer"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
+	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"golang.org/x/sync/errgroup"
 )
@@ -32,6 +34,7 @@ func runProjector(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
 	defer pool.Close()
 
 	eligibilityDB := store.NewEligibility(pool)

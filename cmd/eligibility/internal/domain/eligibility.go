@@ -26,6 +26,8 @@ const (
 	IneligibleReasonBookingReferenceMissing
 	IneligibleReasonAlreadySmart
 	IneligibleReasonMissingData
+	IneligibleReasonAltHan
+	IneligibleReasonBookingOptOut
 )
 
 type IneligibleReasons []IneligibleReason
@@ -56,6 +58,10 @@ func (r IneligibleReason) String() string {
 		return "AlreadySmart"
 	case IneligibleReasonMissingData:
 		return "MissingData"
+	case IneligibleReasonAltHan:
+		return "AltHan"
+	case IneligibleReasonBookingOptOut:
+		return "OptOut"
 	}
 }
 
@@ -85,6 +91,10 @@ func fromString(str string) (IneligibleReason, error) {
 		return IneligibleReasonAlreadySmart, nil
 	case "MissingData":
 		return IneligibleReasonMissingData, nil
+	case "AltHan":
+		return IneligibleReasonAltHan, nil
+	case "OptOut":
+		return IneligibleReasonBookingOptOut, nil
 	}
 }
 
@@ -146,7 +156,59 @@ func MapIneligibleProtoToDomainReason(reason smart.IneligibleReason) (Ineligible
 		return IneligibleReasonAlreadySmart, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_MISSING_DATA:
 		return IneligibleReasonMissingData, nil
+	case smart.IneligibleReason_INELIGIBLE_REASON_ALT_HAN:
+		return IneligibleReasonAltHan, nil
+	case smart.IneligibleReason_INELIGIBLE_REASON_SMART_BOOKING_OPT_OUT:
+		return IneligibleReasonBookingOptOut, nil
 	}
 
 	return IneligibleReasonUnknown, fmt.Errorf("reason not mapped")
+}
+
+func (r IneligibleReasons) MapToProto() ([]smart.IneligibleReason, error) {
+	reasons := make([]smart.IneligibleReason, 0, len(r))
+	for _, reason := range r {
+		pReason, err := mapDomainToProtoReason(reason)
+		if err != nil {
+			return nil, err
+		}
+		reasons = append(reasons, pReason)
+	}
+
+	return reasons, nil
+}
+
+func mapDomainToProtoReason(reason IneligibleReason) (smart.IneligibleReason, error) {
+	switch reason {
+	case IneligibleReasonUnknown:
+		return smart.IneligibleReason_INELIGIBLE_REASON_UNKNOWN, nil
+	case IneligibleReasonNoWanCoverage:
+		return smart.IneligibleReason_INELIGIBLE_REASON_NO_WAN_COVERAGE, nil
+	case IneligibleReasonNoActiveService:
+		return smart.IneligibleReason_INELIGIBLE_REASON_NOT_ACTIVE, nil
+	case IneligibleReasonMeterLargeCapacity:
+		return smart.IneligibleReason_INELIGIBLE_REASON_METER_LARGE_CAPACITY, nil
+	case IneligibleReasonPSRVulnerabilities:
+		return smart.IneligibleReason_INELIGIBLE_REASON_ACCOUNT_PSR_VULNERABILITIES, nil
+	case IneligibleReasonAbortedBookings:
+		return smart.IneligibleReason_INELIGIBLE_REASON_ABORTED_BOOKINGS, nil
+	case IneligibleReasonBookingScheduled:
+		return smart.IneligibleReason_INELIGIBLE_REASON_BOOKING_SCHEDULED, nil
+	case IneligibleReasonBookingCompleted:
+		return smart.IneligibleReason_INELIGIBLE_REASON_BOOKING_COMPLETED, nil
+	case IneligibleReasonComplexTariff:
+		return smart.IneligibleReason_INELIGIBLE_REASON_COMPLEX_TARIFF, nil
+	case IneligibleReasonBookingReferenceMissing:
+		return smart.IneligibleReason_INELIGIBLE_REASON_BOOKING_REFERENCE_MISSING, nil
+	case IneligibleReasonAlreadySmart:
+		return smart.IneligibleReason_INELIGIBLE_REASON_ALREADY_SMART, nil
+	case IneligibleReasonMissingData:
+		return smart.IneligibleReason_INELIGIBLE_REASON_MISSING_DATA, nil
+	case IneligibleReasonAltHan:
+		return smart.IneligibleReason_INELIGIBLE_REASON_ALT_HAN, nil
+	case IneligibleReasonBookingOptOut:
+		return smart.IneligibleReason_INELIGIBLE_REASON_SMART_BOOKING_OPT_OUT, nil
+	default:
+		return smart.IneligibleReason_INELIGIBLE_REASON_UNKNOWN, fmt.Errorf("reason not mapped")
+	}
 }

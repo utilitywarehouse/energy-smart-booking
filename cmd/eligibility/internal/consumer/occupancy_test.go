@@ -38,7 +38,7 @@ func TestOccupancyConsumer(t *testing.T) {
 	}()
 	s := store.NewOccupancy(pool)
 
-	handler := HandleOccupancy(s)
+	handler := HandleOccupancy(s, nil, true)
 
 	occEv1, err := test_common.MakeMessage(&platform.OccupancyStartedEvent{
 		OccupancyId:       "occupancyID",

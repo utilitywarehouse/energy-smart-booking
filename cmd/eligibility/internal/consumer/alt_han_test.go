@@ -41,7 +41,7 @@ func TestAltHanConsumerElectricity(t *testing.T) {
 
 	s := store.NewMeterpoint(pool)
 
-	handler := HandleAltHan(s)
+	handler := HandleAltHan(s, nil, nil, true)
 
 	altHanEv1, err := test_common.MakeMessage(&smart.ElectricityAltHanMeterpointDiscoveredEvent{
 		Mpan: "mpan1",
@@ -102,7 +102,7 @@ func TestAltHanConsumerGas(t *testing.T) {
 
 	s := store.NewMeterpoint(pool)
 
-	handler := HandleAltHan(s)
+	handler := HandleAltHan(s, nil, nil, true)
 
 	altHanEv1, err := test_common.MakeMessage(&smart.GasAltHanMeterpointRemovedEvent{
 		Mprn: "mprn1",

@@ -23,9 +23,18 @@ type MeterStore interface {
 	UninstallMeter(ctx context.Context, meterID string, at time.Time) error
 	ReInstallMeter(ctx context.Context, meterID string) error
 	AddMeterCapacity(ctx context.Context, meterID string, cap float32) error
+	GetMpxnByID(ctx context.Context, meterID string) (string, error)
 }
 
-func HandleMeter(s MeterStore) substratemessage.BatchHandlerFunc {
+type OccupancyMeterStore interface {
+	GetIDsByMPXN(ctx context.Context, mpxn string) ([]string, error)
+}
+
+type Evaluator interface {
+	RunFull(ctx context.Context, occupancyID string) error
+}
+
+func HandleMeter(s MeterStore, occupancyStore OccupancyMeterStore, evaluator Evaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -83,6 +92,24 @@ func HandleMeter(s MeterStore) substratemessage.BatchHandlerFunc {
 			}
 			if err != nil {
 				return fmt.Errorf("failed to process meter event %s: %w", env.Uuid, err)
+			}
+
+			if !stateRebuild {
+				meterID := inner.(meterIdentifier).GetMeterId()
+				mpxn, err := s.GetMpxnByID(ctx, meterID)
+				if err != nil {
+					return fmt.Errorf("failed to get meter mpxn for msg %s, meter ID %s: %w", env.GetUuid(), meterID, err)
+				}
+				occupanciesIDs, err := occupancyStore.GetIDsByMPXN(ctx, mpxn)
+				if err != nil {
+					return fmt.Errorf("failed to get occupancies for msg %s, mpxn %s: %w", env.GetUuid(), mpxn, err)
+				}
+				for _, occupancyID := range occupanciesIDs {
+					err = evaluator.RunFull(ctx, occupancyID)
+					if err != nil {
+						return fmt.Errorf("failed to run evaluation for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+					}
+				}
 			}
 		}
 		return nil

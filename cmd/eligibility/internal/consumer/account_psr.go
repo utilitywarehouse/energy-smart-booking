@@ -17,7 +17,15 @@ type AccountPSRStore interface {
 	AddPSRCodes(ctx context.Context, accountID string, codes []string) error
 }
 
-func HandleAccountPSR(store AccountPSRStore) substratemessage.BatchHandlerFunc {
+type OccupancyPSRStore interface {
+	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
+}
+
+type EligibileEvaluator interface {
+	RunEligibility(ctx context.Context, occupancyID string) error
+}
+
+func HandleAccountPSR(store AccountPSRStore, occupancyStore OccupancyPSRStore, evaluator EligibileEvaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -44,7 +52,25 @@ func HandleAccountPSR(store AccountPSRStore) substratemessage.BatchHandlerFunc {
 			if err != nil {
 				return fmt.Errorf("failed to handle account psr codes event %s: %w", env.GetUuid(), err)
 			}
+
+			if !stateRebuild {
+				accountID := inner.(psrIdentifier).GetAccountId()
+				occupanciesIDs, err := occupancyStore.GetIDsByAccount(ctx, accountID)
+				if err != nil {
+					return fmt.Errorf("failed to get occupancies for msg %s, account ID %s: %w", env.GetUuid(), accountID, err)
+				}
+				for _, occupancyID := range occupanciesIDs {
+					err = evaluator.RunEligibility(ctx, occupancyID)
+					if err != nil {
+						return fmt.Errorf("failed to run eligibility for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+					}
+				}
+			}
 		}
 		return nil
 	}
+}
+
+type psrIdentifier interface {
+	GetAccountId() string
 }
