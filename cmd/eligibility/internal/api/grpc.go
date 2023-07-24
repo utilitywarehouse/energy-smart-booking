@@ -59,7 +59,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 				logrus.Debugf("eligibility not computed for account %s, occupancy %s", req.AccountId, occupancyID)
 				return nil, status.Errorf(codes.NotFound, "eligibility not for account %s", req.AccountId)
 			}
-			logrus.Debugf("failed to get eligibility for accunt %s: %s", req.AccountId, err.Error())
+			logrus.Debugf("failed to get eligibility for account %s: %s", req.AccountId, err.Error())
 			return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 		}
 
@@ -69,7 +69,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 				logrus.Debugf("suppliability not computed for account %s, occupancy %s", req.AccountId, occupancyID)
 				return nil, status.Errorf(codes.NotFound, "suppliability not for account %s", req.AccountId)
 			}
-			logrus.Debugf("failed to get suppliability for accunt %s: %s", req.AccountId, err.Error())
+			logrus.Debugf("failed to get suppliability for account %s: %s", req.AccountId, err.Error())
 			return nil, status.Errorf(codes.Internal, "failed to get suppliability for account %s", req.AccountId)
 		}
 
