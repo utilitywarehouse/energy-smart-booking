@@ -4,7 +4,7 @@ import (
 	"context"
 
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/adapter/internal/client"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/client"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
