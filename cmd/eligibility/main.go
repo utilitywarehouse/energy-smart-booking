@@ -166,6 +166,8 @@ func main() {
 						Required: true,
 					},
 				),
+				Before: app.Before,
+				Action: runEvaluator,
 			},
 			{
 				Name: "projector",
