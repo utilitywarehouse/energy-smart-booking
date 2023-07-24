@@ -91,7 +91,7 @@ func (e *Evaluator) publishCampaignabilityIfChanged(ctx context.Context, occupan
 		return fmt.Errorf("failed to check campaignability for occupancyID %s, accountID %s: %w", occupancyID, accountID, err)
 	}
 
-	if (errors.Is(err, store.ErrCampaignabilityNotFound) && len(reasons) > 0) ||
+	if errors.Is(err, store.ErrCampaignabilityNotFound) ||
 		!ineligibleReasonSlicesEqual(campaignability.Reasons, reasons) {
 		if len(reasons) == 0 {
 			if err := e.campaignabilitySync.Sink(ctx, &smart.CampaignableOccupancyAddedEvent{
@@ -126,7 +126,7 @@ func (e *Evaluator) publishSuppliabilityIfChanged(ctx context.Context, occupancy
 		return fmt.Errorf("failed to check suppliability for occupancyID %s, accountID %s: %w", occupancyID, accountID, err)
 	}
 
-	if (errors.Is(err, store.ErrSuppliabilityNotFound) && len(reasons) > 0) ||
+	if errors.Is(err, store.ErrSuppliabilityNotFound) ||
 		!ineligibleReasonSlicesEqual(suppliability.Reasons, reasons) {
 		if len(reasons) == 0 {
 			if err := e.suppliabilitySync.Sink(ctx, &smart.SuppliableOccupancyAddedEvent{
@@ -163,7 +163,7 @@ func (e *Evaluator) publishEligibilityIfChanged(ctx context.Context, occupancyID
 		return fmt.Errorf("failed to check eligibility for occupancyID %s, accountID %s: %w", occupancyID, accountID, err)
 	}
 
-	if (errors.Is(err, store.ErrEligibilityNotFound) && len(reasons) > 0) ||
+	if errors.Is(err, store.ErrEligibilityNotFound) ||
 		!ineligibleReasonSlicesEqual(eligibility.Reasons, reasons) {
 		if len(reasons) == 0 {
 			if err := e.eligibilitySync.Sink(ctx, &smart.EligibleOccupancyAddedEvent{
