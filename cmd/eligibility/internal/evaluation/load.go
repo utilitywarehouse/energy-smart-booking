@@ -71,11 +71,9 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 		return nil, err
 	}
 	occupancy.Account = domain.Account{
-		ID: dbAccount.ID,
-	}
-	if err == nil {
-		occupancy.Account.OptOut = dbAccount.OptOut
-		occupancy.Account.PSRCodes = dbAccount.PSRCodes
+		ID:       dbAccount.ID,
+		OptOut:   dbAccount.OptOut,
+		PSRCodes: dbAccount.PSRCodes,
 	}
 
 	dbSite, err := e.siteStore.Get(ctx, dbOccupancy.SiteID)
