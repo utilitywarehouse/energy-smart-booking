@@ -21,16 +21,16 @@ const (
 	campaignabilityTopic = "campaignability-events-topic"
 	suppliabilityTopic   = "suppliability-events-topic"
 
-	altHanTopic      = "alt-han-events-topic"
-	optOutTopic      = "opt-out-events-topic"
-	accountPsrTopic  = "account-psr-events-topic"
-	bookingRefTopic  = "booking-reference-events-topic"
-	meterTopic       = "meter-events-topic"
-	meterpointTopic  = "meterpoint-events-topic"
-	occupancyTopic   = "occupancy-events-topic"
-	serviceTopic     = "service-events-topic"
-	siteTopic        = "site-events-topic"
-	wanCoverageTopic = "wan-coverage-events-topic"
+	altHanTopic       = "alt-han-events-topic"
+	optOutTopic       = "opt-out-events-topic"
+	accountPsrTopic   = "account-psr-events-topic"
+	bookingRefTopic   = "booking-reference-events-topic"
+	meterTopic        = "meter-events-topic"
+	meterpointTopic   = "meterpoint-events-topic"
+	occupancyTopic    = "occupancy-events-topic"
+	serviceStateTopic = "service-state-events-topic"
+	siteTopic         = "site-events-topic"
+	wanCoverageTopic  = "wan-coverage-events-topic"
 
 	batchSize    = "batch-size"
 	postgresDSN  = "postgres-dsn"
@@ -141,8 +141,8 @@ func main() {
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     serviceTopic,
-						EnvVars:  []string{"SERVICE_EVENTS_TOPIC"},
+						Name:     serviceStateTopic,
+						EnvVars:  []string{"SERVICE_STATE_EVENTS_TOPIC"},
 						Required: true,
 					},
 					&cli.StringFlag{
@@ -154,6 +154,11 @@ func main() {
 						Name:     wanCoverageTopic,
 						EnvVars:  []string{"WAN_COVERAGE_EVENTS_TOPIC"},
 						Required: true,
+					},
+					&cli.IntFlag{
+						Name:    batchSize,
+						EnvVars: []string{"BATCH_SIZE"},
+						Value:   1,
 					},
 					&cli.BoolFlag{
 						Name:     stateRebuild,

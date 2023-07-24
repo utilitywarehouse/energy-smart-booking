@@ -107,9 +107,9 @@ func runEvaluator(c *cli.Context) error {
 	defer occupancySource.Close()
 	opsServer.Add("occupancy-source", substratehealth.NewCheck(occupancySource, "unable to consume occupancy events"))
 
-	serviceSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(serviceTopic), c.String(EnergyPlatformKafkaVersion), c.StringSlice(EnergyPlatformKafkaBrokers))
+	serviceSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(serviceStateTopic), c.String(EnergyPlatformKafkaVersion), c.StringSlice(EnergyPlatformKafkaBrokers))
 	if err != nil {
-		return fmt.Errorf("unable to create service events source [%s]: %w", c.String(serviceTopic), err)
+		return fmt.Errorf("unable to create service events source [%s]: %w", c.String(serviceStateTopic), err)
 	}
 	defer serviceSource.Close()
 	opsServer.Add("service-source", substratehealth.NewCheck(serviceSource, "unable to consume service events"))
