@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
-	github.com/utilitywarehouse/energy-contracts v1.76.0
+	github.com/utilitywarehouse/energy-contracts v1.80.1
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
 	github.com/utilitywarehouse/energy-pkg/ops v0.0.4
@@ -34,7 +34,7 @@ require (
 	cloud.google.com/go v0.110.4 // indirect
 	cloud.google.com/go/compute v1.20.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/iam v1.1.0 // indirect
+	cloud.google.com/go/iam v1.1.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Shopify/sarama v1.38.1 // indirect
@@ -141,8 +141,8 @@ require (
 	golang.org/x/tools v0.9.3 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20230629202037-9506855d4529 // indirect
+	google.golang.org/genproto v0.0.0-20230720185612-659f7aaaa771 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230720185612-659f7aaaa771 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230720185612-659f7aaaa771 // indirect
 	google.golang.org/grpc v1.56.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
