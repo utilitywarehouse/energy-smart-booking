@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	appName = "energy-smart-booking-adapter"
-	appDesc = "translates generic booking-related requests to specific booking providers"
+	appName = "energy-smart-booking-api"
+	appDesc = "receives booking requests, checks customer information and forwards to provider-specific API"
 )
 
 var (
