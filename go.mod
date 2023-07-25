@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	cloud.google.com/go/bigquery v1.52.0
+	github.com/golang/mock v1.5.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v5 v5.4.2
@@ -15,18 +16,21 @@ require (
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
 	github.com/utilitywarehouse/energy-contracts v1.80.1
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
+	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
 	github.com/utilitywarehouse/energy-pkg/ops v0.0.4
 	github.com/utilitywarehouse/energy-pkg/postgres v0.3.5
 	github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3
 	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16
 	github.com/utilitywarehouse/energy-services v0.4.5
+	github.com/utilitywarehouse/go-ops-health-checks v0.0.0-20190620125157-116dc5b340a8
 	github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0
 	github.com/utilitywarehouse/uwos-go/v1/iam v1.20.0
 	github.com/uw-labs/substrate v0.0.0-20230324124119-dbc62c85ad0b
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
 	golang.org/x/sync v0.3.0
 	google.golang.org/api v0.126.0
+	google.golang.org/grpc v1.56.2
 	google.golang.org/protobuf v1.31.0
 )
 
@@ -44,7 +48,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Shopify/sarama v1.38.1 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
-	github.com/apache/arrow/go/v11 v11.0.0 // indirect
+	github.com/apache/arrow/go/v12 v12.0.0 // indirect
 	github.com/apache/thrift v0.16.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
@@ -124,7 +128,6 @@ require (
 	github.com/testcontainers/testcontainers-go v0.21.0 // indirect
 	github.com/utilitywarehouse/energy-pkg/domain v1.24.8
 	github.com/utilitywarehouse/energy-pkg/errorcodes v1.0.3 // indirect
-	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5 // indirect
 	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 // indirect
 	github.com/utilitywarehouse/iam-contracts v0.0.0-20230714173512-bc8b9cf7c9d2 // indirect
 	github.com/utilitywarehouse/protoc-gen-uwentity v1.4.0 // indirect
@@ -152,6 +155,5 @@ require (
 	google.golang.org/genproto v0.0.0-20230724170836-66ad5b6ff146 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230724170836-66ad5b6ff146 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230724170836-66ad5b6ff146 // indirect
-	google.golang.org/grpc v1.56.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

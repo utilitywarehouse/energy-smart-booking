@@ -9,17 +9,24 @@ import (
 	"github.com/urfave/cli/v2"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
+	"github.com/utilitywarehouse/energy-pkg/grpc"
 	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
+
+	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 )
 
 var (
 	commandNameServer  = "server"
 	commandUsageServer = "a listen server handling booking requests"
 
-	flagAccountsAPIHost = "accounts-api-host"
+	accountsAPIHost = "accounts-api-host"
 
 	flagRedisAddr = "redis-addr"
 )
@@ -31,7 +38,7 @@ func init() {
 		Action: serverAction,
 		Flags: app.DefaultFlags().WithGrpc().WithCustom(
 			&cli.StringFlag{
-				Name:     flagAccountsAPIHost,
+				Name:     accountsAPIHost,
 				EnvVars:  []string{"ACCOUNTS_API_HOST"},
 				Required: true,
 			},
@@ -47,12 +54,25 @@ func init() {
 func serverAction(c *cli.Context) error {
 	log.WithField("git_hash", gitHash).WithField("command", commandNameServer).Info("starting app")
 
+	opsServer := makeOps(c)
+
+	mn, err := machine.New()
+	if err != nil {
+		return fmt.Errorf("unable to create new IAM machine, %w", err)
+	}
+	defer mn.Close()
+
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
-	g, ctx := errgroup.WithContext(ctx)
+	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
+	if err != nil {
+		return fmt.Errorf("error connecting to accounts-api host [%s]: %w", c.String(accountsAPIHost), err)
+	}
+	opsServer.Add("accounts-api", grpchealth.NewCheck(c.String(accountsAPIHost), "", "cannot query accounts"))
+	defer accountsConn.Close()
 
-	opsServer := makeOps(c)
+	g, ctx := errgroup.WithContext(ctx)
 
 	grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
 	reflection.Register(grpcServer)
@@ -63,8 +83,11 @@ func serverAction(c *cli.Context) error {
 	}
 	defer listen.Close()
 
-	// TODO: initialise client for LB API gateway here and pass to booking API
-	bookingAPI := api.New(struct{}{})
+	// Dependencies for
+	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
+	customerDomain := domain.NewCustomerDomain(accountGw)
+
+	bookingAPI := api.New(customerDomain)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

@@ -13,6 +13,8 @@ LINKFLAGS :=-s -X main.gitHash=$(GIT_HASH) -extldflags "-static"
 TESTFLAGS := -v -cover -tags testing
 LINTER := golangci-lint
 
+BRANCH_NAME := $(shell echo $(GITHUB_REF_NAME) | sed -e 's/[^a-zA-Z0-9]/-/g')
+
 EMPTY :=
 SPACE := $(EMPTY) $(EMPTY)
 join-with = $(subst $(SPACE),$1,$(strip $2))
@@ -59,5 +61,5 @@ ci-docker-auth:
 
 ci-docker-build: ci-docker-auth
 	docker build -t $(DOCKER_REPOSITORY):$(GITHUB_SHA) . --build-arg SERVICE=$(SERVICE) --build-arg SOURCE_FILES=$(SOURCE_FILES) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN)
-	docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):latest
+	docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):$(BRANCH_NAME)
 	docker push -a $(DOCKER_REPOSITORY)
