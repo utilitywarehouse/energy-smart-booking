@@ -24,7 +24,7 @@ import (
 
 var (
 	commandNameProjector  = "projector"
-	commandUsageProjector = "a projector service that consumes booking events to internally project booking state"
+	commandUsageProjector = "a projector service that consumes events to internally project state"
 
 	flagPlatformKafkaBrokers       = "platform-kafka-brokers"
 	flagPlatformKafkaVersion       = "platform-kafka-version"
@@ -78,17 +78,21 @@ type kafkaConfig struct {
 func makeSources(c *cli.Context, opsrv *ops.Server, configs []*kafkaConfig) (SourceMap, error) {
 	sources := make(map[string]substrate.AsyncMessageSource)
 	for _, config := range configs {
-		for _, f := range config.FlagsTopic {
-			source, err := app.GetKafkaSourceWithBroker(c.String(config.FlagConsumerGroup), c.String(f), c.String(config.FlagVersion), c.StringSlice(config.FlagBrokers))
+		for _, flagTopic := range config.FlagsTopic {
+			source, err := app.GetKafkaSourceWithBroker(
+				c.String(config.FlagConsumerGroup),
+				c.String(flagTopic),
+				c.String(config.FlagVersion),
+				c.StringSlice(config.FlagBrokers))
 			if err != nil {
 				return nil, fmt.Errorf("could not initialise Kafka source: %w", err)
 			}
 			opsrv.Add(
-				strings.Replace(f, "topic", "source", 1),
+				strings.Replace(flagTopic, "topic", "source", 1),
 				substratehealth.NewCheck(
 					source,
-					fmt.Sprintf("unable to consume events from %s", f)))
-			sources[f] = source
+					fmt.Sprintf("unable to consume events from %s", flagTopic)))
+			sources[flagTopic] = source
 		}
 	}
 	return sources, nil
@@ -100,7 +104,7 @@ type consumerConfig struct {
 	Handler   substratemessage.Handler
 }
 
-func spinOffConsumers(ctx context.Context, c *cli.Context, g *errgroup.Group, sources map[string]substrate.AsyncMessageSource, configs []*consumerConfig) error {
+func spinOffConsumers(ctx context.Context, c *cli.Context, g *errgroup.Group, sources SourceMap, configs []*consumerConfig) error {
 	for _, config := range configs {
 		batchSize := config.BatchSize
 		topic := config.FlagTopic
@@ -160,10 +164,26 @@ func projectorAction(c *cli.Context) error {
 
 	batchSize := c.Int(flagBatchSize)
 	err = spinOffConsumers(ctx, c, g, sources, []*consumerConfig{
-		{FlagTopic: app.SiteTopic, BatchSize: batchSize, Handler: consumer.HandleSite(store.NewSite(pool))},
-		{FlagTopic: app.OccupancyTopic, BatchSize: batchSize, Handler: consumer.HandleOccupancy(store.NewOccupancy(pool))},
-		{FlagTopic: app.ServiceStateTopic, BatchSize: batchSize, Handler: consumer.HandleServiceState(store.NewServiceState(pool))},
-		{FlagTopic: flagBookingRefTopic, BatchSize: batchSize, Handler: consumer.HandleBookingReference(store.NewBookingReference(pool))},
+		{
+			FlagTopic: app.SiteTopic,
+			BatchSize: batchSize,
+			Handler:   consumer.HandleSite(store.NewSite(pool)),
+		},
+		{
+			FlagTopic: app.OccupancyTopic,
+			BatchSize: batchSize,
+			Handler:   consumer.HandleOccupancy(store.NewOccupancy(pool)),
+		},
+		{
+			FlagTopic: app.ServiceStateTopic,
+			BatchSize: batchSize,
+			Handler:   consumer.HandleServiceState(store.NewServiceState(pool)),
+		},
+		{
+			FlagTopic: flagBookingRefTopic,
+			BatchSize: batchSize,
+			Handler:   consumer.HandleBookingReference(store.NewBookingReference(pool)),
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to initialise consumers: %w", err)
