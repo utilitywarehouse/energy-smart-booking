@@ -41,6 +41,15 @@ jobs:
       service: energy-smart-booking-opt-out
     secrets: inherit
 
+  build_booking_api:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_api == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/booking-api
+      service: energy-smart-booking-api
+    secrets: inherit
+
   build_booking_services:
     needs: check
     if: needs.check.outputs.booking_services == 'true'
