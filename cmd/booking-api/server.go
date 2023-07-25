@@ -63,7 +63,7 @@ func serverAction(c *cli.Context) error {
 	}
 	defer listen.Close()
 
-	// TODO: initialize client for LB API gateway here and pass to booking API
+	// TODO: initialise client for LB API gateway here and pass to booking API
 	bookingAPI := api.New(struct{}{})
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
