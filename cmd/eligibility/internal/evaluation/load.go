@@ -71,7 +71,7 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 		return nil, err
 	}
 	occupancy.Account = domain.Account{
-		ID:       dbAccount.ID,
+		ID:       dbOccupancy.AccountID,
 		OptOut:   dbAccount.OptOut,
 		PSRCodes: dbAccount.PSRCodes,
 	}
