@@ -43,6 +43,7 @@ type Meter struct {
 
 type Service struct {
 	ID               string
+	Mpxn             string
 	Meterpoint       *Meterpoint
 	Meter            *Meter
 	BookingReference string
