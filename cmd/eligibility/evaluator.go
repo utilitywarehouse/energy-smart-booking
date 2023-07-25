@@ -86,7 +86,7 @@ func runEvaluator(c *cli.Context) error {
 	defer bookingRefSource.Close()
 	opsServer.Add("booking-reference-source", substratehealth.NewCheck(bookingRefSource, "unable to consume account booking reference events"))
 
-	meterSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(meterTopic), c.String(EnergyPlatformKafkaVersion), c.StringSlice(EnergyPlatformKafkaBrokers))
+	meterSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(meterTopic), c.String(energyPlatformKafkaVersion), c.StringSlice(energyPlatformKafkaBrokers))
 	if err != nil {
 		return fmt.Errorf("unable to create meter events source [%s]: %w", c.String(meterTopic), err)
 	}
@@ -100,21 +100,21 @@ func runEvaluator(c *cli.Context) error {
 	defer meterpointSource.Close()
 	opsServer.Add("meterpoint-source", substratehealth.NewCheck(meterpointSource, "unable to consume meterpoint events"))
 
-	occupancySource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(occupancyTopic), c.String(EnergyPlatformKafkaVersion), c.StringSlice(EnergyPlatformKafkaBrokers))
+	occupancySource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(occupancyTopic), c.String(energyPlatformKafkaVersion), c.StringSlice(energyPlatformKafkaBrokers))
 	if err != nil {
 		return fmt.Errorf("unable to create occupancy events source [%s]: %w", c.String(occupancyTopic), err)
 	}
 	defer occupancySource.Close()
 	opsServer.Add("occupancy-source", substratehealth.NewCheck(occupancySource, "unable to consume occupancy events"))
 
-	serviceSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(serviceStateTopic), c.String(EnergyPlatformKafkaVersion), c.StringSlice(EnergyPlatformKafkaBrokers))
+	serviceSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(serviceStateTopic), c.String(energyPlatformKafkaVersion), c.StringSlice(energyPlatformKafkaBrokers))
 	if err != nil {
 		return fmt.Errorf("unable to create service events source [%s]: %w", c.String(serviceStateTopic), err)
 	}
 	defer serviceSource.Close()
 	opsServer.Add("service-source", substratehealth.NewCheck(serviceSource, "unable to consume service events"))
 
-	siteSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(siteTopic), c.String(EnergyPlatformKafkaVersion), c.StringSlice(EnergyPlatformKafkaBrokers))
+	siteSource, err := app.GetKafkaSourceWithBroker(c.String(app.KafkaConsumerGroup), c.String(siteTopic), c.String(energyPlatformKafkaVersion), c.StringSlice(energyPlatformKafkaBrokers))
 	if err != nil {
 		return fmt.Errorf("unable to create site events source [%s]: %w", c.String(siteTopic), err)
 	}

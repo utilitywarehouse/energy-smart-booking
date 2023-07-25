@@ -13,8 +13,8 @@ const (
 	appDesc = "evaluates and produces eligibility, suppliability and campaignability events for smart booking"
 
 	// Kafka
-	EnergyPlatformKafkaBrokers = "energy-platform-kafka-brokers"
-	EnergyPlatformKafkaVersion = "energy-platform-kafka-version"
+	energyPlatformKafkaBrokers = "energy-platform-kafka-brokers"
+	energyPlatformKafkaVersion = "energy-platform-kafka-version"
 
 	// Kafka topics
 	eligibilityTopic     = "eligibility-events-topic"
@@ -81,12 +81,12 @@ func main() {
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     EnergyPlatformKafkaVersion,
+						Name:     energyPlatformKafkaVersion,
 						EnvVars:  []string{"ENERGY_PLATFORM_KAFKA_VERSION"},
 						Required: true,
 					},
 					&cli.StringSliceFlag{
-						Name:     EnergyPlatformKafkaBrokers,
+						Name:     energyPlatformKafkaBrokers,
 						EnvVars:  []string{"ENERGY_PLATFORM_KAFKA_BROKERS"},
 						Required: true,
 					},

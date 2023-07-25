@@ -8,12 +8,15 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 )
 
 func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
+	now := time.Now()
+
 	occupancy, err := e.LoadOccupancy(ctx, occupancyID)
 	if err != nil {
 		return fmt.Errorf("failed to load occupanncy for ID %s: %w", occupancyID, err)
@@ -37,10 +40,14 @@ func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
 	}
 
+	logrus.Infof("time to full evaluate occupancy %s: %s", occupancyID, time.Since(now))
+
 	return nil
 }
 
 func (e *Evaluator) RunCampaignability(ctx context.Context, occupancyID string) error {
+	now := time.Now()
+
 	occupancy, err := e.LoadOccupancy(ctx, occupancyID)
 	if err != nil {
 		return fmt.Errorf("failed to load occupanncy for ID %s: %w", occupancyID, err)
@@ -52,10 +59,14 @@ func (e *Evaluator) RunCampaignability(ctx context.Context, occupancyID string) 
 		return fmt.Errorf("failed to evaluate campaignability for occupancy %s: %w", occupancyID, err)
 	}
 
+	logrus.Infof("time to run campaignability for occupancy %s: %s", occupancyID, time.Since(now))
+
 	return nil
 }
 
 func (e *Evaluator) RunSuppliability(ctx context.Context, occupancyID string) error {
+	now := time.Now()
+
 	occupancy, err := e.LoadOccupancy(ctx, occupancyID)
 	if err != nil {
 		return fmt.Errorf("failed to load occupanncy for ID %s: %w", occupancyID, err)
@@ -67,10 +78,14 @@ func (e *Evaluator) RunSuppliability(ctx context.Context, occupancyID string) er
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
 	}
 
+	logrus.Infof("time to run suppliability for occupancy %s: %s", occupancyID, time.Since(now))
+
 	return nil
 }
 
 func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) error {
+	now := time.Now()
+
 	occupancy, err := e.LoadOccupancy(ctx, occupancyID)
 	if err != nil {
 		return fmt.Errorf("failed to load occupanncy for ID %s: %w", occupancyID, err)
@@ -81,6 +96,8 @@ func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) erro
 	if err != nil {
 		return fmt.Errorf("failed to evaluate eligibility for occupancy %s: %w", occupancyID, err)
 	}
+
+	logrus.Infof("time to run eligibility for occupancy %s: %s", occupancyID, time.Since(now))
 
 	return nil
 }
