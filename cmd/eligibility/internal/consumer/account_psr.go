@@ -62,7 +62,7 @@ func HandleAccountPSR(store AccountPSRStore, occupancyStore OccupancyPSRStore, e
 				for _, occupancyID := range occupanciesIDs {
 					err = evaluator.RunEligibility(ctx, occupancyID)
 					if err != nil {
-						return fmt.Errorf("failed to run eligibility for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+						return fmt.Errorf("failed to run eligibility for account psr msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
 					}
 				}
 			}

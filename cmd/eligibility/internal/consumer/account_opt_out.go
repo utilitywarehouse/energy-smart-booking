@@ -63,7 +63,7 @@ func HandleAccountOptOut(store AccountOptOutStore, occupancyStore OccupancyOptOu
 				for _, occupancyID := range occupanciesIDs {
 					err = evaluator.RunCampaignability(ctx, occupancyID)
 					if err != nil {
-						return fmt.Errorf("failed to run campaignability for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+						return fmt.Errorf("failed to run campaignability for account opt out msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
 					}
 				}
 			}

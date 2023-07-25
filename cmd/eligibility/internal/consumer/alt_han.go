@@ -67,7 +67,7 @@ func HandleAltHan(store AltHanStore, occupancyStore OccupancyAltHanStore, evalua
 				for _, occupancyID := range occupanciesIDs {
 					err = evaluator.RunSuppliability(ctx, occupancyID)
 					if err != nil {
-						return fmt.Errorf("failed to run suppliability for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+						return fmt.Errorf("failed to run suppliability for alt han msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
 					}
 				}
 			}

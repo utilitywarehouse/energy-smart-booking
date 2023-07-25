@@ -58,7 +58,7 @@ func HandleWanCoverage(store PostcodeStore, occupancyStore OccupancyPostcodeStor
 				for _, occupancyID := range occupanciesIDs {
 					err = evaluator.RunFull(ctx, occupancyID)
 					if err != nil {
-						return fmt.Errorf("failed to run evaluation for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+						return fmt.Errorf("failed to run evaluation for wan converage msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
 					}
 				}
 			}

@@ -60,7 +60,7 @@ func HandleMeterpoint(s MeterpointStore, occupancyStore OccupancyMeterpointStore
 				for _, occupancyID := range occupanciesIDs {
 					err = evaluator.RunFull(ctx, occupancyID)
 					if err != nil {
-						return fmt.Errorf("failed to run evaluation for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+						return fmt.Errorf("failed to run evaluation for meterpoint msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
 					}
 				}
 			}

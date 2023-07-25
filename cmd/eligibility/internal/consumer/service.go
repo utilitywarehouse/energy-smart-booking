@@ -65,7 +65,7 @@ func HandleService(s ServiceStore, evaluator Evaluator, stateRebuild bool) subst
 					if occupancyID != "" {
 						err = evaluator.RunFull(ctx, occupancyID)
 						if err != nil {
-							return fmt.Errorf("failed to run evaluation for msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+							return fmt.Errorf("failed to run evaluation for service state msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
 						}
 					}
 				}
