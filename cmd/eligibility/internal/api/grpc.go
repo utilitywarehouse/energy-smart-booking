@@ -90,3 +90,33 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		Eligible:  false,
 	}, nil
 }
+
+func (a *EligibilityGRPCApi) GetAccountOccupancyEligibilityForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (*smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, error) {
+
+	eligibility, err := a.eligibilityStore.Get(ctx, req.OccupancyId, req.AccountId)
+	if err != nil {
+		if errors.Is(err, store.ErrEligibilityNotFound) {
+			logrus.Debugf("eligibility not computed for account %s, occupancy %s", req.AccountId, req.OccupancyId)
+			return nil, status.Errorf(codes.NotFound, "eligibility not for account %s", req.AccountId)
+		}
+		logrus.Debugf("failed to get eligibility for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
+	}
+	suppliability, err := a.suppliabilityStore.Get(ctx, req.OccupancyId, req.AccountId)
+	if err != nil {
+		if errors.Is(err, store.ErrEligibilityNotFound) {
+			logrus.Debugf("suppliability not computed for account %s, occupancy %s", req.AccountId, req.OccupancyId)
+			return nil, status.Errorf(codes.NotFound, "suppliability not for account %s", req.AccountId)
+		}
+		logrus.Debugf("failed to get suppliability for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to get suppliability for account %s", req.AccountId)
+	}
+
+	eligible := len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
+
+	return &smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse{
+		AccountId:   req.AccountId,
+		OccupancyId: req.OccupancyId,
+		Eligible:    eligible,
+	}, nil
+}
