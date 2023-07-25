@@ -40,7 +40,7 @@ func TestElectricityMeterConsumer(t *testing.T) {
 
 	s := store.NewMeter(pool)
 
-	handler := HandleMeter(s)
+	handler := HandleMeter(s, nil, nil, true)
 
 	meterEv1, err := test_common.MakeMessage(&platform.ElectricityMeterDiscoveredEvent{
 		MeterId:           "meterID1",
@@ -124,7 +124,7 @@ func TestGasMeterConsumer(t *testing.T) {
 
 	s := store.NewMeter(pool)
 
-	handler := HandleMeter(s)
+	handler := HandleMeter(s, nil, nil, true)
 
 	var capacity float32 = 11.55
 	meterEv1, err := test_common.MakeMessage(&platform.GasMeterDiscoveredEvent{

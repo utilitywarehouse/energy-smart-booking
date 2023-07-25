@@ -18,7 +18,15 @@ type AltHanStore interface {
 	AddAltHan(ctx context.Context, mpxn string, supplyType domain.SupplyType, altHan bool) error
 }
 
-func HandleAltHan(store AltHanStore) substratemessage.BatchHandlerFunc {
+type OccupancyAltHanStore interface {
+	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
+}
+
+type SuppliableEvaluator interface {
+	RunSuppliability(ctx context.Context, occupancyID string) error
+}
+
+func HandleAltHan(store AltHanStore, occupancyStore OccupancyAltHanStore, evaluator SuppliableEvaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -49,7 +57,25 @@ func HandleAltHan(store AltHanStore) substratemessage.BatchHandlerFunc {
 			if err != nil {
 				return fmt.Errorf("failed to process alt han event %s: %w", env.Uuid, err)
 			}
+
+			if !stateRebuild {
+				accountID := inner.(altHanIdentifier).GetAccountId()
+				occupanciesIDs, err := occupancyStore.GetIDsByAccount(ctx, accountID)
+				if err != nil {
+					return fmt.Errorf("failed to get occupancies for msg %s, account ID %s: %w", env.GetUuid(), accountID, err)
+				}
+				for _, occupancyID := range occupanciesIDs {
+					err = evaluator.RunSuppliability(ctx, occupancyID)
+					if err != nil {
+						return fmt.Errorf("failed to run suppliability for alt han msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+					}
+				}
+			}
 		}
 		return nil
 	}
+}
+
+type altHanIdentifier interface {
+	GetAccountId() string
 }

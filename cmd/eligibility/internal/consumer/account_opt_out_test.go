@@ -38,7 +38,7 @@ func TestAccountOptOutConsumer(t *testing.T) {
 	}()
 	s := store.NewAccount(pool)
 
-	handler := HandleAccountOptOut(s)
+	handler := HandleAccountOptOut(s, nil, nil, true)
 
 	ev1, err := test_common.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
 		AccountId: "accountID",

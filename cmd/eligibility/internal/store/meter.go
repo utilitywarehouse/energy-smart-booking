@@ -33,7 +33,9 @@ func NewMeter(pool *pgxpool.Pool) *MeterStore {
 func (s *MeterStore) Add(ctx context.Context, meter *Meter) error {
 	q := `
 	INSERT INTO meters(id, mpxn, msn, supply_type, meter_type)
-	VALUES ($1, $2, $3, $4, $5);`
+	VALUES ($1, $2, $3, $4, $5)
+	ON CONFLICT (id)
+	DO NOTHING;`
 
 	_, err := s.pool.Exec(ctx, q, meter.ID, meter.Mpxn, meter.Msn, meter.SupplyType.String(), meter.MeterType)
 
@@ -114,4 +116,17 @@ func (s *MeterStore) Get(ctx context.Context, mpxn string) (Meter, error) {
 	}
 
 	return meter, nil
+}
+
+func (s *MeterStore) GetMpxnByID(ctx context.Context, meterID string) (string, error) {
+	var mpxn string
+
+	if err := s.pool.QueryRow(ctx, `SELECT mpxn FROM meters WHERE id = $1;`, meterID).Scan(&mpxn); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrMeterNotFound
+		}
+		return "", err
+	}
+
+	return mpxn, nil
 }

@@ -648,8 +648,8 @@ github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-2023062911424
 github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354/go.mod h1:H83b4p+glftutZKaDwrxTvUrHm0hwpdFMea2t5FDXII=
 github.com/utilitywarehouse/energy-contracts v1.40.5/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
 github.com/utilitywarehouse/energy-contracts v1.40.6/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
-github.com/utilitywarehouse/energy-contracts v1.80.1 h1:7Nz3TmWJwbGoNUwlwuwOxXXY9tk1XyNlDS5UtY0eNYk=
-github.com/utilitywarehouse/energy-contracts v1.80.1/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.81.0 h1:k8G7uNsel7IY9XSCW3LHOmDpkST2NCCMY9RBWxlDSVU=
+github.com/utilitywarehouse/energy-contracts v1.81.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 github.com/utilitywarehouse/energy-deadletter-handler v0.0.0-20190502092759-d3b66424a4d7/go.mod h1:dkpwhHcDkdaDmBTQTIWdWWyFW0foWm4duKT1sHhr2es=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32 h1:AQf3esEkg/rPxiO97HniPIA7c+bSNz+U0v2NueFZkN0=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32/go.mod h1:2Hlz8GeCkNq5V/VXHL/SuEPieOtGpvrADHc84ukqqe8=

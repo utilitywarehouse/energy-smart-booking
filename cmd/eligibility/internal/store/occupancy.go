@@ -74,6 +74,12 @@ func (s *OccupancyStore) GetIDsByPostcode(ctx context.Context, postCode string) 
 	return s.queryOccupanciesByIdentifier(ctx, q, postCode)
 }
 
+func (s *OccupancyStore) GetIDsByMPXN(ctx context.Context, mpxn string) ([]string, error) {
+	q := `SELECT occupancy_id FROM services WHERE mpxn = $1 AND is_live IS TRUE;`
+
+	return s.queryOccupanciesByIdentifier(ctx, q, mpxn)
+}
+
 func (s *OccupancyStore) queryOccupanciesByIdentifier(ctx context.Context, query, id string) ([]string, error) {
 	var ids = make([]string, 0)
 

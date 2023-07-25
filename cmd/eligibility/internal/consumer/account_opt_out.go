@@ -17,7 +17,15 @@ type AccountOptOutStore interface {
 	AddOptOut(ctx context.Context, accountID string, optOut bool) error
 }
 
-func HandleAccountOptOut(store AccountOptOutStore) substratemessage.BatchHandlerFunc {
+type OccupancyOptOutStore interface {
+	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
+}
+
+type CampaignableEvaluator interface {
+	RunCampaignability(ctx context.Context, occupancyID string) error
+}
+
+func HandleAccountOptOut(store AccountOptOutStore, occupancyStore OccupancyOptOutStore, evaluator CampaignableEvaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -35,6 +43,7 @@ func HandleAccountOptOut(store AccountOptOutStore) substratemessage.BatchHandler
 			if err != nil {
 				return fmt.Errorf("error unmarshaling account opt out event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
 			}
+
 			switch x := inner.(type) {
 			case *smart.AccountBookingOptOutAddedEvent:
 				err = store.AddOptOut(ctx, x.AccountId, true)
@@ -44,7 +53,25 @@ func HandleAccountOptOut(store AccountOptOutStore) substratemessage.BatchHandler
 			if err != nil {
 				return fmt.Errorf("failed to handle account opt out event %s: %w", env.GetUuid(), err)
 			}
+
+			if !stateRebuild {
+				accountID := inner.(optOutIdentifier).GetAccountId()
+				occupanciesIDs, err := occupancyStore.GetIDsByAccount(ctx, accountID)
+				if err != nil {
+					return fmt.Errorf("failed to get occupancies for msg %s, account ID %s: %w", env.GetUuid(), accountID, err)
+				}
+				for _, occupancyID := range occupanciesIDs {
+					err = evaluator.RunCampaignability(ctx, occupancyID)
+					if err != nil {
+						return fmt.Errorf("failed to run campaignability for account opt out msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+					}
+				}
+			}
 		}
 		return nil
 	}
+}
+
+type optOutIdentifier interface {
+	GetAccountId() string
 }

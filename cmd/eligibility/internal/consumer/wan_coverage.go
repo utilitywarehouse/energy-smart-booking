@@ -17,7 +17,11 @@ type PostcodeStore interface {
 	AddWanCoverage(ctx context.Context, postCode string, covered bool) error
 }
 
-func HandleWanCoverage(store PostcodeStore) substratemessage.BatchHandlerFunc {
+type OccupancyPostcodeStore interface {
+	GetIDsByPostcode(ctx context.Context, postCode string) ([]string, error)
+}
+
+func HandleWanCoverage(store PostcodeStore, occupancyStore OccupancyPostcodeStore, evaluator Evaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -44,7 +48,25 @@ func HandleWanCoverage(store PostcodeStore) substratemessage.BatchHandlerFunc {
 			if err != nil {
 				return fmt.Errorf("failed to process wan coverage event %s: %w", env.Uuid, err)
 			}
+
+			if !stateRebuild {
+				postCode := inner.(wanCoverageIdentifier).GetPostcode()
+				occupanciesIDs, err := occupancyStore.GetIDsByPostcode(ctx, postCode)
+				if err != nil {
+					return fmt.Errorf("failed to get occupancies for msg %s, postCode %s: %w", env.GetUuid(), postCode, err)
+				}
+				for _, occupancyID := range occupanciesIDs {
+					err = evaluator.RunFull(ctx, occupancyID)
+					if err != nil {
+						return fmt.Errorf("failed to run evaluation for wan converage msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+					}
+				}
+			}
 		}
 		return nil
 	}
+}
+
+type wanCoverageIdentifier interface {
+	GetPostcode() string
 }

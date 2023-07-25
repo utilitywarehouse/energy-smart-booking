@@ -19,7 +19,7 @@ type OccupancyStore interface {
 	AddSite(ctx context.Context, occupancyID, siteID string) error
 }
 
-func HandleOccupancy(store OccupancyStore) substratemessage.BatchHandlerFunc {
+func HandleOccupancy(store OccupancyStore, evaluator Evaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -46,7 +46,19 @@ func HandleOccupancy(store OccupancyStore) substratemessage.BatchHandlerFunc {
 			if err != nil {
 				return fmt.Errorf("failed to process occupancy event %s: %w", env.Uuid, err)
 			}
+
+			if !stateRebuild {
+				occupancyID := inner.(occupancyIdentifier).GetOccupancyId()
+				err = evaluator.RunFull(ctx, occupancyID)
+				if err != nil {
+					return fmt.Errorf("failed to run evaluation for occupancy msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+				}
+			}
 		}
 		return nil
 	}
+}
+
+type occupancyIdentifier interface {
+	GetOccupancyId() string
 }

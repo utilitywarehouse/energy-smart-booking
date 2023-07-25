@@ -39,7 +39,7 @@ func TestMeterpointConsumer(t *testing.T) {
 	}()
 	s := store.NewMeterpoint(pool)
 
-	handler := HandleMeterpoint(s)
+	handler := HandleMeterpoint(s, nil, nil, true)
 
 	meterpointEv1, err := test_common.MakeMessage(&platform.ElectricityMeterpointProfileClassChangedEvent{
 		Mpan: "mpan1",

@@ -18,7 +18,11 @@ type SiteStore interface {
 	Add(ctx context.Context, id, postCode string, at time.Time) error
 }
 
-func HandleSite(store SiteStore) substratemessage.BatchHandlerFunc {
+type OccupancySiteStore interface {
+	GetIDsBySite(ctx context.Context, siteID string) ([]string, error)
+}
+
+func HandleSite(store SiteStore, occupancyStore OccupancySiteStore, evaluator Evaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -49,6 +53,19 @@ func HandleSite(store SiteStore) substratemessage.BatchHandlerFunc {
 				err = store.Add(ctx, x.GetSiteId(), x.GetAddress().GetPostcode(), env.OccurredAt.AsTime())
 				if err != nil {
 					return fmt.Errorf("failed to process site event %s: %w", env.Uuid, err)
+				}
+
+				if !stateRebuild {
+					occupanciesIDs, err := occupancyStore.GetIDsBySite(ctx, x.GetSiteId())
+					if err != nil {
+						return fmt.Errorf("failed to get occupancies for msg %s, site ID %s: %w", env.GetUuid(), x.GetSiteId(), err)
+					}
+					for _, occupancyID := range occupanciesIDs {
+						err = evaluator.RunFull(ctx, occupancyID)
+						if err != nil {
+							return fmt.Errorf("failed to run evaluation for occupancy msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+						}
+					}
 				}
 			}
 		}
