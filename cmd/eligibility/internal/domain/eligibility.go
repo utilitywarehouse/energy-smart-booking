@@ -28,6 +28,7 @@ const (
 	IneligibleReasonMissingData
 	IneligibleReasonAltHan
 	IneligibleReasonBookingOptOut
+	IneligibleReasonGasServiceOnly
 )
 
 type IneligibleReasons []IneligibleReason
@@ -62,6 +63,8 @@ func (r IneligibleReason) String() string {
 		return "AltHan"
 	case IneligibleReasonBookingOptOut:
 		return "OptOut"
+	case IneligibleReasonGasServiceOnly:
+		return "GasServiceOnly"
 	}
 }
 
@@ -95,6 +98,8 @@ func fromString(str string) (IneligibleReason, error) {
 		return IneligibleReasonAltHan, nil
 	case "OptOut":
 		return IneligibleReasonBookingOptOut, nil
+	case "GasServiceOnly":
+		return IneligibleReasonGasServiceOnly, nil
 	}
 }
 
@@ -160,6 +165,8 @@ func MapIneligibleProtoToDomainReason(reason smart.IneligibleReason) (Ineligible
 		return IneligibleReasonAltHan, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_SMART_BOOKING_OPT_OUT:
 		return IneligibleReasonBookingOptOut, nil
+	case smart.IneligibleReason_INELIGIBLE_REASON_GAS_SERVICE_ONLY:
+		return IneligibleReasonGasServiceOnly, nil
 	}
 
 	return IneligibleReasonUnknown, fmt.Errorf("reason not mapped")
@@ -176,6 +183,15 @@ func (r IneligibleReasons) MapToProto() ([]smart.IneligibleReason, error) {
 	}
 
 	return reasons, nil
+}
+
+func (r IneligibleReasons) Contains(reason IneligibleReason) bool {
+	for _, rr := range r {
+		if rr == reason {
+			return true
+		}
+	}
+	return false
 }
 
 func mapDomainToProtoReason(reason IneligibleReason) (smart.IneligibleReason, error) {
@@ -208,6 +224,8 @@ func mapDomainToProtoReason(reason IneligibleReason) (smart.IneligibleReason, er
 		return smart.IneligibleReason_INELIGIBLE_REASON_ALT_HAN, nil
 	case IneligibleReasonBookingOptOut:
 		return smart.IneligibleReason_INELIGIBLE_REASON_SMART_BOOKING_OPT_OUT, nil
+	case IneligibleReasonGasServiceOnly:
+		return smart.IneligibleReason_INELIGIBLE_REASON_GAS_SERVICE_ONLY, nil
 	default:
 		return smart.IneligibleReason_INELIGIBLE_REASON_UNKNOWN, fmt.Errorf("reason not mapped")
 	}

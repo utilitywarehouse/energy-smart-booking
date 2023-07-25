@@ -56,20 +56,20 @@ func (s *OccupancyStore) Get(ctx context.Context, id string) (Occupancy, error) 
 }
 
 func (s *OccupancyStore) GetIDsByAccount(ctx context.Context, accountID string) ([]string, error) {
-	q := `SELECT id FROM occupancies WHERE account_id = $1`
+	q := `SELECT id FROM occupancies WHERE account_id = $1 ORDER BY created_at DESC;`
 
 	return s.queryOccupanciesByIdentifier(ctx, q, accountID)
 }
 
 func (s *OccupancyStore) GetIDsBySite(ctx context.Context, siteID string) ([]string, error) {
-	q := `SELECT id FROM occupancies WHERE site_id = $1`
+	q := `SELECT id FROM occupancies WHERE site_id = $1;`
 
 	return s.queryOccupanciesByIdentifier(ctx, q, siteID)
 }
 
 // GetIDsByPostcode gets occupancies by postcode.
 func (s *OccupancyStore) GetIDsByPostcode(ctx context.Context, postCode string) ([]string, error) {
-	q := `SELECT id FROM occupancies WHERE site_id IN (SELECT id FROM sites WHERE post_code = $1)`
+	q := `SELECT id FROM occupancies WHERE site_id IN (SELECT id FROM sites WHERE post_code = $1);`
 
 	return s.queryOccupanciesByIdentifier(ctx, q, postCode)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -63,7 +64,10 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		}, nil
 	}
 
-	var isEligibile, isSuppliable bool
+	var (
+		isEligibile, isSuppliable bool
+		reasons                   domain.IneligibleReasons
+	)
 
 	occupancyIDs, err := a.occupancyStore.GetIDsByAccount(ctx, req.AccountId)
 	if err != nil {
@@ -102,11 +106,26 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		if isEligibile && isSuppliable {
 			return &smart_booking.GetAccountEligibilityForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
 		}
+
+		// If none of the occupancies is eligible, we want to return the reasons for the first occupancy which has active services
+		if !eligibility.Reasons.Contains(domain.IneligibleReasonNoActiveService) &&
+			!suppliability.Reasons.Contains(domain.IneligibleReasonNoActiveService) &&
+			len(reasons) == 0 {
+			reasons = append(reasons, eligibility.Reasons...)
+			reasons = append(reasons, suppliability.Reasons...)
+		}
+	}
+
+	protoReasons, err := reasons.MapToProto()
+	if err != nil {
+		logrus.Debugf("failed to get eligibility for account %s: %s", req.AccountId, err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 	}
 
 	return &smart_booking.GetAccountEligibilityForSmartBookingResponse{
-		AccountId: req.AccountId,
-		Eligible:  false,
+		AccountId:         req.AccountId,
+		Eligible:          false,
+		IneligibleReasons: protoReasons,
 	}, nil
 }
 

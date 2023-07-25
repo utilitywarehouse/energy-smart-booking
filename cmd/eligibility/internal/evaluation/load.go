@@ -28,6 +28,7 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 		// load meterpoint
 		service := domain.Service{
 			ID: s.ID,
+			Mpxn: s.Mpxn,
 		}
 
 		dbMeterpoint, err := e.meterpointStore.Get(ctx, s.Mpxn)

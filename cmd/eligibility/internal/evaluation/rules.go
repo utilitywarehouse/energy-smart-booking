@@ -1,8 +1,10 @@
 package evaluation
 
 import (
+	"fmt"
 	"strings"
 
+	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
 
@@ -26,7 +28,7 @@ func (e evaluation) status() domain.IneligibleReasons {
 	return reasons
 }
 
-func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
+func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error) {
 	result := evaluation{reason: make(map[domain.IneligibleReason]struct{}, 0)}
 
 	if o.Site == nil {
@@ -37,6 +39,17 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 
 	if len(o.Services) == 0 {
 		result.addReason(domain.IneligibleReasonNoActiveService)
+	}
+
+	if len(o.Services) == 1 {
+		meterpoint, err := energy_domain.NewMeterPointNumber(o.Services[0].Mpxn)
+		if err != nil {
+			return nil, fmt.Errorf("failed to build meterpoint from mpxn %s: %w", o.Services[0].Mpxn, err)
+		}
+		if meterpoint.SupplyType() == energy_domain.SupplyTypeGas {
+			result.addReason(domain.IneligibleReasonGasServiceOnly)
+			return result.status(), nil
+		}
 	}
 
 	for _, s := range o.Services {
@@ -57,7 +70,7 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 		}
 	}
 
-	return result.status()
+	return result.status(), nil
 }
 
 func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
