@@ -104,7 +104,7 @@ type consumerConfig struct {
 	Handler   substratemessage.Handler
 }
 
-func spinOffConsumers(ctx context.Context, c *cli.Context, g *errgroup.Group, sources SourceMap, configs []*consumerConfig) error {
+func spinOffConsumers(ctx context.Context, g *errgroup.Group, sources SourceMap, configs []*consumerConfig) error {
 	for _, config := range configs {
 		batchSize := config.BatchSize
 		topic := config.FlagTopic
@@ -163,7 +163,7 @@ func projectorAction(c *cli.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	batchSize := c.Int(flagBatchSize)
-	err = spinOffConsumers(ctx, c, g, sources, []*consumerConfig{
+	err = spinOffConsumers(ctx, g, sources, []*consumerConfig{
 		{
 			FlagTopic: app.SiteTopic,
 			BatchSize: batchSize,
