@@ -161,7 +161,7 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 		if len(reasons) == 0 {
 			reasons = append(reasons, domain.IneligibleReasonNoActiveService)
 		}
-		
+
 		body, err := json.Marshal(
 			EvaluationResult{
 				AccountID:            accountID,
