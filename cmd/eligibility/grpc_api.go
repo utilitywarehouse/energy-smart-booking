@@ -55,11 +55,7 @@ func runGRPCApi(c *cli.Context) error {
 		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 
-		err = grpcServer.Serve(listen)
-		if err != nil {
-			logrus.Infof("error starting grpc server: %s", err.Error())
-		}
-		return err
+		return grpcServer.Serve(listen)
 	})
 
 	g.Go(func() error {
