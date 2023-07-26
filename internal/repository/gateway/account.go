@@ -7,10 +7,13 @@ import (
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
-	ErrEmptyAddress = errors.New("account address is empty")
+	ErrEmptyAddress    = errors.New("account address is empty")
+	ErrAccountNotFound = errors.New("account was not found")
 )
 
 type AccountGateway struct {
@@ -29,7 +32,12 @@ func (c AccountGateway) GetAccountByAccountID(ctx context.Context, accountID str
 		AccountId: accountID,
 	})
 	if err != nil {
-		return models.Account{}, fmt.Errorf("failed to get account ID: %s, %w", accountID, err)
+		switch status.Convert(err).Code() {
+		case codes.NotFound:
+			return models.Account{}, fmt.Errorf("%w, %w", ErrAccountNotFound, err)
+		default:
+			return models.Account{}, fmt.Errorf("failed to get account ID: %s, %w", accountID, err)
+		}
 	}
 
 	return models.Account{
@@ -40,38 +48,6 @@ func (c AccountGateway) GetAccountByAccountID(ctx context.Context, accountID str
 			LastName:  account.GetAccount().GetPrimaryAccountHolder().GetLastName(),
 			Email:     account.GetAccount().GetPrimaryAccountHolder().GetEmail(),
 			Mobile:    account.GetAccount().GetPrimaryAccountHolder().GetMobile(),
-		},
-	}, nil
-}
-
-func (c AccountGateway) GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error) {
-	account, err := c.client.GetAccount(c.mai.ToCtx(ctx), &accountService.GetAccountRequest{
-		AccountId: accountID,
-	})
-	if err != nil {
-		return models.AccountAddress{}, fmt.Errorf("failed to get account with account id: %s, %w", accountID, err)
-	}
-
-	address := account.GetAccount().GetSupplyDetails().GetAddress()
-
-	if address == nil {
-		return models.AccountAddress{}, ErrEmptyAddress
-	}
-
-	return models.AccountAddress{
-		UPRN: address.GetUprn(),
-		PAF: models.PAF{
-			BuildingName:            address.GetPaf().BuildingName,
-			BuildingNumber:          address.GetPaf().BuildingNumber,
-			Department:              address.GetPaf().Department,
-			DependentLocality:       address.GetPaf().DependentLocality,
-			DependentThoroughfare:   address.GetPaf().DependentThoroughfare,
-			DoubleDependentLocality: address.GetPaf().DoubleDependentLocality,
-			Organisation:            address.GetPaf().Organisation,
-			PostTown:                address.GetPaf().PostTown,
-			Postcode:                address.GetPaf().Postcode,
-			SubBuilding:             address.GetPaf().SubBuilding,
-			Thoroughfare:            address.GetPaf().Thoroughfare,
 		},
 	}, nil
 }

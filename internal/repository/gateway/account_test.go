@@ -4,13 +4,15 @@ package gateway_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
-	v1 "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/address/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 
@@ -68,7 +70,7 @@ func Test_GetAccountByAccountID(t *testing.T) {
 	}
 }
 
-func Test_GetAccountAddressByAccountID(t *testing.T) {
+func Test_GetAccountByAccountID_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	ctx := context.Background()
@@ -85,52 +87,14 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 	m.EXPECT().GetAccount(ctx, &accountService.GetAccountRequest{
 		AccountId: "account-id-1",
 	}).Return(&accountService.GetAccountResponse{
-		Account: &accountService.Account{
-			Id: "account-id-1",
-			SupplyDetails: &accountService.AddressDetails{
-				Address: &v1.Address{
-					Uprn: "uprn-1",
-					Paf: &v1.Address_PAF{
-						Organisation:            "org-1",
-						Department:              "dep-1",
-						SubBuilding:             "sub-building-1",
-						BuildingName:            "building-1",
-						BuildingNumber:          "building-nr-1",
-						DependentThoroughfare:   "dependent-thoroughfare-1",
-						Thoroughfare:            "thoroughfare-1",
-						DoubleDependentLocality: "ddl-1",
-						DependentLocality:       "dl-1",
-						PostTown:                "post-town-1",
-						Postcode:                "post-code-1",
-					},
-				},
-			},
-		},
-	}, nil)
+		Account: &accountService.Account{},
+	}, status.Error(codes.NotFound, "not found"))
 
-	actual := models.AccountAddress{
-		UPRN: "uprn-1",
-		PAF: models.PAF{
-			Organisation:            "org-1",
-			Department:              "dep-1",
-			SubBuilding:             "sub-building-1",
-			BuildingName:            "building-1",
-			BuildingNumber:          "building-nr-1",
-			DependentThoroughfare:   "dependent-thoroughfare-1",
-			Thoroughfare:            "thoroughfare-1",
-			DoubleDependentLocality: "ddl-1",
-			DependentLocality:       "dl-1",
-			PostTown:                "post-town-1",
-			Postcode:                "post-code-1",
-		},
-	}
+	expectedErr := fmt.Errorf("%w, %w", gateway.ErrAccountNotFound, status.Error(codes.NotFound, "not found"))
 
-	expected, err := myGw.GetAccountAddressByAccountID(ctx, "account-id-1")
-	if err != nil {
-		t.Fatal(err)
-	}
+	_, actualErr := myGw.GetAccountByAccountID(ctx, "account-id-1")
 
-	if diff := cmp.Diff(expected, actual); diff != "" {
+	if diff := cmp.Diff(actualErr.Error(), expectedErr.Error()); diff != "" {
 		t.Fatal(diff)
 	}
 }

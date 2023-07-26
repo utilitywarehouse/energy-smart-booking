@@ -15,7 +15,6 @@ var (
 
 type AccountGateway interface {
 	GetAccountByAccountID(ctx context.Context, accountID string) (models.Account, error)
-	GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error)
 }
 
 type EligibilityGateway interface {
@@ -50,7 +49,13 @@ func NewCustomerDomain(accounts AccountGateway,
 }
 
 func (d CustomerDomain) GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error) {
-	return d.accounts.GetAccountByAccountID(ctx, accountID)
+
+	account, err := d.accounts.GetAccountByAccountID(ctx, accountID)
+	if err != nil {
+		return models.Account{}, err
+	}
+
+	return account, nil
 }
 
 func (d CustomerDomain) GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error) {

@@ -2,11 +2,14 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -43,6 +46,10 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 
 	account, err := b.customerDomain.GetCustomerContactDetails(ctx, req.GetAccountId())
 	if err != nil {
+		switch {
+		case errors.Is(err, gateway.ErrAccountNotFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get customer contact details, %s", err))
+		}
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get customer contact details, %s", err))
 	}
 
@@ -66,7 +73,13 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 
 	accountAddress, err := b.customerDomain.GetAccountAddressByAccountID(ctx, req.GetAccountId())
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get customer contact details, %s", err))
+		switch {
+		case errors.Is(err, domain.ErrNoOccupanciesFound) ||
+			errors.Is(err, domain.ErrNoEligibleOccupanciesFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get account address by account id %s", err))
+		default:
+			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get account address by account id %s", err))
+		}
 	}
 
 	return &bookingv1.GetCustomerSiteAddressResponse{
