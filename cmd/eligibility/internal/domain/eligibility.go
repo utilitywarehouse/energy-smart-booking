@@ -185,6 +185,16 @@ func (r IneligibleReasons) MapToProto() ([]smart.IneligibleReason, error) {
 	return reasons, nil
 }
 
+func (r IneligibleReasons) ToString() []string {
+	values := make([]string, 0, len(r))
+
+	for _, reason := range r {
+		values = append(values, reason.String())
+	}
+
+	return values
+}
+
 func (r IneligibleReasons) Contains(reason IneligibleReason) bool {
 	for _, rr := range r {
 		if rr == reason {
