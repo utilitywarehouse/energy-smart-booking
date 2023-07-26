@@ -62,5 +62,5 @@ ci-docker-auth:
 
 ci-docker-build: ci-docker-auth
 	docker build -t $(DOCKER_REPOSITORY):$(GITHUB_SHA) . --build-arg SERVICE=$(SERVICE) --build-arg SOURCE_FILES=$(SOURCE_FILES) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN)
-	docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):$(BRANCH_NAME)
+	docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):latest
 	docker push -a $(DOCKER_REPOSITORY)
