@@ -49,11 +49,10 @@ func main() {
 		Usage: appDesc,
 		Commands: []*cli.Command{
 			{
-				Name:   "grpc-api",
-				Usage:  "run a gRPC API for clients to query eligibility for smart booking",
-				Before: app.Before,
-				Action: runGRPCApi,
-				Flags: []cli.Flag{
+				Name:  "grpc-api",
+				Usage: "run a gRPC API for clients to query eligibility for smart booking",
+				Flags: app.DefaultFlags().WithCustom(
+
 					&cli.IntFlag{
 						Name:    grpcPort,
 						Usage:   "The port to listen on for API GRPC connections",
@@ -71,7 +70,9 @@ func main() {
 						EnvVars:  []string{"POSTGRES_DSN"},
 						Required: true,
 					},
-				},
+				),
+				Before: app.Before,
+				Action: runGRPCApi,
 			},
 			{
 				Name: "evaluator",
