@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -18,6 +19,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
+	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 )
@@ -36,6 +38,7 @@ func runHTTPApi(c *cli.Context) error {
 		return err
 	}
 	defer pool.Close()
+	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
 
 	accountStore := store.NewAccount(pool)
 	bookingRefStore := store.NewBookingRef(pool)

@@ -156,6 +156,12 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 				reasons = append(reasons, suppliability.Reasons...)
 			}
 		}
+
+		// no eligible occupancy found and none of the occupancies had active service
+		if len(reasons) == 0 {
+			reasons = append(reasons, domain.IneligibleReasonNoActiveService)
+		}
+		
 		body, err := json.Marshal(
 			EvaluationResult{
 				AccountID:            accountID,
