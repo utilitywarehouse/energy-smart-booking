@@ -40,7 +40,7 @@ func (h *BookingReferenceHandler) Handle(ctx context.Context, message substrate.
 
 	payload, err := env.Message.UnmarshalNew()
 	if err != nil {
-		return fmt.Errorf("error unmarshalling althan meterpoint event [%s]: %w", env.Message.TypeUrl, err)
+		return fmt.Errorf("error unmarshalling booking reference event [%s]: %w", env.Message.TypeUrl, err)
 	}
 
 	switch ev := payload.(type) {
