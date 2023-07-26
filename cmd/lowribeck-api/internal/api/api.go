@@ -35,7 +35,7 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 		return nil, status.Errorf(codes.Internal, "error making request: %s", err.Error())
 	}
 
-	return mapper.MapAvailableSlotsResponse(resp), nil
+	return mapper.MapAvailableSlotsResponse(resp)
 }
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
