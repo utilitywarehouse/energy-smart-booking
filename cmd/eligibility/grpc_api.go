@@ -36,8 +36,8 @@ func runGRPCApi(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("couldn't initialise database: %w", err)
 	}
-	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 	defer pg.Close()
+	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)
@@ -45,6 +45,7 @@ func runGRPCApi(c *cli.Context) error {
 	accountStore := store.NewAccount(pg)
 
 	g.Go(func() error {
+		logrus.Infof("Starts creating grpc server")
 		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(grpcLogLevel))
 		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(grpcPort)))
 		if err != nil {
@@ -54,8 +55,13 @@ func runGRPCApi(c *cli.Context) error {
 
 		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
+		logrus.Infof("successfully registered grpc server")
 
-		return grpcServer.Serve(listen)
+		err = grpcServer.Serve(listen)
+		if err != nil {
+			logrus.Infof("error starting grpc server: %s", err.Error())
+		}
+		return err
 	})
 
 	g.Go(func() error {
