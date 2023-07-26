@@ -2,8 +2,8 @@ package consumer
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
@@ -16,15 +16,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type ServiceStateStore interface {
+type ServiceStore interface {
 	Upsert(ctx context.Context, service *store.Service) error
 }
 
 type ServiceStateHandler struct {
-	store ServiceStateStore
+	store ServiceStore
 }
 
-func HandleServiceState(store ServiceStateStore) *ServiceStateHandler {
+func HandleServiceState(store ServiceStore) *ServiceStateHandler {
 	return &ServiceStateHandler{store: store}
 }
 
@@ -57,14 +57,13 @@ func (h *ServiceStateHandler) Handle(ctx context.Context, message substrate.Mess
 	return nil
 }
 
-func toNullTime(ts *timestamppb.Timestamp) sql.NullTime {
-	if ts.CheckValid() == nil {
-		return sql.NullTime{
-			Time:  ts.AsTime(),
-			Valid: true,
-		}
+func nullTimeForNullTimestamp(ts *timestamppb.Timestamp) *time.Time {
+	if ts == nil {
+		return nil
 	}
-	return sql.NullTime{}
+	t := new(time.Time)
+	*t = ts.AsTime()
+	return t
 }
 
 func extractService(generic *energy_entities.EnergyServiceEvent) (*store.Service, error) {
@@ -75,8 +74,8 @@ func extractService(generic *energy_entities.EnergyServiceEvent) (*store.Service
 			OccupancyID: elec.GetOccupancyId(),
 			SupplyType:  domain.SupplyTypeElectricity,
 			AccountID:   elec.GetCustomerAccountId(),
-			StartDate:   toNullTime(elec.GetStartDate()),
-			EndDate:     toNullTime(elec.GetEndDate()),
+			StartDate:   nullTimeForNullTimestamp(elec.GetStartDate()),
+			EndDate:     nullTimeForNullTimestamp(elec.GetEndDate()),
 			IsLive:      elec.GetIsLive(),
 		}, nil
 	}
@@ -87,8 +86,8 @@ func extractService(generic *energy_entities.EnergyServiceEvent) (*store.Service
 			OccupancyID: gas.GetOccupancyId(),
 			SupplyType:  domain.SupplyTypeGas,
 			AccountID:   gas.GetCustomerAccountId(),
-			StartDate:   toNullTime(gas.GetStartDate()),
-			EndDate:     toNullTime(gas.GetEndDate()),
+			StartDate:   nullTimeForNullTimestamp(gas.GetStartDate()),
+			EndDate:     nullTimeForNullTimestamp(gas.GetEndDate()),
 			IsLive:      gas.GetIsLive(),
 		}, nil
 	}

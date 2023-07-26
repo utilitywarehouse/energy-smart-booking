@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/utilitywarehouse/energy-pkg/domain"
@@ -11,7 +12,7 @@ import (
 
 var ErrServiceNotFound = errors.New("service not found")
 
-type ServiceStateStore struct {
+type ServiceStore struct {
 	pool *pgxpool.Pool
 }
 
@@ -21,16 +22,23 @@ type Service struct {
 	OccupancyID string
 	SupplyType  domain.SupplyType
 	AccountID   string
-	StartDate   sql.NullTime
-	EndDate     sql.NullTime
+	StartDate   *time.Time
+	EndDate     *time.Time
 	IsLive      bool
 }
 
-func NewServiceState(pool *pgxpool.Pool) *ServiceStateStore {
-	return &ServiceStateStore{pool: pool}
+func NewService(pool *pgxpool.Pool) *ServiceStore {
+	return &ServiceStore{pool: pool}
 }
 
-func (s *ServiceStateStore) Upsert(ctx context.Context, service *Service) error {
+func defaultIfNull(t *time.Time) time.Time {
+	if t == nil {
+		return time.Time{}
+	}
+	return *t
+}
+
+func (s *ServiceStore) Upsert(ctx context.Context, service *Service) error {
 	q := `
 	INSERT INTO service (
 		service_id,
@@ -66,8 +74,8 @@ func (s *ServiceStateStore) Upsert(ctx context.Context, service *Service) error 
 		service.OccupancyID,
 		service.SupplyType.String(),
 		service.AccountID,
-		service.StartDate,
-		service.EndDate,
+		sql.NullTime{Time: defaultIfNull(service.StartDate), Valid: service.StartDate != nil},
+		sql.NullTime{Time: defaultIfNull(service.EndDate), Valid: service.EndDate != nil},
 		service.IsLive,
 	)
 
