@@ -49,8 +49,9 @@ func main() {
 		Usage: appDesc,
 		Commands: []*cli.Command{
 			{
-				Name:   "grcp-api",
+				Name:   "grpc-api",
 				Usage:  "run a gRPC API for clients to query eligibility for smart booking",
+				Before: app.Before,
 				Action: runGRPCApi,
 				Flags: []cli.Flag{
 					&cli.IntFlag{

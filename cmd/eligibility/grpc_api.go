@@ -24,7 +24,7 @@ import (
 func runGRPCApi(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	logrus.Info("running api")
+
 	opsServer := ops.Default().
 		WithPort(c.Int(pkgapp.OpsPort)).
 		WithHash(gitHash).
@@ -45,7 +45,6 @@ func runGRPCApi(c *cli.Context) error {
 	accountStore := store.NewAccount(pg)
 
 	g.Go(func() error {
-		logrus.Infof("Starts creating grpc server")
 		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(grpcLogLevel))
 		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(grpcPort)))
 		if err != nil {
@@ -55,7 +54,6 @@ func runGRPCApi(c *cli.Context) error {
 
 		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
-		logrus.Infof("successfully registered grpc server")
 
 		err = grpcServer.Serve(listen)
 		if err != nil {
