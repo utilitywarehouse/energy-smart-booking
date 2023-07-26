@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/consumer"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/store"
 )
 
 var (
@@ -29,9 +29,6 @@ var (
 	flagPlatformKafkaBrokers       = "platform-kafka-brokers"
 	flagPlatformKafkaVersion       = "platform-kafka-version"
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
-
-	flagBatchSize   = "batch-size"
-	flagPostgresDSN = "dsn"
 
 	flagBookingRefTopic = "booking-reference-topic"
 )

@@ -10,14 +10,17 @@ import (
 	energy_entities "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/service/v1"
 	"github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type ServiceStore interface {
-	Upsert(ctx context.Context, service *store.Service) error
+	Upsert(service models.Service)
+
+	Begin()
+	Commit(ctx context.Context) error
 }
 
 type ServiceStateHandler struct {
@@ -26,6 +29,15 @@ type ServiceStateHandler struct {
 
 func HandleServiceState(store ServiceStore) *ServiceStateHandler {
 	return &ServiceStateHandler{store: store}
+}
+
+func (h *ServiceStateHandler) PreHandle(_ context.Context) error {
+	h.store.Begin()
+	return nil
+}
+
+func (h *ServiceStateHandler) PostHandle(ctx context.Context) error {
+	return h.store.Commit(ctx)
 }
 
 func (h *ServiceStateHandler) Handle(ctx context.Context, message substrate.Message) error {
@@ -49,10 +61,12 @@ func (h *ServiceStateHandler) Handle(ctx context.Context, message substrate.Mess
 	switch ev := payload.(type) {
 	case *energy_entities.EnergyServiceEvent:
 		svc, err := extractService(ev)
-		err = h.store.Upsert(ctx, svc)
 		if err != nil {
-			return fmt.Errorf("failed to persist service state update for event [%s]: %w", eventUuid, err)
+			log.Infof("skipping service event, missing gas and electricity. event uuid: %s, service id: %s", eventUuid, ev.GetServiceId())
+			return nil
 		}
+
+		h.store.Upsert(svc)
 	}
 	return nil
 }
@@ -66,9 +80,9 @@ func nullTimeForNullTimestamp(ts *timestamppb.Timestamp) *time.Time {
 	return t
 }
 
-func extractService(generic *energy_entities.EnergyServiceEvent) (*store.Service, error) {
-	if elec := generic.GetService().GetElectricity(); elec != nil {
-		return &store.Service{
+func extractService(energyEvent *energy_entities.EnergyServiceEvent) (models.Service, error) {
+	if elec := energyEvent.GetService().GetElectricity(); elec != nil {
+		return models.Service{
 			ServiceID:   elec.GetServiceId(),
 			Mpxn:        elec.GetMpxn(),
 			OccupancyID: elec.GetOccupancyId(),
@@ -79,8 +93,8 @@ func extractService(generic *energy_entities.EnergyServiceEvent) (*store.Service
 			IsLive:      elec.GetIsLive(),
 		}, nil
 	}
-	if gas := generic.GetService().GetGas(); gas != nil {
-		return &store.Service{
+	if gas := energyEvent.GetService().GetGas(); gas != nil {
+		return models.Service{
 			ServiceID:   gas.GetServiceId(),
 			Mpxn:        gas.GetMpxn(),
 			OccupancyID: gas.GetOccupancyId(),
@@ -91,5 +105,5 @@ func extractService(generic *energy_entities.EnergyServiceEvent) (*store.Service
 			IsLive:      gas.GetIsLive(),
 		}, nil
 	}
-	return nil, fmt.Errorf("could not extract service information")
+	return models.Service{}, fmt.Errorf("could not extract service information")
 }

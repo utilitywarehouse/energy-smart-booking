@@ -14,7 +14,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
-	github.com/utilitywarehouse/energy-contracts v1.80.1
+	github.com/utilitywarehouse/energy-contracts v1.81.0
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
@@ -80,7 +80,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/flatbuffers v2.0.8+incompatible // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/go-cmp v0.5.9
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.4 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
@@ -125,7 +125,7 @@ require (
 	github.com/prometheus/procfs v0.11.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/testcontainers/testcontainers-go v0.21.0 // indirect
+	github.com/testcontainers/testcontainers-go v0.21.0
 	github.com/utilitywarehouse/energy-pkg/domain v1.24.8
 	github.com/utilitywarehouse/energy-pkg/errorcodes v1.0.3 // indirect
 	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 // indirect

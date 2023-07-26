@@ -8,12 +8,13 @@ import (
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"
 )
 
 type BookingReferenceStore interface {
-	Add(ctx context.Context, mpxn, reference string) error
+	Upsert(ctx context.Context, bookingReference models.BookingReference) error
 }
 
 type BookingReferenceHandler struct {
@@ -45,7 +46,13 @@ func (h *BookingReferenceHandler) Handle(ctx context.Context, message substrate.
 
 	switch ev := payload.(type) {
 	case *smart.BookingMpxnReferenceCreatedEvent:
-		err = h.store.Add(ctx, ev.GetMpxn(), ev.GetReference())
+
+		bookingReference := models.BookingReference{
+			Reference: ev.GetReference(),
+			MPXN:      ev.GetMpxn(),
+		}
+
+		err = h.store.Upsert(ctx, bookingReference)
 		if err != nil {
 			return fmt.Errorf("failed to persist booking reference for event [%s]: %w", env.GetUuid(), err)
 		}

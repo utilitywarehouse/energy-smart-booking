@@ -8,12 +8,16 @@ import (
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"
 )
 
 type SiteStore interface {
-	Add(ctx context.Context, siteID, postcode string) error
+	Upsert(site models.Site)
+
+	Begin()
+	Commit(ctx context.Context) error
 }
 
 type SiteHandler struct {
@@ -22,6 +26,15 @@ type SiteHandler struct {
 
 func HandleSite(store SiteStore) *SiteHandler {
 	return &SiteHandler{store: store}
+}
+
+func (h *SiteHandler) PreHandle(_ context.Context) error {
+	h.store.Begin()
+	return nil
+}
+
+func (h *SiteHandler) PostHandle(ctx context.Context) error {
+	return h.store.Commit(ctx)
 }
 
 func (h *SiteHandler) Handle(ctx context.Context, message substrate.Message) error {
@@ -56,10 +69,27 @@ func (h *SiteHandler) Handle(ctx context.Context, message substrate.Message) err
 				log.Infof("skip event [%s] for site [%s]: empty post code", eventUuid, ev.GetSiteId())
 				return nil
 			}
-			err = h.store.Add(ctx, ev.GetSiteId(), postcode)
-			if err != nil {
-				return fmt.Errorf("failed to process site event %s: %w", eventUuid, err)
+
+			site := models.Site{
+				SiteID:                  ev.GetSiteId(),
+				Postcode:                postcode,
+				UPRN:                    address.GetUprn(),
+				BuildingNameNumber:      address.GetBuildingNameNumber(),
+				DependentThoroughfare:   address.GetDependentThoroughfare(),
+				ThoroughFare:            address.GetThoroughfare(),
+				DoubleDependentLocality: address.GetDoubleDependentLocality(),
+				DependentLocality:       address.GetDependentLocality(),
+				Locality:                address.GetLocality(),
+				County:                  address.GetCounty(),
+				Town:                    address.GetTown(),
+				Department:              address.GetDepartment(),
+				Organisation:            address.GetOrganisation(),
+				PoBox:                   address.GetPoBox(),
+				DeliveryPointSuffix:     address.GetDeliveryPointSuffix(),
+				SubBuildingNameNumber:   address.GetSubBuildingNameNumber(),
 			}
+
+			h.store.Upsert(site)
 		}
 	}
 	return nil

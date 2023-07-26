@@ -6,39 +6,33 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/utilitywarehouse/energy-pkg/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
 var ErrServiceNotFound = errors.New("service not found")
 
 type ServiceStore struct {
-	pool *pgxpool.Pool
-}
-
-type Service struct {
-	ServiceID   string
-	Mpxn        string
-	OccupancyID string
-	SupplyType  domain.SupplyType
-	AccountID   string
-	StartDate   *time.Time
-	EndDate     *time.Time
-	IsLive      bool
+	pool  *pgxpool.Pool
+	batch *pgx.Batch
 }
 
 func NewService(pool *pgxpool.Pool) *ServiceStore {
 	return &ServiceStore{pool: pool}
 }
 
-func defaultIfNull(t *time.Time) time.Time {
-	if t == nil {
-		return time.Time{}
-	}
-	return *t
+func (s *ServiceStore) Begin() {
+	s.batch = &pgx.Batch{}
 }
 
-func (s *ServiceStore) Upsert(ctx context.Context, service *Service) error {
+func (s *ServiceStore) Commit(ctx context.Context) error {
+	res := s.pool.SendBatch(ctx, s.batch)
+	s.batch = nil
+	return res.Close()
+}
+
+func (s *ServiceStore) Upsert(service models.Service) {
 	q := `
 	INSERT INTO service (
 		service_id,
@@ -68,7 +62,7 @@ func (s *ServiceStore) Upsert(ctx context.Context, service *Service) error {
 		is_live = $8;
 	`
 
-	_, err := s.pool.Exec(ctx, q,
+	s.batch.Queue(q,
 		service.ServiceID,
 		service.Mpxn,
 		service.OccupancyID,
@@ -76,8 +70,12 @@ func (s *ServiceStore) Upsert(ctx context.Context, service *Service) error {
 		service.AccountID,
 		sql.NullTime{Time: defaultIfNull(service.StartDate), Valid: service.StartDate != nil},
 		sql.NullTime{Time: defaultIfNull(service.EndDate), Valid: service.EndDate != nil},
-		service.IsLive,
-	)
+		service.IsLive)
+}
 
-	return err
+func defaultIfNull(t *time.Time) time.Time {
+	if t == nil {
+		return time.Time{}
+	}
+	return *t
 }

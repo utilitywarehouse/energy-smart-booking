@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
 var ErrBookingReferenceNotFound = errors.New("booking reference not found")
@@ -19,15 +20,15 @@ func NewBookingReference(pool *pgxpool.Pool) *BookingReferenceStore {
 	return &BookingReferenceStore{pool: pool}
 }
 
-func (s *BookingReferenceStore) Add(ctx context.Context, mpxn string, reference string) error {
+func (s *BookingReferenceStore) Upsert(ctx context.Context, bookingReference models.BookingReference) error {
 	q := `
 	INSERT INTO booking_reference (mpxn, reference)
 	VALUES ($1, $2)
 	ON CONFLICT (mpxn)
 	DO UPDATE 
-	set reference = $2, updated_at = now();`
+	SET reference = $2, updated_at = now();`
 
-	_, err := s.pool.Exec(ctx, q, mpxn, reference)
+	_, err := s.pool.Exec(ctx, q, bookingReference.MPXN, bookingReference.Reference)
 
 	return err
 }

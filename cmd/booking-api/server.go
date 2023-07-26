@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/jackc/pgx/v5/stdlib"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
@@ -14,21 +15,23 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/store"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
+	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
+	eligiblity_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 )
 
 var (
 	commandNameServer  = "server"
 	commandUsageServer = "a listen server handling booking requests"
 
-	accountsAPIHost = "accounts-api-host"
-
-	flagRedisAddr = "redis-addr"
+	accountsAPIHost    = "accounts-api-host"
+	eligibilityAPIHost = "eligibility-api-host"
 )
 
 func init() {
@@ -43,8 +46,13 @@ func init() {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     flagRedisAddr,
-				EnvVars:  []string{"REDIS_ADDR"},
+				Name:     eligibilityAPIHost,
+				EnvVars:  []string{"ELIGIBILITY_API_HOST"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagPostgresDSN,
+				EnvVars:  []string{"POSTGRES_DSN"},
 				Required: true,
 			},
 		),
@@ -65,12 +73,25 @@ func serverAction(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
+	pool, err := store.Setup(ctx, c.String(flagPostgresDSN))
+	if err != nil {
+		return err
+	}
+	opsServer.Add("pool", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
+
 	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to accounts-api host [%s]: %w", c.String(accountsAPIHost), err)
 	}
 	opsServer.Add("accounts-api", grpchealth.NewCheck(c.String(accountsAPIHost), "", "cannot query accounts"))
 	defer accountsConn.Close()
+
+	eligibilityConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(eligibilityAPIHost), c.String(app.GrpcLogLevel))
+	if err != nil {
+		return fmt.Errorf("error connecting to eligibility-api host [%s]: %w", c.String(eligibilityAPIHost), err)
+	}
+	opsServer.Add("eligibility-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect eligibility to eligibility-api"))
+	defer eligibilityConn.Close()
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -83,9 +104,16 @@ func serverAction(c *cli.Context) error {
 	}
 	defer listen.Close()
 
-	// Dependencies for
+	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
-	customerDomain := domain.NewCustomerDomain(accountGw)
+	eligibilityGw := gateway.NewEligibilityGateway(mn, eligiblity_api.NewEligiblityAPIClient(eligibilityConn))
+
+	// STORE //
+	occupancyStore := store.NewOccupancy(pool)
+	siteStore := store.NewSite(pool)
+
+	// DOMAIN //
+	customerDomain := domain.NewCustomerDomain(accountGw, eligibilityGw, occupancyStore, siteStore)
 
 	bookingAPI := api.New(customerDomain)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
