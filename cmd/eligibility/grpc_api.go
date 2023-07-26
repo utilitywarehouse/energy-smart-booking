@@ -24,7 +24,7 @@ import (
 func runGRPCApi(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	logrus.Info("running api")
+
 	opsServer := ops.Default().
 		WithPort(c.Int(pkgapp.OpsPort)).
 		WithHash(gitHash).
@@ -36,8 +36,8 @@ func runGRPCApi(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("couldn't initialise database: %w", err)
 	}
-	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 	defer pg.Close()
+	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)
