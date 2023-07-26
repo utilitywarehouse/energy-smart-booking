@@ -24,6 +24,7 @@ LEXC :=
 .PHONY: install
 install:
 	GOPROXY=https://proxy.golang.org GO111MODULE=on GOPRIVATE="github.com/utilitywarehouse/*" go mod download
+	go install github.com/golang/mock/mockgen@v1.6.0
 
 $(LINTER):
 	@ [ -e ./bin/$(LINTER) ] || wget -O - -q https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
