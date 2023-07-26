@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"net/http"
 	"os"
@@ -91,7 +90,7 @@ func runServer(c *cli.Context) error {
 	grpcServer := grpcHelper.CreateServerWithLogLvl(app.GrpcLogLevel)
 	reflection.Register(grpcServer)
 
-	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", app.GrpcPort))
+	listen, err := net.Listen("tcp", app.GrpcPort)
 	if err != nil {
 		log.WithError(err).Panic("failed to listen on GRPC port")
 	}

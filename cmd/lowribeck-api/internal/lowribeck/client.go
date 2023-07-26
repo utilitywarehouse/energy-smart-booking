@@ -18,14 +18,14 @@ const (
 	bookingURL      = "book"
 )
 
-type client struct {
+type Client struct {
 	http    *http.Client
 	auth    auth
 	baseURL string
 }
 
-func New(c *http.Client, user, password, url string) *client {
-	return &client{
+func New(c *http.Client, user, password, url string) *Client {
+	return &Client{
 		http: c,
 		auth: auth{
 			user:     user,
@@ -35,7 +35,7 @@ func New(c *http.Client, user, password, url string) *client {
 	}
 }
 
-func (c *client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAvailabilityRequest) (*GetCalendarAvailabilityResponse, error) {
+func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAvailabilityRequest) (*GetCalendarAvailabilityResponse, error) {
 	resp, err := c.DoRequest(ctx, req, availabilityURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to send request: %w", err)
@@ -55,7 +55,7 @@ func (c *client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAv
 	return &ar, nil
 }
 
-func (c *client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (*CreateBookingResponse, error) {
+func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (*CreateBookingResponse, error) {
 	resp, err := c.DoRequest(ctx, req, bookingURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to send request: %w", err)
@@ -75,7 +75,7 @@ func (c *client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 	return &br, nil
 }
 
-func (c *client) DoRequest(ctx context.Context, req interface{}, url string) (*http.Response, error) {
+func (c *Client) DoRequest(ctx context.Context, req interface{}, url string) (*http.Response, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %w", err)

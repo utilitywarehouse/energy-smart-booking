@@ -24,7 +24,7 @@ func MapAvailabilityRequest(req *contract.GetAvailableSlotsRequest) *lowribeck.G
 }
 
 // TODO
-func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) *contract.GetAvailableSlotsResponse {
+func MapAvailableSlotsResponse(_ *lowribeck.GetCalendarAvailabilityResponse) *contract.GetAvailableSlotsResponse {
 	return &contract.GetAvailableSlotsResponse{}
 }
 
@@ -40,6 +40,6 @@ func MapBookingRequest(req *contract.CreateBookingRequest) *lowribeck.CreateBook
 }
 
 // TODO
-func MapBookingResponse(resp *lowribeck.CreateBookingResponse) *contract.CreateBookingResponse {
+func MapBookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBookingResponse {
 	return &contract.CreateBookingResponse{}
 }
