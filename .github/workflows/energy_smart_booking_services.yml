@@ -10,3 +10,9 @@ jobs:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
     secrets: inherit
+  lowribeck-api:
+      uses: ./.github/workflows/build_service_reusable_workflow.yml
+      with:
+        source_files: cmd/lowribeck-api
+        service: energy-smart-booking-lowribeck-api
+      secrets: inherit

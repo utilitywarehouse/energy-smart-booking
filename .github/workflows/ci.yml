@@ -9,6 +9,7 @@ jobs:
     name: Check changed files
     outputs:
       opt_out: ${{ steps.check_files.outputs.opt_out }}
+      lowribeck_api: ${{ steps.check_files.outputs.lowribeck_api }}
       booking_services: ${{ steps.check_files.outputs.booking_services }}
     runs-on: ubuntu-latest
     steps:
@@ -26,6 +27,9 @@ jobs:
             if [[ $file == cmd/opt-out/** ]]; then
               echo "This modified file is under the 'cmd/opt-out' folder."
               echo "::set-output name=opt_out::true"
+            elif [[ $file == cmd/lowribeck-api/** ]]; then
+              echo "This modified file is under the 'cmd/lowribeck-api' folder."
+              echo "::set-output name=lowribeck_api::true"
             elif [[ $file != cmd/** ]]; then
               echo "This modified file applies for all booking services"
               echo "::set-output name=booking_services::true"
@@ -39,6 +43,15 @@ jobs:
     with:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
+    secrets: inherit
+
+  build_lowribeck_api:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.lowribeck_api == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/lowribeck-api
+      service: energy-smart-booking-lowribeck-api
     secrets: inherit
 
   build_booking_services:
