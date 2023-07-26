@@ -174,13 +174,14 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 						Organisation:            "organisation",
 						PoBox:                   "pobox",
 						DeliveryPointSuffix:     "delivery-point-suffix",
+						SubBuildingNameNumber:   "sub-building-name-number",
 					}, nil)
 			},
 			output: outputParams{
 				address: models.AccountAddress{
 					UPRN: "uprn",
 					PAF: models.PAF{
-						BuildingName:            "",
+						BuildingName:            "building-name-number",
 						BuildingNumber:          "building-name-number",
 						Department:              "department",
 						DependentLocality:       "dl-1",
@@ -189,7 +190,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 						Organisation:            "organisation",
 						PostTown:                "town",
 						Postcode:                "post-code",
-						SubBuilding:             "",
+						SubBuilding:             "sub-building-name-number",
 						Thoroughfare:            "thoroughfare",
 					},
 				},
