@@ -13,7 +13,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 )
 
-type evaluationResult struct {
+type EvaluationResult struct {
 	AccountID            string   `json:"account_id"`
 	IneligibleReasons    []string `json:"ineligible_reasons"`
 	SmartBookingEligible bool     `json:"smart_booking_eligible"`
@@ -133,7 +133,8 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 
 			if isEligible && isSuppliable {
 				body, err := json.Marshal(
-					evaluationResult{
+					EvaluationResult{
+						AccountID:            accountID,
 						SmartBookingEligible: true,
 					})
 				if err != nil {
@@ -156,7 +157,8 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			}
 		}
 		body, err := json.Marshal(
-			evaluationResult{
+			EvaluationResult{
+				AccountID:            accountID,
 				IneligibleReasons:    reasons.ToString(),
 				SmartBookingEligible: false,
 			})
