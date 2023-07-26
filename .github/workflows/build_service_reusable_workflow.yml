@@ -31,9 +31,9 @@ jobs:
 
       - run: git config --global url."https://$GITHUB_TOKEN:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 
-      - run: go generate ./...
-
       - run: make install
+      
+      - run: go generate ./...
 
       - run: make lint SOURCE_FILES=$SOURCE_FILES
 
