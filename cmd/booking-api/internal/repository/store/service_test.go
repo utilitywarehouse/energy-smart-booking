@@ -6,8 +6,8 @@ import (
 
 	"github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/store"
 )
 
 func Test_ServiceStore_Upsert(t *testing.T) {

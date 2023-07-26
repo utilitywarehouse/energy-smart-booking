@@ -7,8 +7,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/store"
 )
 
 func Test_BookingReferenceStore_Upsert(t *testing.T) {

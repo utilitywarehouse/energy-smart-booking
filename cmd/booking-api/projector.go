@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/consumer"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 )
 
 var (
