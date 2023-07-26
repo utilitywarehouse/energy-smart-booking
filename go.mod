@@ -6,9 +6,9 @@ require (
 	cloud.google.com/go/bigquery v1.52.0
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
-	github.com/jackc/pgx/v5 v5.4.1
+	github.com/jackc/pgx/v5 v5.4.2
 	github.com/justinas/alice v1.2.0
-	github.com/rubenv/sql-migrate v1.5.1
+	github.com/rubenv/sql-migrate v1.5.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
@@ -17,7 +17,7 @@ require (
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
 	github.com/utilitywarehouse/energy-pkg/ops v0.0.4
-	github.com/utilitywarehouse/energy-pkg/postgres v0.3.4
+	github.com/utilitywarehouse/energy-pkg/postgres v0.3.5
 	github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3
 	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16
 	github.com/utilitywarehouse/energy-services v0.4.5
@@ -28,6 +28,11 @@ require (
 	golang.org/x/sync v0.3.0
 	google.golang.org/api v0.126.0
 	google.golang.org/protobuf v1.31.0
+)
+
+require (
+	github.com/alvaroloes/enumer v1.1.2 // indirect
+	github.com/pascaldekloe/name v1.0.1 // indirect
 )
 
 require (
@@ -48,12 +53,12 @@ require (
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
 	github.com/cncf/udpa/go v0.0.0-20220112060539-c52dc94e7fbe // indirect
 	github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4 // indirect
-	github.com/containerd/containerd v1.7.1 // indirect
+	github.com/containerd/containerd v1.7.2 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
-	github.com/docker/docker v24.0.4+incompatible // indirect
+	github.com/docker/docker v24.0.5+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
@@ -85,7 +90,7 @@ require (
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/puddle/v2 v2.2.0 // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
 	github.com/jcmturner/dnsutils/v2 v2.0.0 // indirect
 	github.com/jcmturner/gofork v1.7.6 // indirect
@@ -94,7 +99,7 @@ require (
 	github.com/klauspost/asmfmt v1.3.2 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
-	github.com/lib/pq v1.10.7 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/minio/asm2plan9s v0.0.0-20200509001527-cdd76441f9d8 // indirect
@@ -105,7 +110,7 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc4 // indirect
-	github.com/opencontainers/runc v1.1.7 // indirect
+	github.com/opencontainers/runc v1.1.8 // indirect
 	github.com/opsgenie/opsgenie-go-sdk v0.0.0-20210305051615-8fb766c7514b // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -116,7 +121,8 @@ require (
 	github.com/prometheus/procfs v0.11.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/testcontainers/testcontainers-go v0.20.1 // indirect
+	github.com/testcontainers/testcontainers-go v0.21.0 // indirect
+	github.com/utilitywarehouse/energy-pkg/domain v1.24.8
 	github.com/utilitywarehouse/energy-pkg/errorcodes v1.0.3 // indirect
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5 // indirect
 	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 // indirect
@@ -134,6 +140,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.16.0 // indirect
 	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
+	golang.org/x/exp v0.0.0-20230725093048-515e97ebf090 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
