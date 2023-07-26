@@ -16,13 +16,13 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
-	store "github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 )
 
-func runHttpApi(c *cli.Context) error {
+func runHTTPApi(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 

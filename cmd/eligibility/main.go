@@ -110,7 +110,7 @@ func main() {
 					},
 				),
 				Before: app.Before,
-				Action: runHttpApi,
+				Action: runHTTPApi,
 			},
 			{
 				Name: "evaluator",
