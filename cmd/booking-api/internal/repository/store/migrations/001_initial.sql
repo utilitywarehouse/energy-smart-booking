@@ -31,7 +31,7 @@ CREATE INDEX occupancy_site_id_idx ON occupancy(site_id);
 
 CREATE TABLE IF NOT EXISTS site (
     site_id                     TEXT PRIMARY KEY,
-    postcode                    TEXT NOT NULL,
+    postcode                    TEXT,
     uprn                        TEXT,
     building_name_number        TEXT,
     dependent_thoroughfare      TEXT,

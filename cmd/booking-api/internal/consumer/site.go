@@ -64,15 +64,9 @@ func (h *SiteHandler) Handle(ctx context.Context, message substrate.Message) err
 				return nil
 			}
 
-			postcode := address.GetPostcode()
-			if postcode == "" {
-				log.Infof("skip event [%s] for site [%s]: empty post code", eventUuid, ev.GetSiteId())
-				return nil
-			}
-
 			site := models.Site{
 				SiteID:                  ev.GetSiteId(),
-				Postcode:                postcode,
+				Postcode:                address.GetPostcode(),
 				UPRN:                    address.GetUprn(),
 				BuildingNameNumber:      address.GetBuildingNameNumber(),
 				DependentThoroughfare:   address.GetDependentThoroughfare(),
