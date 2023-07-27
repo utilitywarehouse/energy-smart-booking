@@ -35,13 +35,13 @@ func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) 
 		return nil, err
 	}
 
-	var code contract.AvailabilityErrorCodes
+	var code *contract.AvailabilityErrorCodes
 	if resp.ResponseCode != "" {
-		code = MapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage)
+		*code = MapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage)
 	}
 	return &contract.GetAvailableSlotsResponse{
 		Slots:      slots,
-		ErrorCodes: &code,
+		ErrorCodes: code,
 	}, nil
 }
 
