@@ -42,6 +42,14 @@ const (
 
 	// http
 	httpPort = "http-port"
+
+	// BigQuery
+	bigQueryProjectID            = "big-query-project-id"
+	bigQueryDatasetID            = "big-query-dataset-id"
+	bigQueryCredentialsFile      = "big-query-credentials-file"
+	bigQueryCampaignabilityTable = "big-query-campaignability-table"
+	bigQuerySuppliabilityTable   = "big-query-suppliability-table"
+	bigQueryEligibilityTable     = "big-query-eligibility-table"
 )
 
 var gitHash string // populated at compile time
@@ -240,6 +248,68 @@ func main() {
 				),
 				Before: app.Before,
 				Action: runProjector,
+			},
+			{
+				Name: "bq-indexer",
+				Flags: app.DefaultFlags().WithKafkaRequired().WithCustom(
+					&cli.StringFlag{
+						Name:     postgresDSN,
+						EnvVars:  []string{"POSTGRES_DSN"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     eligibilityTopic,
+						EnvVars:  []string{"ELIGIBILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     suppliabilityTopic,
+						EnvVars:  []string{"SUPPLIABILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     campaignabilityTopic,
+						EnvVars:  []string{"CAMPAIGNABILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bigQueryProjectID,
+						EnvVars:  []string{"BIG_QUERY_PROJECT_ID"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bigQueryDatasetID,
+						EnvVars:  []string{"BIG_QUERY_DATASET_ID"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bigQueryCredentialsFile,
+						EnvVars:  []string{"BIG_QUERY_CREDENTIALS_FILE"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bigQueryCampaignabilityTable,
+						EnvVars:  []string{"BIG_QUERY_CAMPAIGNABILITY_TABLE"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bigQuerySuppliabilityTable,
+						EnvVars:  []string{"BIG_QUERY_SUPPLIABILITY_TABLE"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bigQueryEligibilityTable,
+						EnvVars:  []string{"BIG_QUERY_ELIGIBILITY_TABLE"},
+						Required: true,
+					},
+					&cli.IntFlag{
+						Name:    batchSize,
+						EnvVars: []string{"BATCH_SIZE"},
+						Value:   1,
+					},
+				),
+				Before: app.Before,
+				Action: runBigQueryIndexer,
 			},
 		},
 	}
