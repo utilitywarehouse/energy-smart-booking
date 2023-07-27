@@ -4,18 +4,17 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"google.golang.org/genproto/googleapis/type/date"
 )
 
 const (
-	sendingSystem      = "UTIL"
-	receivingSystem    = "LB"
-	requestTimeFormat  = "02/01/2006 15:04:05"
-	responseDateFormat = "02/01/2006"
-	responseTimeFormat = "%d:00-%d:00"
+	sendingSystem         = "UTIL"
+	receivingSystem       = "LB"
+	requestTimeFormat     = "02/01/2006 15:04:05"
+	appointmentDateFormat = "02/01/2006"
+	appointmentTimeFormat = "%d:00-%d:00"
 )
 
 // TODO
@@ -36,14 +35,13 @@ func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) 
 		return nil, err
 	}
 
-	logrus.Debugf("Code: %s, Message: %s", resp.ResponseCode, resp.ResponseMessage)
 	var code contract.AvailabilityErrorCodes
-	if resp.ResponseCode != "" && resp.ResponseCode != "null" {
-		code = MapErrorCodes(resp.ResponseCode, resp.ResponseMessage)
+	if resp.ResponseCode != "" {
+		code = MapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage)
 	}
 	return &contract.GetAvailableSlotsResponse{
 		Slots:      slots,
-		ErrorCodes: code,
+		ErrorCodes: &code,
 	}, nil
 }
 
@@ -82,7 +80,7 @@ func MapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]
 }
 
 func MapAppointmentDate(appointmentDate string) (*date.Date, error) {
-	appDate, err := time.Parse(responseDateFormat, appointmentDate)
+	appDate, err := time.Parse(appointmentDateFormat, appointmentDate)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +95,7 @@ func MapAppointmentDate(appointmentDate string) (*date.Date, error) {
 
 func MapAppointmentTime(appointmentTime string) (int32, int32, error) {
 	var start, end int32
-	read, err := fmt.Sscanf(appointmentTime, responseTimeFormat, &start, &end)
+	read, err := fmt.Sscanf(appointmentTime, appointmentTimeFormat, &start, &end)
 	if err != nil {
 		return -1, -1, err
 	}
@@ -109,7 +107,7 @@ func MapAppointmentTime(appointmentTime string) (int32, int32, error) {
 }
 
 // TODO
-func MapErrorCodes(responseCode, responseMessage string) contract.AvailabilityErrorCodes {
+func MapAvailabilityErrorCodes(responseCode, responseMessage string) contract.AvailabilityErrorCodes {
 	switch responseMessage {
 	case "EA03":
 		if responseCode != "" {
