@@ -253,11 +253,6 @@ func main() {
 				Name: "bq-indexer",
 				Flags: app.DefaultFlags().WithKafkaRequired().WithCustom(
 					&cli.StringFlag{
-						Name:     postgresDSN,
-						EnvVars:  []string{"POSTGRES_DSN"},
-						Required: true,
-					},
-					&cli.StringFlag{
 						Name:     eligibilityTopic,
 						EnvVars:  []string{"ELIGIBILITY_EVENTS_TOPIC"},
 						Required: true,
