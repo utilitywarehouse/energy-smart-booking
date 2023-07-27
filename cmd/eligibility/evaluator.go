@@ -193,7 +193,7 @@ func runEvaluator(c *cli.Context) error {
 	})
 	g.Go(func() error {
 		defer logrus.Info("service state events consumer finished")
-		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, serviceSource, consumer.HandleService(serviceStore, evaluator, c.Bool(stateRebuild)))
+		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, serviceSource, consumer.HandleService(serviceStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
 		defer logrus.Info("site events consumer finished")
