@@ -309,7 +309,7 @@ func Test_OccupancyStore_GetOccupanciesByAccountID(t *testing.T) {
 	for _, tc := range testCases {
 
 		t.Run(tc.description, func(t *testing.T) {
-			occupancy, err := occupancyStore.GetOccupanciesByAccountID(ctx, tc.input.accountID)
+			occupancy, err := occupancyStore.GetLiveOccupanciesByAccountID(ctx, tc.input.accountID)
 
 			if err != nil {
 				if tc.output.err != nil {

@@ -65,20 +65,24 @@ func (s *OccupancyStore) GetOccupancyByID(ctx context.Context, occupancyID strin
 	return &occ, nil
 }
 
-func (s *OccupancyStore) GetOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error) {
+func (s *OccupancyStore) GetLiveOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error) {
 	occupancies := make([]models.Occupancy, 0)
 
 	q := `SELECT 
-		occupancy_id,
-		site_id,
-		account_id,
-		created_at
+		o.occupancy_id,
+		o.site_id,
+		o.account_id,
+		o.created_at
 	FROM 
-		occupancy
+		occupancy o
+	INNER JOIN service s 
+		ON o.occupancy_id = s.occupancy_id
 	WHERE
-		account_id = $1
+		o.account_id = $1
+	AND
+		s.is_live IS TRUE
 	ORDER BY
-		created_at DESC;`
+		o.created_at DESC;`
 
 	rows, err := s.pool.Query(ctx, q, accountID)
 	if err != nil {

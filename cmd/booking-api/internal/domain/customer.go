@@ -22,7 +22,7 @@ type EligibilityGateway interface {
 }
 
 type OccupancyStore interface {
-	GetOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error)
+	GetLiveOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error)
 }
 
 type SiteStore interface {
@@ -62,7 +62,7 @@ func (d CustomerDomain) GetAccountAddressByAccountID(ctx context.Context, accoun
 
 	var targetOccupancy models.Occupancy = models.Occupancy{}
 
-	occupancies, err := d.occupancyStore.GetOccupanciesByAccountID(ctx, accountID)
+	occupancies, err := d.occupancyStore.GetLiveOccupanciesByAccountID(ctx, accountID)
 	if err != nil {
 		return models.AccountAddress{}, fmt.Errorf("failed to get occupancies by account id, %w", err)
 	}

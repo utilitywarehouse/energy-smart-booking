@@ -132,7 +132,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 				accountID: "account-id-1",
 			},
 			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
-				oSt.EXPECT().GetOccupanciesByAccountID(ctx, "account-id-1").Return(
+				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return(
 					[]models.Occupancy{
 						{
 							OccupancyID: "occupancy-id-1",
@@ -204,7 +204,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 				accountID: "account-id-1",
 			},
 			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
-				oSt.EXPECT().GetOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{}, nil)
+				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{}, nil)
 			},
 			output: outputParams{
 				address: models.AccountAddress{},
@@ -217,7 +217,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 				accountID: "account-id-1",
 			},
 			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
-				oSt.EXPECT().GetOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{
+				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{
 					{
 						OccupancyID: "occupancy-id-1",
 						SiteID:      "site-id-1",
