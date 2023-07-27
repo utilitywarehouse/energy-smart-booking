@@ -52,6 +52,10 @@ func init() {
 				EnvVars: []string{"PLATFORM_KAFKA_CONSUMER_GROUP"},
 			},
 			&cli.StringFlag{
+				Name:    flagBookingRefTopic,
+				EnvVars: []string{"BOOKING_REFERENCE_TOPIC"},
+			},
+			&cli.StringFlag{
 				Name:    flagPostgresDSN,
 				EnvVars: []string{"POSTGRES_DSN"},
 			},
