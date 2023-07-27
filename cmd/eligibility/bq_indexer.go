@@ -58,7 +58,7 @@ func runBigQueryIndexer(c *cli.Context) error {
 
 	bqClient, err := bigquery.NewClient(ctx, c.String(bigQueryProjectID), option.WithCredentialsFile(c.String(bigQueryCredentialsFile)))
 	if err != nil {
-		log.WithError(err).Panic("unable to create bigquery client")
+		return fmt.Errorf("unable to create bigquery client: %w", err)
 	}
 
 	eligibilityIndexer := bq.NewEligibilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryEligibilityTable))
@@ -66,15 +66,15 @@ func runBigQueryIndexer(c *cli.Context) error {
 	campaignabilityIndexer := bq.NewCampaignabilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryCampaignabilityTable))
 
 	g.Go(func() error {
-		defer log.Info("eligibility big query indexer finished")
+		defer log.Info("eligibility consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, eligibilitySource, eligibilityIndexer)
 	})
 	g.Go(func() error {
-		defer log.Info("suppliability big query indexer finished")
+		defer log.Info("suppliability consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, suppliabilitySource, suppliabilityIndexer)
 	})
 	g.Go(func() error {
-		defer log.Info("campaignability big query indexer finished")
+		defer log.Info("campaignability consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, campaignabilitySource, campaignabilityIndexer)
 	})
 
