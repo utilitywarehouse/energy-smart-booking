@@ -8,20 +8,19 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/sirupsen/logrus"
+	"cloud.google.com/go/bigquery"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
-	"github.com/utilitywarehouse/energy-pkg/substratemessage"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/consumer"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
-	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
+	"github.com/utilitywarehouse/energy-pkg/substratemessage/v2"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/bq"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/api/option"
 )
 
-func runProjector(c *cli.Context) error {
+func runBigQueryIndexer(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
@@ -29,17 +28,6 @@ func runProjector(c *cli.Context) error {
 		WithPort(c.Int(app.OpsPort)).
 		WithHash(gitHash).
 		WithDetails(appName, appDesc)
-
-	pool, err := store.Setup(ctx, c.String(postgresDSN))
-	if err != nil {
-		return err
-	}
-	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
-	defer pool.Close()
-
-	eligibilityDB := store.NewEligibility(pool)
-	suppliabilityDB := store.NewSuppliability(pool)
-	campaignabilityDB := store.NewCampaignability(pool)
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -68,23 +56,32 @@ func runProjector(c *cli.Context) error {
 	defer campaignabilitySource.Close()
 	opsServer.Add("campaignability-events-source", substratehealth.NewCheck(campaignabilitySource, "unable to consume campaignability events"))
 
+	bqClient, err := bigquery.NewClient(ctx, c.String(bigQueryProjectID), option.WithCredentialsFile(c.String(bigQueryCredentialsFile)))
+	if err != nil {
+		return fmt.Errorf("unable to create bigquery client: %w", err)
+	}
+
+	eligibilityIndexer := bq.NewEligibilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryEligibilityTable))
+	suppliabilityIndexer := bq.NewSuppliabilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQuerySuppliabilityTable))
+	campaignabilityIndexer := bq.NewCampaignabilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryCampaignabilityTable))
+
 	g.Go(func() error {
-		defer logrus.Info("eligibility events consumer finished")
-		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, eligibilitySource, consumer.HandleEligibility(eligibilityDB))
+		defer log.Info("eligibility consumer finished")
+		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, eligibilitySource, eligibilityIndexer)
 	})
 	g.Go(func() error {
-		defer logrus.Info("suppliability events consumer finished")
-		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, suppliabilitySource, consumer.HandleSuppliability(suppliabilityDB))
+		defer log.Info("suppliability consumer finished")
+		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, suppliabilitySource, suppliabilityIndexer)
 	})
 	g.Go(func() error {
-		defer logrus.Info("campaignability events consumer finished")
-		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, campaignabilitySource, consumer.HandleCampaignability(campaignabilityDB))
+		defer log.Info("campaignability consumer finished")
+		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, campaignabilitySource, campaignabilityIndexer)
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer logrus.Info("signal handler finished")
+		defer log.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
