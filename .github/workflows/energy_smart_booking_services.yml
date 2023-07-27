@@ -16,3 +16,9 @@ jobs:
         source_files: cmd/lowribeck-api
         service: energy-smart-booking-lowribeck-api
       secrets: inherit
+  booking-api:
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/booking-api
+      service: energy-smart-booking-api
+    secrets: inherit
