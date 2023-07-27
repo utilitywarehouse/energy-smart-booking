@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -13,7 +15,6 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	grpcHelper "github.com/utilitywarehouse/energy-services/grpc"
-	"github.com/utilitywarehouse/energy-services/service"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"golang.org/x/sync/errgroup"
@@ -39,7 +40,7 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name: "api",
-				Flags: app.DefaultFlags().WithCustom(
+				Flags: app.DefaultFlags().WithGrpc().WithCustom(
 					&cli.StringFlag{
 						Name:     baseURL,
 						EnvVars:  []string{"BASE_URL"},
@@ -81,35 +82,51 @@ func runServer(c *cli.Context) error {
 		WithHash(gitHash).
 		WithDetails(appName, appDesc)
 
+	g, ctx := errgroup.WithContext(ctx)
+
 	timeout, err := time.ParseDuration(httpTimeout)
 	if err != nil {
 		log.WithError(err).Panic("error parsing timeout duration")
 	}
 	httpClient := &http.Client{Timeout: timeout}
 
-	grpcServer := grpcHelper.CreateServerWithLogLvl(app.GrpcLogLevel)
-	reflection.Register(grpcServer)
+	g.Go(func() error {
+		grpcServer := grpcHelper.CreateServerWithLogLvl(app.GrpcLogLevel)
+		reflection.Register(grpcServer)
 
-	listen, err := net.Listen("tcp", app.GrpcPort)
-	if err != nil {
-		log.WithError(err).Panic("failed to listen on GRPC port")
-	}
-	defer listen.Close()
+		listen, err := net.Listen("tcp", app.GrpcPort)
+		if err != nil {
+			log.WithError(err).Panic("failed to listen on GRPC port")
+		}
+		defer listen.Close()
 
-	client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
-	lowribeckAPI := api.New(client)
-	contracts.RegisterLowriBeckAPIServer(grpcServer, lowribeckAPI)
+		client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
+		lowribeckAPI := api.New(client)
+		contracts.RegisterLowriBeckAPIServer(grpcServer, lowribeckAPI)
 
-	g, ctx := errgroup.WithContext(ctx)
+		return grpcServer.Serve(listen)
+	})
 
 	g.Go(func() error {
 		return opsServer.Start(ctx)
 	})
 
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 	g.Go(func() error {
-		return grpcServer.Serve(listen)
+		defer log.Info("signal handler finished")
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case sig := <-sigChan:
+			switch sig {
+			case syscall.SIGTERM:
+				log.Info("cancelling context")
+				cancel()
+			}
+		}
+		return nil
 	})
 
-	service.WaitForShutdown(cancel)
-	return nil
+	return g.Wait()
 }
