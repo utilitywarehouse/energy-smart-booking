@@ -47,14 +47,14 @@ func runBigQueryIndexer(c *cli.Context) error {
 		return fmt.Errorf("unable to connect to suppliability events kafka source: %w", err)
 	}
 	defer suppliabilitySource.Close()
-	opsServer.Add("suppliability-events-source", substratehealth.NewCheck(eligibilitySource, "unable to consume suppliability events"))
+	opsServer.Add("suppliability-events-source", substratehealth.NewCheck(suppliabilitySource, "unable to consume suppliability events"))
 
 	campaignabilitySource, err := app.GetKafkaSource(c, c.String(app.KafkaConsumerGroup), c.String(campaignabilityTopic))
 	if err != nil {
 		return fmt.Errorf("unable to connect to campaignability events kafka source: %w", err)
 	}
 	defer campaignabilitySource.Close()
-	opsServer.Add("campaignability-events-source", substratehealth.NewCheck(eligibilitySource, "unable to consume campaignability events"))
+	opsServer.Add("campaignability-events-source", substratehealth.NewCheck(campaignabilitySource, "unable to consume campaignability events"))
 
 	bqClient, err := bigquery.NewClient(ctx, c.String(bigQueryProjectID), option.WithCredentialsFile(c.String(bigQueryCredentialsFile)))
 	if err != nil {
