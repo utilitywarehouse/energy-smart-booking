@@ -28,7 +28,6 @@ const (
 	baseURL      = "base-url"
 	authUser     = "auth-user"
 	authPassword = "auth-password"
-	httpTimeout  = "30s"
 )
 
 var gitHash string // populated at compile time
@@ -56,11 +55,6 @@ func main() {
 						EnvVars:  []string{"AUTH_PASSWORD"},
 						Required: true,
 					},
-					&cli.StringFlag{
-						Name:     httpTimeout,
-						EnvVars:  []string{"HTTP_TIMEOUT"},
-						Required: true,
-					},
 				),
 				Before: app.Before,
 				Action: runServer,
@@ -84,11 +78,7 @@ func runServer(c *cli.Context) error {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	timeout, err := time.ParseDuration(httpTimeout)
-	if err != nil {
-		log.WithError(err).Panic("error parsing timeout duration")
-	}
-	httpClient := &http.Client{Timeout: timeout}
+	httpClient := &http.Client{Timeout: 30 * time.Second}
 
 	g.Go(func() error {
 		grpcServer := grpcHelper.CreateServerWithLogLvl(app.GrpcLogLevel)
