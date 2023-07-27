@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -24,7 +25,11 @@ type ServiceStore interface {
 	AddEndDate(ctx context.Context, serviceID string, at time.Time) error
 }
 
-func HandleService(s ServiceStore, evaluator Evaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
+type ServiceOccupancyStore interface {
+	Get(ctx context.Context, occupancyID string) (store.Occupancy, error)
+}
+
+func HandleService(s ServiceStore, occupancyStore ServiceOccupancyStore, evaluator Evaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -63,9 +68,16 @@ func HandleService(s ServiceStore, evaluator Evaluator, stateRebuild bool) subst
 				if !stateRebuild {
 					occupancyID := service.(servicer).GetOccupancyId()
 					if occupancyID != "" {
-						err = evaluator.RunFull(ctx, occupancyID)
-						if err != nil {
-							return fmt.Errorf("failed to run evaluation for service state msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+						// make sure occupancy exists by the time we are informed of service
+						_, err = occupancyStore.Get(ctx, occupancyID)
+						if err != nil && !errors.Is(err, store.ErrOccupancyNotFound) {
+							return fmt.Errorf("failed to query occupancy for service state msg %s, occupancy id %s: %w", env.GetUuid(), occupancyID, err)
+						}
+						if err == nil {
+							err = evaluator.RunFull(ctx, occupancyID)
+							if err != nil {
+								return fmt.Errorf("failed to run evaluation for service state msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+							}
 						}
 					}
 				}

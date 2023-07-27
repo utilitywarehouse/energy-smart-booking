@@ -40,8 +40,9 @@ func TestServiceConsumer(t *testing.T) {
 		}
 	}()
 	s := store.NewService(pool)
+	occupancyStore := store.NewOccupancy(pool)
 
-	handler := HandleService(s, nil, true)
+	handler := HandleService(s, occupancyStore, nil, true)
 
 	serviceEv1, err := test_common.MakeMessage(&energy_entities.EnergyServiceEvent{
 		Service: &energy_entities.Service{
