@@ -137,6 +137,7 @@ func serverAction(c *cli.Context) error {
 		defer log.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
+			grpcServer.GracefulStop()
 			return ctx.Err()
 		case <-sigChan:
 			cancel()
