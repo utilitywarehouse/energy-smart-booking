@@ -46,7 +46,7 @@ const (
 	// BigQuery
 	bigQueryProjectID            = "big-query-project-id"
 	bigQueryDatasetID            = "big-query-dataset-id"
-	bigQueryCredentialsFile      = "big-query-credentials-file"
+	bigQueryCredentialsFile      = "big-query-credentials-file" //nolint:gosec
 	bigQueryCampaignabilityTable = "big-query-campaignability-table"
 	bigQuerySuppliabilityTable   = "big-query-suppliability-table"
 	bigQueryEligibilityTable     = "big-query-eligibility-table"
