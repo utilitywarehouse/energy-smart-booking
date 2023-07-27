@@ -35,9 +35,14 @@ func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) 
 	if err != nil {
 		return nil, err
 	}
+
+	var code contract.AvailabilityErrorCodes
+	if resp.ResponseCode != "" {
+		code = MapErrorCodes(resp.ResponseCode, resp.ResponseMessage)
+	}
 	return &contract.GetAvailableSlotsResponse{
 		Slots:      slots,
-		ErrorCodes: MapErrorCodes(resp.ResponseCode, resp.ResponseMessage),
+		ErrorCodes: code,
 	}, nil
 }
 
@@ -111,6 +116,5 @@ func MapErrorCodes(responseCode, responseMessage string) contract.AvailabilityEr
 			return contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST
 		}
 	}
-	// return contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR
-	return nil
+	return contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR
 }
