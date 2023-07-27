@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"google.golang.org/genproto/googleapis/type/date"
@@ -57,8 +58,10 @@ func MapBookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBook
 
 func MapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
 	var err error
+	logrus.Debugf("Results: %d", len(availabilityResults))
 	slots := make([]*contract.BookingSlot, len(availabilityResults))
 	for i, res := range availabilityResults {
+		logrus.Debugf("Counter: %d, time: %s", i, res.AppointmentDate)
 		slots[i].Date, err = MapAppointmentDate(res.AppointmentDate)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment date: %v", err)

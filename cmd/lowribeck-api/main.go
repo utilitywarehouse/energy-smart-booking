@@ -26,10 +26,6 @@ const (
 	appName = "energy-smart-booking-opt-out"
 	appDesc = "handles energy smart booking account opt outs"
 
-	// gRPC
-	grpcPort     = "grpc-port"
-	grpcLogLevel = "grpc-log-level"
-
 	baseURL      = "base-url"
 	authUser     = "auth-user"
 	authPassword = "auth-password"
@@ -44,7 +40,7 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name: "api",
-				Flags: app.DefaultFlags().WithCustom(
+				Flags: app.DefaultFlags().WithGrpc().WithCustom(
 					&cli.StringFlag{
 						Name:     baseURL,
 						EnvVars:  []string{"BASE_URL"},
@@ -59,18 +55,6 @@ func main() {
 						Name:     authPassword,
 						EnvVars:  []string{"AUTH_PASSWORD"},
 						Required: true,
-					},
-					&cli.IntFlag{
-						Name:    grpcPort,
-						Usage:   "The port to listen on for API GRPC connections",
-						EnvVars: []string{"GRPC_PORT"},
-						Value:   8090,
-					},
-					&cli.StringFlag{
-						Name:    grpcLogLevel,
-						Usage:   "gRPC log level [debug|info|warn|error]",
-						EnvVars: []string{"GRPC_LOG_LEVEL"},
-						Value:   "error",
 					},
 				),
 				Before: app.Before,
@@ -98,10 +82,10 @@ func runServer(c *cli.Context) error {
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 
 	g.Go(func() error {
-		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(grpcLogLevel))
+		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
 		reflection.Register(grpcServer)
 
-		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(grpcPort)))
+		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(app.GrpcPort)))
 		if err != nil {
 			log.WithError(err).Panic("failed to listen on GRPC port")
 		}
