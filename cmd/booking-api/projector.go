@@ -194,13 +194,16 @@ func projectorAction(c *cli.Context) error {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
 		defer log.Info("signal handler finished")
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-sigChan:
-			cancel()
+		for {
+			select {
+			case <-ctx.Done():
+				log.Debug("context done")
+				return ctx.Err()
+			case <-sigChan:
+				log.Debug("sig chan received")
+				cancel()
+			}
 		}
-		return nil
 	})
 
 	return g.Wait()
