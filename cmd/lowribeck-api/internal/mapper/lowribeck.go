@@ -35,14 +35,14 @@ func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) 
 	if err != nil {
 		return nil, err
 	}
-
-	var code contract.AvailabilityErrorCodes
-	if resp.ResponseCode != "" {
-		code = MapErrorCodes(resp.ResponseCode, resp.ResponseMessage)
-	}
+	logrus.Debugf("Slots: %v", slots)
+	// var code contract.AvailabilityErrorCodes
+	// if resp.ResponseCode != "" {
+	// 	code = MapErrorCodes(resp.ResponseCode, resp.ResponseMessage)
+	// }
 	return &contract.GetAvailableSlotsResponse{
-		Slots:      slots,
-		ErrorCodes: code,
+		Slots: slots,
+		// ErrorCodes: code,
 	}, nil
 }
 
