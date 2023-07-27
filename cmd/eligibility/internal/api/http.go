@@ -230,8 +230,9 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 						err := s.evaluator.RunFull(newContext, id)
 						if err != nil {
 							logrus.Errorf("failed to run evaluation of occupancy ID %s", id)
+						} else {
+							logrus.Infof("Succesfully run evaluation for occupancy %s", id)
 						}
-						logrus.Infof("Succesfully run evaluation for occupancy %s", id)
 					}
 				}()
 			}
