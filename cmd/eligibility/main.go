@@ -39,6 +39,9 @@ const (
 	// gRPC
 	grpcPort     = "grpc-port"
 	grpcLogLevel = "grpc-log-level"
+
+	// http
+	httpPort = "http-port"
 )
 
 var gitHash string // populated at compile time
@@ -73,6 +76,41 @@ func main() {
 				),
 				Before: app.Before,
 				Action: runGRPCApi,
+			},
+			{
+				Name:  "http-api",
+				Usage: "run a http API for clients to query eligibility of an account for smart booking",
+				Flags: app.DefaultFlags().WithKafkaRequired().WithCustom(
+
+					&cli.IntFlag{
+						Name:    httpPort,
+						Usage:   "The port to listen on for API http connections",
+						EnvVars: []string{"HTTP_PORT"},
+						Value:   8091,
+					},
+					&cli.StringFlag{
+						Name:     postgresDSN,
+						EnvVars:  []string{"POSTGRES_DSN"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     eligibilityTopic,
+						EnvVars:  []string{"ELIGIBILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     suppliabilityTopic,
+						EnvVars:  []string{"SUPPLIABILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     campaignabilityTopic,
+						EnvVars:  []string{"CAMPAIGNABILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
+				),
+				Before: app.Before,
+				Action: runHTTPApi,
 			},
 			{
 				Name: "evaluator",
