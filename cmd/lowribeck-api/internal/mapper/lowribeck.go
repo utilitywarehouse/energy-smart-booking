@@ -63,21 +63,21 @@ func MapBookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBook
 }
 
 func MapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
-	var err error
+	// var err error
 	logrus.Debugf("Results: %d", len(availabilityResults))
 	slots := make([]*contract.BookingSlot, len(availabilityResults))
 	for i, res := range availabilityResults {
-		logrus.Debugf("Counter: %d, time: %s", i, res.AppointmentDate)
-		slots[i].Date, err = MapAppointmentDate(res.AppointmentDate)
-		if err != nil {
-			return nil, fmt.Errorf("error converting appointment date: %v", err)
-		}
+		logrus.Debugf("Counter: %d, App Date: %s. App Time: %s", i, res.AppointmentDate, res.AppointmentTime)
+		// slots[i].Date, err = MapAppointmentDate(res.AppointmentDate)
+		// if err != nil {
+		// 	return nil, fmt.Errorf("error converting appointment date: %v", err)
+		// }
 		logrus.Debugf("Date: %s", slots[i].Date)
 
-		slots[i].StartTime, slots[i].EndTime, err = MapAppointmentTime(res.AppointmentTime)
-		if err != nil {
-			return nil, fmt.Errorf("error converting appointment time: %v", err)
-		}
+		// slots[i].StartTime, slots[i].EndTime, err = MapAppointmentTime(res.AppointmentTime)
+		// if err != nil {
+		// 	return nil, fmt.Errorf("error converting appointment time: %v", err)
+		// }
 		logrus.Debugf("Start: %d, end: %d", slots[i].StartTime, slots[i].EndTime)
 	}
 	return slots, nil
