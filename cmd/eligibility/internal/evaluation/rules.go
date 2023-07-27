@@ -62,10 +62,12 @@ func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error
 		if s.Meter == nil {
 			result.addReason(domain.IneligibleReasonMissingData)
 		} else {
-			if s.Meter.Capacity == nil {
-				result.addReason(domain.IneligibleReasonMissingData)
-			} else if *s.Meter.Capacity != 6 && *s.Meter.Capacity != 212 {
-				result.addReason(domain.IneligibleReasonMeterLargeCapacity)
+			if s.Meter.SupplyType == energy_domain.SupplyTypeGas {
+				if s.Meter.Capacity == nil {
+					result.addReason(domain.IneligibleReasonMissingData)
+				} else if *s.Meter.Capacity != 6 && *s.Meter.Capacity != 212 {
+					result.addReason(domain.IneligibleReasonMeterLargeCapacity)
+				}
 			}
 		}
 	}
