@@ -31,6 +31,12 @@ func (e evaluation) status() domain.IneligibleReasons {
 func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error) {
 	result := evaluation{reason: make(map[domain.IneligibleReason]struct{}, 0)}
 
+	if o.Site == nil {
+		result.addReason(domain.IneligibleReasonMissingData)
+	} else if !o.Site.WanCoverage {
+		result.addReason(domain.IneligibleReasonNoWanCoverage)
+	}
+	
 	if len(o.Services) == 0 {
 		result.addReason(domain.IneligibleReasonNoActiveService)
 	}
