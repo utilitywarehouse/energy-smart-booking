@@ -196,8 +196,10 @@ func projectorAction(c *cli.Context) error {
 		defer log.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
+			log.Debug("received on done channel")
 			return ctx.Err()
 		case <-sigChan:
+			log.Debug("received sigterm")
 			cancel()
 		}
 		return nil
