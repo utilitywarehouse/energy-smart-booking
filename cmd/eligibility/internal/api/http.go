@@ -217,14 +217,14 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		go func() {
 			newContext := context.Background()
-			liveOccupancies := make(chan string, 50)
+			liveOccupancies := make(chan string, 400)
 			go func() {
 				err := s.occupancyStore.GetLiveOccupancies(newContext, liveOccupancies)
 				if err != nil {
 					logrus.Errorf("failed to get live occupancies for evaluation")
 				}
 			}()
-			for i := 0; i < 20; i++ {
+			for i := 0; i < 200; i++ {
 				go func() {
 					for id := range liveOccupancies {
 						err := s.evaluator.RunFull(newContext, id)
