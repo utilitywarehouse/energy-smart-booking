@@ -33,6 +33,7 @@ type campaignabilityStore interface {
 
 type occupancyStore interface {
 	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
+	GetLiveOccupancies(ctx context.Context, records chan<- string) error
 }
 
 type evaluator interface {
@@ -65,12 +66,15 @@ func NewHandler(
 
 const (
 	endpointAccountEvaluation = "/accounts/{ID}/evaluation"
+	endpointFullEvaluation    = "/evaluation"
 )
 
 // Register registers the http handler in a http router.
 func (s *Handler) Register(ctx context.Context, router *mux.Router) {
 	router.Handle(endpointAccountEvaluation, s.get(ctx)).Methods(http.MethodGet)
 	router.Handle(endpointAccountEvaluation, s.patch(ctx)).Methods(http.MethodPatch)
+	router.Handle(endpointFullEvaluation, s.runFullEvaluation(ctx)).Methods(http.MethodPatch)
+
 }
 
 func (s *Handler) get(ctx context.Context) http.Handler {
@@ -206,5 +210,24 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 				return
 			}
 		}
+	})
+}
+
+func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		go func() {
+			newContext := context.Background()
+			liveOccupancies := make(chan string, 50)
+			for i := 0; i < 20; i++ {
+				go func() {
+					for id := range liveOccupancies {
+						err := s.evaluator.RunFull(newContext, id)
+						if err != nil {
+							logrus.Errorf("failed to run evaluation of occupancy ID %s", id)
+						}
+					}
+				}()
+			}
+		}()
 	})
 }

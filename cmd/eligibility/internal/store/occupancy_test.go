@@ -54,4 +54,26 @@ func TestOccupancy(t *testing.T) {
 	sort.Strings(ids)
 	assert.Equal([]string{"occupancy2", "occupancy3"}, ids, "mismatch")
 
+	q := `
+		INSERT INTO services(id, occupancy_id, mpxn, supply_type, is_live)
+		VALUES ('id1', 'occupancy_id1', 'mpxn', 'gas', true), 
+		       ('id2', 'occupancy_id1', 'mpxn', 'elec', true),
+		       ('id3', 'occupancy_id2', 'mpxn', 'gas', false),
+		       ('id4', 'occupancy_id2', 'mpxn', 'elec', true);`
+
+	_, err = store.pool.Exec(ctx, q)
+	assert.NoError(err)
+
+	records := make(chan string, 5)
+	err = store.GetLiveOccupancies(ctx, records)
+	assert.NoError(err)
+
+	occupancies := make([]string, 0)
+	for id := range records {
+		occupancies = append(occupancies, id)
+	}
+
+	sort.Strings(occupancies)
+	assert.Equal([]string{"occupancy_id1", "occupancy_id2"}, occupancies)
+
 }

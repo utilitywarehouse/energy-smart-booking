@@ -80,6 +80,28 @@ func (s *OccupancyStore) GetIDsByMPXN(ctx context.Context, mpxn string) ([]strin
 	return s.queryOccupanciesByIdentifier(ctx, q, mpxn)
 }
 
+func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context, records chan<- string) error {
+	defer close(records)
+
+	q := `SELECT distinct(occupancy_id) FROM services WHERE is_live IS TRUE;`
+	rows, err := s.pool.Query(ctx, q)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var occID string
+		err = rows.Scan(&occID)
+		if err != nil {
+			return err
+		}
+		records <- occID
+	}
+
+	return rows.Err()
+}
+
 func (s *OccupancyStore) queryOccupanciesByIdentifier(ctx context.Context, query, id string) ([]string, error) {
 	var ids = make([]string, 0)
 
