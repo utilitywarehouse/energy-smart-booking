@@ -13,6 +13,7 @@ import (
 const (
 	sendingSystem      = "UTIL"
 	receivingSystem    = "LB"
+	requestTimeFormat  = "02/01/2006 15:04:05"
 	responseDateFormat = "02/01/2006"
 	responseTimeFormat = "%d:00-%d:00"
 )
@@ -47,7 +48,7 @@ func MapBookingRequest(req *contract.CreateBookingRequest) *lowribeck.CreateBook
 		ReferenceID:     req.GetReference(),
 		SendingSystem:   sendingSystem,
 		ReceivingSystem: receivingSystem,
-		CreatedDate:     time.Now().UTC().String(),
+		CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
 	}
 }
 
@@ -56,7 +57,7 @@ func MapBookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBook
 	return &contract.CreateBookingResponse{}
 }
 
-func MapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
+func MapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
 	var err error
 	logrus.Debugf("Results: %d", len(availabilityResults))
 	slots := make([]*contract.BookingSlot, len(availabilityResults))
