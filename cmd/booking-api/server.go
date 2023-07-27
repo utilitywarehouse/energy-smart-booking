@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/jackc/pgx/v5/stdlib"
 	log "github.com/sirupsen/logrus"
@@ -126,6 +129,19 @@ func serverAction(c *cli.Context) error {
 	g.Go(func() error {
 		defer log.Info("grpc server finished")
 		return grpcServer.Serve(listen)
+	})
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	g.Go(func() error {
+		defer log.Info("signal handler finished")
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-sigChan:
+			cancel()
+		}
+		return nil
 	})
 
 	return g.Wait()
