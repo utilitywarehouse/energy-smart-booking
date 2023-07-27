@@ -17,6 +17,9 @@ const (
 var (
 	gitHash string
 
+	flagBatchSize   = "batch-size"
+	flagPostgresDSN = "dsn"
+
 	application = &cli.App{
 		Name:   appName,
 		Usage:  appDesc,

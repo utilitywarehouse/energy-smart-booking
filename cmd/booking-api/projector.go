@@ -19,7 +19,8 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/consumer"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serializers"
 )
 
 var (
@@ -29,9 +30,6 @@ var (
 	flagPlatformKafkaBrokers       = "platform-kafka-brokers"
 	flagPlatformKafkaVersion       = "platform-kafka-version"
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
-
-	flagBatchSize   = "batch-size"
-	flagPostgresDSN = "dsn"
 
 	flagBookingRefTopic = "booking-reference-topic"
 )
@@ -167,7 +165,7 @@ func projectorAction(c *cli.Context) error {
 		{
 			FlagTopic: app.SiteTopic,
 			BatchSize: batchSize,
-			Handler:   consumer.HandleSite(store.NewSite(pool)),
+			Handler:   consumer.HandleSite(store.NewSite(pool, serializers.SiteSerializer{})),
 		},
 		{
 			FlagTopic: app.OccupancyTopic,

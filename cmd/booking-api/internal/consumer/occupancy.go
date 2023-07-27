@@ -8,13 +8,17 @@ import (
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"
 )
 
 type OccupancyStore interface {
-	Add(ctx context.Context, occupancyID, siteID, accountID string) error
-	UpdateSite(ctx context.Context, occupancyID, siteID string) error
+	Insert(occupancy models.Occupancy)
+	UpdateSiteID(occupancyID, siteID string)
+
+	Begin()
+	Commit(ctx context.Context) error
 }
 
 type OccupancyHandler struct {
@@ -25,6 +29,15 @@ func HandleOccupancy(store OccupancyStore) *OccupancyHandler {
 	return &OccupancyHandler{
 		store: store,
 	}
+}
+
+func (h *OccupancyHandler) PreHandle(_ context.Context) error {
+	h.store.Begin()
+	return nil
+}
+
+func (h *OccupancyHandler) PostHandle(ctx context.Context) error {
+	return h.store.Commit(ctx)
 }
 
 func (h *OccupancyHandler) Handle(ctx context.Context, message substrate.Message) error {
@@ -47,10 +60,19 @@ func (h *OccupancyHandler) Handle(ctx context.Context, message substrate.Message
 
 	switch ev := payload.(type) {
 	case *platform.OccupancyStartedEvent:
-		err = h.store.Add(ctx, ev.GetOccupancyId(), ev.GetSiteId(), ev.GetCustomerAccountId())
+
+		occupancy := models.Occupancy{
+			OccupancyID: ev.GetOccupancyId(),
+			SiteID:      ev.GetSiteId(),
+			AccountID:   ev.GetCustomerAccountId(),
+		}
+
+		h.store.Insert(occupancy)
+
 	case *platform.OccupancySiteCorrectedEvent:
-		err = h.store.UpdateSite(ctx, ev.GetOccupancyId(), ev.GetSiteId())
+		h.store.UpdateSiteID(ev.GetOccupancyId(), ev.GetSiteId())
 	}
+
 	if err != nil {
 		return fmt.Errorf("failed to process occupancy event %s: %w", env.Uuid, err)
 	}

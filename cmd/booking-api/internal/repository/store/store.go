@@ -5,7 +5,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/store/migrations"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/migrations"
 )
 
 func Setup(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
