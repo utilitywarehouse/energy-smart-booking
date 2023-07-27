@@ -43,7 +43,7 @@ func Test_GetEligibility(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if cmp.Equal(expected, actual) {
+	if !cmp.Equal(expected, actual) {
 		t.Fatalf("expected: %t, actual: %t", expected, actual)
 	}
 }
