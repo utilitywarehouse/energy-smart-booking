@@ -190,6 +190,11 @@ func projectorAction(c *cli.Context) error {
 		return fmt.Errorf("failed to initialise consumers: %w", err)
 	}
 
+	g.Go(func() error {
+		defer log.Info("ops server finished")
+		return opsServer.Start(ctx)
+	})
+
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
