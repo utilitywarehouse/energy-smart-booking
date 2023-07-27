@@ -67,8 +67,12 @@ func Test_BookingReferenceStore_Upsert(t *testing.T) {
 	for _, tc := range testCases {
 
 		t.Run(tc.description, func(t *testing.T) {
-			err := bookingReferenceStore.Upsert(ctx, tc.input.bookingReference)
 
+			bookingReferenceStore.Begin()
+
+			bookingReferenceStore.Upsert(tc.input.bookingReference)
+
+			err := bookingReferenceStore.Commit(ctx)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
