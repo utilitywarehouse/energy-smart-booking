@@ -81,6 +81,8 @@ func HandleMeter(s MeterStore, occupancyStore OccupancyMeterStore, evaluator Eva
 				}
 			case *platform.GasMeterTypeCorrectedEvent:
 				err = s.AddMeterType(ctx, x.GetMeterId(), x.GetMeterType().String())
+			case *platform.GasMeterCapacityChangedEvent:
+				err = s.AddMeterCapacity(ctx, x.GetMeterId(), x.GetCapacity())
 
 			case *platform.ElectricityMeterInstalledEvent, *platform.GasMeterInstalledEvent:
 				err = s.InstallMeter(ctx, x.(meterIdentifier).GetMeterId(), env.OccurredAt.AsTime())

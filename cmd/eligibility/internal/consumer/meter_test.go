@@ -182,4 +182,18 @@ func TestGasMeterConsumer(t *testing.T) {
 	meter, err = s.Get(ctx, "mprn1")
 	assert.NoError(err, "failed to get meter")
 	assert.Equal(expected, meter, "meter mismatch")
+
+	meterEv6, err := test_common.MakeMessage(&platform.GasMeterCapacityChangedEvent{
+		MeterId:  "meterID1",
+		Capacity: 45.6,
+	})
+
+	var newCap float32 = 45.6
+	expected.Capacity = &newCap
+	err = handler(ctx, []substrate.Message{meterEv6})
+	assert.NoError(err, "failed to handle meter capacity changed event")
+
+	meter, err = s.Get(ctx, "mprn1")
+	assert.NoError(err, "failed to get meter")
+	assert.Equal(expected, meter, "meter mismatch")
 }
