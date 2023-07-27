@@ -30,6 +30,9 @@ jobs:
             elif [[ $file == cmd/lowribeck-api/** ]]; then
               echo "This modified file is under the 'cmd/lowribeck-api' folder."
               echo "::set-output name=lowribeck_api::true"
+            elif [[ $file == cmd/booking-api/** ]]; then
+              echo "This modified file is under the 'cmd/booking-api' folder."
+              echo "::set-output name=booking_api::true"
             elif [[ $file != cmd/** ]]; then
               echo "This modified file applies for all booking services"
               echo "::set-output name=booking_services::true"
@@ -52,6 +55,14 @@ jobs:
     with:
       source_files: cmd/lowribeck-api
       service: energy-smart-booking-lowribeck-api
+  
+  build_booking_api:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_api == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/booking-api
+      service: energy-smart-booking-api
     secrets: inherit
 
   build_booking_services:
