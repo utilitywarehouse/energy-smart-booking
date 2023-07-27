@@ -36,7 +36,7 @@ func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error
 	} else if !o.Site.WanCoverage {
 		result.addReason(domain.IneligibleReasonNoWanCoverage)
 	}
-	
+
 	if len(o.Services) == 0 {
 		result.addReason(domain.IneligibleReasonNoActiveService)
 	}
