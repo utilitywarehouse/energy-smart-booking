@@ -14,7 +14,10 @@ import (
 )
 
 type BookingReferenceStore interface {
-	Upsert(ctx context.Context, bookingReference models.BookingReference) error
+	Upsert(bookingReference models.BookingReference)
+
+	Begin()
+	Commit(ctx context.Context) error
 }
 
 type BookingReferenceHandler struct {
@@ -25,6 +28,15 @@ func HandleBookingReference(store BookingReferenceStore) *BookingReferenceHandle
 	return &BookingReferenceHandler{
 		store: store,
 	}
+}
+
+func (h *BookingReferenceHandler) PreHandle(_ context.Context) error {
+	h.store.Begin()
+	return nil
+}
+
+func (h *BookingReferenceHandler) PostHandle(ctx context.Context) error {
+	return h.store.Commit(ctx)
 }
 
 func (h *BookingReferenceHandler) Handle(ctx context.Context, message substrate.Message) error {
@@ -52,10 +64,7 @@ func (h *BookingReferenceHandler) Handle(ctx context.Context, message substrate.
 			MPXN:      ev.GetMpxn(),
 		}
 
-		err = h.store.Upsert(ctx, bookingReference)
-		if err != nil {
-			return fmt.Errorf("failed to persist booking reference for event [%s]: %w", env.GetUuid(), err)
-		}
+		h.store.Upsert(bookingReference)
 	}
 
 	return nil

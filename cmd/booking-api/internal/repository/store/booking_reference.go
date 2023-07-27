@@ -13,14 +13,26 @@ import (
 var ErrBookingReferenceNotFound = errors.New("booking reference not found")
 
 type BookingReferenceStore struct {
-	pool *pgxpool.Pool
+	pool  *pgxpool.Pool
+	batch *pgx.Batch
 }
 
 func NewBookingReference(pool *pgxpool.Pool) *BookingReferenceStore {
 	return &BookingReferenceStore{pool: pool}
 }
 
-func (s *BookingReferenceStore) Upsert(ctx context.Context, bookingReference models.BookingReference) error {
+func (s *BookingReferenceStore) Begin() {
+	s.batch = &pgx.Batch{}
+}
+
+func (s *BookingReferenceStore) Commit(ctx context.Context) error {
+	res := s.pool.SendBatch(ctx, s.batch)
+
+	s.batch = nil
+	return res.Close()
+}
+
+func (s *BookingReferenceStore) Upsert(bookingReference models.BookingReference) {
 	q := `
 	INSERT INTO booking_reference (mpxn, reference)
 	VALUES ($1, $2)
@@ -28,9 +40,7 @@ func (s *BookingReferenceStore) Upsert(ctx context.Context, bookingReference mod
 	DO UPDATE 
 	SET reference = $2, updated_at = now();`
 
-	_, err := s.pool.Exec(ctx, q, bookingReference.MPXN, bookingReference.Reference)
-
-	return err
+	s.batch.Queue(q, bookingReference.MPXN, bookingReference.Reference)
 }
 
 func (s *BookingReferenceStore) GetReferenceByMPXN(ctx context.Context, mpxn string) (string, error) {
