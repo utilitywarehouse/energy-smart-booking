@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,22 +11,13 @@ import (
 
 var ErrSiteNotFound = errors.New("site not found")
 
-type SiteSerializer interface {
-	SerializeSiteAddress(ctx context.Context, siteAddress models.SiteAddress) ([]byte, error)
-	UnserializeSiteAddress(ctx context.Context, blob []byte) (models.SiteAddress, error)
-}
-
 type SiteStore struct {
-	pool       *pgxpool.Pool
-	batch      *pgx.Batch
-	serializer SiteSerializer
+	pool  *pgxpool.Pool
+	batch *pgx.Batch
 }
 
-func NewSite(pool *pgxpool.Pool, serializer SiteSerializer) *SiteStore {
-	return &SiteStore{
-		pool:       pool,
-		serializer: serializer,
-	}
+func NewSite(pool *pgxpool.Pool) *SiteStore {
+	return &SiteStore{pool: pool}
 }
 
 func (s *SiteStore) Begin() {
@@ -40,53 +30,109 @@ func (s *SiteStore) Commit(ctx context.Context) error {
 	return res.Close()
 }
 
-func (s *SiteStore) Upsert(ctx context.Context, site models.Site) error {
+func (s *SiteStore) Upsert(site models.Site) {
 
 	q := `
-	INSERT INTO site (
-		site_id,
-		address)
-	VALUES ($1, $2)
+	INSERT INTO site (site_id,
+		postcode,
+		uprn,
+		building_name_number,
+		dependent_thoroughfare,
+		thoroughfare,
+		double_dependent_locality,
+		dependent_locality,
+		locality,
+		county,
+		town,
+		department,
+		organisation,
+		po_box,
+		delivery_point_suffix,
+		sub_building_name_number)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 	ON CONFLICT (site_id)
 	DO UPDATE 
-	SET address = $2,
+	SET postcode = $2,
+		uprn = $3,
+		building_name_number = $4,
+		dependent_thoroughfare = $5,
+		thoroughfare = $6,
+		double_dependent_locality = $7,
+		dependent_locality = $8,
+		locality = $9,
+		county = $10,
+		town = $11,
+		department = $12,
+		organisation = $13,
+		po_box = $14,
+		delivery_point_suffix = $15,
+		sub_building_name_number = $16,
 		updated_at = now();
 	`
 
-	addressBlob, err := s.serializer.SerializeSiteAddress(ctx, site.SiteAddress)
-	if err != nil {
-		return fmt.Errorf("failed to serialize site address, %w", err)
-	}
-
-	s.batch.Queue(q, site.SiteID, addressBlob)
-
-	return nil
+	s.batch.Queue(q,
+		site.SiteID,
+		site.Postcode,
+		site.UPRN,
+		site.BuildingNameNumber,
+		site.DependentThoroughfare,
+		site.Thoroughfare,
+		site.DoubleDependentLocality,
+		site.DependentLocality,
+		site.Locality,
+		site.County,
+		site.Town,
+		site.Department,
+		site.Organisation,
+		site.PoBox,
+		site.DeliveryPointSuffix,
+		site.SubBuildingNameNumber)
 }
 
 func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error) {
-	var querySiteID string
-	var blob []byte
+	var site models.Site
 	q := `SELECT 
 			site_id,
-			address
+			postcode,
+			uprn,
+			building_name_number,
+			dependent_thoroughfare,
+			thoroughfare,
+			double_dependent_locality,
+			dependent_locality,
+			locality,
+			county,
+			town,
+			department,
+			organisation,
+			po_box,
+			delivery_point_suffix,
+			sub_building_name_number
 	 FROM site 
 	 WHERE
 	 	site_id = $1;`
 	if err := s.pool.QueryRow(ctx, q, siteID).
-		Scan(&querySiteID, &blob); err != nil {
+		Scan(&site.SiteID,
+			&site.Postcode,
+			&site.UPRN,
+			&site.BuildingNameNumber,
+			&site.DependentThoroughfare,
+			&site.Thoroughfare,
+			&site.DoubleDependentLocality,
+			&site.DependentLocality,
+			&site.Locality,
+			&site.County,
+			&site.Town,
+			&site.Department,
+			&site.Organisation,
+			&site.PoBox,
+			&site.DeliveryPointSuffix,
+			&site.SubBuildingNameNumber); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrSiteNotFound
 		}
 		return nil, err
 	}
 
-	siteAddress, err := s.serializer.UnserializeSiteAddress(ctx, blob)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unserialize site address, %w", err)
-	}
-
-	return &models.Site{
-		SiteID:      querySiteID,
-		SiteAddress: siteAddress,
-	}, nil
+	return &site, nil
 }

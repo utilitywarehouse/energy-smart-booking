@@ -20,7 +20,6 @@ import (
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/consumer"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serializers"
 )
 
 var (
@@ -165,7 +164,7 @@ func projectorAction(c *cli.Context) error {
 		{
 			FlagTopic: app.SiteTopic,
 			BatchSize: batchSize,
-			Handler:   consumer.HandleSite(store.NewSite(pool, serializers.SiteSerializer{})),
+			Handler:   consumer.HandleSite(store.NewSite(pool)),
 		},
 		{
 			FlagTopic: app.OccupancyTopic,

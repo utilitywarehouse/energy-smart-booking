@@ -8,7 +8,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serializers"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
@@ -30,7 +29,7 @@ func Test_SiteStore_Upsert(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	store := store.NewSite(db, serializers.SiteSerializer{})
+	store := store.NewSite(db)
 
 	type inputParams struct {
 		site models.Site
@@ -47,24 +46,22 @@ func Test_SiteStore_Upsert(t *testing.T) {
 			description: "should upsert a site with site-id-1",
 			input: inputParams{
 				site: models.Site{
-					SiteID: "site-id-1",
-					SiteAddress: models.SiteAddress{
-						Postcode:                "post-code-1",
-						UPRN:                    "uprn",
-						BuildingNameNumber:      "building-name-number-1",
-						DependentThoroughfare:   "dependent-thoroughfare-1",
-						Thoroughfare:            "thoroughfare",
-						DoubleDependentLocality: "ddl-1",
-						DependentLocality:       "dl-1",
-						Locality:                "locality",
-						County:                  "county",
-						Town:                    "town",
-						Department:              "department",
-						Organisation:            "organisation",
-						PoBox:                   "po-box",
-						DeliveryPointSuffix:     "delivery-point-suffix",
-						SubBuildingNameNumber:   "sub-building-name-number",
-					},
+					SiteID:                  "site-id-1",
+					Postcode:                "post-code-1",
+					UPRN:                    "uprn",
+					BuildingNameNumber:      "building-name-number-1",
+					DependentThoroughfare:   "dependent-thoroughfare-1",
+					Thoroughfare:            "thoroughfare",
+					DoubleDependentLocality: "ddl-1",
+					DependentLocality:       "dl-1",
+					Locality:                "locality",
+					County:                  "county",
+					Town:                    "town",
+					Department:              "department",
+					Organisation:            "organisation",
+					PoBox:                   "po-box",
+					DeliveryPointSuffix:     "delivery-point-suffix",
+					SubBuildingNameNumber:   "sub-building-name-number",
 				},
 			},
 			output: nil,
@@ -73,24 +70,22 @@ func Test_SiteStore_Upsert(t *testing.T) {
 			description: "should upsert another site with site-id-2",
 			input: inputParams{
 				site: models.Site{
-					SiteID: "site-id-2",
-					SiteAddress: models.SiteAddress{
-						Postcode:                "post-code-1",
-						UPRN:                    "uprn",
-						BuildingNameNumber:      "building-name-number-1",
-						DependentThoroughfare:   "dependent-thoroughfare-1",
-						Thoroughfare:            "thoroughfare",
-						DoubleDependentLocality: "ddl-1",
-						DependentLocality:       "dl-1",
-						Locality:                "locality",
-						County:                  "county",
-						Town:                    "town",
-						Department:              "department",
-						Organisation:            "organisation",
-						PoBox:                   "po-box",
-						DeliveryPointSuffix:     "delivery-point-suffix",
-						SubBuildingNameNumber:   "sub-building-name-number",
-					},
+					SiteID:                  "site-id-2",
+					Postcode:                "post-code-1",
+					UPRN:                    "uprn",
+					BuildingNameNumber:      "building-name-number-1",
+					DependentThoroughfare:   "dependent-thoroughfare-1",
+					Thoroughfare:            "thoroughfare",
+					DoubleDependentLocality: "ddl-1",
+					DependentLocality:       "dl-1",
+					Locality:                "locality",
+					County:                  "county",
+					Town:                    "town",
+					Department:              "department",
+					Organisation:            "organisation",
+					PoBox:                   "po-box",
+					DeliveryPointSuffix:     "delivery-point-suffix",
+					SubBuildingNameNumber:   "sub-building-name-number",
 				},
 			},
 			output: nil,
@@ -99,24 +94,22 @@ func Test_SiteStore_Upsert(t *testing.T) {
 			description: "should upsert another site with the same previous site_id: site-id-1",
 			input: inputParams{
 				site: models.Site{
-					SiteID: "site-id-1",
-					SiteAddress: models.SiteAddress{
-						Postcode:                "post-code-1",
-						UPRN:                    "uprn",
-						BuildingNameNumber:      "building-name-number-1",
-						DependentThoroughfare:   "dependent-thoroughfare-1",
-						Thoroughfare:            "thoroughfare",
-						DoubleDependentLocality: "ddl-1",
-						DependentLocality:       "dl-1",
-						Locality:                "locality",
-						County:                  "county",
-						Town:                    "town",
-						Department:              "department",
-						Organisation:            "organisation",
-						PoBox:                   "po-box",
-						DeliveryPointSuffix:     "delivery-point-suffix",
-						SubBuildingNameNumber:   "sub-building-name-number",
-					},
+					SiteID:                  "site-id-1",
+					Postcode:                "post-code-1",
+					UPRN:                    "uprn",
+					BuildingNameNumber:      "building-name-number-1",
+					DependentThoroughfare:   "dependent-thoroughfare-1",
+					Thoroughfare:            "thoroughfare",
+					DoubleDependentLocality: "ddl-1",
+					DependentLocality:       "dl-1",
+					Locality:                "locality",
+					County:                  "county",
+					Town:                    "town",
+					Department:              "department",
+					Organisation:            "organisation",
+					PoBox:                   "po-box",
+					DeliveryPointSuffix:     "delivery-point-suffix",
+					SubBuildingNameNumber:   "sub-building-name-number",
 				},
 			},
 			output: nil,
@@ -128,12 +121,9 @@ func Test_SiteStore_Upsert(t *testing.T) {
 
 			store.Begin()
 
-			err := store.Upsert(ctx, tc.input.site)
-			if err != nil {
-				t.Fatalf("should not have errored: %s", err)
-			}
+			store.Upsert(tc.input.site)
 
-			err = store.Commit(ctx)
+			err := store.Commit(ctx)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
@@ -162,7 +152,7 @@ func Test_SiteStore_Get(t *testing.T) {
 
 	err = populateDB(ctx, db)
 
-	siteStore := store.NewSite(db, serializers.SiteSerializer{})
+	siteStore := store.NewSite(db)
 
 	type outputParams struct {
 		site *models.Site
@@ -181,24 +171,22 @@ func Test_SiteStore_Get(t *testing.T) {
 			input:       "site-id-a",
 			output: outputParams{
 				site: &models.Site{
-					SiteID: "site-id-a",
-					SiteAddress: models.SiteAddress{
-						Postcode:                "post-code-1",
-						UPRN:                    "uprn",
-						BuildingNameNumber:      "building-name-number",
-						DependentThoroughfare:   "dependent-thoroughfare",
-						Thoroughfare:            "thoroughfare",
-						DoubleDependentLocality: "double-dependent-locality",
-						DependentLocality:       "dependent-locality",
-						Locality:                "locality",
-						County:                  "county",
-						Town:                    "town",
-						Department:              "department",
-						Organisation:            "organisation",
-						PoBox:                   "po-box",
-						DeliveryPointSuffix:     "deliver-point-suffix",
-						SubBuildingNameNumber:   "sub-building-name-number",
-					},
+					SiteID:                  "site-id-a",
+					Postcode:                "post-code-1",
+					UPRN:                    "uprn",
+					BuildingNameNumber:      "building-name-number",
+					DependentThoroughfare:   "dependent-thoroughfare",
+					Thoroughfare:            "thoroughfare",
+					DoubleDependentLocality: "double-dependent-locality",
+					DependentLocality:       "dependent-locality",
+					Locality:                "locality",
+					County:                  "county",
+					Town:                    "town",
+					Department:              "department",
+					Organisation:            "organisation",
+					PoBox:                   "po-box",
+					DeliveryPointSuffix:     "deliver-point-suffix",
+					SubBuildingNameNumber:   "sub-building-name-number",
 				},
 				err: nil,
 			},

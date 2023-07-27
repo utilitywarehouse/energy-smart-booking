@@ -1,11 +1,7 @@
 package models
 
 type Site struct {
-	SiteID      string
-	SiteAddress SiteAddress
-}
-
-type SiteAddress struct {
+	SiteID                  string
 	Postcode                string
 	UPRN                    string
 	BuildingNameNumber      string
