@@ -31,26 +31,10 @@ CREATE INDEX occupancy_site_id_idx ON occupancy(site_id);
 
 CREATE TABLE IF NOT EXISTS site (
     site_id                     TEXT PRIMARY KEY,
-    postcode                    TEXT NOT NULL,
-    uprn                        TEXT,
-    building_name_number        TEXT,
-    dependent_thoroughfare      TEXT,
-    thoroughfare                TEXT,
-    double_dependent_locality   TEXT,
-    dependent_locality          TEXT,
-    locality                    TEXT,
-    county                      TEXT,
-    town                        TEXT,
-    department                  TEXT,
-    organisation                TEXT,
-    po_box                      TEXT,
-    delivery_point_suffix       TEXT,
-    sub_building_name_number    TEXT,
+    address                     JSONB,
 
     updated_at                  TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE INDEX site_id_idx ON site(site_id);
 
 -- +migrate Down
 DROP TABLE IF EXISTS booking_reference;

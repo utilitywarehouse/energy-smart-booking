@@ -15,25 +15,8 @@ func setupTestContainer(ctx context.Context) (testcontainers.Container, error) {
 func populateDB(ctx context.Context, pool *pgxpool.Pool) error {
 	_, err := pool.Exec(ctx, `	
 		INSERT INTO site (site_id,
-			postcode,
-			uprn,
-			building_name_number,
-			dependent_thoroughfare,
-			thoroughfare,
-			double_dependent_locality,
-			dependent_locality,
-			locality,
-			county,
-			town,
-			department,
-			organisation,
-			po_box,
-			delivery_point_suffix,
-			sub_building_name_number)
-		VALUES ('site-id-a', 'post-code-1', 'uprn', 'building-name-number',
-		'dependent-thoroughfare', 'thoroughfare', 'double-dependent-locality',
-		'dependent-locality', 'locality', 'county', 'town', 'department',
-		'organisation', 'po-box', 'deliver-point-suffix', 'sub-building-name-number');
+			address)
+		VALUES ('site-id-a', '{"postcode":"post-code-1","uprn":"uprn","building_name_number":"building-name-number","sub_building_name_number":"sub-building-name-number","dependent_thoroughfare":"dependent-thoroughfare","thoroughfare":"thoroughfare","double_dependent_locality":"double-dependent-locality","dependent_locality":"dependent-locality","locality":"locality","county":"county","town":"town","department":"department","organisation":"organisation","po_box":"po-box","delivery_point_suffix":"deliver-point-suffix"}');
 
 		INSERT INTO occupancy (occupancy_id, site_id, account_id, created_at)
 		VALUES ('occupancy-id', 'site-id', 'account-id', NOW());

@@ -14,7 +14,7 @@ import (
 )
 
 type SiteStore interface {
-	Upsert(site models.Site)
+	Upsert(ctx context.Context, site models.Site) error
 
 	Begin()
 	Commit(ctx context.Context) error
@@ -71,25 +71,30 @@ func (h *SiteHandler) Handle(ctx context.Context, message substrate.Message) err
 			}
 
 			site := models.Site{
-				SiteID:                  ev.GetSiteId(),
-				Postcode:                postcode,
-				UPRN:                    address.GetUprn(),
-				BuildingNameNumber:      address.GetBuildingNameNumber(),
-				DependentThoroughfare:   address.GetDependentThoroughfare(),
-				ThoroughFare:            address.GetThoroughfare(),
-				DoubleDependentLocality: address.GetDoubleDependentLocality(),
-				DependentLocality:       address.GetDependentLocality(),
-				Locality:                address.GetLocality(),
-				County:                  address.GetCounty(),
-				Town:                    address.GetTown(),
-				Department:              address.GetDepartment(),
-				Organisation:            address.GetOrganisation(),
-				PoBox:                   address.GetPoBox(),
-				DeliveryPointSuffix:     address.GetDeliveryPointSuffix(),
-				SubBuildingNameNumber:   address.GetSubBuildingNameNumber(),
+				SiteID: ev.GetSiteId(),
+				SiteAddress: models.SiteAddress{
+					Postcode:                postcode,
+					UPRN:                    address.GetUprn(),
+					BuildingNameNumber:      address.GetBuildingNameNumber(),
+					DependentThoroughfare:   address.GetDependentThoroughfare(),
+					Thoroughfare:            address.GetThoroughfare(),
+					DoubleDependentLocality: address.GetDoubleDependentLocality(),
+					DependentLocality:       address.GetDependentLocality(),
+					Locality:                address.GetLocality(),
+					County:                  address.GetCounty(),
+					Town:                    address.GetTown(),
+					Department:              address.GetDepartment(),
+					Organisation:            address.GetOrganisation(),
+					PoBox:                   address.GetPoBox(),
+					DeliveryPointSuffix:     address.GetDeliveryPointSuffix(),
+					SubBuildingNameNumber:   address.GetSubBuildingNameNumber(),
+				},
 			}
 
-			h.store.Upsert(site)
+			err := h.store.Upsert(ctx, site)
+			if err != nil {
+				return fmt.Errorf("failed to upsert site, %w", err)
+			}
 		}
 	}
 	return nil

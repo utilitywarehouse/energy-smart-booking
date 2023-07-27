@@ -93,19 +93,19 @@ func (d CustomerDomain) GetAccountAddressByAccountID(ctx context.Context, accoun
 	}
 
 	address := models.AccountAddress{
-		UPRN: site.UPRN,
+		UPRN: site.SiteAddress.UPRN,
 		PAF: models.PAF{
-			BuildingName:            site.BuildingNameNumber,
-			BuildingNumber:          site.BuildingNameNumber,
-			SubBuilding:             site.SubBuildingNameNumber,
-			Department:              site.Department,
-			DependentLocality:       site.DependentLocality,
-			DependentThoroughfare:   site.DependentThoroughfare,
-			DoubleDependentLocality: site.DoubleDependentLocality,
-			Organisation:            site.Organisation,
-			Postcode:                site.Postcode,
-			Thoroughfare:            site.ThoroughFare,
-			PostTown:                site.Town,
+			BuildingName:            site.SiteAddress.BuildingNameNumber,
+			BuildingNumber:          site.SiteAddress.BuildingNameNumber,
+			SubBuilding:             site.SiteAddress.SubBuildingNameNumber,
+			Department:              site.SiteAddress.Department,
+			DependentLocality:       site.SiteAddress.DependentLocality,
+			DependentThoroughfare:   site.SiteAddress.DependentThoroughfare,
+			DoubleDependentLocality: site.SiteAddress.DoubleDependentLocality,
+			Organisation:            site.SiteAddress.Organisation,
+			Postcode:                site.SiteAddress.Postcode,
+			Thoroughfare:            site.SiteAddress.Thoroughfare,
+			PostTown:                site.SiteAddress.Town,
 		},
 	}
 

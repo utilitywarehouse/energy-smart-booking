@@ -15,6 +15,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serializers"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
@@ -110,7 +111,7 @@ func serverAction(c *cli.Context) error {
 
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
-	siteStore := store.NewSite(pool)
+	siteStore := store.NewSite(pool, serializers.SiteSerializer{})
 
 	// DOMAIN //
 	customerDomain := domain.NewCustomerDomain(accountGw, eligibilityGw, occupancyStore, siteStore)

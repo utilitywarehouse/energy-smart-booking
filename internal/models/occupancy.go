@@ -11,7 +11,7 @@ type Occupancy struct {
 
 func (o Occupancy) IsEmpty() bool {
 	return o.AccountID == "" &&
-		o.CreatedAt == time.Time{} &&
+		o.CreatedAt.IsZero() &&
 		o.OccupancyID == "" &&
 		o.SiteID == ""
 }
