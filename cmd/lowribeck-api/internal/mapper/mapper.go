@@ -25,7 +25,7 @@ func MapAvailabilityRequest(req *contract.GetAvailableSlotsRequest) *lowribeck.G
 		ReferenceID:     req.GetReference(),
 		SendingSystem:   sendingSystem,
 		ReceivingSystem: receivingSystem,
-		CreatedDate:     time.Now().UTC().String(),
+		CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
 	}
 }
 
@@ -111,5 +111,6 @@ func MapErrorCodes(responseCode, responseMessage string) contract.AvailabilityEr
 			return contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST
 		}
 	}
-	return contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR
+	// return contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR
+	return nil
 }
