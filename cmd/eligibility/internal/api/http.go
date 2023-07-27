@@ -218,6 +218,12 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 		go func() {
 			newContext := context.Background()
 			liveOccupancies := make(chan string, 50)
+			go func() {
+				err := s.occupancyStore.GetLiveOccupancies(newContext, liveOccupancies)
+				if err != nil {
+					logrus.Errorf("failed to get live occupancies for evaluation")
+				}
+			}()
 			for i := 0; i < 20; i++ {
 				go func() {
 					for id := range liveOccupancies {
@@ -225,6 +231,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 						if err != nil {
 							logrus.Errorf("failed to run evaluation of occupancy ID %s", id)
 						}
+						logrus.Infof("Succesfully run evaluation for occupancy %s", id)
 					}
 				}()
 			}
