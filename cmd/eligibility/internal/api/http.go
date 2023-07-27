@@ -224,7 +224,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 					logrus.Errorf("failed to get live occupancies for evaluation")
 				}
 			}()
-			for i := 0; i < 200; i++ {
+			for i := 0; i < 50; i++ {
 				go func() {
 					for id := range liveOccupancies {
 						err := s.evaluator.RunFull(newContext, id)
