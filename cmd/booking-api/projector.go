@@ -86,7 +86,7 @@ func makeSources(c *cli.Context, opsrv *ops.Server, configs []*kafkaConfig) (Sou
 				c.String(config.FlagVersion),
 				c.StringSlice(config.FlagBrokers))
 			if err != nil {
-				return nil, fmt.Errorf("could not initialise Kafka source: %w", err)
+				return nil, fmt.Errorf("could not initialise Kafka source for config [%s]: %w", flagTopic, err)
 			}
 			opsrv.Add(
 				strings.Replace(flagTopic, "topic", "source", 1),
