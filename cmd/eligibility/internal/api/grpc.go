@@ -116,6 +116,11 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		}
 	}
 
+	// no eligible occupancy found and none of the occupancies had active service
+	if len(reasons) == 0 {
+		reasons = append(reasons, domain.IneligibleReasonNoActiveService)
+	}
+
 	protoReasons, err := reasons.MapToProto()
 	if err != nil {
 		logrus.Debugf("failed to get eligibility for account %s: %s", req.AccountId, err.Error())
