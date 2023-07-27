@@ -23,7 +23,7 @@ jobs:
         id: check_files
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            if [[ $file == cmd/opt-out/** ]]; then
+            if [[ $file == cmd/opt-out/*** ]]; then
               echo "This modified file is under the 'cmd/opt-out' folder."
               echo "::set-output name=opt_out::true"
             elif [[ $file == cmd/booking-api/*** ]]; then
