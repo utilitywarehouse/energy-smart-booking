@@ -82,7 +82,7 @@ func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models
 
 	siteAddress, err := s.serializer.UnserializeSiteAddress(ctx, blob)
 	if err != nil {
-		return nil, fmt.Errorf("failed")
+		return nil, fmt.Errorf("failed to unserialize site address, %w", err)
 	}
 
 	return &models.Site{
