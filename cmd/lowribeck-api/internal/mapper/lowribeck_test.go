@@ -109,7 +109,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Failed - no slots response",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				ResponseMessage: "EC01",
+				ResponseMessage: "EA01",
 				ResponseCode:    "No available slots for requested postcode",
 			},
 			expected: &contract.GetAvailableSlotsResponse{
