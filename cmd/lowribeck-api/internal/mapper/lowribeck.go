@@ -35,7 +35,7 @@ func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) 
 
 	var code *contract.AvailabilityErrorCodes
 	if resp.ResponseCode != "" {
-		errorCode := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage)
+		errorCode := mapAvailabilityErrorCodes(resp.ResponseMessage)
 		code = &errorCode
 	}
 	return &contract.GetAvailableSlotsResponse{
@@ -109,7 +109,7 @@ func mapAppointmentTime(appointmentTime string) (int32, int32, error) {
 }
 
 // TODO
-func mapAvailabilityErrorCodes(responseCode, responseMessage string) contract.AvailabilityErrorCodes {
+func mapAvailabilityErrorCodes(responseMessage string) contract.AvailabilityErrorCodes {
 	// Should be responseCode, not responseMessage - lowribeck API error
 	switch responseMessage {
 	case "EA01":
