@@ -33,7 +33,7 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	availabilityReq := mapper.MapAvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error making request(%s) for reference(%s): %v", requestID, requestID, err)
+		return nil, status.Errorf(codes.Internal, "error making request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
 	}
 	return mapper.MapAvailableSlotsResponse(resp)
 }
