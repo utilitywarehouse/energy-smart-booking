@@ -10,6 +10,7 @@ jobs:
     outputs:
       opt_out: ${{ steps.check_files.outputs.opt_out }}
       lowribeck_api: ${{ steps.check_files.outputs.lowribeck_api }}
+      booking_api: ${{ steps.check_files.outputs.booking_api }}
       booking_services: ${{ steps.check_files.outputs.booking_services }}
     runs-on: ubuntu-latest
     steps:
