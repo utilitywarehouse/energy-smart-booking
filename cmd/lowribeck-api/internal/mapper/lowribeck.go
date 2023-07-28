@@ -28,14 +28,15 @@ func MapAvailabilityRequest(req *contract.GetAvailableSlotsRequest) *lowribeck.G
 }
 
 func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
-	slots, err := MapAvailabilitySlots(resp.CalendarAvailabilityResult)
+	slots, err := mapAvailabilitySlots(resp.CalendarAvailabilityResult)
 	if err != nil {
 		return nil, err
 	}
 
 	var code *contract.AvailabilityErrorCodes
 	if resp.ResponseCode != "" {
-		*code = MapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage)
+		errorCode := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage)
+		code = &errorCode
 	}
 	return &contract.GetAvailableSlotsResponse{
 		Slots:      slots,
@@ -53,17 +54,17 @@ func MapBookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBook
 	return &contract.CreateBookingResponse{}
 }
 
-func MapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
+func mapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
 	var err error
 	slots := make([]*contract.BookingSlot, len(availabilityResults))
 	for i, res := range availabilityResults {
 		slots[i] = &contract.BookingSlot{}
-		slots[i].Date, err = MapAppointmentDate(res.AppointmentDate)
+		slots[i].Date, err = mapAppointmentDate(res.AppointmentDate)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment date: %v", err)
 		}
 
-		slots[i].StartTime, slots[i].EndTime, err = MapAppointmentTime(res.AppointmentTime)
+		slots[i].StartTime, slots[i].EndTime, err = mapAppointmentTime(res.AppointmentTime)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment time: %v", err)
 		}
@@ -71,7 +72,7 @@ func MapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]
 	return slots, nil
 }
 
-func MapAppointmentDate(appointmentDate string) (*date.Date, error) {
+func mapAppointmentDate(appointmentDate string) (*date.Date, error) {
 	appDate, err := time.Parse(appointmentDateFormat, appointmentDate)
 	if err != nil {
 		return nil, err
@@ -85,7 +86,7 @@ func MapAppointmentDate(appointmentDate string) (*date.Date, error) {
 
 }
 
-func MapAppointmentTime(appointmentTime string) (int32, int32, error) {
+func mapAppointmentTime(appointmentTime string) (int32, int32, error) {
 	var start, end int32
 	read, err := fmt.Sscanf(appointmentTime, appointmentTimeFormat, &start, &end)
 	if err != nil {
@@ -94,17 +95,27 @@ func MapAppointmentTime(appointmentTime string) (int32, int32, error) {
 	if read != 2 {
 		return -1, -1, fmt.Errorf("could not find start and end time: %q", appointmentTime)
 	}
+	if start < 0 || start > 23 {
+		return -1, -1, fmt.Errorf("invalid start time: %q", appointmentTime)
+	}
+	if end < 0 || end > 23 {
+		return -1, -1, fmt.Errorf("invalid end time: %q", appointmentTime)
+	}
+	if start > end {
+		return -1, -1, fmt.Errorf("invalid appointment time: %q", appointmentTime)
+	}
 
 	return start, end, nil
 }
 
 // TODO
-func MapAvailabilityErrorCodes(responseCode, responseMessage string) contract.AvailabilityErrorCodes {
+func mapAvailabilityErrorCodes(responseCode, responseMessage string) contract.AvailabilityErrorCodes {
+	// Should be responseCode, not responseMessage - lowribeck API error
 	switch responseMessage {
-	case "EA03":
-		if responseCode != "" {
-			return contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST
-		}
+	case "EA01":
+		return contract.AvailabilityErrorCodes_AVAILABILITY_NO_AVAILABLE_SLOTS
+	case "EA02", "EA03":
+		return contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST
 	}
 	return contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR
 }
