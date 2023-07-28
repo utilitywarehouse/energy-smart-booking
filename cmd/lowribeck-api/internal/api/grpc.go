@@ -29,7 +29,7 @@ func New(c Client) *LowriBeckAPI {
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
-	requestID := uuid.NewString()
+	requestID := uuid.New().ID()
 	availabilityReq := mapper.MapAvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {

@@ -17,7 +17,7 @@ const (
 	appointmentTimeFormat = "%d:00-%d:00"
 )
 
-func MapAvailabilityRequest(id string, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
+func MapAvailabilityRequest(id uint32, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
 	return &lowribeck.GetCalendarAvailabilityRequest{
 		PostCode:        req.GetPostcode(),
 		ReferenceID:     req.GetReference(),
@@ -25,7 +25,7 @@ func MapAvailabilityRequest(id string, req *contract.GetAvailableSlotsRequest) *
 		ReceivingSystem: receivingSystem,
 		CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
 		// An ID sent to LB which they return in the response and can be used for debugging issues with them
-		RequestID: id,
+		RequestID: fmt.Sprintf("%d", id),
 	}
 }
 
