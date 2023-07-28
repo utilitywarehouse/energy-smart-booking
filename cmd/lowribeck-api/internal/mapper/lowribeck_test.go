@@ -109,8 +109,8 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Failed - no slots response",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				ResponseMessage: "EA01",
-				ResponseCode:    "No available slots for requested postcode",
+				ResponseCode:    "EA01",
+				ResponseMessage: "No available slots for requested postcode",
 			},
 			expected: &contract.GetAvailableSlotsResponse{
 				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_NO_AVAILABLE_SLOTS.Enum(),
@@ -119,8 +119,8 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Failed - invalid request response 1",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				ResponseMessage: "EA02",
-				ResponseCode:    "Unable to identify postcode",
+				ResponseCode:    "EA02",
+				ResponseMessage: "Unable to identify postcode",
 			},
 			expected: &contract.GetAvailableSlotsResponse{
 				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST.Enum(),
@@ -129,8 +129,8 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Failed - invalid request response 2",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				ResponseMessage: "EA03",
-				ResponseCode:    "Postcode and Reference ID mismatch",
+				ResponseCode:    "EA03",
+				ResponseMessage: "Postcode and Reference ID mismatch",
 			},
 			expected: &contract.GetAvailableSlotsResponse{
 				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST.Enum(),
@@ -140,8 +140,8 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 			desc: "Failed - generic response",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
 				// According to the docs this code doesn't exist, but I've seen it (a lot)
-				ResponseMessage: "EC04",
-				ResponseCode:    "Generic LB error for failed to process request",
+				ResponseCode:    "EC04",
+				ResponseMessage: "Generic LB error for failed to process request",
 			},
 			expected: &contract.GetAvailableSlotsResponse{
 				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum(),
