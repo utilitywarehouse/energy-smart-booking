@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 
+	"github.com/google/uuid"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
@@ -28,10 +29,11 @@ func New(c Client) *LowriBeckAPI {
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
-	availabilityReq := mapper.MapAvailabilityRequest(req)
+	requestID := uuid.NewString()
+	availabilityReq := mapper.MapAvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error making request: %s", err.Error())
+		return nil, status.Errorf(codes.Internal, "error making request(%s) for reference(%s): %v", requestID, requestID, err)
 	}
 	return mapper.MapAvailableSlotsResponse(resp)
 }

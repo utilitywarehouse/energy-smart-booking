@@ -17,13 +17,15 @@ const (
 	appointmentTimeFormat = "%d:00-%d:00"
 )
 
-func MapAvailabilityRequest(req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
+func MapAvailabilityRequest(id string, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
 	return &lowribeck.GetCalendarAvailabilityRequest{
 		PostCode:        req.GetPostcode(),
 		ReferenceID:     req.GetReference(),
 		SendingSystem:   sendingSystem,
 		ReceivingSystem: receivingSystem,
 		CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
+		// An ID sent to LB which they return in the response and can be used for debugging issues with them
+		RequestID: id,
 	}
 }
 
