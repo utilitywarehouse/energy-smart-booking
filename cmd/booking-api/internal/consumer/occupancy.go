@@ -65,6 +65,7 @@ func (h *OccupancyHandler) Handle(ctx context.Context, message substrate.Message
 			OccupancyID: ev.GetOccupancyId(),
 			SiteID:      ev.GetSiteId(),
 			AccountID:   ev.GetCustomerAccountId(),
+			CreatedAt:   env.GetCreatedAt().AsTime(),
 		}
 
 		h.store.Insert(occupancy)
