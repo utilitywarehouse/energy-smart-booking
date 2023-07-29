@@ -31,10 +31,7 @@ func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
 		return fmt.Errorf("failed to evaluate eligibility for occupancy %s: %w", occupancyID, err)
 	}
 
-	reasons, err = evaluateSuppliability(occupancy)
-	if err != nil {
-		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
-	}
+	reasons = evaluateSuppliability(occupancy)
 	err = e.publishSuppliabilityIfChanged(ctx, occupancyID, occupancy.Account.ID, reasons)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
@@ -64,10 +61,8 @@ func (e *Evaluator) RunSuppliability(ctx context.Context, occupancyID string) er
 		return fmt.Errorf("failed to load occupanncy for ID %s: %w", occupancyID, err)
 	}
 
-	reasons, err := evaluateSuppliability(occupancy)
-	if err != nil {
-		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
-	}
+	reasons := evaluateSuppliability(occupancy)
+
 	err = e.publishSuppliabilityIfChanged(ctx, occupancyID, occupancy.Account.ID, reasons)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)

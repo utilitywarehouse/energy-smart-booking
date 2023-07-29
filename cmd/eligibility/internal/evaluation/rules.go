@@ -27,7 +27,7 @@ func (e evaluation) status() domain.IneligibleReasons {
 	return reasons
 }
 
-func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error) {
+func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 	result := evaluation{reason: make(map[domain.IneligibleReason]struct{}, 0)}
 
 	if o.Site == nil {
@@ -43,7 +43,7 @@ func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error
 	if len(o.Services) == 1 {
 		if o.Services[0].SupplyType == energy_domain.SupplyTypeGas {
 			result.addReason(domain.IneligibleReasonGasServiceOnly)
-			return result.status(), nil
+			return result.status()
 		}
 	}
 
@@ -67,7 +67,7 @@ func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error
 		}
 	}
 
-	return result.status(), nil
+	return result.status()
 }
 
 func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
