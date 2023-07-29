@@ -2,11 +2,13 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
 
 var ErrOccupancyNotFound = errors.New("occupancy not found")
@@ -83,7 +85,7 @@ func (s *OccupancyStore) GetIDsByMPXN(ctx context.Context, mpxn string) ([]strin
 func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, error) {
 	var ids = make([]string, 0)
 
-	q := `SELECT distinct(occupancy_id) FROM services WHERE is_live IS TRUE limit 500;`
+	q := `SELECT distinct(occupancy_id) FROM services WHERE is_live IS TRUE limit 2500;`
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
@@ -101,6 +103,72 @@ func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, erro
 	}
 
 	return ids, rows.Err()
+}
+
+func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) (domain.Occupancy, error) {
+
+	q := `
+	SELECT o.account_id, 
+	       a.id, a.psr_codes, a.opt_out,
+	       s.id, s.post_code,
+	       p.post_code, p.wan_coverage
+	FROM occupancies o 
+	LEFT JOIN accounts a ON o.account_id = a.id
+	LEFT JOIN sites s on o.site_id = s.id 
+	LEFT JOIN postcodes p on s.post_code = p.post_code
+	WHERE o.id = $1;`
+
+	rows, err := s.pool.Query(ctx, q, occupancyID)
+	if err != nil {
+		return domain.Occupancy{}, err
+	}
+	defer rows.Close()
+
+	occupancy := domain.Occupancy{
+		ID: occupancyID,
+	}
+
+	for rows.Next() {
+		var (
+			occupancyAccountID                        string
+			accountID, siteID, sitePostCode, postCode sql.NullString
+			psrCodes                                  []string
+			wanCoverage, optOut                       sql.NullBool
+		)
+
+		err = rows.Scan(
+			&occupancyAccountID,
+			&accountID,
+			&psrCodes,
+			&optOut,
+			&siteID,
+			&sitePostCode,
+			&postCode,
+			&wanCoverage,
+		)
+		if postCode.Valid {
+			occupancy.Site = &domain.Site{
+				ID:          siteID.String,
+				Postcode:    sitePostCode.String,
+				WanCoverage: wanCoverage.Bool,
+			}
+		}
+		occupancy.Account = domain.Account{
+			ID: occupancyAccountID,
+		}
+		if accountID.Valid {
+			occupancy.Account.PSRCodes = psrCodes
+			if optOut.Valid {
+				occupancy.Account.OptOut = optOut.Bool
+			}
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return domain.Occupancy{}, rows.Err()
+	}
+
+	return occupancy, nil
 }
 
 func (s *OccupancyStore) queryOccupanciesByIdentifier(ctx context.Context, query, id string) ([]string, error) {

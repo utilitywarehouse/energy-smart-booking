@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
 
 func TestOccupancy(t *testing.T) {
@@ -70,4 +71,49 @@ func TestOccupancy(t *testing.T) {
 	sort.Strings(ids)
 	assert.Equal([]string{"occupancy_id1", "occupancy_id2"}, ids)
 
+}
+
+func TestLoadOccupancy(t *testing.T) {
+	ctx := context.Background()
+	assert := assert.New(t)
+
+	store := NewOccupancy(connect(ctx))
+	defer store.pool.Close()
+
+	_, err := store.pool.Exec(ctx, `
+	INSERT INTO occupancies(id, site_id, account_id, created_at) VALUES ('occupancyID1', 'siteID1', 'accountID1', now());
+	INSERT INTO sites(id, post_code, created_at) VALUES ('siteID1', 'postcode', now());`)
+	assert.NoError(err, "failed to prepare db")
+
+	occupancy, err := store.LoadOccupancy(ctx, "occupancyID1")
+	assert.NoError(err)
+	expected := domain.Occupancy{
+		ID:       "occupancyID1",
+		Account:  domain.Account{ID: "accountID1"},
+		Site:     nil,
+		Services: nil,
+	}
+	assert.Equal(expected, occupancy)
+
+	_, err = store.pool.Exec(ctx, `
+	INSERT INTO postcodes(post_code, wan_coverage) VALUES ('postcode', true);`)
+	assert.NoError(err, "failed to prepare db")
+	occupancy, err = store.LoadOccupancy(ctx, "occupancyID1")
+	assert.NoError(err)
+
+	expected.Site = &domain.Site{
+		ID:          "siteID1",
+		Postcode:    "postcode",
+		WanCoverage: true,
+	}
+	assert.Equal(expected, occupancy)
+
+	_, err = store.pool.Exec(ctx, `
+	INSERT INTO accounts(id, opt_out) VALUES ('accountID1', true);`)
+	assert.NoError(err, "failed to prepare db")
+	occupancy, err = store.LoadOccupancy(ctx, "occupancyID1")
+	assert.NoError(err)
+
+	expected.Account.OptOut = true
+	assert.Equal(expected, occupancy)
 }
