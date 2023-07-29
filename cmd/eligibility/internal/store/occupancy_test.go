@@ -64,16 +64,10 @@ func TestOccupancy(t *testing.T) {
 	_, err = store.pool.Exec(ctx, q)
 	assert.NoError(err)
 
-	records := make(chan string, 5)
-	err = store.GetLiveOccupancies(ctx, records)
+	ids, err = store.GetLiveOccupancies(ctx)
 	assert.NoError(err)
 
-	occupancies := make([]string, 0)
-	for id := range records {
-		occupancies = append(occupancies, id)
-	}
-
-	sort.Strings(occupancies)
-	assert.Equal([]string{"occupancy_id1", "occupancy_id2"}, occupancies)
+	sort.Strings(ids)
+	assert.Equal([]string{"occupancy_id1", "occupancy_id2"}, ids)
 
 }
