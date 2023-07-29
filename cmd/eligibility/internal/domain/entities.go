@@ -44,6 +44,7 @@ type Meter struct {
 type Service struct {
 	ID               string
 	Mpxn             string
+	SupplyType       domain.SupplyType
 	Meterpoint       *Meterpoint
 	Meter            *Meter
 	BookingReference string

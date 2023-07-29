@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -33,7 +35,7 @@ type campaignabilityStore interface {
 
 type occupancyStore interface {
 	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
-	GetLiveOccupancies(ctx context.Context, records chan<- string) error
+	GetLiveOccupancies(ctx context.Context) ([]string, error)
 }
 
 type evaluator interface {
@@ -216,18 +218,24 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		go func() {
-			newContext := context.Background()
-			liveOccupancies := make(chan string, 400)
-			go func() {
-				err := s.occupancyStore.GetLiveOccupancies(newContext, liveOccupancies)
-				if err != nil {
-					logrus.Errorf("failed to get live occupancies for evaluation")
-				}
-			}()
-			for i := 0; i < 50; i++ {
+			start := time.Now()
+			jobCtx := context.Background()
+			liveOccupancies, err := s.occupancyStore.GetLiveOccupancies(jobCtx)
+			if err != nil {
+				logrus.WithError(err).Error("failed to get live occupancies to evaluate")
+			}
+			channel := make(chan string, len(liveOccupancies))
+			for _, o := range liveOccupancies {
+				channel <- o
+			}
+			close(channel)
+
+			var wg sync.WaitGroup
+			for i := 0; i < 10; i++ {
 				go func() {
-					for id := range liveOccupancies {
-						err := s.evaluator.RunFull(newContext, id)
+					defer wg.Done()
+					for id := range channel {
+						err := s.evaluator.RunFull(jobCtx, id)
 						if err != nil {
 							logrus.Errorf("failed to run evaluation of occupancy ID %s", id)
 						} else {
@@ -236,6 +244,9 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 					}
 				}()
 			}
+			wg.Wait()
+
+			logrus.WithField("elapsed", time.Since(start).String()).Info("full evaluation process completed")
 		}()
 	})
 }

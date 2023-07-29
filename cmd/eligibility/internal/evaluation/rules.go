@@ -1,7 +1,6 @@
 package evaluation
 
 import (
-	"fmt"
 	"strings"
 
 	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
@@ -42,11 +41,7 @@ func evaluateSuppliability(o *domain.Occupancy) (domain.IneligibleReasons, error
 	}
 
 	if len(o.Services) == 1 {
-		meterpoint, err := energy_domain.NewMeterPointNumber(o.Services[0].Mpxn)
-		if err != nil {
-			return nil, fmt.Errorf("failed to build meterpoint from mpxn %s: %w", o.Services[0].Mpxn, err)
-		}
-		if meterpoint.SupplyType() == energy_domain.SupplyTypeGas {
+		if o.Services[0].SupplyType == energy_domain.SupplyTypeGas {
 			result.addReason(domain.IneligibleReasonGasServiceOnly)
 			return result.status(), nil
 		}
