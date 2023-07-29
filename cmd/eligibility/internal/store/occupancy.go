@@ -146,6 +146,10 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 			&postCode,
 			&wanCoverage,
 		)
+		if err != nil {
+			return domain.Occupancy{}, err
+		}
+
 		if postCode.Valid {
 			occupancy.Site = &domain.Site{
 				ID:          siteID.String,
@@ -164,7 +168,7 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 		}
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return domain.Occupancy{}, rows.Err()
 	}
 
