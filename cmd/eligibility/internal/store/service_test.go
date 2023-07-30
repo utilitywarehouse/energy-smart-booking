@@ -16,9 +16,10 @@ func TestService(t *testing.T) {
 
 	s := NewService(connect(ctx))
 
+	const mpxn = "service_mpxn"
 	err := s.Add(ctx, &Service{
 		ID:          "service1",
-		Mpxn:        "mpxn1",
+		Mpxn:        mpxn,
 		OccupancyID: "occupancy1",
 		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      false,
@@ -33,7 +34,7 @@ func TestService(t *testing.T) {
 	assert.NoError(err, "failed to get service")
 	expected := Service{
 		ID:          "service1",
-		Mpxn:        "mpxn1",
+		Mpxn:        mpxn,
 		OccupancyID: "occupancy1",
 		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      false,
@@ -48,7 +49,7 @@ func TestService(t *testing.T) {
 
 	err = s.Add(ctx, &Service{
 		ID:          "service1",
-		Mpxn:        "mpxn1",
+		Mpxn:        mpxn,
 		OccupancyID: "occupancy1",
 		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      true,
@@ -60,12 +61,12 @@ func TestService(t *testing.T) {
 	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
 	expectedSv := domain.Service{
 		ID:         "service1",
-		Mpxn:       "mpxn1",
+		Mpxn:       mpxn,
 		SupplyType: energy_domain.SupplyTypeGas,
 	}
 	assert.Equal(expectedSv, liveServices[0], "mismatch")
 
-	_, err = s.pool.Exec(ctx, `INSERT INTO meterpoints(mpxn, supply_type, alt_han, profile_class, ssc) VALUES('mpxn1', 'gas', true, 'PROFILE_CLASS_01', 'ssc');`)
+	_, err = s.pool.Exec(ctx, `INSERT INTO meterpoints(mpxn, supply_type, alt_han, profile_class, ssc) VALUES('service_mpxn', 'gas', true, 'PROFILE_CLASS_01', 'ssc');`)
 	assert.NoError(err)
 
 	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
@@ -73,14 +74,14 @@ func TestService(t *testing.T) {
 	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
 
 	expectedSv.Meterpoint = &domain.Meterpoint{
-		Mpxn:         "mpxn1",
+		Mpxn:         mpxn,
 		AltHan:       true,
 		ProfileClass: platform.ProfileClass(1),
 		SSC:          "ssc",
 	}
 	assert.Equal(expectedSv, liveServices[0], "mismatch")
 
-	_, err = s.pool.Exec(ctx, `INSERT INTO booking_references(mpxn, reference) VALUES('mpxn1', 'ref');`)
+	_, err = s.pool.Exec(ctx, `INSERT INTO booking_references(mpxn, reference) VALUES('service_mpxn', 'ref');`)
 	assert.NoError(err)
 	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
 	assert.NoError(err, "failed to get live services")

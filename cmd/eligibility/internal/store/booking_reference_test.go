@@ -14,17 +14,19 @@ func TestBookingRef(t *testing.T) {
 	store := NewBookingRef(connect(ctx))
 	defer store.pool.Close()
 
-	err := store.Add(ctx, "mpxn1", "ref1")
+	const mpxn = "booking_mpxn"
+
+	err := store.Add(ctx, mpxn, "ref1")
 	assert.NoError(err, "failed to add booking ref")
 
-	ref, err := store.GetReference(ctx, "mpxn1")
+	ref, err := store.GetReference(ctx, mpxn)
 	assert.NoError(err, "failed to retrieve booking ref")
 	assert.Equal("ref1", ref, "mismatch")
 
-	err = store.Add(ctx, "mpxn1", "ref2")
+	err = store.Add(ctx, mpxn, "ref2")
 	assert.NoError(err)
 
-	ref, err = store.GetReference(ctx, "mpxn1")
+	ref, err = store.GetReference(ctx, mpxn)
 	assert.NoError(err, "failed to retrieve booking ref")
 	assert.Equal("ref2", ref, "mismatch")
 
