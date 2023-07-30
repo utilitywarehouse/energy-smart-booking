@@ -15,38 +15,19 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 	}
 
 	// load services for given occupancy
-	dbServices, err := e.serviceStore.GetLiveServicesByOccupancyID(ctx, id)
+	services, err := e.serviceStore.LoadLiveServicesByOccupancyID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+
 	// load meterpoint
-	for _, s := range dbServices {
-		// load meterpoint
-		service := domain.Service{
-			ID:         s.ID,
-			Mpxn:       s.Mpxn,
-			SupplyType: s.SupplyType,
-		}
-
-		dbMeterpoint, err := e.meterpointStore.Get(ctx, s.Mpxn)
-		if err != nil && !errors.Is(err, store.ErrMeterpointNotFound) {
-			return nil, err
-		}
-		if err == nil {
-			service.Meterpoint = &domain.Meterpoint{
-				Mpxn:         dbMeterpoint.Mpxn,
-				AltHan:       dbMeterpoint.AltHan,
-				ProfileClass: dbMeterpoint.ProfileClass,
-				SSC:          dbMeterpoint.SSC,
-			}
-		}
-
+	for i, s := range services {
 		dbMeter, err := e.meterStore.Get(ctx, s.Mpxn)
 		if err != nil && !errors.Is(err, store.ErrMeterNotFound) {
 			return nil, err
 		}
 		if err == nil {
-			service.Meter = &domain.Meter{
+			services[i].Meter = &domain.Meter{
 				Mpxn:       dbMeter.Mpxn,
 				MSN:        dbMeter.Msn,
 				SupplyType: dbMeter.SupplyType,
@@ -55,13 +36,7 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 			}
 		}
 
-		ref, err := e.bookingRefStore.GetReference(ctx, s.Mpxn)
-		if err != nil && !errors.Is(err, store.ErrBookingReferenceNotFound) {
-			return nil, err
-		}
-		service.BookingReference = ref
-
-		occupancy.Services = append(occupancy.Services, service)
+		occupancy.Services = append(occupancy.Services, services[i])
 	}
 
 	return &occupancy, nil

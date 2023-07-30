@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/utilitywarehouse/energy-pkg/domain"
+	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
+	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
 
 func TestService(t *testing.T) {
@@ -18,7 +20,7 @@ func TestService(t *testing.T) {
 		ID:          "service1",
 		Mpxn:        "mpxn1",
 		OccupancyID: "occupancy1",
-		SupplyType:  domain.SupplyTypeGas,
+		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      false,
 	})
 	startDate := date(2020, 2, 1)
@@ -33,14 +35,14 @@ func TestService(t *testing.T) {
 		ID:          "service1",
 		Mpxn:        "mpxn1",
 		OccupancyID: "occupancy1",
-		SupplyType:  domain.SupplyTypeGas,
+		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      false,
 		StartDate:   &startDate,
 		EndDate:     nil,
 	}
 	assert.Equal(expected, service, "mismatch")
 
-	liveServices, err := s.GetLiveServicesByOccupancyID(ctx, "occupancy1")
+	liveServices, err := s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
 	assert.NoError(err, "failed to get live services")
 	assert.Equal(0, len(liveServices), "mismatch: should have 0 live services")
 
@@ -48,12 +50,42 @@ func TestService(t *testing.T) {
 		ID:          "service1",
 		Mpxn:        "mpxn1",
 		OccupancyID: "occupancy1",
-		SupplyType:  domain.SupplyTypeGas,
+		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      true,
 	})
 	assert.NoError(err, "failed to update service")
 
-	liveServices, err = s.GetLiveServicesByOccupancyID(ctx, "occupancy1")
+	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
 	assert.NoError(err, "failed to get live services")
 	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
+	expectedSv := domain.Service{
+		ID:         "service1",
+		Mpxn:       "mpxn1",
+		SupplyType: energy_domain.SupplyTypeGas,
+	}
+	assert.Equal(expectedSv, liveServices[0], "mismatch")
+
+	_, err = s.pool.Exec(ctx, `INSERT INTO meterpoints(mpxn, supply_type, alt_han, profile_class, ssc) VALUES('mpxn1', 'gas', true, 'PROFILE_CLASS_01', 'ssc');`)
+	assert.NoError(err)
+
+	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
+	assert.NoError(err, "failed to get live services")
+	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
+
+	expectedSv.Meterpoint = &domain.Meterpoint{
+		Mpxn:         "mpxn1",
+		AltHan:       true,
+		ProfileClass: platform.ProfileClass(1),
+		SSC:          "ssc",
+	}
+	assert.Equal(expectedSv, liveServices[0], "mismatch")
+
+	_, err = s.pool.Exec(ctx, `INSERT INTO booking_references(mpxn, reference) VALUES('mpxn1', 'ref');`)
+	assert.NoError(err)
+	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
+	assert.NoError(err, "failed to get live services")
+	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
+
+	expectedSv.BookingReference = "ref"
+	assert.Equal(expectedSv, liveServices[0], "mismatch")
 }

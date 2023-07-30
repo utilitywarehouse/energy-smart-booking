@@ -33,7 +33,7 @@ type SiteStore interface {
 }
 
 type ServiceStore interface {
-	GetLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]store.Service, error)
+	LoadLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]domain.Service, error)
 }
 
 type BookingReferenceStore interface {
