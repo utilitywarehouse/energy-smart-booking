@@ -76,7 +76,7 @@ func serverAction(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
-	pool, err := store.Setup(ctx, c.String(flagPostgresDSN))
+	pool, err := store.GetPool(ctx, c.String(flagPostgresDSN))
 	if err != nil {
 		return err
 	}
