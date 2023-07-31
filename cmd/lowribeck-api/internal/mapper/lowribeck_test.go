@@ -59,7 +59,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 			},
 		},
 		{
-			desc: "Invalid appontment date",
+			desc: "Invalid appointment date",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
 				CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
 					{
