@@ -66,7 +66,7 @@ func (lb LowriBeck) BookingResponse(_ *lowribeck.CreateBookingResponse) *contrac
 	return &contract.CreateBookingResponse{}
 }
 
-func mapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
+func mapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
 	var err error
 	slots := make([]*contract.BookingSlot, len(availabilityResults))
 	for i, res := range availabilityResults {
@@ -76,7 +76,7 @@ func mapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]
 			return nil, fmt.Errorf("error converting appointment date: %v", err)
 		}
 
-		slot.StartTime, slots[i].EndTime, err = mapAppointmentTime(res.AppointmentTime)
+		slot.StartTime, slot.EndTime, err = mapAppointmentTime(res.AppointmentTime)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment time: %v", err)
 		}

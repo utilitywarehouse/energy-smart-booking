@@ -17,17 +17,17 @@ type GetCalendarAvailabilityRequest struct {
 }
 
 type GetCalendarAvailabilityResponse struct {
-	RequestID                  string              `json:"RequestId,omitempty"`
-	SendingSystem              string              `json:"SendingSystem,omitempty"`
-	ReceivingSystem            string              `json:"ReceivingSystem,omitempty"`
-	CreatedDate                string              `json:"CreatedDate,omitempty"`
-	Mpan                       string              `json:"Mpan,omitempty"`
-	Mprn                       string              `json:"Mprn,omitempty"`
-	ElecJobTypeCode            string              `json:"ElecJobTypeCode,omitempty"`
-	GasJobTypeCode             string              `json:"GasJobTypeCode,omitempty"`
-	CalendarAvailabilityResult []*AvailabilitySlot `json:"CalendarAvailabilityResult,omitempty"`
-	ResponseMessage            string              `json:"ResponseMessage,omitempty"`
-	ResponseCode               string              `json:"ResponseCode,omitempty"`
+	RequestID                  string             `json:"RequestId,omitempty"`
+	SendingSystem              string             `json:"SendingSystem,omitempty"`
+	ReceivingSystem            string             `json:"ReceivingSystem,omitempty"`
+	CreatedDate                string             `json:"CreatedDate,omitempty"`
+	Mpan                       string             `json:"Mpan,omitempty"`
+	Mprn                       string             `json:"Mprn,omitempty"`
+	ElecJobTypeCode            string             `json:"ElecJobTypeCode,omitempty"`
+	GasJobTypeCode             string             `json:"GasJobTypeCode,omitempty"`
+	CalendarAvailabilityResult []AvailabilitySlot `json:"CalendarAvailabilityResult,omitempty"`
+	ResponseMessage            string             `json:"ResponseMessage,omitempty"`
+	ResponseCode               string             `json:"ResponseCode,omitempty"`
 }
 
 type AvailabilitySlot struct {

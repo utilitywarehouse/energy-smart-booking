@@ -24,7 +24,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Valid",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				CalendarAvailabilityResult: []*lowribeck.AvailabilitySlot{
+				CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
 					{
 						AppointmentDate: "01/12/2023",
 						AppointmentTime: "10:00-12:00",
@@ -61,7 +61,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Invalid appontment date",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				CalendarAvailabilityResult: []*lowribeck.AvailabilitySlot{
+				CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
 					{
 						AppointmentDate: "01/13/2023",
 						AppointmentTime: "10:00-12:00",
@@ -73,7 +73,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Invalid appointment time",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				CalendarAvailabilityResult: []*lowribeck.AvailabilitySlot{
+				CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
 					{
 						AppointmentDate: "01/12/2023",
 						AppointmentTime: "blah",
@@ -85,7 +85,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Invalid appointment end time",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				CalendarAvailabilityResult: []*lowribeck.AvailabilitySlot{
+				CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
 					{
 						AppointmentDate: "01/12/2023",
 						AppointmentTime: "23:00-24:00",
@@ -97,7 +97,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 		{
 			desc: "Invalid appointment start and end times",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
-				CalendarAvailabilityResult: []*lowribeck.AvailabilitySlot{
+				CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
 					{
 						AppointmentDate: "01/12/2023",
 						AppointmentTime: "22:00-21:00",
