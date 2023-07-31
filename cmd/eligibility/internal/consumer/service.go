@@ -56,7 +56,7 @@ func HandleService(s ServiceStore, occupancyStore ServiceOccupancyStore, evaluat
 					service = x.GetService().GetGas()
 					supplyType = domain.SupplyTypeGas
 				} else {
-					service = x.GetService().GetGas()
+					service = x.GetService().GetElectricity()
 					supplyType = domain.SupplyTypeElectricity
 				}
 
