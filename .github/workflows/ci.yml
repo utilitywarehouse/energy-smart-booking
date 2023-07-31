@@ -10,6 +10,8 @@ jobs:
     outputs:
       eligibility: ${{ steps.check_files.outputs.eligibility }}
       opt_out: ${{ steps.check_files.outputs.opt_out }}
+      lowribeck_api: ${{ steps.check_files.outputs.lowribeck_api }}
+      booking_api: ${{ steps.check_files.outputs.booking_api }}
       booking_services: ${{ steps.check_files.outputs.booking_services }}
     runs-on: ubuntu-latest
     steps:
@@ -18,18 +20,24 @@ jobs:
           fetch-depth: 0
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v37
 
       - name: check modified files
         id: check_files
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            if [[ $file == cmd/opt-out/** ]]; then
+            if [[ $file == cmd/opt-out/*** ]]; then
               echo "This modified file is under the 'cmd/opt-out' folder."
               echo "::set-output name=opt_out::true"
             elif [[ $file == cmd/eligibility/** ]]; then
               echo "This modified file is under the 'cmd/eligibility' folder."
               echo "::set-output name=eligibility::true"
+            elif [[ $file == cmd/lowribeck-api/** ]]; then
+              echo "This modified file is under the 'cmd/lowribeck-api' folder."
+              echo "::set-output name=lowribeck_api::true"
+            elif [[ $file == cmd/booking-api/*** ]]; then
+              echo "This modified file is under the 'cmd/booking-api' folder."
+              echo "::set-output name=booking_api::true"
             elif [[ $file != cmd/** ]]; then
               echo "This modified file applies for all booking services"
               echo "::set-output name=booking_services::true"
@@ -52,6 +60,24 @@ jobs:
     with:
       source_files: cmd/eligibility
       service: energy-smart-booking-eligibility
+    secrets: inherit
+
+  build_lowribeck_api:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.lowribeck_api == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/lowribeck-api
+      service: energy-smart-booking-lowribeck-api
+    secrets: inherit
+
+  build_booking_api:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_api == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/booking-api
+      service: energy-smart-booking-api
     secrets: inherit
 
   build_booking_services:
