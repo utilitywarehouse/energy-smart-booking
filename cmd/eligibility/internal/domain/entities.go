@@ -52,10 +52,13 @@ type Service struct {
 }
 
 type OccupancyEvaluation struct {
-	OccupancyID     string
-	Eligibility     IneligibleReasons
-	Suppliability   IneligibleReasons
-	Campaignability IneligibleReasons
+	OccupancyID              string
+	EligibilityEvaluated     bool
+	Eligibility              IneligibleReasons
+	SuppliabilityEvaluated   bool
+	Suppliability            IneligibleReasons
+	CampaignabilityEvaluated bool
+	Campaignability          IneligibleReasons
 }
 
 var unsupportedSSCs = map[string]bool{

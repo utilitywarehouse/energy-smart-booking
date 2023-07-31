@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
@@ -144,7 +143,6 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 					})
 				if err != nil {
 					logrus.Errorf("failed to marshall response: %s", err.Error())
-					w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
