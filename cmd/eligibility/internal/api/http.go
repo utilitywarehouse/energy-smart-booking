@@ -231,7 +231,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 			close(channel)
 
 			var wg sync.WaitGroup
-			for i := 0; i < 5; i++ {
+			for i := 0; i < 10; i++ {
 				wg.Add(1)
 				go func() {
 					defer wg.Done()

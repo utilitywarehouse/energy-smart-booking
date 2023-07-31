@@ -85,7 +85,11 @@ func (s *OccupancyStore) GetIDsByMPXN(ctx context.Context, mpxn string) ([]strin
 func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, error) {
 	var ids = make([]string, 0)
 
-	q := `SELECT distinct(occupancy_id) FROM services WHERE is_live IS TRUE limit 2500;`
+	q := `
+	SELECT distinct(occupancy_id) FROM services 
+	WHERE is_live IS TRUE
+	ORDER BY created_at DESC 
+	LIMIT 5000;`
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
