@@ -94,7 +94,8 @@ func (s *MeterStore) Get(ctx context.Context, mpxn string) (Meter, error) {
 	WHERE mpxn = $1
 	AND installed_at IS NOT NULL
 	AND uninstalled_at IS NULL
-	ORDER BY installed_at DESC;`
+	ORDER BY installed_at DESC NULLS LAST
+	LIMIT 1;`
 
 	err := s.pool.QueryRow(ctx, q, mpxn).Scan(
 		&meter.ID,

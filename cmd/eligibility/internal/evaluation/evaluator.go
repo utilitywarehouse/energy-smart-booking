@@ -3,6 +3,7 @@ package evaluation
 import (
 	"context"
 
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 )
@@ -20,7 +21,7 @@ type MeterStore interface {
 }
 
 type OccupancyStore interface {
-	Get(ctx context.Context, id string) (store.Occupancy, error)
+	LoadOccupancy(ctx context.Context, occupancyID string) (domain.Occupancy, error)
 }
 
 type PostcodeStore interface {
@@ -32,7 +33,7 @@ type SiteStore interface {
 }
 
 type ServiceStore interface {
-	GetLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]store.Service, error)
+	LoadLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]domain.Service, error)
 }
 
 type BookingReferenceStore interface {

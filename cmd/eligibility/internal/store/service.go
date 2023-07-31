@@ -4,11 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/utilitywarehouse/energy-pkg/domain"
+	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
+	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
 
 var ErrServiceNotFound = errors.New("service not found")
@@ -21,7 +24,7 @@ type Service struct {
 	ID          string
 	Mpxn        string
 	OccupancyID string
-	SupplyType  domain.SupplyType
+	SupplyType  energy_domain.SupplyType
 	IsLive      bool
 	StartDate   *time.Time
 	EndDate     *time.Time
@@ -74,12 +77,19 @@ func (s *ServiceStore) Get(ctx context.Context, serviceID string) (Service, erro
 	return service, err
 }
 
-func (s *ServiceStore) GetLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]Service, error) {
+func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]domain.Service, error) {
 	q := `
-	SELECT id, mpxn, occupancy_id, supply_type, is_live, start_date, end_date
-	FROM services
-	WHERE occupancy_id = $1
-	AND is_live is TRUE;`
+	SELECT 
+	    s.id, s.mpxn, s.supply_type,
+	    m.mpxn, m.profile_class, m.ssc, m.alt_han,
+	    b.reference
+	FROM services s 
+	LEFT JOIN meterpoints m
+	ON s.mpxn = m.mpxn
+	LEFT JOIN booking_references b
+	ON s.mpxn = b.mpxn
+	WHERE s.occupancy_id = $1
+	AND s.is_live is TRUE;`
 
 	rows, err := s.pool.Query(ctx, q, occupancyID)
 	if err != nil {
@@ -87,13 +97,42 @@ func (s *ServiceStore) GetLiveServicesByOccupancyID(ctx context.Context, occupan
 	}
 	defer rows.Close()
 
-	services := make([]Service, 0)
+	services := make([]domain.Service, 0)
 
 	for rows.Next() {
-		var service Service
-		service, err = rowIntoService(rows)
-		if err != nil {
+		var (
+			service                                       domain.Service
+			meterpointMpxn, profileClass, ssc, bookingRef sql.NullString
+			altHan                                        sql.NullBool
+		)
+		if err = rows.Scan(
+			&service.ID,
+			&service.Mpxn,
+			&service.SupplyType,
+			&meterpointMpxn,
+			&profileClass,
+			&ssc,
+			&altHan,
+			&bookingRef); err != nil {
 			return nil, err
+		}
+
+		if meterpointMpxn.Valid {
+			service.Meterpoint = &domain.Meterpoint{
+				Mpxn:   meterpointMpxn.String,
+				AltHan: altHan.Bool,
+				SSC:    ssc.String,
+			}
+			if profileClass.Valid {
+				pc, ok := platform.ProfileClass_value[profileClass.String]
+				if !ok {
+					return nil, fmt.Errorf("invalid profile class %s", profileClass.String)
+				}
+				service.Meterpoint.ProfileClass = platform.ProfileClass(pc)
+			}
+		}
+		if bookingRef.Valid {
+			service.BookingReference = bookingRef.String
 		}
 		services = append(services, service)
 	}

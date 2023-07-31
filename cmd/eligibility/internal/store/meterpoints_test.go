@@ -16,7 +16,7 @@ func TestMeterpoints(t *testing.T) {
 	s := NewMeterpoint(connect(ctx))
 	defer s.pool.Close()
 
-	const mpxn = "mpxn1"
+	const mpxn = "meter_mpxn"
 
 	err := s.AddProfileClass(ctx, mpxn, domain.SupplyTypeElectricity, platform.ProfileClass_PROFILE_CLASS_02)
 	assert.NoError(err, "failed to add meterpoint profile class")
