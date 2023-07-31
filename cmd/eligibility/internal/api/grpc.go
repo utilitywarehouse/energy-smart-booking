@@ -134,7 +134,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 	}, nil
 }
 
-func (a *EligibilityGRPCApi) GetAccountOccupancyEligibilityForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (*smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, error) {
+func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (*smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, error) {
 	account, err := a.accountStore.GetAccount(ctx, req.AccountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
