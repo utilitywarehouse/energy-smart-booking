@@ -20,7 +20,7 @@ func Setup(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 func GetPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	pool, err := postgres.Connect(ctx, dsn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get pool with dsn: %s, %w", dsn, err)
+		return nil, fmt.Errorf("failed to get pool, %w", err)
 	}
 	return pool, nil
 }
