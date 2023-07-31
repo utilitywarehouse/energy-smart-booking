@@ -8,6 +8,7 @@ jobs:
   check:
     name: Check changed files
     outputs:
+      eligibility: ${{ steps.check_files.outputs.eligibility }}
       opt_out: ${{ steps.check_files.outputs.opt_out }}
       lowribeck_api: ${{ steps.check_files.outputs.lowribeck_api }}
       booking_api: ${{ steps.check_files.outputs.booking_api }}
@@ -28,6 +29,9 @@ jobs:
             if [[ $file == cmd/opt-out/*** ]]; then
               echo "This modified file is under the 'cmd/opt-out' folder."
               echo "::set-output name=opt_out::true"
+            elif [[ $file == cmd/eligibility/** ]]; then
+              echo "This modified file is under the 'cmd/eligibility' folder."
+              echo "::set-output name=eligibility::true"
             elif [[ $file == cmd/lowribeck-api/** ]]; then
               echo "This modified file is under the 'cmd/lowribeck-api' folder."
               echo "::set-output name=lowribeck_api::true"
@@ -49,6 +53,15 @@ jobs:
       service: energy-smart-booking-opt-out
     secrets: inherit
 
+  build_eligibility:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.eligibility == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/eligibility
+      service: energy-smart-booking-eligibility
+    secrets: inherit
+
   build_lowribeck_api:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.lowribeck_api == 'true'
@@ -56,6 +69,7 @@ jobs:
     with:
       source_files: cmd/lowribeck-api
       service: energy-smart-booking-lowribeck-api
+    secrets: inherit
 
   build_booking_api:
     needs: check
