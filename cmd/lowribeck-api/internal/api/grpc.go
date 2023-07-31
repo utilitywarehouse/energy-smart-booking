@@ -20,8 +20,8 @@ type Client interface {
 type Mapper interface {
 	AvailabilityRequest(uint32, *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest
 	AvailableSlotsResponse(*lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error)
-	BookingRequest(req *contract.CreateBookingRequest) *lowribeck.CreateBookingRequest
-	BookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBookingResponse
+	BookingRequest(uint32, *contract.CreateBookingRequest) *lowribeck.CreateBookingRequest
+	BookingResponse(*lowribeck.CreateBookingResponse) *contract.CreateBookingResponse
 }
 
 type LowriBeckAPI struct {
@@ -42,18 +42,19 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	availabilityReq := l.mapper.AvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {
-		logrus.Errorf("error making request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
-		return nil, status.Errorf(codes.Internal, "error making request: %s", err.Error())
+		logrus.Errorf("error making get available slots request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
+		return nil, status.Errorf(codes.Internal, "error making get available slots request: %s", err.Error())
 	}
 	return l.mapper.AvailableSlotsResponse(resp)
 }
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
-	bookingReq := l.mapper.BookingRequest(req)
-
+	requestID := uuid.New().ID()
+	bookingReq := l.mapper.BookingRequest(requestID, req)
 	resp, err := l.client.CreateBooking(ctx, bookingReq)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "error making request: %s", err.Error())
+		logrus.Errorf("error making booking request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
+		return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
 	}
 
 	return l.mapper.BookingResponse(resp), nil

@@ -56,9 +56,16 @@ func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabili
 	}, nil
 }
 
-// TODO - SMT-177/create-booking
-func (lb LowriBeck) BookingRequest(req *contract.CreateBookingRequest) *lowribeck.CreateBookingRequest {
-	return &lowribeck.CreateBookingRequest{}
+func (lb LowriBeck) BookingRequest(id uint32, req *contract.CreateBookingRequest) *lowribeck.CreateBookingRequest {
+	return &lowribeck.CreateBookingRequest{
+		PostCode:        req.GetPostcode(),
+		ReferenceID:     req.GetReference(),
+		SendingSystem:   lb.sendingSystem,
+		ReceivingSystem: lb.receivingSystem,
+		CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
+		// An ID sent to LB which they return in the response and can be used for debugging issues with them
+		RequestID: fmt.Sprintf("%d", id),
+	}
 }
 
 // TODO - SMT-177/create-booking
