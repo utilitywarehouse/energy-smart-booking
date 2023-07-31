@@ -2,10 +2,10 @@ package domain
 
 import (
 	"database/sql/driver"
-	"encoding/json"
 	"errors"
 	"fmt"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 )
 
@@ -104,6 +104,7 @@ func fromString(str string) (IneligibleReason, error) {
 }
 
 func (r IneligibleReasons) Value() (driver.Value, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	strReasons := make([]string, 0)
 	for _, reason := range r {
 		strReasons = append(strReasons, reason.String())
@@ -112,6 +113,7 @@ func (r IneligibleReasons) Value() (driver.Value, error) {
 }
 
 func (r *IneligibleReasons) Scan(value interface{}) error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	switch x := value.(type) {
 	case nil:
 		return nil
