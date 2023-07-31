@@ -231,7 +231,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 			close(channel)
 
 			var wg sync.WaitGroup
-			for i := 0; i < 10; i++ {
+			for i := 0; i < 20; i++ {
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
@@ -239,8 +239,6 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 						err := s.evaluator.RunFull(jobCtx, id)
 						if err != nil {
 							logrus.Errorf("failed to run evaluation of occupancy ID %s", id)
-						} else {
-							logrus.Infof("successfully run evaluation for occupancy %s", id)
 						}
 					}
 				}()
