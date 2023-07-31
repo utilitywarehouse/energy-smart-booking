@@ -156,7 +156,7 @@ require (
 	golang.org/x/tools v0.11.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230724170836-66ad5b6ff146 // indirect
+	google.golang.org/genproto v0.0.0-20230724170836-66ad5b6ff146
 	google.golang.org/genproto/googleapis/api v0.0.0-20230724170836-66ad5b6ff146 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230724170836-66ad5b6ff146 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

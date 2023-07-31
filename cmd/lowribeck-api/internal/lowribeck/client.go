@@ -66,6 +66,7 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 	if err != nil {
 		return nil, fmt.Errorf("unable to read body: %w", err)
 	}
+	logrus.Debugf("response: [%s]", string(respBody))
 
 	var br CreateBookingResponse
 	if err = json.Unmarshal(respBody, &br); err != nil {
