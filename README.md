@@ -47,7 +47,7 @@ meter installation booking journey.
 
 ## Preparing the Repository
 Because we are using gomock, some of the test files import the generated mocks, however they are not part of the tracked changes(to avoid us dealing with generated code susceptible to change and we do not want to be concerned with merge conflicts).
-In order to be able to run commands such as `go mod` or even `go test` you should run `go generate` to create all the necesary mocks.
+In order to be able to run commands such as `go mod` or even `go test` you should run `go generate ./...` to create all the necesary mocks.
 
 ### opt-out
 
