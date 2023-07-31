@@ -223,6 +223,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 			liveOccupancies, err := s.occupancyStore.GetLiveOccupancies(jobCtx)
 			if err != nil {
 				logrus.WithError(err).Error("failed to get live occupancies to evaluate")
+				return
 			}
 			channel := make(chan string, len(liveOccupancies))
 			for _, o := range liveOccupancies {

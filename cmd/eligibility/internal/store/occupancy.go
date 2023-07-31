@@ -87,8 +87,7 @@ func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, erro
 
 	q := `
 	SELECT distinct(occupancy_id) FROM services 
-	WHERE is_live IS TRUE
-	LIMIT 5000;`
+	WHERE is_live IS TRUE;`
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
@@ -125,65 +124,59 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 	LEFT JOIN postcodes p on s.post_code = p.post_code
 	WHERE o.id = $1;`
 
-	rows, err := s.pool.Query(ctx, q, occupancyID)
-	if err != nil {
-		return domain.Occupancy{}, err
-	}
-	defer rows.Close()
+	rows := s.pool.QueryRow(ctx, q, occupancyID)
 
 	occupancy := domain.Occupancy{
 		ID: occupancyID,
 	}
 
-	for rows.Next() {
-		var (
-			occupancyAccountID                        string
-			accountID, siteID, sitePostCode, postCode sql.NullString
-			psrCodes                                  []string
-			wanCoverage, optOut                       sql.NullBool
-			evaluationResult                          domain.OccupancyEvaluation
-		)
+	var (
+		occupancyAccountID                        string
+		accountID, siteID, sitePostCode, postCode sql.NullString
+		psrCodes                                  []string
+		wanCoverage, optOut                       sql.NullBool
+		evaluationResult                          domain.OccupancyEvaluation
+	)
 
-		err = rows.Scan(
-			&occupancyAccountID,
-			&evaluationResult.Eligibility,
-			&evaluationResult.Suppliability,
-			&evaluationResult.Campaignability,
-			&accountID,
-			&psrCodes,
-			&optOut,
-			&siteID,
-			&sitePostCode,
-			&postCode,
-			&wanCoverage,
-		)
-		if err != nil {
-			return domain.Occupancy{}, err
-		}
+	err := rows.Scan(
+		&occupancyAccountID,
+		&evaluationResult.Eligibility,
+		&evaluationResult.Suppliability,
+		&evaluationResult.Campaignability,
+		&accountID,
+		&psrCodes,
+		&optOut,
+		&siteID,
+		&sitePostCode,
+		&postCode,
+		&wanCoverage,
+	)
+	if err != nil {
+		return domain.Occupancy{}, err
+	}
 
-		evaluationResult.OccupancyID = occupancyID
-		occupancy.EvaluationResult = evaluationResult
+	evaluationResult.OccupancyID = occupancyID
+	occupancy.EvaluationResult = evaluationResult
 
-		if postCode.Valid {
-			occupancy.Site = &domain.Site{
-				ID:          siteID.String,
-				Postcode:    sitePostCode.String,
-				WanCoverage: wanCoverage.Bool,
-			}
+	if postCode.Valid {
+		occupancy.Site = &domain.Site{
+			ID:          siteID.String,
+			Postcode:    sitePostCode.String,
+			WanCoverage: wanCoverage.Bool,
 		}
-		occupancy.Account = domain.Account{
-			ID: occupancyAccountID,
-		}
-		if accountID.Valid {
-			occupancy.Account.PSRCodes = psrCodes
-			if optOut.Valid {
-				occupancy.Account.OptOut = optOut.Bool
-			}
+	}
+	occupancy.Account = domain.Account{
+		ID: occupancyAccountID,
+	}
+	if accountID.Valid {
+		occupancy.Account.PSRCodes = psrCodes
+		if optOut.Valid {
+			occupancy.Account.OptOut = optOut.Bool
 		}
 	}
 
-	if err = rows.Err(); err != nil {
-		return domain.Occupancy{}, rows.Err()
+	if err != nil {
+		return domain.Occupancy{}, err
 	}
 
 	return occupancy, nil
