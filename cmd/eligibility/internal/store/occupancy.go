@@ -88,7 +88,6 @@ func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, erro
 	q := `
 	SELECT distinct(occupancy_id) FROM services 
 	WHERE is_live IS TRUE
-	ORDER BY created_at DESC 
 	LIMIT 5000;`
 
 	rows, err := s.pool.Query(ctx, q)
