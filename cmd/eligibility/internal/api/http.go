@@ -84,7 +84,6 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 		accountID, ok := mux.Vars(r)["ID"]
 		if !ok {
 			logrus.Error("accountID not provided")
-			w.Write([]byte("accountID not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -92,13 +91,11 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 		occupancyIDs, err := s.occupancyStore.GetIDsByAccount(ctx, accountID)
 		if err != nil {
 			logrus.Debugf("failed to get occupancies for account ID %s: %s", accountID, err.Error())
-			w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if len(occupancyIDs) == 0 {
 			logrus.Debugf("No occupancy found for account ID %s", accountID)
-			w.Write([]byte(fmt.Sprintf("no occupancy found for account %s", accountID)))
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -112,12 +109,10 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			if err != nil {
 				if errors.Is(err, store.ErrEligibilityNotFound) {
 					logrus.Debugf("eligibility not computed for account %s, occupancy %s", accountID, occupancyID)
-					w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
 				logrus.Debugf("failed to get eligibility for account %s: %s", accountID, err.Error())
-				w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -126,12 +121,10 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			if err != nil {
 				if errors.Is(err, store.ErrSuppliabilityNotFound) {
 					logrus.Debugf("suppliability not computed for account %s, occupancy %s", accountID, occupancyID)
-					w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
 				logrus.Debugf("failed to get suppliability for account %s: %s", accountID, err.Error())
-				w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -182,7 +175,6 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			})
 		if err != nil {
 			logrus.Errorf("failed to marshall response: %s", err.Error())
-			w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -196,14 +188,12 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 		accountID, ok := mux.Vars(r)["ID"]
 		if !ok {
 			logrus.Error("accountID not provided")
-			w.Write([]byte("accountID not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		occupancyIDs, err := s.occupancyStore.GetIDsByAccount(ctx, accountID)
 		if err != nil {
 			logrus.Debugf("failed to get occupancies for account ID %s: %s", accountID, err.Error())
-			w.Write([]byte(fmt.Sprintf("failed to get eligibility for account %s", accountID)))
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -213,7 +203,6 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 			err := s.evaluator.RunFull(ctx, id)
 			if err != nil {
 				logrus.Errorf("failed to run full evaluation for account %s, occupancy %s", accountID, id)
-				w.Write([]byte(fmt.Sprintf("failed to run evaluation account %s", accountID)))
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -243,9 +232,12 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 				go func() {
 					defer wg.Done()
 					for id := range channel {
+						now := time.Now()
 						err := s.evaluator.RunFull(jobCtx, id)
 						if err != nil {
 							logrus.Errorf("failed to run evaluation of occupancy ID %s", id)
+						} else {
+							logrus.WithField("occupancy", id).WithField("elapsed", time.Since(now).String()).Debug("evaluation successfully run")
 						}
 					}
 				}()

@@ -86,8 +86,10 @@ func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, erro
 	var ids = make([]string, 0)
 
 	q := `
-	SELECT distinct(occupancy_id) FROM services 
-	WHERE is_live IS TRUE;`
+	SELECT distinct(s.occupancy_id) FROM services s 
+	LEFT JOIN eligibility e ON s.occupancy_id = e.occupancy_id
+	WHERE s.is_live IS TRUE
+	AND e.occupancy_id IS NULL;`
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
