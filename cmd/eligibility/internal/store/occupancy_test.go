@@ -92,6 +92,9 @@ func TestLoadOccupancy(t *testing.T) {
 		Account:  domain.Account{ID: "accountID1"},
 		Site:     nil,
 		Services: nil,
+		EvaluationResult: domain.OccupancyEvaluation{
+			OccupancyID: "occupancyID1",
+		},
 	}
 	assert.Equal(expected, occupancy)
 
@@ -115,5 +118,19 @@ func TestLoadOccupancy(t *testing.T) {
 	assert.NoError(err)
 
 	expected.Account.OptOut = true
+	assert.Equal(expected, occupancy)
+
+	_, err = store.pool.Exec(ctx, `INSERT INTO eligibility (occupancy_id, account_id, reasons) VALUES ('occupancyID1', 'account1', '["ComplexTariff", "AlreadySmart"]');`)
+	assert.NoError(err)
+	occupancy, err = store.LoadOccupancy(ctx, "occupancyID1")
+	assert.NoError(err)
+	expected.EvaluationResult.Eligibility = domain.IneligibleReasons{domain.IneligibleReasonComplexTariff, domain.IneligibleReasonAlreadySmart}
+	assert.Equal(expected, occupancy)
+
+	_, err = store.pool.Exec(ctx, `INSERT INTO campaignability (occupancy_id, account_id, reasons) VALUES ('occupancyID1', 'account1', '["OptOut"]');`)
+	assert.NoError(err)
+	occupancy, err = store.LoadOccupancy(ctx, "occupancyID1")
+	assert.NoError(err)
+	expected.EvaluationResult.Campaignability = domain.IneligibleReasons{domain.IneligibleReasonBookingOptOut}
 	assert.Equal(expected, occupancy)
 }

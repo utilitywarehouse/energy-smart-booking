@@ -108,11 +108,15 @@ func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, erro
 func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) (domain.Occupancy, error) {
 
 	q := `
-	SELECT o.account_id, 
+	SELECT o.account_id,
+	       e.reasons, sup.reasons, c.reasons,
 	       a.id, a.psr_codes, a.opt_out,
 	       s.id, s.post_code,
 	       p.post_code, p.wan_coverage
 	FROM occupancies o 
+	LEFT JOIN eligibility e ON o.id = e.occupancy_id
+	LEFT JOIN suppliability sup ON o.id = sup.occupancy_id
+	LEFT JOIN campaignability c ON o.id = c.occupancy_id
 	LEFT JOIN accounts a ON o.account_id = a.id
 	LEFT JOIN sites s on o.site_id = s.id 
 	LEFT JOIN postcodes p on s.post_code = p.post_code
@@ -134,10 +138,14 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 			accountID, siteID, sitePostCode, postCode sql.NullString
 			psrCodes                                  []string
 			wanCoverage, optOut                       sql.NullBool
+			evaluationResult                          domain.OccupancyEvaluation
 		)
 
 		err = rows.Scan(
 			&occupancyAccountID,
+			&evaluationResult.Eligibility,
+			&evaluationResult.Suppliability,
+			&evaluationResult.Campaignability,
 			&accountID,
 			&psrCodes,
 			&optOut,
@@ -149,6 +157,9 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 		if err != nil {
 			return domain.Occupancy{}, err
 		}
+
+		evaluationResult.OccupancyID = occupancyID
+		occupancy.EvaluationResult = evaluationResult
 
 		if postCode.Valid {
 			occupancy.Site = &domain.Site{

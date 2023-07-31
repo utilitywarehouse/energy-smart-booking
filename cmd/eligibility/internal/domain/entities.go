@@ -7,10 +7,11 @@ import (
 
 // Occupancy contains all the data and rules for evaluating the eligibility of an occupancy.
 type Occupancy struct {
-	ID       string
-	Account  Account
-	Site     *Site
-	Services []Service
+	ID               string
+	Account          Account
+	Site             *Site
+	Services         []Service
+	EvaluationResult OccupancyEvaluation
 }
 
 // Account customer account of the occupancy.
@@ -48,6 +49,13 @@ type Service struct {
 	Meterpoint       *Meterpoint
 	Meter            *Meter
 	BookingReference string
+}
+
+type OccupancyEvaluation struct {
+	OccupancyID     string
+	Eligibility     IneligibleReasons
+	Suppliability   IneligibleReasons
+	Campaignability IneligibleReasons
 }
 
 var unsupportedSSCs = map[string]bool{
