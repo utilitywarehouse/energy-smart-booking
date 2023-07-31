@@ -26,8 +26,9 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
+	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewCustomerDomain(accGw, eliGw, occSt, siteSt)
+	myDomain := domain.NewCustomerDomain(accGw, eliGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		accountID string
@@ -40,7 +41,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore)
+		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -51,7 +52,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 			input: inputParams{
 				accountID: "account-id-1",
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				aGw.EXPECT().GetAccountByAccountID(ctx, "account-id-1").Return(models.Account{
 					AccountID: "account-id-1",
 					Details: models.AccountDetails{
@@ -81,7 +82,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, accGw, eliGw, occSt, siteSt)
+			tc.setup(ctx, accGw, eliGw, occSt, siteSt, bookingSt)
 
 			expected, err := myDomain.GetCustomerContactDetails(ctx, tc.input.accountID)
 			if err != nil {
@@ -106,8 +107,9 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
+	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewCustomerDomain(accGw, eliGw, occSt, siteSt)
+	myDomain := domain.NewCustomerDomain(accGw, eliGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		accountID string
@@ -120,7 +122,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore)
+		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -131,7 +133,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 			input: inputParams{
 				accountID: "account-id-1",
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return(
 					[]models.Occupancy{
 						{
@@ -201,7 +203,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 			input: inputParams{
 				accountID: "account-id-1",
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{}, nil)
 			},
 			output: outputParams{
@@ -214,7 +216,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 			input: inputParams{
 				accountID: "account-id-1",
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{
 					{
 						OccupancyID: "occupancy-id-1",
@@ -243,7 +245,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, accGw, eliGw, occSt, siteSt)
+			tc.setup(ctx, accGw, eliGw, occSt, siteSt, bookingSt)
 
 			expected, err := myDomain.GetAccountAddressByAccountID(ctx, tc.input.accountID)
 

@@ -114,9 +114,10 @@ func serverAction(c *cli.Context) error {
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
 	siteStore := store.NewSite(pool)
+	bookingStore := store.NewBooking(pool)
 
 	// DOMAIN //
-	customerDomain := domain.NewCustomerDomain(accountGw, eligibilityGw, occupancyStore, siteStore)
+	customerDomain := domain.NewCustomerDomain(accountGw, eligibilityGw, occupancyStore, siteStore, bookingStore)
 
 	bookingAPI := api.New(customerDomain)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
