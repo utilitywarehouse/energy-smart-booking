@@ -10,26 +10,36 @@ import (
 )
 
 const (
-	sendingSystem         = "UTIL"
-	receivingSystem       = "LB"
 	requestTimeFormat     = "02/01/2006 15:04:05"
 	appointmentDateFormat = "02/01/2006"
 	appointmentTimeFormat = "%d:00-%d:00"
 )
 
-func MapAvailabilityRequest(id uint32, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
+type LowriBeck struct {
+	sendingSystem   string
+	receivingSystem string
+}
+
+func NewLowriBeckMapper(sendingSystem, receivingSystem string) *LowriBeck {
+	return &LowriBeck{
+		sendingSystem:   sendingSystem,
+		receivingSystem: receivingSystem,
+	}
+}
+
+func (lb LowriBeck) AvailabilityRequest(id uint32, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
 	return &lowribeck.GetCalendarAvailabilityRequest{
 		PostCode:        req.GetPostcode(),
 		ReferenceID:     req.GetReference(),
-		SendingSystem:   sendingSystem,
-		ReceivingSystem: receivingSystem,
+		SendingSystem:   lb.sendingSystem,
+		ReceivingSystem: lb.receivingSystem,
 		CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
 		// An ID sent to LB which they return in the response and can be used for debugging issues with them
 		RequestID: fmt.Sprintf("%d", id),
 	}
 }
 
-func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
+func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
 	slots, err := mapAvailabilitySlots(resp.CalendarAvailabilityResult)
 	if err != nil {
 		return nil, err
@@ -47,12 +57,12 @@ func MapAvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) 
 }
 
 // TODO - SMT-177/create-booking
-func MapBookingRequest(req *contract.CreateBookingRequest) *lowribeck.CreateBookingRequest {
+func (lb LowriBeck) BookingRequest(req *contract.CreateBookingRequest) *lowribeck.CreateBookingRequest {
 	return &lowribeck.CreateBookingRequest{}
 }
 
 // TODO - SMT-177/create-booking
-func MapBookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBookingResponse {
+func (lb LowriBeck) BookingResponse(_ *lowribeck.CreateBookingResponse) *contract.CreateBookingResponse {
 	return &contract.CreateBookingResponse{}
 }
 
@@ -60,16 +70,18 @@ func mapAvailabilitySlots(availabilityResults []*lowribeck.AvailabilitySlot) ([]
 	var err error
 	slots := make([]*contract.BookingSlot, len(availabilityResults))
 	for i, res := range availabilityResults {
-		slots[i] = &contract.BookingSlot{}
-		slots[i].Date, err = mapAppointmentDate(res.AppointmentDate)
+		slot := &contract.BookingSlot{}
+		slot.Date, err = mapAppointmentDate(res.AppointmentDate)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment date: %v", err)
 		}
 
-		slots[i].StartTime, slots[i].EndTime, err = mapAppointmentTime(res.AppointmentTime)
+		slot.StartTime, slots[i].EndTime, err = mapAppointmentTime(res.AppointmentTime)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment time: %v", err)
 		}
+
+		slots[i] = slot
 	}
 	return slots, nil
 }

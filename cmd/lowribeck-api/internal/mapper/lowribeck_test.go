@@ -150,14 +150,13 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 	}
 
 	assert := assert.New(t)
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem")
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			res, err := mapper.MapAvailableSlotsResponse(tc.lb)
+			res, err := lbMapper.AvailableSlotsResponse(tc.lb)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
-				// fmt.Println(res.Slots)
-				// fmt.Println(tc.expected.Slots)
 				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported())
 				assert.Empty(diff, tc.desc)
 			} else {

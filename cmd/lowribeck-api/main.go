@@ -18,6 +18,7 @@ import (
 	grpcHelper "github.com/utilitywarehouse/energy-services/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 )
@@ -26,9 +27,12 @@ const (
 	appName = "energy-smart-booking-opt-out"
 	appDesc = "handles energy smart booking account opt outs"
 
-	baseURL      = "base-url"
-	authUser     = "auth-user"
-	authPassword = "auth-password"
+	//LowriBeck config
+	baseURL         = "base-url"
+	sendingSystem   = "sending-system"
+	receivingSystem = "receiving-system"
+	authUser        = "auth-user"
+	authPassword    = "auth-password"
 )
 
 var gitHash string // populated at compile time
@@ -44,6 +48,16 @@ func main() {
 					&cli.StringFlag{
 						Name:     baseURL,
 						EnvVars:  []string{"BASE_URL"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     sendingSystem,
+						EnvVars:  []string{"SENDING_SYSTEM"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     receivingSystem,
+						EnvVars:  []string{"RECEIVING_SYSTEM"},
 						Required: true,
 					},
 					&cli.StringFlag{
@@ -92,7 +106,8 @@ func runServer(c *cli.Context) error {
 		defer listen.Close()
 
 		client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
-		lowribeckAPI := api.New(client)
+		mapper := mapper.NewLowriBeckMapper(c.String(sendingSystem), c.String(receivingSystem))
+		lowribeckAPI := api.New(client, mapper)
 		contracts.RegisterLowriBeckAPIServer(grpcServer, lowribeckAPI)
 
 		return grpcServer.Serve(listen)
