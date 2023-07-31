@@ -248,7 +248,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 
 			logrus.WithField("elapsed", time.Since(start).String()).Info("full evaluation process completed")
 		}()
-		
+
 		w.Write([]byte("full evaluation started"))
 	})
 }
