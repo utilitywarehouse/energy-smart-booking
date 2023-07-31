@@ -96,6 +96,12 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		if len(occupancyIDs) == 0 {
+			logrus.Debugf("No occupancy found for account ID %s", accountID)
+			w.Write([]byte(fmt.Sprintf("no occupancy found for account %s", accountID)))
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
 		var (
 			isEligible, isSuppliable bool
