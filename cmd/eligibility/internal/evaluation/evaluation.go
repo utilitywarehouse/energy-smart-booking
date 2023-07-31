@@ -115,7 +115,7 @@ func (e *Evaluator) publishCampaignabilityIfChanged(ctx context.Context, occupan
 
 func (e *Evaluator) publishSuppliabilityIfChanged(ctx context.Context, occupancy *domain.Occupancy, reasons domain.IneligibleReasons) error {
 
-	if occupancy.EvaluationResult.SuppliabilityEvaluated || !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Suppliability, reasons) {
+	if !occupancy.EvaluationResult.SuppliabilityEvaluated || !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Suppliability, reasons) {
 		if len(reasons) == 0 {
 			if err := e.suppliabilitySync.Sink(ctx, &smart.SuppliableOccupancyAddedEvent{
 				OccupancyId: occupancy.ID,
