@@ -17,11 +17,16 @@ import (
 type CustomerDomain interface {
 	GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error)
 	GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error)
+	GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error)
 }
 
 type BookingAPI struct {
 	customerDomain CustomerDomain
 	bookingv1.UnimplementedBookingAPIServer
+}
+
+type accountIder interface {
+	GetAccountId() string
 }
 
 func New(customerDomain CustomerDomain) *BookingAPI {
@@ -34,14 +39,21 @@ var (
 	ErrNotImplemented = status.Error(codes.Internal, "not implemented")
 )
 
-func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (*bookingv1.GetCustomerContactDetailsResponse, error) { // nolint:revive
-
+func validateRequest(req accountIder) error {
 	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "no request provided")
+		return status.Error(codes.InvalidArgument, "no request provided")
 	}
 
 	if req.GetAccountId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "no account id provided")
+		return status.Error(codes.InvalidArgument, "no account id provided")
+	}
+
+	return nil
+}
+
+func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (*bookingv1.GetCustomerContactDetailsResponse, error) { // nolint:revive
+	if err := validateRequest(req); err != nil {
+		return nil, err
 	}
 
 	account, err := b.customerDomain.GetCustomerContactDetails(ctx, req.GetAccountId())
@@ -63,12 +75,8 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 }
 
 func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (*bookingv1.GetCustomerSiteAddressResponse, error) {
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "no request provided")
-	}
-
-	if req.GetAccountId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "no account id provided")
+	if err := validateRequest(req); err != nil {
+		return nil, err
 	}
 
 	accountAddress, err := b.customerDomain.GetAccountAddressByAccountID(ctx, req.GetAccountId())
@@ -103,7 +111,16 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 }
 
 func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (*bookingv1.GetCustomerBookingsResponse, error) { // nolint:revive
-	return nil, ErrNotImplemented
+	if err := validateRequest(req); err != nil {
+		return nil, err
+	}
+
+	bookings, err := b.customerDomain.GetCustomerBookings(ctx, req.GetAccountId())
+	if err != nil {
+		return nil, err
+	}
+
+	return &bookingv1.GetCustomerBookingsResponse{Bookings: bookings}, nil
 }
 
 func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (*bookingv1.GetAvailableSlotsResponse, error) { // nolint:revive
