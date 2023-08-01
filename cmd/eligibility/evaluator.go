@@ -146,6 +146,7 @@ func runEvaluator(c *cli.Context) error {
 	evaluator := evaluation.NewEvaluator(
 		occupancyStore,
 		serviceStore,
+		meterStore,
 		eligibilitySyncPublisher,
 		suppliabilitySyncPublisher,
 		campaignabilitySyncPublisher,
