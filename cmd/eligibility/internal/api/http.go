@@ -195,6 +195,11 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		if len(occupancyIDs) == 0 {
+			logrus.Errorf("no occupancies found for account ID %s", accountID)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
 		for _, id := range occupancyIDs {
 			logrus.Debugf("run full evaluation for account %s, occupancy %s", accountID, id)

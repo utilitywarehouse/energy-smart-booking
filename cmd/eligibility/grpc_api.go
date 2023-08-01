@@ -43,6 +43,7 @@ func runGRPCApi(c *cli.Context) error {
 	suppliabilityStore := store.NewSuppliability(pg)
 	occupancyStore := store.NewOccupancy(pg)
 	accountStore := store.NewAccount(pg)
+	serviceStore := store.NewService(pg)
 
 	g.Go(func() error {
 		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(grpcLogLevel))
@@ -52,7 +53,7 @@ func runGRPCApi(c *cli.Context) error {
 		}
 		defer listen.Close()
 
-		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore)
+		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore, serviceStore)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 
 		return grpcServer.Serve(listen)
