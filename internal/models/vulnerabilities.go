@@ -1,0 +1,60 @@
+package models
+
+import (
+	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+)
+
+func BookingVulnerabilityToLowribeckVulnerability(bookingVulnerability bookingv1.Vulnerability) lowribeckv1.Vulnerability {
+	switch bookingVulnerability {
+	case bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY:
+		return lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY
+	case bookingv1.Vulnerability_VULNERABILITY_HEARING:
+		return lowribeckv1.Vulnerability_VULNERABILITY_HEARING
+	case bookingv1.Vulnerability_VULNERABILITY_ILLNESS:
+		return lowribeckv1.Vulnerability_VULNERABILITY_ILLNESS
+	case bookingv1.Vulnerability_VULNERABILITY_LEARNING_DIFFICULTIES:
+		return lowribeckv1.Vulnerability_VULNERABILITY_LEARNING_DIFFICULTIES
+	case bookingv1.Vulnerability_VULNERABILITY_OTHER:
+		return lowribeckv1.Vulnerability_VULNERABILITY_OTHER
+	case bookingv1.Vulnerability_VULNERABILITY_PENSIONABLE_AGE:
+		return lowribeckv1.Vulnerability_VULNERABILITY_PENSIONABLE_AGE
+	case bookingv1.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT:
+		return lowribeckv1.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT
+	case bookingv1.Vulnerability_VULNERABILITY_SIGHT:
+		return lowribeckv1.Vulnerability_VULNERABILITY_SIGHT
+	case bookingv1.Vulnerability_VULNERABILITY_SPEECH:
+		return lowribeckv1.Vulnerability_VULNERABILITY_SPEECH
+	case bookingv1.Vulnerability_VULNERABILITY_UNKNOWN:
+		return lowribeckv1.Vulnerability_VULNERABILITY_UNKNOWN
+	}
+
+	return lowribeckv1.Vulnerability_VULNERABILITY_UNKNOWN
+}
+
+func BookingLowribeckVulnerabilityToBookingAPIVulnerability(lowribeckVulnerability lowribeckv1.Vulnerability) bookingv1.Vulnerability {
+	switch lowribeckVulnerability {
+	case lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY:
+		return bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY
+	case lowribeckv1.Vulnerability_VULNERABILITY_HEARING:
+		return bookingv1.Vulnerability_VULNERABILITY_HEARING
+	case lowribeckv1.Vulnerability_VULNERABILITY_ILLNESS:
+		return bookingv1.Vulnerability_VULNERABILITY_ILLNESS
+	case lowribeckv1.Vulnerability_VULNERABILITY_LEARNING_DIFFICULTIES:
+		return bookingv1.Vulnerability_VULNERABILITY_LEARNING_DIFFICULTIES
+	case lowribeckv1.Vulnerability_VULNERABILITY_OTHER:
+		return bookingv1.Vulnerability_VULNERABILITY_OTHER
+	case lowribeckv1.Vulnerability_VULNERABILITY_PENSIONABLE_AGE:
+		return bookingv1.Vulnerability_VULNERABILITY_PENSIONABLE_AGE
+	case lowribeckv1.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT:
+		return bookingv1.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT
+	case lowribeckv1.Vulnerability_VULNERABILITY_SIGHT:
+		return bookingv1.Vulnerability_VULNERABILITY_SIGHT
+	case lowribeckv1.Vulnerability_VULNERABILITY_SPEECH:
+		return bookingv1.Vulnerability_VULNERABILITY_SPEECH
+	case lowribeckv1.Vulnerability_VULNERABILITY_UNKNOWN:
+		return bookingv1.Vulnerability_VULNERABILITY_UNKNOWN
+	}
+
+	return bookingv1.Vulnerability_VULNERABILITY_UNKNOWN
+}

@@ -1,4 +1,4 @@
-//go:generate mockgen -source=customer.go -destination ./mocks/customer_mocks.go
+//go:generate mockgen -source=domain.go -destination ./mocks/domain_mocks.go
 
 package domain_test
 
@@ -36,11 +36,14 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
 	eliGw := mocks.NewMockEligibilityGateway(ctrl)
+	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
+	svcSt := mocks.NewMockServiceStore(ctrl)
+	brSt := mocks.NewMockBookingReferenceStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewCustomerDomain(accGw, eliGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, svcSt, brSt, bookingSt)
 
 	type inputParams struct {
 		accountID string
@@ -117,11 +120,14 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
 	eliGw := mocks.NewMockEligibilityGateway(ctrl)
+	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
+	svcSt := mocks.NewMockServiceStore(ctrl)
+	brSt := mocks.NewMockBookingReferenceStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewCustomerDomain(accGw, eliGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, svcSt, brSt, bookingSt)
 
 	type inputParams struct {
 		accountID string

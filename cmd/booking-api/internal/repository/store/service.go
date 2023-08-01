@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -11,7 +12,10 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
-var ErrServiceNotFound = errors.New("service not found")
+var (
+	ErrServiceNotFound = errors.New("service not found")
+	ErrNoMPXNFound     = errors.New("mpxn not found")
+)
 
 type ServiceStore struct {
 	pool  *pgxpool.Pool
@@ -71,6 +75,27 @@ func (s *ServiceStore) Upsert(service models.Service) {
 		sql.NullTime{Time: defaultIfNull(service.StartDate), Valid: service.StartDate != nil},
 		sql.NullTime{Time: defaultIfNull(service.EndDate), Valid: service.EndDate != nil},
 		service.IsLive)
+}
+
+func (s *ServiceStore) GetServiceMPXNByOccupancyID(ctx context.Context, occupancyID string) (string, error) {
+	q := `
+	SELECT DISTINCT(mpxn)
+	FROM service
+	WHERE occupancy_id = $1
+	AND is_live IS TRUE;
+	`
+
+	var mpxn string
+
+	err := s.pool.QueryRow(ctx, q, occupancyID).Scan(&mpxn)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrNoMPXNFound
+		}
+		return "", fmt.Errorf("failed to scan row, %w", err)
+	}
+
+	return mpxn, nil
 }
 
 func defaultIfNull(t *time.Time) time.Time {

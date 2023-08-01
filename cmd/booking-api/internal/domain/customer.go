@@ -16,50 +16,7 @@ var (
 	ErrNoOccupanciesFound         = errors.New("no occupancies were found")
 )
 
-type AccountGateway interface {
-	GetAccountByAccountID(ctx context.Context, accountID string) (models.Account, error)
-}
-
-type EligibilityGateway interface {
-	GetEligibility(ctx context.Context, accountID, occupancyID string) (bool, error)
-}
-
-type OccupancyStore interface {
-	GetLiveOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error)
-}
-
-type SiteStore interface {
-	GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error)
-	GetSiteByOccupancyID(ctx context.Context, occupancyID string) (*models.Site, error)
-}
-
-type BookingStore interface {
-	GetBookingsByAccountID(ctx context.Context, accountID string) ([]models.Booking, error)
-}
-
-type CustomerDomain struct {
-	accounts       AccountGateway
-	eligibilityGw  EligibilityGateway
-	occupancyStore OccupancyStore
-	siteStore      SiteStore
-	bookingStore   BookingStore
-}
-
-func NewCustomerDomain(accounts AccountGateway,
-	eligibilityGw EligibilityGateway,
-	occupancyStore OccupancyStore,
-	siteStore SiteStore,
-	bookingStore BookingStore) *CustomerDomain {
-	return &CustomerDomain{
-		accounts,
-		eligibilityGw,
-		occupancyStore,
-		siteStore,
-		bookingStore,
-	}
-}
-
-func (d *CustomerDomain) GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error) {
+func (d BookingDomain) GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error) {
 
 	account, err := d.accounts.GetAccountByAccountID(ctx, accountID)
 	if err != nil {
@@ -69,7 +26,7 @@ func (d *CustomerDomain) GetCustomerContactDetails(ctx context.Context, accountI
 	return account, nil
 }
 
-func (d *CustomerDomain) GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error) {
+func (d BookingDomain) GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error) {
 
 	var targetOccupancy models.Occupancy = models.Occupancy{}
 
@@ -123,15 +80,7 @@ func (d *CustomerDomain) GetAccountAddressByAccountID(ctx context.Context, accou
 	return address, nil
 }
 
-func getUniqueOccupancyIDs(bookings []models.Booking) map[string]struct{} {
-	idSet := make(map[string]struct{})
-	for _, b := range bookings {
-		idSet[b.OccupancyID] = struct{}{}
-	}
-	return idSet
-}
-
-func (d *CustomerDomain) getAddresses(ctx context.Context, occupancyIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
+func (d *BookingDomain) getAddresses(ctx context.Context, siteIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
 	addresses := make(map[string]*addressv1.Address)
 	for occID := range occupancyIDs {
 		sm, err := d.siteStore.GetSiteByOccupancyID(ctx, occID)
@@ -159,7 +108,7 @@ func (d *CustomerDomain) getAddresses(ctx context.Context, occupancyIDs map[stri
 	return addresses, nil
 }
 
-func (d *CustomerDomain) GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error) {
+func (d *BookingDomain) GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error) {
 	bookingModels, err := d.bookingStore.GetBookingsByAccountID(ctx, accountID)
 	if err != nil {
 		return nil, err
@@ -203,4 +152,12 @@ func (d *CustomerDomain) GetCustomerBookings(ctx context.Context, accountID stri
 	}
 
 	return contractBookings, nil
+}
+
+func getUniqueSiteIDs(bookings []models.Booking) map[string]struct{} {
+	idSet := make(map[string]struct{})
+	for _, b := range bookings {
+		idSet[b.SiteID] = struct{}{}
+	}
+	return idSet
 }
