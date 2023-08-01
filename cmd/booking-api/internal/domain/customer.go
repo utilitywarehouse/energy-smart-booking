@@ -178,10 +178,16 @@ func (d *CustomerDomain) GetCustomerBookings(ctx context.Context, accountID stri
 			Day:   int32(d),
 		}
 		contractBookings = append(contractBookings, &bookingv1.Booking{
-			Id:             accountID,
-			AccountId:      accountID,
-			SiteAddress:    addresses[bm.SiteID],
-			ContactDetails: &bookingv1.ContactDetails{},
+			Id:          bm.BookingID,
+			AccountId:   accountID,
+			SiteAddress: addresses[bm.SiteID],
+			ContactDetails: &bookingv1.ContactDetails{
+				Title:     bm.Contact.Title,
+				FirstName: bm.Contact.FirstName,
+				LastName:  bm.Contact.LastName,
+				Phone:     bm.Contact.Mobile,
+				Email:     bm.Contact.Email,
+			},
 			Slot: &bookingv1.BookingSlot{
 				Date:      gdate,
 				StartTime: int32(bm.Slot.StartTime),

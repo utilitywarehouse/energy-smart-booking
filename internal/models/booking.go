@@ -6,14 +6,6 @@ import (
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 )
 
-type ContactDetails struct {
-	Title     string
-	FirstName string
-	LastName  string
-	Phone     string
-	Email     string
-}
-
 type BookingSlot struct {
 	Date      time.Time
 	StartTime int
@@ -39,7 +31,7 @@ type Booking struct {
 	AccountID            string
 	Status               bookingv1.BookingStatus
 	SiteID               string
-	Contact              ContactDetails
+	Contact              AccountDetails
 	Slot                 BookingSlot
 	VulnerabilityDetails VulnerabilityDetails
 }

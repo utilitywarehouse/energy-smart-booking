@@ -62,11 +62,11 @@ func makeDummyBooking(
 		AccountID: accountID,
 		Status:    bookingStatus,
 		SiteID:    siteID,
-		Contact: models.ContactDetails{
+		Contact: models.AccountDetails{
 			Title:     "Mr.",
 			FirstName: "Foo",
 			LastName:  "Bar",
-			Phone:     "5555555",
+			Mobile:    "5555555",
 			Email:     "foobar@example.com",
 		},
 		Slot: slot,
