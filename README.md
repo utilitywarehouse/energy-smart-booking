@@ -43,6 +43,18 @@ meter installation booking journey.
    - when you update PR it is built, because branch has changed
    - master is built on branch merge after PR
 
+## Testing locally
+
+Install gomock:
+```
+    go install github.com/golang/mock/mockgen@v1.6.0
+```
+
+Generate the mocks:
+```
+    go generate ./...
+```
+
 ## Booking Services Overview
 
 ### opt-out
