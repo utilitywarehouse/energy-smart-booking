@@ -85,7 +85,7 @@ func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) erro
 
 func (e *Evaluator) publishCampaignabilityIfChanged(ctx context.Context, occupancy *domain.Occupancy, reasons domain.IneligibleReasons) error {
 
-	if !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Campaignability, reasons) {
+	if !occupancy.EvaluationResult.CampaignabilityEvaluated || !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Campaignability, reasons) {
 		if len(reasons) == 0 {
 			if err := e.campaignabilitySync.Sink(ctx, &smart.CampaignableOccupancyAddedEvent{
 				OccupancyId: occupancy.ID,
@@ -115,7 +115,7 @@ func (e *Evaluator) publishCampaignabilityIfChanged(ctx context.Context, occupan
 
 func (e *Evaluator) publishSuppliabilityIfChanged(ctx context.Context, occupancy *domain.Occupancy, reasons domain.IneligibleReasons) error {
 
-	if !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Suppliability, reasons) {
+	if !occupancy.EvaluationResult.SuppliabilityEvaluated || !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Suppliability, reasons) {
 		if len(reasons) == 0 {
 			if err := e.suppliabilitySync.Sink(ctx, &smart.SuppliableOccupancyAddedEvent{
 				OccupancyId: occupancy.ID,
@@ -145,7 +145,7 @@ func (e *Evaluator) publishSuppliabilityIfChanged(ctx context.Context, occupancy
 
 func (e *Evaluator) publishEligibilityIfChanged(ctx context.Context, occupancy *domain.Occupancy, reasons domain.IneligibleReasons) error {
 
-	if !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Eligibility, reasons) {
+	if !occupancy.EvaluationResult.EligibilityEvaluated || !ineligibleReasonSlicesEqual(occupancy.EvaluationResult.Eligibility, reasons) {
 		if len(reasons) == 0 {
 			if err := e.eligibilitySync.Sink(ctx, &smart.EligibleOccupancyAddedEvent{
 				OccupancyId: occupancy.ID,
