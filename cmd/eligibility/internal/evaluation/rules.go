@@ -94,7 +94,7 @@ func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
 
 	for _, s := range o.Services {
 		if s.Meterpoint == nil {
-			result.addReason(domain.IneligibleReasonMissingMeterData)
+			result.addReason(domain.IneligibleReasonMissingMeterpointData)
 		} else if s.Meterpoint.HasComplexTariff() {
 			result.addReason(domain.IneligibleReasonComplexTariff)
 		}
