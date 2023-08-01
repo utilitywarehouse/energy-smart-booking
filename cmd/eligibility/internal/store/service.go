@@ -86,13 +86,10 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 	q := `
 	SELECT 
 	    s.id, s.mpxn, s.supply_type,
-	    m.mpxn, m.profile_class, m.ssc, m.alt_han,
-	    b.reference
+	    m.mpxn, m.profile_class, m.ssc, m.alt_han
 	FROM services s 
 	LEFT JOIN meterpoints m
 	ON s.mpxn = m.mpxn
-	LEFT JOIN booking_references b
-	ON s.mpxn = b.mpxn
 	WHERE s.occupancy_id = $1
 	AND s.is_live is TRUE;`
 
@@ -106,9 +103,9 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 
 	for rows.Next() {
 		var (
-			service                                       domain.Service
-			meterpointMpxn, profileClass, ssc, bookingRef sql.NullString
-			altHan                                        sql.NullBool
+			service                           domain.Service
+			meterpointMpxn, profileClass, ssc sql.NullString
+			altHan                            sql.NullBool
 		)
 		if err = rows.Scan(
 			&service.ID,
@@ -117,8 +114,7 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 			&meterpointMpxn,
 			&profileClass,
 			&ssc,
-			&altHan,
-			&bookingRef); err != nil {
+			&altHan); err != nil {
 			return nil, err
 		}
 
@@ -136,9 +132,7 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 				service.Meterpoint.ProfileClass = platform.ProfileClass(pc)
 			}
 		}
-		if bookingRef.Valid {
-			service.BookingReference = bookingRef.String
-		}
+
 		services = append(services, service)
 	}
 	if err = rows.Err(); err != nil {

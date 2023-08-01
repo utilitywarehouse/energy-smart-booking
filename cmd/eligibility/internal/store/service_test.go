@@ -80,15 +80,6 @@ func TestService(t *testing.T) {
 		SSC:          "ssc",
 	}
 	assert.Equal(expectedSv, liveServices[0], "mismatch")
-
-	_, err = s.pool.Exec(ctx, `INSERT INTO booking_references(mpxn, reference) VALUES('service_mpxn', 'ref');`)
-	assert.NoError(err)
-	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
-	assert.NoError(err, "failed to get live services")
-	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
-
-	expectedSv.BookingReference = "ref"
-	assert.Equal(expectedSv, liveServices[0], "mismatch")
 }
 
 func TestGetServicesWithBookingRef(t *testing.T) {
