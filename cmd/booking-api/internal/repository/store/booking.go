@@ -36,7 +36,7 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 		account_id,
 		status,
 
-		site_id,
+		occupancy_id,
 
 		contact_title,
 		contact_first_name,
@@ -58,7 +58,7 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 		booking.BookingID,
 		booking.AccountID,
 		booking.Status,
-		booking.SiteID,
+		booking.OccupancyID,
 		booking.Contact.Title,
 		booking.Contact.FirstName,
 		booking.Contact.LastName,
@@ -98,7 +98,7 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 		account_id,
 		status,
 
-		site_id,
+		occupancy_id,
 
 		contact_title,
 		contact_first_name,
@@ -128,7 +128,7 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 			&booking.BookingID,
 			&booking.AccountID,
 			&booking.Status,
-			&booking.SiteID,
+			&booking.OccupancyID,
 			&booking.Contact.Title,
 			&booking.Contact.FirstName,
 			&booking.Contact.LastName,

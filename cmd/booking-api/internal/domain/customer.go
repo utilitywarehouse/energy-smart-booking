@@ -30,6 +30,7 @@ type OccupancyStore interface {
 
 type SiteStore interface {
 	GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error)
+	GetSiteByOccupancyID(ctx context.Context, occupancyID string) (*models.Site, error)
 }
 
 type BookingStore interface {
@@ -122,18 +123,18 @@ func (d *CustomerDomain) GetAccountAddressByAccountID(ctx context.Context, accou
 	return address, nil
 }
 
-func getUniqueSiteIDs(bookings []models.Booking) map[string]struct{} {
+func getUniqueOccupancyIDs(bookings []models.Booking) map[string]struct{} {
 	idSet := make(map[string]struct{})
 	for _, b := range bookings {
-		idSet[b.SiteID] = struct{}{}
+		idSet[b.OccupancyID] = struct{}{}
 	}
 	return idSet
 }
 
-func (d *CustomerDomain) getAddresses(ctx context.Context, siteIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
+func (d *CustomerDomain) getAddresses(ctx context.Context, occupancyIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
 	addresses := make(map[string]*addressv1.Address)
-	for siteID := range siteIDs {
-		sm, err := d.siteStore.GetSiteBySiteID(ctx, siteID)
+	for occID := range occupancyIDs {
+		sm, err := d.siteStore.GetSiteByOccupancyID(ctx, occID)
 		if err != nil {
 			return nil, err
 		}
@@ -153,7 +154,7 @@ func (d *CustomerDomain) getAddresses(ctx context.Context, siteIDs map[string]st
 				Postcode:                sm.Postcode,
 			},
 		}
-		addresses[siteID] = address
+		addresses[occID] = address
 	}
 	return addresses, nil
 }
@@ -164,7 +165,7 @@ func (d *CustomerDomain) GetCustomerBookings(ctx context.Context, accountID stri
 		return nil, err
 	}
 
-	addresses, err := d.getAddresses(ctx, getUniqueSiteIDs(bookingModels))
+	addresses, err := d.getAddresses(ctx, getUniqueOccupancyIDs(bookingModels))
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +181,7 @@ func (d *CustomerDomain) GetCustomerBookings(ctx context.Context, accountID stri
 		contractBookings = append(contractBookings, &bookingv1.Booking{
 			Id:          bm.BookingID,
 			AccountId:   accountID,
-			SiteAddress: addresses[bm.SiteID],
+			SiteAddress: addresses[bm.OccupancyID],
 			ContactDetails: &bookingv1.ContactDetails{
 				Title:     bm.Contact.Title,
 				FirstName: bm.Contact.FirstName,

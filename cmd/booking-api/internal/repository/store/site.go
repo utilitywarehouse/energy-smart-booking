@@ -136,3 +136,52 @@ func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models
 
 	return &site, nil
 }
+
+func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string) (*models.Site, error) {
+	var site models.Site
+	q := `
+	SELECT 
+		s.site_id,
+		s.postcode,
+		s.uprn,
+		s.building_name_number,
+		s.dependent_thoroughfare,
+		s.thoroughfare,
+		s.double_dependent_locality,
+		s.dependent_locality,
+		s.locality,
+		s.county,
+		s.town,
+		s.department,
+		s.organisation,
+		s.po_box,
+		s.delivery_point_suffix,
+		s.sub_building_name_number
+	FROM site AS s 
+	JOIN occupancy AS o ON o.site_id=s.site_id
+	WHERE o.occupancy_id = $1;`
+	if err := s.pool.QueryRow(ctx, q, occupancyID).
+		Scan(&site.SiteID,
+			&site.Postcode,
+			&site.UPRN,
+			&site.BuildingNameNumber,
+			&site.DependentThoroughfare,
+			&site.Thoroughfare,
+			&site.DoubleDependentLocality,
+			&site.DependentLocality,
+			&site.Locality,
+			&site.County,
+			&site.Town,
+			&site.Department,
+			&site.Organisation,
+			&site.PoBox,
+			&site.DeliveryPointSuffix,
+			&site.SubBuildingNameNumber); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrSiteNotFound
+		}
+		return nil, err
+	}
+
+	return &site, nil
+}

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS booking (
     status                 INT NOT NULL,
 
     -- address (normalized)
-    site_id                TEXT NOT NULL,
+    occupancy_id           TEXT NOT NULL,
     
     -- contact details
     contact_title          TEXT NOT NULL,

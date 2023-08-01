@@ -30,7 +30,7 @@ type Booking struct {
 	BookingID            string
 	AccountID            string
 	Status               bookingv1.BookingStatus
-	SiteID               string
+	OccupancyID          string
 	Contact              AccountDetails
 	Slot                 BookingSlot
 	VulnerabilityDetails VulnerabilityDetails
