@@ -29,7 +29,7 @@ type LowriBeckGateway interface {
 }
 
 type ServiceStore interface {
-	GetServiceMPXNByOccupancyID(ctx context.Context, occupancyID string) (string, error)
+	GetReferenceByOccupancyID(ctx context.Context, occupancyID string) (string, error)
 }
 
 type BookingReferenceStore interface {

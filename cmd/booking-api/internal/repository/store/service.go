@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ErrServiceNotFound = errors.New("service not found")
-	ErrNoMPXNFound     = errors.New("mpxn not found")
+	ErrServiceNotFound   = errors.New("service not found")
+	ErrReferenceNotFound = errors.New("booking reference not found")
 )
 
 type ServiceStore struct {
@@ -77,25 +77,28 @@ func (s *ServiceStore) Upsert(service models.Service) {
 		service.IsLive)
 }
 
-func (s *ServiceStore) GetServiceMPXNByOccupancyID(ctx context.Context, occupancyID string) (string, error) {
+func (s *ServiceStore) GetReferenceByOccupancyID(ctx context.Context, occupancyID string) (string, error) {
 	q := `
-	SELECT DISTINCT(mpxn)
-	FROM service
-	WHERE occupancy_id = $1
-	AND is_live IS TRUE;
+	SELECT br.reference
+	FROM service s
+	JOIN 
+		booking_reference br ON s.mpxn = br.mpxn 
+	WHERE 
+		s.occupancy_id = $1
+		AND s.is_live IS TRUE;
 	`
 
-	var mpxn string
+	var bookingReference string
 
-	err := s.pool.QueryRow(ctx, q, occupancyID).Scan(&mpxn)
+	err := s.pool.QueryRow(ctx, q, occupancyID).Scan(&bookingReference)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return "", ErrNoMPXNFound
+			return "", ErrReferenceNotFound
 		}
 		return "", fmt.Errorf("failed to scan row, %w", err)
 	}
 
-	return mpxn, nil
+	return bookingReference, nil
 }
 
 func defaultIfNull(t *time.Time) time.Time {

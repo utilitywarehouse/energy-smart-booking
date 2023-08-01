@@ -206,12 +206,7 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 		return models.Site{}, "", fmt.Errorf("failed to get site with site_id :%s, %w", targetOccupancy.SiteID, err)
 	}
 
-	mpxn, err := d.serviceStore.GetServiceMPXNByOccupancyID(ctx, targetOccupancy.OccupancyID)
-	if err != nil {
-		return models.Site{}, "", nil
-	}
-
-	reference, err := d.bookingReferenceStore.GetReferenceByMPXN(ctx, mpxn)
+	reference, err := d.serviceStore.GetReferenceByOccupancyID(ctx, targetOccupancy.OccupancyID)
 	if err != nil {
 		return models.Site{}, "", nil
 	}

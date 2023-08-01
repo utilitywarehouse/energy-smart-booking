@@ -94,9 +94,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 					Postcode: "E2 1ZZ",
 				}, nil)
 
-				svcSt.EXPECT().GetServiceMPXNByOccupancyID(ctx, "occupancy-id-1").Return("mpxn-1", nil)
-
-				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
+				svcSt.EXPECT().GetReferenceByOccupancyID(ctx, "occupancy-id-1").Return("booking-reference-1", nil)
 
 				lbGw.EXPECT().GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1").Return([]models.BookingSlot{
 					{
@@ -322,9 +320,7 @@ func Test_CreateBooking(t *testing.T) {
 					DeliveryPointSuffix:     "dps",
 				}, nil)
 
-				svcSt.EXPECT().GetServiceMPXNByOccupancyID(ctx, "occupancy-id-1").Return("mpxn-1", nil)
-
-				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
+				svcSt.EXPECT().GetReferenceByOccupancyID(ctx, "occupancy-id-1").Return("booking-reference-1", nil)
 
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 					Date:      mustDate(t, "2023-08-27"),
@@ -450,9 +446,7 @@ func Test_CreateBooking(t *testing.T) {
 					DeliveryPointSuffix:     "dps",
 				}, nil)
 
-				svcSt.EXPECT().GetServiceMPXNByOccupancyID(ctx, "occupancy-id-1").Return("mpxn-1", nil)
-
-				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
+				svcSt.EXPECT().GetReferenceByOccupancyID(ctx, "occupancy-id-1").Return("booking-reference-1", nil)
 
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 					Date:      mustDate(t, "2023-08-27"),
@@ -582,9 +576,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					DeliveryPointSuffix:     "dps",
 				}, nil)
 
-				svcSt.EXPECT().GetServiceMPXNByOccupancyID(ctx, "occupancy-id-1").Return("mpxn-1", nil)
-
-				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
+				svcSt.EXPECT().GetReferenceByOccupancyID(ctx, "occupancy-id-1").Return("booking-reference-1", nil)
 
 				bookingSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID: "booking-id-1",
@@ -689,9 +681,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					DeliveryPointSuffix:     "dps",
 				}, nil)
 
-				svcSt.EXPECT().GetServiceMPXNByOccupancyID(ctx, "occupancy-id-1").Return("mpxn-1", nil)
-
-				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
+				svcSt.EXPECT().GetReferenceByOccupancyID(ctx, "occupancy-id-1").Return("booking-reference-1", nil)
 
 				bookingSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID: "booking-id-1",
