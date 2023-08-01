@@ -3,6 +3,7 @@ package store_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -211,6 +212,101 @@ func Test_SiteStore_Get(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(site, tc.output.site); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+type batcher interface {
+	Begin()
+	Commit(context.Context) error
+}
+
+func withBatch[T batcher](ctx context.Context, b T, callable func(T)) {
+	b.Begin()
+	callable(b)
+	b.Commit(ctx)
+}
+
+func Test_SiteStore_GetSiteByOccupancyID(t *testing.T) {
+	ctx := context.Background()
+
+	testContainer, err := setupTestContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dsn, err := postgres.GetTestContainerDSN(testContainer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := store.Setup(ctx, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	site1 := models.Site{
+		SiteID:                  "site-id-1",
+		Postcode:                "postcode-1",
+		UPRN:                    "uprn-1",
+		BuildingNameNumber:      "bnn-1",
+		SubBuildingNameNumber:   "sbnn-1",
+		DependentThoroughfare:   "dtf-1",
+		Thoroughfare:            "tf-1",
+		DoubleDependentLocality: "ddl-1",
+		DependentLocality:       "dl-1",
+		Locality:                "l-1",
+		County:                  "county-1",
+		Town:                    "town-1",
+		Department:              "dept-1",
+		Organisation:            "org-1",
+		PoBox:                   "pobox-1",
+		DeliveryPointSuffix:     "dps-1",
+	}
+	siteStore := store.NewSite(db)
+	withBatch(ctx, siteStore, func(ss *store.SiteStore) {
+		ss.Upsert(site1)
+	})
+
+	occuStore := store.NewOccupancy(db)
+	withBatch(ctx, occuStore, func(os *store.OccupancyStore) {
+		os.Insert(models.Occupancy{
+			OccupancyID: "occupancy-id-1",
+			SiteID:      "site-id-1",
+			AccountID:   "account-id-1",
+			CreatedAt:   time.Now(),
+		})
+	})
+
+	type TestCase[I any, O comparable] struct {
+		description string
+		Input       I
+		Expected    *O
+		Error       error
+	}
+
+	type siteByOccupancyTestCase TestCase[string, models.Site]
+
+	testCases := []siteByOccupancyTestCase{
+		{
+			description: "get site by occupancy ID",
+			Input:       "occupancy-id-1",
+			Expected:    &site1,
+			Error:       nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			site, err := siteStore.GetSiteByOccupancyID(ctx, tc.Input)
+
+			if diff := cmp.Diff(err, tc.Error, cmpopts.EquateErrors()); diff != "" {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(site, tc.Expected); diff != "" {
 				t.Fatal(diff)
 			}
 		})

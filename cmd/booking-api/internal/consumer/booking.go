@@ -85,16 +85,12 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 			return err
 		}
 		vulns := details.GetVulnerabilityDetails()
-		occ, err := h.occupancyStore.GetOccupancyByID(ctx, ev.GetOccupancyId())
-		if err != nil {
-			return err
-		}
 
 		h.bookingStore.Upsert(models.Booking{
-			BookingID: ev.GetBookingId(),
-			AccountID: details.GetAccountId(),
-			Status:    details.GetStatus(),
-			SiteID:    occ.SiteID,
+			BookingID:   ev.GetBookingId(),
+			AccountID:   details.GetAccountId(),
+			Status:      details.GetStatus(),
+			OccupancyID: ev.GetOccupancyId(),
 			Contact: models.AccountDetails{
 				Title:     contactDetails.GetTitle(),
 				FirstName: contactDetails.GetFirstName(),
