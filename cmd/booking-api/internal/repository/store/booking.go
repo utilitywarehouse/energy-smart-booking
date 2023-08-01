@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -78,6 +79,16 @@ func (s *BookingStore) UpdateStatus(bookingID string, newStatus bookingv1.Bookin
 	WHERE booking_id = $1;
 	`
 	s.batch.Queue(q, bookingID, newStatus)
+}
+
+func (s *BookingStore) UpdateSchedule(bookingID string, newSchedule *time.Time) {
+	q := `
+	UPDATE booking
+	SET booking_date = $2,
+		updated_at = now()
+	WHERE booking_id = $1;
+	`
+	s.batch.Queue(q, bookingID, *newSchedule)
 }
 
 func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID string) ([]models.Booking, error) {

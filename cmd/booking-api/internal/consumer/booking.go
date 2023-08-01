@@ -18,6 +18,7 @@ import (
 type BookingStore interface {
 	Upsert(models.Booking)
 	UpdateStatus(bookingID string, newStatus bookingv1.BookingStatus)
+	UpdateSchedule(bookingID string, newSchedule *time.Time)
 
 	Begin()
 	Commit(context.Context) error
@@ -45,16 +46,16 @@ func (h *BookingHandler) PostHandle(ctx context.Context) error {
 	return h.bookingStore.Commit(ctx)
 }
 
-func dateIntoTime(d *date.Date) (time.Time, error) {
+func dateIntoTime(d *date.Date) (*time.Time, error) {
 	t, err := time.ParseInLocation(
 		time.DateOnly,
 		fmt.Sprintf("%d-%d-%d", d.Year, d.Month, d.Day),
 		time.UTC,
 	)
 	if err != nil {
-		return time.Time{}, err
+		return nil, err
 	}
-	return t, nil
+	return &t, nil
 }
 
 func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) error {
@@ -102,7 +103,7 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 				Mobile:    contactDetails.GetPhone(),
 			},
 			Slot: models.BookingSlot{
-				Date:      dateTime,
+				Date:      *dateTime,
 				StartTime: int(slot.GetStartTime()),
 				EndTime:   int(slot.GetEndTime()),
 			},
@@ -111,6 +112,13 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 				Other:           vulns.GetOther(),
 			},
 		})
+	case *bookingv1.BookingRescheduledEvent:
+		bookingID := ev.GetBookingId()
+		dt, err := dateIntoTime(ev.GetSlot().GetDate())
+		if err != nil {
+			return err
+		}
+		h.bookingStore.UpdateSchedule(bookingID, dt)
 	}
 
 	return nil
