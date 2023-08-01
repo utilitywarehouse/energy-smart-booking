@@ -25,10 +25,12 @@ const (
 	IneligibleReasonComplexTariff
 	IneligibleReasonBookingReferenceMissing
 	IneligibleReasonAlreadySmart
-	IneligibleReasonMissingData
 	IneligibleReasonAltHan
 	IneligibleReasonBookingOptOut
 	IneligibleReasonGasServiceOnly
+	IneligibleReasonMissingMeterData
+	IneligibleReasonMissingMeterpointData
+	IneligibleReasonMissingSiteData
 )
 
 type IneligibleReasons []IneligibleReason
@@ -57,14 +59,18 @@ func (r IneligibleReason) String() string {
 		return "BookingReferenceMissing"
 	case IneligibleReasonAlreadySmart:
 		return "AlreadySmart"
-	case IneligibleReasonMissingData:
-		return "MissingData"
 	case IneligibleReasonAltHan:
 		return "AltHan"
 	case IneligibleReasonBookingOptOut:
 		return "OptOut"
 	case IneligibleReasonGasServiceOnly:
 		return "GasServiceOnly"
+	case IneligibleReasonMissingMeterData:
+		return "MissingMeterData"
+	case IneligibleReasonMissingMeterpointData:
+		return "MissingMeterpointData"
+	case IneligibleReasonMissingSiteData:
+		return "MissingSiteData"
 	}
 }
 
@@ -92,14 +98,18 @@ func fromString(str string) (IneligibleReason, error) {
 		return IneligibleReasonBookingReferenceMissing, nil
 	case "AlreadySmart":
 		return IneligibleReasonAlreadySmart, nil
-	case "MissingData":
-		return IneligibleReasonMissingData, nil
 	case "AltHan":
 		return IneligibleReasonAltHan, nil
 	case "OptOut":
 		return IneligibleReasonBookingOptOut, nil
 	case "GasServiceOnly":
 		return IneligibleReasonGasServiceOnly, nil
+	case "MissingMeterData":
+		return IneligibleReasonMissingMeterData, nil
+	case "MissingMeterpointData":
+		return IneligibleReasonMissingMeterpointData, nil
+	case "MissingSiteData":
+		return IneligibleReasonMissingSiteData, nil
 	}
 }
 
@@ -161,14 +171,18 @@ func MapIneligibleProtoToDomainReason(reason smart.IneligibleReason) (Ineligible
 		return IneligibleReasonBookingReferenceMissing, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_ALREADY_SMART:
 		return IneligibleReasonAlreadySmart, nil
-	case smart.IneligibleReason_INELIGIBLE_REASON_MISSING_DATA:
-		return IneligibleReasonMissingData, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_ALT_HAN:
 		return IneligibleReasonAltHan, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_SMART_BOOKING_OPT_OUT:
 		return IneligibleReasonBookingOptOut, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_GAS_SERVICE_ONLY:
 		return IneligibleReasonGasServiceOnly, nil
+	case smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METER_DATA:
+		return IneligibleReasonMissingMeterData, nil
+	case smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METERPOINT_DATA:
+		return IneligibleReasonMissingMeterpointData, nil
+	case smart.IneligibleReason_INELIGIBLE_REASON_MISSING_SITE_DATA:
+		return IneligibleReasonMissingSiteData, nil
 	}
 
 	return IneligibleReasonUnknown, fmt.Errorf("reason not mapped")
@@ -230,14 +244,18 @@ func mapDomainToProtoReason(reason IneligibleReason) (smart.IneligibleReason, er
 		return smart.IneligibleReason_INELIGIBLE_REASON_BOOKING_REFERENCE_MISSING, nil
 	case IneligibleReasonAlreadySmart:
 		return smart.IneligibleReason_INELIGIBLE_REASON_ALREADY_SMART, nil
-	case IneligibleReasonMissingData:
-		return smart.IneligibleReason_INELIGIBLE_REASON_MISSING_DATA, nil
 	case IneligibleReasonAltHan:
 		return smart.IneligibleReason_INELIGIBLE_REASON_ALT_HAN, nil
 	case IneligibleReasonBookingOptOut:
 		return smart.IneligibleReason_INELIGIBLE_REASON_SMART_BOOKING_OPT_OUT, nil
 	case IneligibleReasonGasServiceOnly:
 		return smart.IneligibleReason_INELIGIBLE_REASON_GAS_SERVICE_ONLY, nil
+	case IneligibleReasonMissingMeterData:
+		return smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METER_DATA, nil
+	case IneligibleReasonMissingMeterpointData:
+		return smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METERPOINT_DATA, nil
+	case IneligibleReasonMissingSiteData:
+		return smart.IneligibleReason_INELIGIBLE_REASON_MISSING_SITE_DATA, nil
 	default:
 		return smart.IneligibleReason_INELIGIBLE_REASON_UNKNOWN, fmt.Errorf("reason not mapped")
 	}
