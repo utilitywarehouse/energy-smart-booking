@@ -20,8 +20,8 @@ type Client interface {
 type Mapper interface {
 	AvailabilityRequest(uint32, *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest
 	AvailableSlotsResponse(*lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error)
-	BookingRequest(uint32, *contract.CreateBookingRequest) *lowribeck.CreateBookingRequest
-	BookingResponse(*lowribeck.CreateBookingResponse) *contract.CreateBookingResponse
+	BookingRequest(uint32, *contract.CreateBookingRequest) (*lowribeck.CreateBookingRequest, error)
+	BookingResponse(*lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error)
 }
 
 type LowriBeckAPI struct {
@@ -50,12 +50,16 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
 	requestID := uuid.New().ID()
-	bookingReq := l.mapper.BookingRequest(requestID, req)
+	bookingReq, err := l.mapper.BookingRequest(requestID, req)
+	if err != nil {
+		logrus.Errorf("error mapping booking request for reference(%s): %v", req.GetReference(), err)
+		return nil, status.Errorf(codes.InvalidArgument, "error mapping booking request: %s", err.Error())
+	}
 	resp, err := l.client.CreateBooking(ctx, bookingReq)
 	if err != nil {
 		logrus.Errorf("error making booking request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
 		return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
 	}
 
-	return l.mapper.BookingResponse(resp), nil
+	return l.mapper.BookingResponse(resp)
 }
