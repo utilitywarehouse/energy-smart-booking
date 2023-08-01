@@ -28,24 +28,31 @@ type AccountStore interface {
 	GetAccount(ctx context.Context, accountID string) (store.Account, error)
 }
 
+type ServiceStore interface {
+	GetServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
+}
+
 type EligibilityGRPCApi struct {
 	smart_booking.UnimplementedEligiblityAPIServer
 	eligibilityStore   EligibilityStore
 	suppliabilityStore SuppliabilityStore
 	occupancyStore     OccupancyStore
 	accountStore       AccountStore
+	serviceStore       ServiceStore
 }
 
 func NewEligibilityGRPCApi(
 	eligibilityStore EligibilityStore,
 	suppliabilityStore SuppliabilityStore,
 	occupancyStore OccupancyStore,
-	accountStore AccountStore) *EligibilityGRPCApi {
+	accountStore AccountStore,
+	serviceStore ServiceStore) *EligibilityGRPCApi {
 	return &EligibilityGRPCApi{
 		eligibilityStore:   eligibilityStore,
 		suppliabilityStore: suppliabilityStore,
 		occupancyStore:     occupancyStore,
 		accountStore:       accountStore,
+		serviceStore:       serviceStore,
 	}
 }
 
@@ -73,6 +80,11 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 	if err != nil {
 		logrus.Debugf("failed to get occupancies for account ID %s: %s", req.GetAccountId(), err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
+	}
+
+	if len(occupancyIDs) == 0 {
+		logrus.Debugf("no occupancies found for account ID %s", req.GetAccountId())
+		return nil, status.Errorf(codes.NotFound, "eligibility not found for account %s", req.AccountId)
 	}
 
 	for _, occupancyID := range occupancyIDs {
@@ -104,7 +116,22 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		}
 
 		if isEligibile && isSuppliable {
-			return &smart_booking.GetAccountEligibilityForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
+			// check it has booking references assigned
+			serviceBookingRef, err := a.serviceStore.GetServicesWithBookingRef(ctx, occupancyID)
+			if err != nil {
+				logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
+				return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
+			}
+			hasBookingRef := true
+			for _, s := range serviceBookingRef {
+				if s.BookingRef == "" {
+					hasBookingRef = false
+					break
+				}
+			}
+			if hasBookingRef {
+				return &smart_booking.GetAccountEligibilityForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
+			}
 		}
 
 		// If none of the occupancies is eligible, we want to return the reasons for the first occupancy which has active services
@@ -170,6 +197,22 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	}
 
 	eligible := len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
+
+	if eligible {
+		// check it has booking references assigned
+		serviceBookingRef, err := a.serviceStore.GetServicesWithBookingRef(ctx, req.OccupancyId)
+		if err != nil {
+			logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
+			return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
+		}
+
+		for _, s := range serviceBookingRef {
+			if s.BookingRef == "" {
+				eligible = false
+				break
+			}
+		}
+	}
 
 	return &smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse{
 		AccountId:   req.AccountId,

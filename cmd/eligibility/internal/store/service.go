@@ -30,6 +30,11 @@ type Service struct {
 	EndDate     *time.Time
 }
 
+type ServiceBookingRef struct {
+	ServiceID  string
+	BookingRef string
+}
+
 func NewService(pool *pgxpool.Pool) *ServiceStore {
 	return &ServiceStore{pool: pool}
 }
@@ -141,6 +146,41 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 	}
 
 	return services, nil
+}
+
+func (s *ServiceStore) GetServicesWithBookingRef(ctx context.Context, occupancyID string) ([]ServiceBookingRef, error) {
+	q := `
+	SELECT s.id, b.reference
+	FROM services s 
+	LEFT JOIN booking_references b
+	ON s.mpxn = b.mpxn
+	WHERE s.occupancy_id = $1;`
+
+	rows, err := s.pool.Query(ctx, q, occupancyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	refs := make([]ServiceBookingRef, 0)
+
+	for rows.Next() {
+		var (
+			serviceBookingRef ServiceBookingRef
+			bookingRef        sql.NullString
+		)
+		if err = rows.Scan(
+			&serviceBookingRef.ServiceID,
+			&bookingRef); err != nil {
+			return nil, err
+		}
+		if bookingRef.Valid {
+			serviceBookingRef.BookingRef = bookingRef.String
+		}
+		refs = append(refs, serviceBookingRef)
+	}
+
+	return refs, nil
 }
 
 func rowIntoService(row pgx.Row) (Service, error) {
