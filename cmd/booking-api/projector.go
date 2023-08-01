@@ -31,6 +31,7 @@ var (
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
 
 	flagBookingRefTopic = "booking-reference-topic"
+	flagBookingTopic    = "smart-booking-topic"
 )
 
 func init() {
@@ -54,6 +55,10 @@ func init() {
 			&cli.StringFlag{
 				Name:    flagBookingRefTopic,
 				EnvVars: []string{"BOOKING_REFERENCE_TOPIC"},
+			},
+			&cli.StringFlag{
+				Name:    flagBookingTopic,
+				EnvVars: []string{"CUSTOMER_BOOKING_TOPIC"},
 			},
 			&cli.StringFlag{
 				Name:    flagPostgresDSN,
@@ -138,6 +143,7 @@ func projectorAction(c *cli.Context) error {
 				FlagConsumerGroup: app.KafkaConsumerGroup,
 				FlagsTopic: []string{
 					flagBookingRefTopic,
+					flagBookingTopic,
 				},
 			},
 			{
@@ -184,6 +190,11 @@ func projectorAction(c *cli.Context) error {
 			FlagTopic: flagBookingRefTopic,
 			BatchSize: batchSize,
 			Handler:   consumer.HandleBookingReference(store.NewBookingReference(pool)),
+		},
+		{
+			FlagTopic: flagBookingTopic,
+			BatchSize: batchSize,
+			Handler:   consumer.HandleBooking(store.NewBooking(pool), store.NewOccupancy(pool)),
 		},
 	})
 	if err != nil {
