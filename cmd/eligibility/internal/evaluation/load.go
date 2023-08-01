@@ -9,9 +9,13 @@ import (
 )
 
 func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occupancy, error) {
-	occupancy, err := e.occupancyStore.LoadOccupancy(ctx, id)
+	dbOccupancy, err := e.occupancyStore.Get(ctx, id)
 	if err != nil {
 		return nil, err
+	}
+
+	occupancy := domain.Occupancy{
+		ID: id,
 	}
 
 	// load services for given occupancy
@@ -48,10 +52,11 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 		}
 		if err == nil {
 			service.Meter = &domain.Meter{
-				Mpxn:      dbMeter.Mpxn,
-				MSN:       dbMeter.Msn,
-				Capacity:  dbMeter.Capacity,
-				MeterType: dbMeter.MeterType,
+				Mpxn:       dbMeter.Mpxn,
+				MSN:        dbMeter.Msn,
+				SupplyType: dbMeter.SupplyType,
+				Capacity:   dbMeter.Capacity,
+				MeterType:  dbMeter.MeterType,
 			}
 		}
 
@@ -64,5 +69,32 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 		occupancy.Services = append(occupancy.Services, service)
 	}
 
+	dbAccount, err := e.accountStore.GetAccount(ctx, dbOccupancy.AccountID)
+	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
+		return nil, err
+	}
+	occupancy.Account = domain.Account{
+		ID: dbAccount.ID,
+	}
+	if err == nil {
+		occupancy.Account.OptOut = dbAccount.OptOut
+		occupancy.Account.PSRCodes = dbAccount.PSRCodes
+	}
+
+	dbSite, err := e.siteStore.Get(ctx, dbOccupancy.SiteID)
+	if err != nil && !errors.Is(err, store.ErrSiteNotFound) {
+		return nil, err
+	}
+	if err == nil {
+		covered, err := e.postcodeStore.GetWanCoverage(ctx, dbSite.PostCode)
+		if err != nil && !errors.Is(err, store.ErrPostCodeNotFound) {
+			return nil, err
+		}
+		occupancy.Site = &domain.Site{
+			ID:          dbSite.ID,
+			Postcode:    dbSite.PostCode,
+			WanCoverage: covered,
+		}
+	}
 	return &occupancy, nil
 }
