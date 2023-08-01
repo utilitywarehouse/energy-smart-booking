@@ -40,14 +40,9 @@ func runHTTPApi(c *cli.Context) error {
 	defer pool.Close()
 	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
 
-	accountStore := store.NewAccount(pool)
-	bookingRefStore := store.NewBookingRef(pool)
 	meterStore := store.NewMeter(pool)
-	meterpointStore := store.NewMeterpoint(pool)
 	occupancyStore := store.NewOccupancy(pool)
 	serviceStore := store.NewService(pool)
-	siteStore := store.NewSite(pool)
-	postCodeStore := store.NewPostCode(pool)
 	eligibilityStore := store.NewEligibility(pool)
 	suppliabilityStore := store.NewSuppliability(pool)
 	campaignabilityStore := store.NewCampaignability(pool)
@@ -71,17 +66,9 @@ func runHTTPApi(c *cli.Context) error {
 	campaignabilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(campaignabilitySink), appName)
 
 	evaluator := evaluation.NewEvaluator(
-		accountStore,
-		meterpointStore,
-		meterStore,
 		occupancyStore,
-		postCodeStore,
 		serviceStore,
-		siteStore,
-		bookingRefStore,
-		suppliabilityStore,
-		campaignabilityStore,
-		eligibilityStore,
+		meterStore,
 		eligibilitySyncPublisher,
 		suppliabilitySyncPublisher,
 		campaignabilitySyncPublisher,
