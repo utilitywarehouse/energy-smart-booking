@@ -113,7 +113,7 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 
 	q := `
 	SELECT o.account_id,
-	       e.reasons, sup.reasons, c.reasons,
+	       e.occupancy_id, e.reasons, sup.occupancy_id, sup.reasons, c.occupancy_id, c.reasons,
 	       a.id, a.psr_codes, a.opt_out,
 	       s.id, s.post_code,
 	       p.post_code, p.wan_coverage
@@ -137,13 +137,17 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 		accountID, siteID, sitePostCode, postCode sql.NullString
 		psrCodes                                  []string
 		wanCoverage, optOut                       sql.NullBool
+		eOccupancyID, sOccupancyID, cOccupancyID  sql.NullString
 		evaluationResult                          domain.OccupancyEvaluation
 	)
 
 	err := rows.Scan(
 		&occupancyAccountID,
+		&eOccupancyID,
 		&evaluationResult.Eligibility,
+		&sOccupancyID,
 		&evaluationResult.Suppliability,
+		&cOccupancyID,
 		&evaluationResult.Campaignability,
 		&accountID,
 		&psrCodes,
@@ -159,6 +163,15 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 
 	evaluationResult.OccupancyID = occupancyID
 	occupancy.EvaluationResult = evaluationResult
+	if eOccupancyID.Valid {
+		occupancy.EvaluationResult.EligibilityEvaluated = true
+	}
+	if sOccupancyID.Valid {
+		occupancy.EvaluationResult.SuppliabilityEvaluated = true
+	}
+	if cOccupancyID.Valid {
+		occupancy.EvaluationResult.CampaignabilityEvaluated = true
+	}
 
 	if postCode.Valid {
 		occupancy.Site = &domain.Site{

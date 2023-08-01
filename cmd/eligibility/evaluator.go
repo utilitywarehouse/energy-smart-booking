@@ -54,9 +54,6 @@ func runEvaluator(c *cli.Context) error {
 	serviceStore := store.NewService(pool)
 	siteStore := store.NewSite(pool)
 	postCodeStore := store.NewPostCode(pool)
-	eligibilityStore := store.NewEligibility(pool)
-	suppliabilityStore := store.NewSuppliability(pool)
-	campaignabilityStore := store.NewCampaignability(pool)
 
 	altHanSource, err := app.GetKafkaSource(c, c.String(app.KafkaConsumerGroup), c.String(altHanTopic))
 	if err != nil {
@@ -147,17 +144,9 @@ func runEvaluator(c *cli.Context) error {
 	campaignabilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(campaignabilitySink), appName)
 
 	evaluator := evaluation.NewEvaluator(
-		accountStore,
-		meterpointStore,
-		meterStore,
 		occupancyStore,
-		postCodeStore,
 		serviceStore,
-		siteStore,
-		bookingRefStore,
-		suppliabilityStore,
-		campaignabilityStore,
-		eligibilityStore,
+		meterStore,
 		eligibilitySyncPublisher,
 		suppliabilitySyncPublisher,
 		campaignabilitySyncPublisher,

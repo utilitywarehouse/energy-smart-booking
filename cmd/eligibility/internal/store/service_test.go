@@ -80,13 +80,33 @@ func TestService(t *testing.T) {
 		SSC:          "ssc",
 	}
 	assert.Equal(expectedSv, liveServices[0], "mismatch")
+}
 
-	_, err = s.pool.Exec(ctx, `INSERT INTO booking_references(mpxn, reference) VALUES('service_mpxn', 'ref');`)
+func TestGetServicesWithBookingRef(t *testing.T) {
+	ctx := context.Background()
+	assert := assert.New(t)
+
+	s := NewService(connect(ctx))
+
+	_, err := s.pool.Exec(ctx, `
+		INSERT INTO services(id, mpxn, occupancy_id, supply_type, is_live)
+		VALUES 
+		    ('service_id_1', 'mpxn_1', 'occupancy_id_1', 'gas', true),
+		    ('service_id_2', 'mpxn_2', 'occupancy_id_1', 'elec', true);
+		INSERT INTO booking_references(mpxn, reference) VALUES('mpxn_1', 'ref');`)
 	assert.NoError(err)
-	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
-	assert.NoError(err, "failed to get live services")
-	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
 
-	expectedSv.BookingReference = "ref"
-	assert.Equal(expectedSv, liveServices[0], "mismatch")
+	serviceBookingRef, err := s.GetServicesWithBookingRef(ctx, "occupancy_id_1")
+	assert.NoError(err)
+	expected := []ServiceBookingRef{
+		{
+			ServiceID:  "service_id_1",
+			BookingRef: "ref",
+		},
+		{
+			ServiceID:  "service_id_2",
+			BookingRef: "",
+		},
+	}
+	assert.Equal(expected, serviceBookingRef)
 }
