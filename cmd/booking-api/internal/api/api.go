@@ -148,7 +148,8 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 
 	bookingSlots := make([]*bookingv1.BookingSlot, len(availableSlots.Slots))
 
-	for _, slot := range availableSlots.Slots {
+	for index, slot := range availableSlots.Slots {
+
 		bookingSlot := bookingv1.BookingSlot{
 			Date: &date.Date{
 				Year:  int32(slot.Date.Year()),
@@ -159,7 +160,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 			EndTime:   int32(slot.EndTime),
 		}
 
-		bookingSlots = append(bookingSlots, &bookingSlot)
+		bookingSlots[index] = &bookingSlot
 	}
 
 	return &bookingv1.GetAvailableSlotsResponse{
@@ -262,7 +263,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 	}
 
 	return &bookingv1.RescheduleBookingResponse{
-		BookingId: rescheduleBookingEvent.(*bookingv1.RescheduleBookingRequest).BookingId,
+		BookingId: rescheduleBookingEvent.(*bookingv1.BookingRescheduledEvent).BookingId,
 	}, nil
 }
 

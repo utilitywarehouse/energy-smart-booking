@@ -114,14 +114,14 @@ func serverAction(c *cli.Context) error {
 
 	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
-		return fmt.Errorf("error connecting to eligibility-api host [%s]: %w", c.String(lowribeckAPIHost), err)
+		return fmt.Errorf("error connecting to lowribeck-api host [%s]: %w", c.String(lowribeckAPIHost), err)
 	}
-	opsServer.Add("lowribeck-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect eligibility to eligibility-api"))
+	opsServer.Add("lowribeck-api", grpchealth.NewCheck(c.String(lowribeckAPIHost), "", "cannot connect eligibility to eligibility-api"))
 	defer lowribeckConn.Close()
 
 	bookingSink, err := app.GetKafkaSinkWithBroker(c.String(bookingTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
 	if err != nil {
-		return fmt.Errorf("unable to connect to smart meter [%s] kafka sink: %w", c.String(bookingTopic), err)
+		return fmt.Errorf("unable to connect to booking [%s] kafka sink: %w", c.String(bookingTopic), err)
 	}
 	defer bookingSink.Close()
 	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
