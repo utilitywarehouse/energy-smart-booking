@@ -18,15 +18,19 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
+	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
+	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	eligiblity_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
+	lowribeck_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 )
 
 var (
@@ -35,6 +39,8 @@ var (
 
 	accountsAPIHost    = "accounts-api-host"
 	eligibilityAPIHost = "eligibility-api-host"
+	lowribeckAPIHost   = "lowribeck-api-host"
+	bookingTopic       = "booking-topic"
 )
 
 func init() {
@@ -51,6 +57,16 @@ func init() {
 			&cli.StringFlag{
 				Name:     eligibilityAPIHost,
 				EnvVars:  []string{"ELIGIBILITY_API_HOST"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     lowribeckAPIHost,
+				EnvVars:  []string{"LOWRIBECK_API_HOST"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     bookingTopic,
+				EnvVars:  []string{"BOOKING_TOPIC"},
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -96,6 +112,20 @@ func serverAction(c *cli.Context) error {
 	opsServer.Add("eligibility-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect eligibility to eligibility-api"))
 	defer eligibilityConn.Close()
 
+	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
+	if err != nil {
+		return fmt.Errorf("error connecting to eligibility-api host [%s]: %w", c.String(lowribeckAPIHost), err)
+	}
+	opsServer.Add("lowribeck-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect eligibility to eligibility-api"))
+	defer lowribeckConn.Close()
+
+	bookingSink, err := app.GetKafkaSinkWithBroker(c.String(bookingTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	if err != nil {
+		return fmt.Errorf("unable to connect to smart meter [%s] kafka sink: %w", c.String(bookingTopic), err)
+	}
+	defer bookingSink.Close()
+	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
@@ -110,16 +140,23 @@ func serverAction(c *cli.Context) error {
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
 	eligibilityGw := gateway.NewEligibilityGateway(mn, eligiblity_api.NewEligiblityAPIClient(eligibilityConn))
+	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
+
+	// PUBLISHERS //
+
+	syncBookingPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingSink), c.App.Name)
 
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
 	siteStore := store.NewSite(pool)
+	bookingReferenceStore := store.NewBookingReference(pool)
+	serviceStore := store.NewService(pool)
 	bookingStore := store.NewBooking(pool)
 
 	// DOMAIN //
-	customerDomain := domain.NewBookingDomain(accountGw, eligibilityGw, occupancyStore, siteStore, bookingStore)
+	bookingDomain := domain.NewBookingDomain(accountGw, eligibilityGw, lowriBeckGateway, occupancyStore, siteStore, serviceStore, bookingReferenceStore, bookingStore)
 
-	bookingAPI := api.New(customerDomain)
+	bookingAPI := api.New(bookingDomain, syncBookingPublisher)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

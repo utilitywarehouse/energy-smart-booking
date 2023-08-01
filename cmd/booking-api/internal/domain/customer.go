@@ -80,7 +80,7 @@ func (d BookingDomain) GetAccountAddressByAccountID(ctx context.Context, account
 	return address, nil
 }
 
-func (d *BookingDomain) getAddresses(ctx context.Context, siteIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
+func (d BookingDomain) getAddresses(ctx context.Context, siteIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
 	addresses := make(map[string]*addressv1.Address)
 	for occID := range occupancyIDs {
 		sm, err := d.siteStore.GetSiteByOccupancyID(ctx, occID)
@@ -108,7 +108,7 @@ func (d *BookingDomain) getAddresses(ctx context.Context, siteIDs map[string]str
 	return addresses, nil
 }
 
-func (d *BookingDomain) GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error) {
+func (d BookingDomain) GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error) {
 	bookingModels, err := d.bookingStore.GetBookingsByAccountID(ctx, accountID)
 	if err != nil {
 		return nil, err

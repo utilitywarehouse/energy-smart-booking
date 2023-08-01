@@ -62,12 +62,12 @@ func Test_GetAvailableSlots(t *testing.T) {
 			input: inputParams{
 				params: domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
-					From: date.Date{
+					From: &date.Date{
 						Year:  2023,
 						Month: 12,
 						Day:   1,
 					},
-					To: date.Date{
+					To: &date.Date{
 						Year:  2023,
 						Month: 12,
 						Day:   30,
@@ -98,31 +98,19 @@ func Test_GetAvailableSlots(t *testing.T) {
 
 				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
 
-				lbGw.EXPECT().GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1").Return([]models.Slot{
+				lbGw.EXPECT().GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1").Return([]models.BookingSlot{
 					{
-						Date: date.Date{
-							Year:  2023,
-							Month: 12,
-							Day:   5,
-						},
+						Date:      mustDate(t, "2023-12-05"),
 						StartTime: 9,
 						EndTime:   12,
 					},
 					{
-						Date: date.Date{
-							Year:  2023,
-							Month: 11,
-							Day:   5,
-						},
+						Date:      mustDate(t, "2023-11-05"),
 						StartTime: 17,
 						EndTime:   19,
 					},
 					{
-						Date: date.Date{
-							Year:  2023,
-							Month: 12,
-							Day:   10,
-						},
+						Date:      mustDate(t, "2023-12-10"),
 						StartTime: 11,
 						EndTime:   15,
 					},
@@ -131,22 +119,14 @@ func Test_GetAvailableSlots(t *testing.T) {
 			},
 			output: outputParams{
 				output: domain.GetAvailableSlotsResponse{
-					Slots: []models.Slot{
+					Slots: []models.BookingSlot{
 						{
-							Date: date.Date{
-								Year:  2023,
-								Month: 12,
-								Day:   5,
-							},
+							Date:      mustDate(t, "2023-12-05"),
 							StartTime: 9,
 							EndTime:   12,
 						},
 						{
-							Date: date.Date{
-								Year:  2023,
-								Month: 12,
-								Day:   10,
-							},
+							Date:      mustDate(t, "2023-12-10"),
 							StartTime: 11,
 							EndTime:   15,
 						},
@@ -160,12 +140,12 @@ func Test_GetAvailableSlots(t *testing.T) {
 			input: inputParams{
 				params: domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
-					From: date.Date{
+					From: &date.Date{
 						Year:  2023,
 						Month: 12,
 						Day:   1,
 					},
-					To: date.Date{
+					To: &date.Date{
 						Year:  2023,
 						Month: 12,
 						Day:   30,
@@ -199,12 +179,12 @@ func Test_GetAvailableSlots(t *testing.T) {
 			input: inputParams{
 				params: domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
-					From: date.Date{
+					From: &date.Date{
 						Year:  2023,
 						Month: 12,
 						Day:   1,
 					},
-					To: date.Date{
+					To: &date.Date{
 						Year:  2023,
 						Month: 12,
 						Day:   30,
@@ -295,12 +275,8 @@ func Test_CreateBooking(t *testing.T) {
 						Email:     "jdough@example.com",
 						Mobile:    "555-0145",
 					},
-					Slot: models.Slot{
-						Date: date.Date{
-							Year:  2023,
-							Month: 8,
-							Day:   27,
-						},
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
 						StartTime: 9,
 						EndTime:   15,
 					},
@@ -350,12 +326,8 @@ func Test_CreateBooking(t *testing.T) {
 
 				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
 
-				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.Slot{
-					Date: date.Date{
-						Year:  2023,
-						Month: 8,
-						Day:   27,
-					},
+				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+					Date:      mustDate(t, "2023-08-27"),
 					StartTime: 9,
 					EndTime:   15,
 				}, models.AccountDetails{
@@ -431,12 +403,8 @@ func Test_CreateBooking(t *testing.T) {
 						Email:     "jdough@example.com",
 						Mobile:    "555-0145",
 					},
-					Slot: models.Slot{
-						Date: date.Date{
-							Year:  2023,
-							Month: 8,
-							Day:   27,
-						},
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
 						StartTime: 9,
 						EndTime:   15,
 					},
@@ -486,12 +454,8 @@ func Test_CreateBooking(t *testing.T) {
 
 				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
 
-				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.Slot{
-					Date: date.Date{
-						Year:  2023,
-						Month: 8,
-						Day:   27,
-					},
+				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+					Date:      mustDate(t, "2023-08-27"),
 					StartTime: 9,
 					EndTime:   15,
 				}, models.AccountDetails{
@@ -527,6 +491,270 @@ func Test_CreateBooking(t *testing.T) {
 
 			if diff := cmp.Diff(actual, tc.output.event, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.BookingCreatedEvent{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
 				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{}), cmpopts.IgnoreFields(bookingv1.BookingCreatedEvent{}, "BookingId"), cmpopts.IgnoreFields(bookingv1.Booking{}, "Id")); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func Test_RescheduleBooking(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	accGw := mocks.NewMockAccountGateway(ctrl)
+	eliGw := mocks.NewMockEligibilityGateway(ctrl)
+	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	occSt := mocks.NewMockOccupancyStore(ctrl)
+	siteSt := mocks.NewMockSiteStore(ctrl)
+	svcSt := mocks.NewMockServiceStore(ctrl)
+	brSt := mocks.NewMockBookingReferenceStore(ctrl)
+	bookingSt := mocks.NewMockBookingStore(ctrl)
+
+	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, svcSt, brSt, bookingSt)
+
+	type inputParams struct {
+		params domain.RescheduleBookingParams
+	}
+
+	type outputParams struct {
+		event proto.Message
+		err   error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
+			sSt *mocks.MockSiteStore, svcSt *mocks.MockServiceStore, bookRefStore *mocks.MockBookingReferenceStore, lbGw *mocks.MockLowriBeckGateway)
+		input  inputParams
+		output outputParams
+	}
+
+	var emptyMsg *bookingv1.BookingRescheduledEvent
+
+	testCases := []testSetup{
+		{
+			description: "should reschedule booking",
+			input: inputParams{
+				params: domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					},
+				},
+			},
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
+				sSt *mocks.MockSiteStore, svcSt *mocks.MockServiceStore, bookRefStore *mocks.MockBookingReferenceStore, lbGw *mocks.MockLowriBeckGateway) {
+
+				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return(
+					[]models.Occupancy{
+						{
+							OccupancyID: "occupancy-id-1",
+							SiteID:      "site-id-1",
+							AccountID:   "account-id-1",
+							CreatedAt:   time.Now(),
+						},
+					}, nil)
+
+				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
+
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
+					SiteID:                  "site-id-1",
+					Postcode:                "E2 1ZZ",
+					UPRN:                    "u",
+					BuildingNameNumber:      "bn",
+					SubBuildingNameNumber:   "sb",
+					DependentThoroughfare:   "dt",
+					Thoroughfare:            "t",
+					DoubleDependentLocality: "ddl",
+					DependentLocality:       "dl",
+					Locality:                "l",
+					County:                  "c",
+					Town:                    "pt",
+					Department:              "d",
+					Organisation:            "o",
+					PoBox:                   "po",
+					DeliveryPointSuffix:     "dps",
+				}, nil)
+
+				svcSt.EXPECT().GetServiceMPXNByOccupancyID(ctx, "occupancy-id-1").Return("mpxn-1", nil)
+
+				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
+
+				bookingSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
+					BookingID: "booking-id-1",
+					AccountID: "account-id-1",
+					Status:    bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+					SiteID:    "site-id-1",
+					Contact: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Time{},
+						StartTime: 1,
+						EndTime:   1,
+					},
+					VulnerabilityDetails: models.VulnerabilityDetails{
+						Vulnerabilities: models.Vulnerabilities{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+				}, nil)
+
+				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+					Date:      mustDate(t, "2023-08-27"),
+					StartTime: 9,
+					EndTime:   15,
+				}, models.AccountDetails{
+					Title:     "Mr",
+					FirstName: "John",
+					LastName:  "Dough",
+					Email:     "jdough@example.com",
+					Mobile:    "555-0145",
+				}, []lowribeckv1.Vulnerability{
+					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+				}, "Bad Knee").Return(true, nil)
+
+			},
+			output: outputParams{
+				event: &bookingv1.BookingRescheduledEvent{
+					BookingId: "my-uuid",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2023,
+							Month: 8,
+							Day:   27,
+						},
+						StartTime: 9,
+						EndTime:   15,
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should return error from rescheduling",
+			input: inputParams{
+				params: domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					},
+				},
+			},
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
+				sSt *mocks.MockSiteStore, svcSt *mocks.MockServiceStore, bookRefStore *mocks.MockBookingReferenceStore, lbGw *mocks.MockLowriBeckGateway) {
+
+				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return(
+					[]models.Occupancy{
+						{
+							OccupancyID: "occupancy-id-1",
+							SiteID:      "site-id-1",
+							AccountID:   "account-id-1",
+							CreatedAt:   time.Now(),
+						},
+					}, nil)
+
+				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
+
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
+					SiteID:                  "site-id-1",
+					Postcode:                "E2 1ZZ",
+					UPRN:                    "u",
+					BuildingNameNumber:      "bn",
+					SubBuildingNameNumber:   "sb",
+					DependentThoroughfare:   "dt",
+					Thoroughfare:            "t",
+					DoubleDependentLocality: "ddl",
+					DependentLocality:       "dl",
+					Locality:                "l",
+					County:                  "c",
+					Town:                    "pt",
+					Department:              "d",
+					Organisation:            "o",
+					PoBox:                   "po",
+					DeliveryPointSuffix:     "dps",
+				}, nil)
+
+				svcSt.EXPECT().GetServiceMPXNByOccupancyID(ctx, "occupancy-id-1").Return("mpxn-1", nil)
+
+				bookRefStore.EXPECT().GetReferenceByMPXN(ctx, "mpxn-1").Return("booking-reference-1", nil)
+
+				bookingSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
+					BookingID: "booking-id-1",
+					AccountID: "account-id-1",
+					Status:    bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+					SiteID:    "site-id-1",
+					Contact: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Time{},
+						StartTime: 1,
+						EndTime:   1,
+					},
+					VulnerabilityDetails: models.VulnerabilityDetails{
+						Vulnerabilities: models.Vulnerabilities{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+				}, nil)
+
+				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+					Date:      mustDate(t, "2023-08-27"),
+					StartTime: 9,
+					EndTime:   15,
+				}, models.AccountDetails{
+					Title:     "Mr",
+					FirstName: "John",
+					LastName:  "Dough",
+					Email:     "jdough@example.com",
+					Mobile:    "555-0145",
+				}, []lowribeckv1.Vulnerability{
+					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+				}, "Bad Knee").Return(false, nil)
+
+			},
+			output: outputParams{
+				event: emptyMsg,
+				err:   nil,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, accGw, eliGw, occSt, siteSt, svcSt, brSt, lbGw)
+
+			actual, err := myDomain.RescheduleBooking(ctx, tc.input.params)
+
+			if tc.output.err != nil {
+				if !errors.Is(err, tc.output.err) {
+					t.Fatalf("expected: %s, actual: %s", err, tc.output.err)
+				}
+			}
+
+			if diff := cmp.Diff(actual, tc.output.event, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.BookingRescheduledEvent{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
+				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{}), cmpopts.IgnoreFields(bookingv1.BookingRescheduledEvent{}, "BookingId")); diff != "" {
 				t.Fatal(diff)
 			}
 		})

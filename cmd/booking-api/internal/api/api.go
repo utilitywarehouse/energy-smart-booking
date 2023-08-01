@@ -4,12 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/sirupsen/logrus"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
@@ -21,10 +24,16 @@ type BookingDomain interface {
 	GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error)
 	CreateBooking(ctx context.Context, params domain.CreateBookingParams) (proto.Message, error)
 	GetAvailableSlots(ctx context.Context, params domain.GetAvailableSlotsParams) (domain.GetAvailableSlotsResponse, error)
+	RescheduleBooking(ctx context.Context, params domain.RescheduleBookingParams) (proto.Message, error)
+}
+
+type BookingPublisher interface {
+	Sink(ctx context.Context, proto proto.Message, at time.Time) error
 }
 
 type BookingAPI struct {
 	bookingDomain BookingDomain
+	publisher     BookingPublisher
 	bookingv1.UnimplementedBookingAPIServer
 }
 
@@ -32,27 +41,16 @@ type accountIder interface {
 	GetAccountId() string
 }
 
-func New(bookingDomain BookingDomain) *BookingAPI {
+func New(bookingDomain BookingDomain, publisher BookingPublisher) *BookingAPI {
 	return &BookingAPI{
 		bookingDomain: bookingDomain,
+		publisher:     publisher,
 	}
 }
 
 var (
 	ErrNotImplemented = status.Error(codes.Internal, "not implemented")
 )
-
-func validateRequest(req accountIder) error {
-	if req == nil {
-		return status.Error(codes.InvalidArgument, "no request provided")
-	}
-
-	if req.GetAccountId() == "" {
-		return status.Error(codes.InvalidArgument, "no account id provided")
-	}
-
-	return nil
-}
 
 func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (*bookingv1.GetCustomerContactDetailsResponse, error) { // nolint:revive
 	if err := validateRequest(req); err != nil {
@@ -114,9 +112,6 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 }
 
 func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (*bookingv1.GetCustomerBookingsResponse, error) { // nolint:revive
-	if err := validateRequest(req); err != nil {
-		return nil, err
-	}
 
 	bookings, err := b.bookingDomain.GetCustomerBookings(ctx, req.GetAccountId())
 	if err != nil {
@@ -128,12 +123,8 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 
 func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (*bookingv1.GetAvailableSlotsResponse, error) { // nolint:revive
 
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "no request provided")
-	}
-
-	if req.GetAccountId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "no account ID provided")
+	if err := validateRequest(req); err != nil {
+		return nil, err
 	}
 
 	if req.From == nil {
@@ -146,8 +137,8 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 
 	params := domain.GetAvailableSlotsParams{
 		AccountID: req.AccountId,
-		From:      *req.From,
-		To:        *req.To,
+		From:      req.From,
+		To:        req.To,
 	}
 
 	availableSlots, err := b.bookingDomain.GetAvailableSlots(ctx, params)
@@ -159,9 +150,13 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 
 	for _, slot := range availableSlots.Slots {
 		bookingSlot := bookingv1.BookingSlot{
-			Date:      &slot.Date,
-			StartTime: slot.StartTime,
-			EndTime:   slot.EndTime,
+			Date: &date.Date{
+				Year:  int32(slot.Date.Year()),
+				Month: int32(slot.Date.Month()),
+				Day:   int32(slot.Date.Day()),
+			},
+			StartTime: int32(slot.StartTime),
+			EndTime:   int32(slot.EndTime),
 		}
 
 		bookingSlots = append(bookingSlots, &bookingSlot)
@@ -174,12 +169,8 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 
 func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (*bookingv1.CreateBookingResponse, error) { // nolint:revive
 
-	if req == nil {
-		return nil, status.Error(codes.InvalidArgument, "no request provided")
-	}
-
-	if req.GetAccountId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "no account ID provided")
+	if err := validateRequest(req); err != nil {
+		return nil, err
 	}
 
 	if req.ContactDetails == nil {
@@ -207,10 +198,10 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 			Email:     req.GetContactDetails().Email,
 			Mobile:    req.GetContactDetails().Phone,
 		},
-		Slot: models.Slot{
-			Date:      *req.Slot.Date,
-			StartTime: req.Slot.StartTime,
-			EndTime:   req.Slot.EndTime,
+		Slot: models.BookingSlot{
+			Date:      time.Date(int(req.Slot.Date.Year), time.Month(req.Slot.Date.Month), int(req.Slot.Date.Day), 0, 0, 0, 0, time.UTC),
+			StartTime: int(req.Slot.StartTime),
+			EndTime:   int(req.Slot.EndTime),
 		},
 		VulnerabilityDetails: req.VulnerabilityDetails,
 	}
@@ -220,6 +211,12 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create booking, %s", err))
 	}
 
+	err = b.publisher.Sink(ctx, createBookingEvent, time.Now())
+	if err != nil {
+		logrus.Warnf("failed to sink create booking event: %+v", createBookingEvent)
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to sink create booking event, %s", err))
+	}
+
 	return &bookingv1.CreateBookingResponse{
 		BookingId: createBookingEvent.(*bookingv1.BookingCreatedEvent).BookingId,
 	}, nil
@@ -227,5 +224,56 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 
 func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (*bookingv1.RescheduleBookingResponse, error) { // nolint:revive
 
-	return nil, ErrNotImplemented
+	if err := validateRequest(req); err != nil {
+		return nil, err
+	}
+
+	if req.BookingId == "" {
+		return nil, status.Error(codes.InvalidArgument, "no booking id provided")
+	}
+
+	if req.Platform == bookingv1.Platform_PLATFORM_UNKNOWN {
+		return nil, status.Error(codes.InvalidArgument, "platform unknown")
+	}
+
+	if req.Slot == nil {
+		return nil, status.Error(codes.InvalidArgument, "no slot was provided")
+	}
+
+	params := domain.RescheduleBookingParams{
+		AccountID: req.AccountId,
+		BookingID: req.BookingId,
+		Slot: models.BookingSlot{
+			Date:      time.Date(int(req.Slot.Date.Year), time.Month(req.Slot.Date.Month), int(req.Slot.Date.Day), 0, 0, 0, 0, time.UTC),
+			StartTime: int(req.Slot.StartTime),
+			EndTime:   int(req.Slot.EndTime),
+		},
+	}
+
+	rescheduleBookingEvent, err := b.bookingDomain.RescheduleBooking(ctx, params)
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to reschedule booking %s", err))
+	}
+
+	err = b.publisher.Sink(ctx, rescheduleBookingEvent, time.Now())
+	if err != nil {
+		logrus.Warnf("failed to sink reschedule booking event: %+v", rescheduleBookingEvent)
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to sink rescheduled booking event, %s", err))
+	}
+
+	return &bookingv1.RescheduleBookingResponse{
+		BookingId: rescheduleBookingEvent.(*bookingv1.RescheduleBookingRequest).BookingId,
+	}, nil
+}
+
+func validateRequest(req accountIder) error {
+	if req == nil {
+		return status.Error(codes.InvalidArgument, "no request provided")
+	}
+
+	if req.GetAccountId() == "" {
+		return status.Error(codes.InvalidArgument, "no account id provided")
+	}
+
+	return nil
 }

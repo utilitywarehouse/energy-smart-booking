@@ -24,8 +24,8 @@ type SiteStore interface {
 }
 
 type LowriBeckGateway interface {
-	GetAvailableSlots(ctx context.Context, postcode, reference string) ([]models.Slot, error)
-	CreateBooking(ctx context.Context, postcode, reference string, slot models.Slot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (bool, error)
+	GetAvailableSlots(ctx context.Context, postcode, reference string) ([]models.BookingSlot, error)
+	CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (bool, error)
 }
 
 type ServiceStore interface {

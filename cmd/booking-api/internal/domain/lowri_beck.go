@@ -16,25 +16,25 @@ import (
 
 type GetAvailableSlotsParams struct {
 	AccountID string
-	From      date.Date
-	To        date.Date
+	From      *date.Date
+	To        *date.Date
 }
 
 type CreateBookingParams struct {
 	AccountID            string
 	ContactDetails       models.AccountDetails
-	Slot                 models.Slot
+	Slot                 models.BookingSlot
 	VulnerabilityDetails *bookingv1.VulnerabilityDetails
 }
 
 type RescheduleBookingParams struct {
 	AccountID string
 	BookingID string
-	Slot      models.Slot
+	Slot      models.BookingSlot
 }
 
 type GetAvailableSlotsResponse struct {
-	Slots []models.Slot
+	Slots []models.BookingSlot
 }
 
 func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailableSlotsParams) (GetAvailableSlotsResponse, error) {
@@ -51,10 +51,10 @@ func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailabl
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", err)
 	}
 
-	targetedSlots := make([]models.Slot, 0)
+	targetedSlots := []models.BookingSlot{}
 
 	for _, elem := range slots {
-		currentSlotTime := time.Date(int(elem.Date.Year), time.Month(elem.Date.Month), int(elem.Date.Day), 0, 0, 0, 0, time.UTC)
+		currentSlotTime := time.Date(elem.Date.Year(), elem.Date.Month(), elem.Date.Day(), 0, 0, 0, 0, time.UTC)
 
 		if currentSlotTime.After(fromAsTime) && currentSlotTime.Before(toAsTime) {
 			targetedSlots = append(targetedSlots, elem)
@@ -71,11 +71,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 	var event *bookingv1.BookingCreatedEvent
 
-	lbVulnerabilities := []lowribeckv1.Vulnerability{}
-
-	for _, elem := range params.VulnerabilityDetails.GetVulnerabilities() {
-		lbVulnerabilities = append(lbVulnerabilities, models.BookingVulnerabilityToLowribeckVulnerability(elem))
-	}
+	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.GetVulnerabilities())
 
 	site, bookingReference, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
@@ -119,9 +115,13 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 					Email:     params.ContactDetails.Email,
 				},
 				Slot: &bookingv1.BookingSlot{
-					Date:      &params.Slot.Date,
-					StartTime: params.Slot.StartTime,
-					EndTime:   params.Slot.EndTime,
+					Date: &date.Date{
+						Year:  int32(params.Slot.Date.Year()),
+						Month: int32(params.Slot.Date.Month()),
+						Day:   int32(params.Slot.Date.Day()),
+					},
+					StartTime: int32(params.Slot.StartTime),
+					EndTime:   int32(params.Slot.EndTime),
 				},
 				VulnerabilityDetails: params.VulnerabilityDetails,
 				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
@@ -141,14 +141,14 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		return nil, err
 	}
 
-	_, err = d.bookingStore.GetBookingByBookingID(ctx, params.BookingID)
+	booking, err := d.bookingStore.GetBookingByBookingID(ctx, params.BookingID)
 	if err != nil {
 		return nil, err
 	}
 
-	// MISSING DB CALL TO GET PREVIOUS CREATED_BOOKING
+	lbVulnerabilities := mapLowribeckVulnerabilities(booking.VulnerabilityDetails.Vulnerabilities)
 
-	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, bookingReference, params.Slot, models.AccountDetails{}, []lowribeckv1.Vulnerability{}, "vulnerabilities.other")
+	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, bookingReference, params.Slot, booking.Contact, lbVulnerabilities, booking.VulnerabilityDetails.Other)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create booking, %w", err)
 	}
@@ -157,9 +157,13 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		event = &bookingv1.BookingRescheduledEvent{
 			BookingId: params.BookingID,
 			Slot: &bookingv1.BookingSlot{
-				Date:      &params.Slot.Date,
-				StartTime: params.Slot.StartTime,
-				EndTime:   params.Slot.EndTime,
+				Date: &date.Date{
+					Year:  int32(params.Slot.Date.Year()),
+					Month: int32(params.Slot.Date.Month()),
+					Day:   int32(params.Slot.Date.Day()),
+				},
+				StartTime: int32(params.Slot.StartTime),
+				EndTime:   int32(params.Slot.EndTime),
 			},
 		}
 	}
@@ -168,7 +172,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 }
 
 // this method takes in an accountID and returns the postcode and the booking reference
-func (d BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (models.Site, string, error) {
+func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (models.Site, string, error) {
 
 	var targetOccupancy models.Occupancy = models.Occupancy{}
 
@@ -213,4 +217,12 @@ func (d BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) 
 	}
 
 	return *site, reference, nil
+}
+
+func mapLowribeckVulnerabilities(vulnerabilities []bookingv1.Vulnerability) (lbVulnerabilities []lowribeckv1.Vulnerability) {
+	for _, vulnerability := range vulnerabilities {
+		lbVulnerabilities = append(lbVulnerabilities, models.BookingVulnerabilityToLowribeckVulnerability(vulnerability))
+	}
+
+	return
 }
