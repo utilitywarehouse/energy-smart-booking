@@ -50,18 +50,17 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 	for _, s := range o.Services {
 		// we only project meterpoints for electricity ssc or profile class changes or if a meterpoint is alt han
 		// if there is no entry, it means the meterpoint is not alt han
+		// profile class and ssc are evaluated in eligibility criteria
 		if s.Meterpoint != nil && s.Meterpoint.AltHan {
 			result.addReason(domain.IneligibleReasonAltHan)
 		}
 
-		if s.Meter == nil {
-			// we only need meter if the service is gas, to check the capacity of it
-			if s.SupplyType == energy_domain.SupplyTypeGas {
-				if s.Meter.Capacity == nil {
-					result.addReason(domain.IneligibleReasonMissingMeterData)
-				} else if *s.Meter.Capacity != 6 && *s.Meter.Capacity != 212 {
-					result.addReason(domain.IneligibleReasonMeterLargeCapacity)
-				}
+		// we need to evaluate the meter capacity only if it's a gas service
+		if s.SupplyType == energy_domain.SupplyTypeGas {
+			if s.Meter == nil || s.Meter.Capacity == nil {
+				result.addReason(domain.IneligibleReasonMissingMeterData)
+			} else if s.Meter.Capacity != nil && (*s.Meter.Capacity != 6 && *s.Meter.Capacity != 212) {
+				result.addReason(domain.IneligibleReasonMeterLargeCapacity)
 			}
 		}
 	}
@@ -92,7 +91,7 @@ func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
 	}
 
 	for _, s := range o.Services {
-		// complex tariffs needs to be evaluated for electricity service only
+		// complex tariff needs to be evaluated for electricity service only
 		if s.SupplyType == energy_domain.SupplyTypeElectricity {
 			if s.Meterpoint == nil {
 				result.addReason(domain.IneligibleReasonMissingMeterpointData)
