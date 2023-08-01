@@ -45,7 +45,7 @@ func (h *BookingHandler) PostHandle(ctx context.Context) error {
 	return h.bookingStore.Commit(ctx)
 }
 
-func dateIntoTime(d date.Date) (time.Time, error) {
+func dateIntoTime(d *date.Date) (time.Time, error) {
 	t, err := time.ParseInLocation(
 		time.DateOnly,
 		fmt.Sprintf("%d-%d-%d", d.Year, d.Month, d.Day),
@@ -79,7 +79,7 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 		details := ev.GetDetails()
 		contactDetails := details.GetContactDetails()
 		slot := details.GetSlot()
-		dateTime, err := dateIntoTime(*slot.GetDate())
+		dateTime, err := dateIntoTime(slot.GetDate())
 		if err != nil {
 			return err
 		}
