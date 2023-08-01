@@ -77,6 +77,36 @@ func (s *ServiceStore) Get(ctx context.Context, serviceID string) (Service, erro
 	return service, err
 }
 
+func (s *ServiceStore) GetLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]Service, error) {
+	q := `
+	SELECT id, mpxn, occupancy_id, supply_type, is_live, start_date, end_date
+	FROM services
+	WHERE occupancy_id = $1
+	AND is_live is TRUE;`
+
+	rows, err := s.pool.Query(ctx, q, occupancyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	services := make([]Service, 0)
+
+	for rows.Next() {
+		var service Service
+		service, err = rowIntoService(rows)
+		if err != nil {
+			return nil, err
+		}
+		services = append(services, service)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return services, nil
+}
+
 func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]domain.Service, error) {
 	q := `
 	SELECT 
