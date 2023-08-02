@@ -65,7 +65,7 @@ func TestOccupancy(t *testing.T) {
 	_, err = store.pool.Exec(ctx, q)
 	assert.NoError(err)
 
-	ids, err = store.GetPendingEvaluationOccupancies(ctx)
+	ids, err = store.GetLiveOccupancies(ctx)
 	assert.NoError(err)
 
 	sort.Strings(ids)

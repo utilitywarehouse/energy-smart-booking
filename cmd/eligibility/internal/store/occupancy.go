@@ -83,13 +83,14 @@ func (s *OccupancyStore) GetIDsByMPXN(ctx context.Context, mpxn string) ([]strin
 	return s.queryOccupanciesByIdentifier(ctx, q, mpxn)
 }
 
-func (s *OccupancyStore) GetPendingEvaluationOccupancies(ctx context.Context) ([]string, error) {
+func (s *OccupancyStore) GetLiveOccupancies(ctx context.Context) ([]string, error) {
 	var ids = make([]string, 0)
 
 	q := `
 	SELECT distinct(s.occupancy_id) FROM services s 
 	LEFT JOIN eligibility e ON s.occupancy_id = e.occupancy_id
-	WHERE e.occupancy_id IS NULL;`
+	WHERE s.is_live IS TRUE 
+	AND e.occupancy_id IS NULL;`
 
 	rows, err := s.pool.Query(ctx, q)
 	if err != nil {
