@@ -24,12 +24,14 @@ type CreateBookingParams struct {
 	AccountID            string
 	ContactDetails       models.AccountDetails
 	Slot                 models.BookingSlot
+	Source               bookingv1.BookingSource
 	VulnerabilityDetails *bookingv1.VulnerabilityDetails
 }
 
 type RescheduleBookingParams struct {
 	AccountID string
 	BookingID string
+	Source    bookingv1.BookingSource
 	Slot      models.BookingSlot
 }
 
@@ -41,7 +43,7 @@ func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailabl
 	fromAsTime := time.Date(int(params.From.Year), time.Month(params.From.Month), int(params.From.Day), 0, 0, 0, 0, time.UTC)
 	toAsTime := time.Date(int(params.To.Year), time.Month(params.To.Month), int(params.To.Day), 0, 0, 0, 0, time.UTC)
 
-	site, bookingReference, err := d.findLowriBeckKeys(ctx, params.AccountID)
+	site, bookingReference, _, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to find postcode and booking reference, %w", err)
 	}
@@ -73,7 +75,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.GetVulnerabilities())
 
-	site, bookingReference, err := d.findLowriBeckKeys(ctx, params.AccountID)
+	site, bookingReference, occupancyID, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -126,6 +128,8 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 				VulnerabilityDetails: params.VulnerabilityDetails,
 				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 			},
+			OccupancyId:   occupancyID,
+			BookingSource: params.Source,
 		}
 	}
 
@@ -136,7 +140,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 	var event *bookingv1.BookingRescheduledEvent = nil
 
-	site, bookingReference, err := d.findLowriBeckKeys(ctx, params.AccountID)
+	site, bookingReference, _, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return nil, err
 	}
@@ -165,6 +169,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 				StartTime: int32(params.Slot.StartTime),
 				EndTime:   int32(params.Slot.EndTime),
 			},
+			BookingSource: params.Source,
 		}
 	}
 
@@ -172,23 +177,23 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 }
 
 // this method takes in an accountID and returns the postcode and the booking reference
-func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (models.Site, string, error) {
+func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (models.Site, string, string, error) {
 
 	var targetOccupancy models.Occupancy = models.Occupancy{}
 
 	liveOccupancies, err := d.occupancyStore.GetLiveOccupanciesByAccountID(ctx, accountID)
 	if err != nil {
-		return models.Site{}, "", fmt.Errorf("failed to get live occupancies by accountID, %w", err)
+		return models.Site{}, "", "", fmt.Errorf("failed to get live occupancies by accountID, %w", err)
 	}
 
 	if len(liveOccupancies) == 0 {
-		return models.Site{}, "", ErrNoOccupanciesFound
+		return models.Site{}, "", "", ErrNoOccupanciesFound
 	}
 
 	for _, occupancy := range liveOccupancies {
 		isEligible, err := d.eligibilityGw.GetEligibility(ctx, accountID, occupancy.OccupancyID)
 		if err != nil {
-			return models.Site{}, "", fmt.Errorf("failed to get eligibility for accountId: %s, occupancyId: %s, %w", accountID, occupancy.OccupancyID, err)
+			return models.Site{}, "", "", fmt.Errorf("failed to get eligibility for accountId: %s, occupancyId: %s, %w", accountID, occupancy.OccupancyID, err)
 		}
 
 		if isEligible {
@@ -198,20 +203,20 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 	}
 
 	if targetOccupancy.IsEmpty() {
-		return models.Site{}, "", ErrNoEligibleOccupanciesFound
+		return models.Site{}, "", "", ErrNoEligibleOccupanciesFound
 	}
 
 	site, err := d.siteStore.GetSiteByOccupancyID(ctx, targetOccupancy.OccupancyID)
 	if err != nil {
-		return models.Site{}, "", fmt.Errorf("failed to get site with site_id :%s, %w", targetOccupancy.SiteID, err)
+		return models.Site{}, "", "", fmt.Errorf("failed to get site with site_id :%s, %w", targetOccupancy.SiteID, err)
 	}
 
 	reference, err := d.serviceStore.GetReferenceByOccupancyID(ctx, targetOccupancy.OccupancyID)
 	if err != nil {
-		return models.Site{}, "", nil
+		return models.Site{}, "", "", nil
 	}
 
-	return *site, reference, nil
+	return *site, reference, targetOccupancy.OccupancyID, nil
 }
 
 func mapLowribeckVulnerabilities(vulnerabilities []bookingv1.Vulnerability) (lbVulnerabilities []lowribeckv1.Vulnerability) {

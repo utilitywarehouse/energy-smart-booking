@@ -205,6 +205,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 			EndTime:   int(req.Slot.EndTime),
 		},
 		VulnerabilityDetails: req.VulnerabilityDetails,
+		Source:               models.PlatformSourceToBookingSource(req.Platform),
 	}
 
 	createBookingEvent, err := b.bookingDomain.CreateBooking(ctx, params)
@@ -248,6 +249,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 			StartTime: int(req.Slot.StartTime),
 			EndTime:   int(req.Slot.EndTime),
 		},
+		Source: models.PlatformSourceToBookingSource(req.Platform),
 	}
 
 	rescheduleBookingEvent, err := b.bookingDomain.RescheduleBooking(ctx, params)

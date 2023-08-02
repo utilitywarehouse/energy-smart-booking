@@ -582,6 +582,7 @@ func Test_CreateBooking(t *testing.T) {
 						},
 						Other: "Bad Knee",
 					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}
 
 				bkDomain.EXPECT().CreateBooking(ctx, params).Return(&bookingv1.BookingCreatedEvent{
@@ -629,10 +630,14 @@ func Test_CreateBooking(t *testing.T) {
 						},
 						Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 					},
+					OccupancyId:   "occupancy-id-1",
+					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}, nil)
 
 				publisher.EXPECT().Sink(ctx, &bookingv1.BookingCreatedEvent{
-					BookingId: "booking-id-1",
+					BookingId:     "booking-id-1",
+					OccupancyId:   "occupancy-id-1",
+					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 					Details: &bookingv1.Booking{
 						Id:        "booking-id-1",
 						AccountId: params.AccountID,
@@ -763,10 +768,12 @@ func Test_RescheduleBooking(t *testing.T) {
 						StartTime: 10,
 						EndTime:   20,
 					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(&bookingv1.BookingRescheduledEvent{
-					BookingId: "booking-id-1",
+					BookingId:     "booking-id-1",
+					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -789,6 +796,7 @@ func Test_RescheduleBooking(t *testing.T) {
 						StartTime: 10,
 						EndTime:   20,
 					},
+					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}, gomock.Any()).Return(nil)
 
 			},
