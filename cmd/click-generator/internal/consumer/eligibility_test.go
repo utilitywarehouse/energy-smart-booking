@@ -39,7 +39,7 @@ func TestEligibilityConsumer(t *testing.T) {
 	s := store.NewSmartBookingEvaluation(pool)
 	linkS := store.NewLink(pool)
 
-	handler := EligibilityHandler{store: s, linkStore: linkS}
+	handler := EligibilityHandler{evaluationStore: s, linkStore: linkS}
 	ev1, err := test_common.MakeMessage(&smart.EligibleOccupancyRemovedEvent{
 		AccountId:   "account-E",
 		OccupancyId: "occupancy-E",

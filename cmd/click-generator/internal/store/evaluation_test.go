@@ -28,7 +28,7 @@ func TestEvaluationStore(t *testing.T) {
 	}
 	db := store.NewSmartBookingEvaluation(pool)
 
-	evaluation, err := db.Get(ctx, "evaluation-account-A", "evaluation-occupancy-A")
+	_, err = db.Get(ctx, "evaluation-account-A", "evaluation-occupancy-A")
 	assert.ErrorIs(t, err, store.ErrEvaluationNotFound)
 
 	err = db.UpsertEligibility(ctx, "evaluation-account-A", "evaluation-occupancy-A", false)
@@ -36,7 +36,7 @@ func TestEvaluationStore(t *testing.T) {
 	err = db.UpsertSuppliability(ctx, "evaluation-account-A", "evaluation-occupancy-A", true)
 	assert.NoError(t, err)
 
-	evaluation, err = db.Get(ctx, "evaluation-account-A", "evaluation-occupancy-A")
+	evaluation, err := db.Get(ctx, "evaluation-account-A", "evaluation-occupancy-A")
 	assert.NoError(t, err)
 	assert.Equal(t, store.Evaluation{
 		AccountID:   "evaluation-account-A",

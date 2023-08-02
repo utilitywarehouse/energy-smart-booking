@@ -104,6 +104,6 @@ func (s *SmartBookingEvaluation) GetEligible(ctx context.Context) ([]EligibleAcc
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-	
+
 	return results, nil
 }

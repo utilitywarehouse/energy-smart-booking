@@ -81,7 +81,7 @@ func (l *Link) Run(ctx context.Context) error {
 		for _, oID := range occ {
 			err = l.accountLinkStore.Add(ctx, id, oID, link)
 			if err != nil {
-				return fmt.Errorf("failed to persist link for account id %s, occupancy id %s: %w", id, oID)
+				return fmt.Errorf("failed to persist link for account id %s, occupancy id %s: %w", id, oID, err)
 			}
 		}
 	}

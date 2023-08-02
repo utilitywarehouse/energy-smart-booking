@@ -39,7 +39,7 @@ func TestSuppliabilityConsumer(t *testing.T) {
 	s := store.NewSmartBookingEvaluation(pool)
 	linkS := store.NewLink(pool)
 
-	handler := SuppliabilityHandler{store: s, linkStore: linkS}
+	handler := SuppliabilityHandler{evaluationStore: s, linkStore: linkS}
 	ev1, err := test_common.MakeMessage(&smart.SuppliableOccupancyRemovedEvent{
 		AccountId:   "account-S",
 		OccupancyId: "occupancy-S",
