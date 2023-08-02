@@ -184,7 +184,7 @@ func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID stri
 		&booking.BookingID,
 		&booking.AccountID,
 		&booking.Status,
-		&booking.SiteID,
+		&booking.OccupancyID,
 		&booking.Contact.Title,
 		&booking.Contact.FirstName,
 		&booking.Contact.LastName,

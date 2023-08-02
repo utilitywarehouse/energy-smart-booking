@@ -177,7 +177,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(false, nil)
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-2").Return(true, nil)
 
-				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-2").Return(
+				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-2").Return(
 					&models.Site{
 						SiteID:                  "site-id-1",
 						Postcode:                "post-code",

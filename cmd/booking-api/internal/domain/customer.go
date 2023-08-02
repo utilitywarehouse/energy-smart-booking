@@ -55,7 +55,7 @@ func (d BookingDomain) GetAccountAddressByAccountID(ctx context.Context, account
 		return models.AccountAddress{}, ErrNoEligibleOccupanciesFound
 	}
 
-	site, err := d.siteStore.GetSiteBySiteID(ctx, targetOccupancy.SiteID)
+	site, err := d.siteStore.GetSiteByOccupancyID(ctx, targetOccupancy.OccupancyID)
 	if err != nil {
 		return models.AccountAddress{}, fmt.Errorf("failed to get site with site_id :%s, %w", targetOccupancy.SiteID, err)
 	}
@@ -78,34 +78,6 @@ func (d BookingDomain) GetAccountAddressByAccountID(ctx context.Context, account
 	}
 
 	return address, nil
-}
-
-func (d BookingDomain) getAddresses(ctx context.Context, siteIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
-	addresses := make(map[string]*addressv1.Address)
-	for occID := range occupancyIDs {
-		sm, err := d.siteStore.GetSiteByOccupancyID(ctx, occID)
-		if err != nil {
-			return nil, err
-		}
-		address := &addressv1.Address{
-			Uprn: sm.UPRN,
-			Paf: &addressv1.Address_PAF{
-				Organisation:            sm.Organisation,
-				Department:              sm.Department,
-				SubBuilding:             sm.SubBuildingNameNumber,
-				BuildingName:            sm.BuildingNameNumber,
-				BuildingNumber:          sm.BuildingNameNumber,
-				DependentThoroughfare:   sm.DependentThoroughfare,
-				Thoroughfare:            sm.Thoroughfare,
-				DoubleDependentLocality: sm.DoubleDependentLocality,
-				DependentLocality:       sm.DependentLocality,
-				PostTown:                sm.Town,
-				Postcode:                sm.Postcode,
-			},
-		}
-		addresses[occID] = address
-	}
-	return addresses, nil
 }
 
 func (d BookingDomain) GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error) {
@@ -154,10 +126,38 @@ func (d BookingDomain) GetCustomerBookings(ctx context.Context, accountID string
 	return contractBookings, nil
 }
 
-func getUniqueSiteIDs(bookings []models.Booking) map[string]struct{} {
+func getUniqueOccupancyIDs(bookings []models.Booking) map[string]struct{} {
 	idSet := make(map[string]struct{})
 	for _, b := range bookings {
-		idSet[b.SiteID] = struct{}{}
+		idSet[b.OccupancyID] = struct{}{}
 	}
 	return idSet
+}
+
+func (d BookingDomain) getAddresses(ctx context.Context, occupancyIDs map[string]struct{}) (map[string]*addressv1.Address, error) {
+	addresses := make(map[string]*addressv1.Address)
+	for occID := range occupancyIDs {
+		sm, err := d.siteStore.GetSiteByOccupancyID(ctx, occID)
+		if err != nil {
+			return nil, err
+		}
+		address := &addressv1.Address{
+			Uprn: sm.UPRN,
+			Paf: &addressv1.Address_PAF{
+				Organisation:            sm.Organisation,
+				Department:              sm.Department,
+				SubBuilding:             sm.SubBuildingNameNumber,
+				BuildingName:            sm.BuildingNameNumber,
+				BuildingNumber:          sm.BuildingNameNumber,
+				DependentThoroughfare:   sm.DependentThoroughfare,
+				Thoroughfare:            sm.Thoroughfare,
+				DoubleDependentLocality: sm.DoubleDependentLocality,
+				DependentLocality:       sm.DependentLocality,
+				PostTown:                sm.Town,
+				Postcode:                sm.Postcode,
+			},
+		}
+		addresses[occID] = address
+	}
+	return addresses, nil
 }
