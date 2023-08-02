@@ -23,8 +23,6 @@ func BookingVulnerabilityToLowribeckVulnerability(bookingVulnerability bookingv1
 		return lowribeckv1.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT
 	case bookingv1.Vulnerability_VULNERABILITY_SIGHT:
 		return lowribeckv1.Vulnerability_VULNERABILITY_SIGHT
-	case bookingv1.Vulnerability_VULNERABILITY_SPEECH:
-		return lowribeckv1.Vulnerability_VULNERABILITY_SPEECH
 	case bookingv1.Vulnerability_VULNERABILITY_UNKNOWN:
 		return lowribeckv1.Vulnerability_VULNERABILITY_UNKNOWN
 	}
@@ -50,8 +48,6 @@ func BookingLowribeckVulnerabilityToBookingAPIVulnerability(lowribeckVulnerabili
 		return bookingv1.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT
 	case lowribeckv1.Vulnerability_VULNERABILITY_SIGHT:
 		return bookingv1.Vulnerability_VULNERABILITY_SIGHT
-	case lowribeckv1.Vulnerability_VULNERABILITY_SPEECH:
-		return bookingv1.Vulnerability_VULNERABILITY_SPEECH
 	case lowribeckv1.Vulnerability_VULNERABILITY_UNKNOWN:
 		return bookingv1.Vulnerability_VULNERABILITY_UNKNOWN
 	}
