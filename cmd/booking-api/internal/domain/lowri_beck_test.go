@@ -284,6 +284,7 @@ func Test_CreateBooking(t *testing.T) {
 						},
 						Other: "",
 					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				},
 			},
 			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
@@ -339,7 +340,9 @@ func Test_CreateBooking(t *testing.T) {
 			},
 			output: outputParams{
 				event: &bookingv1.BookingCreatedEvent{
-					BookingId: "my-uuid",
+					BookingId:     "my-uuid",
+					OccupancyId:   "occupancy-id-1",
+					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 					Details: &bookingv1.Booking{
 						Id:        "my-uuid",
 						AccountId: "account-id-1",
