@@ -18,7 +18,6 @@ import (
 	"github.com/utilitywarehouse/energy-services/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/generator"
-	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/grpchealth"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,13 +34,10 @@ func runHTTPApi(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	opsServer.Add("click-api", grpchealth.NewCheckWithConnection(ctx, clickGRPCConn, "", "", "unable to query click api"))
 	defer clickGRPCConn.Close()
 
 	clickClient := click.NewIssuerServiceClient(clickGRPCConn)
-
-	logrus.Info("successfully created click client")
-
+	
 	clickConfig := generator.LinkProviderConfig{
 		ExpirationTimeSeconds: c.Int(clickLinkExpirySeconds),
 		ClickKeyID:            c.String(clickSigningKeyID),
@@ -52,10 +48,9 @@ func runHTTPApi(c *cli.Context) error {
 		Intent:                c.String(intent),
 		Channel:               c.String(channel),
 	}
-	logrus.Infof("click config: %+v", clickConfig)
+
 	linkProvider, err := generator.NewLinkProvider(clickClient, &clickConfig)
 	if err != nil {
-		logrus.Errorf("failed to create link provides: %s", err.Error())
 		return fmt.Errorf("failed to create link provider: %w", err)
 	}
 
