@@ -251,3 +251,50 @@ func TestMapBookingRequest(t *testing.T) {
 		})
 	}
 }
+
+//	{
+//	    "ReferenceId": "UTIL/4568973",
+//	    "Mpan": "",
+//	    "Mprn": "",
+//	    "ResponseMessage": "Booking Confirmed",
+//	    "ResponseCode": "B01",
+//	    "RequestId": "1234234",
+//	    "SendingSystem": "LB",
+//	    "ReceivingSystem": "UTIL",
+//	    "CreatedDate": "26/07/2023 14:24:34"
+//	}
+func TestMapBookingResponse(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		lb            *lowribeck.CreateBookingResponse
+		expected      *contract.CreateBookingResponse
+		expectedError error
+	}{
+		{
+			desc: "Success",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B01",
+				ResponseMessage: "Booking Confirmed",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success: true,
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem")
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			res, err := lbMapper.BookingResponse(tc.lb)
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported())
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
+		})
+	}
+}

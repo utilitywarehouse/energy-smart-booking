@@ -96,12 +96,10 @@ func mapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment date: %v", err)
 		}
-
 		slot.StartTime, slot.EndTime, err = mapAvailabilityAppointmentTime(res.AppointmentTime)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment time: %v", err)
 		}
-
 		slots[i] = slot
 	}
 	return slots, nil
