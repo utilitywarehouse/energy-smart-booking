@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	click "github.com/utilitywarehouse/click.uw.co.uk/generated/contract"
@@ -19,9 +18,7 @@ import (
 	"github.com/utilitywarehouse/energy-services/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/generator"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/store"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/grpchealth"
-	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -33,14 +30,7 @@ func runHTTPApi(c *cli.Context) error {
 		WithPort(c.Int(app.OpsPort)).
 		WithHash(gitHash).
 		WithDetails(appName, appDesc)
-
-	pool, err := store.Setup(ctx, c.String(postgresDSN))
-	if err != nil {
-		return err
-	}
-	defer pool.Close()
-	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
-
+	
 	clickGRPCConn, err := grpc.CreateConnection(ctx, c.String(clickAPIHost))
 	if err != nil {
 		return err
