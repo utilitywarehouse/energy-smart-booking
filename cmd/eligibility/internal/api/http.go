@@ -34,6 +34,7 @@ type campaignabilityStore interface {
 
 type occupancyStore interface {
 	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
+	GetLiveOccupanciesIDsByAccountID(ctx context.Context, accountID string) ([]string, error)
 	GetPendingEvaluationOccupancies(ctx context.Context) ([]string, error)
 }
 
@@ -87,82 +88,70 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			return
 		}
 
-		occupancyIDs, err := s.occupancyStore.GetIDsByAccount(ctx, accountID)
+		var (
+			eligible bool
+			reasons  domain.IneligibleReasons
+		)
+
+		occupancyIDs, err := s.occupancyStore.GetLiveOccupanciesIDsByAccountID(ctx, accountID)
 		if err != nil {
 			logrus.Debugf("failed to get occupancies for account ID %s: %s", accountID, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		if len(occupancyIDs) == 0 {
-			logrus.Debugf("No occupancy found for account ID %s", accountID)
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
+			reasons = domain.IneligibleReasons{domain.IneligibleReasonNoActiveService}
+		} else {
 
-		var (
-			isEligible, isSuppliable bool
-			reasons                  domain.IneligibleReasons
-		)
-		for _, occupancyID := range occupancyIDs {
-			eligibility, err := s.eligibilityStore.Get(ctx, occupancyID, accountID)
-			if err != nil {
-				if errors.Is(err, store.ErrEligibilityNotFound) {
-					logrus.Debugf("eligibility not computed for account %s, occupancy %s", accountID, occupancyID)
-					w.WriteHeader(http.StatusNotFound)
-					return
-				}
-				logrus.Debugf("failed to get eligibility for account %s: %s", accountID, err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			suppliability, err := s.suppliabilityStore.Get(ctx, occupancyID, accountID)
-			if err != nil {
-				if errors.Is(err, store.ErrSuppliabilityNotFound) {
-					logrus.Debugf("suppliability not computed for account %s, occupancy %s", accountID, occupancyID)
-					w.WriteHeader(http.StatusNotFound)
-					return
-				}
-				logrus.Debugf("failed to get suppliability for account %s: %s", accountID, err.Error())
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			if len(eligibility.Reasons) == 0 {
-				isEligible = true
-			}
-			if len(suppliability.Reasons) == 0 {
-				isSuppliable = true
-			}
-
-			if isEligible && isSuppliable {
-				body, err := json.Marshal(
-					EvaluationResult{
-						AccountID:            accountID,
-						SmartBookingEligible: true,
-					})
+			for _, occupancyID := range occupancyIDs {
+				eligibility, err := s.eligibilityStore.Get(ctx, occupancyID, accountID)
 				if err != nil {
-					logrus.Errorf("failed to marshall response: %s", err.Error())
+					if errors.Is(err, store.ErrEligibilityNotFound) {
+						logrus.Debugf("eligibility not computed for account %s, occupancy %s", accountID, occupancyID)
+						w.WriteHeader(http.StatusNotFound)
+						return
+					}
+					logrus.Debugf("failed to get eligibility for account %s: %s", accountID, err.Error())
 					w.WriteHeader(http.StatusInternalServerError)
 					return
 				}
-				w.Header().Set("Content-Type", "application/json")
-				w.Write(body)
-				return
-			}
 
-			// If none of the occupancies is eligible, we want to return the reasons for the first occupancy which has active services
-			if !eligibility.Reasons.Contains(domain.IneligibleReasonNoActiveService) &&
-				!suppliability.Reasons.Contains(domain.IneligibleReasonNoActiveService) &&
-				len(reasons) == 0 {
-				reasons = append(reasons, eligibility.Reasons...)
-				reasons = append(reasons, suppliability.Reasons...)
-			}
-		}
+				suppliability, err := s.suppliabilityStore.Get(ctx, occupancyID, accountID)
+				if err != nil {
+					if errors.Is(err, store.ErrSuppliabilityNotFound) {
+						logrus.Debugf("suppliability not computed for account %s, occupancy %s", accountID, occupancyID)
+						w.WriteHeader(http.StatusNotFound)
+						return
+					}
+					logrus.Debugf("failed to get suppliability for account %s: %s", accountID, err.Error())
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
 
-		// no eligible occupancy found and none of the occupancies had active service
-		if len(reasons) == 0 {
-			reasons = append(reasons, domain.IneligibleReasonNoActiveService)
+				eligible = len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
+
+				if eligible {
+					body, err := json.Marshal(
+						EvaluationResult{
+							AccountID:            accountID,
+							SmartBookingEligible: true,
+						})
+					if err != nil {
+						logrus.Errorf("failed to marshall response: %s", err.Error())
+						w.WriteHeader(http.StatusInternalServerError)
+						return
+					}
+					w.Header().Set("Content-Type", "application/json")
+					w.Write(body)
+					return
+				}
+
+				// If none of the occupancies is eligible, we want to return the reasons for the first occupancy
+				if len(reasons) == 0 {
+					reasons = append(reasons, eligibility.Reasons...)
+					reasons = append(reasons, suppliability.Reasons...)
+				}
+			}
 		}
 
 		body, err := json.Marshal(
