@@ -40,6 +40,8 @@ func runHTTPApi(c *cli.Context) error {
 
 	clickClient := click.NewIssuerServiceClient(clickGRPCConn)
 
+	logrus.Info("successfully created click client")
+
 	clickConfig := generator.LinkProviderConfig{
 		ExpirationTimeSeconds: c.Int(clickLinkExpirySeconds),
 		ClickKeyID:            c.String(clickSigningKeyID),
@@ -50,6 +52,7 @@ func runHTTPApi(c *cli.Context) error {
 		Intent:                c.String(intent),
 		Channel:               c.String(channel),
 	}
+	logrus.Infof("click config: %s", clickConfig)
 	linkProvider, err := generator.NewLinkProvider(clickClient, &clickConfig)
 	if err != nil {
 		logrus.Errorf("failed to create link provides: %s", err.Error())
