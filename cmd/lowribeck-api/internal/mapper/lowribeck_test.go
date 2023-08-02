@@ -3,6 +3,7 @@ package mapper_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -13,6 +14,8 @@ import (
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/testing/protocmp"
 )
+
+const requestTimeFormat = "02/01/2006 15:04:05"
 
 func TestMapAvailableSlotsResponse(t *testing.T) {
 	testCases := []struct {
@@ -158,6 +161,89 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
 				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported())
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
+		})
+	}
+}
+
+func TestMapBookingRequest(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		lb            *contract.CreateBookingRequest
+		expected      *lowribeck.CreateBookingRequest
+		expectedError error
+	}{
+		{
+			desc: "Valid",
+			lb: &contract.CreateBookingRequest{
+				Postcode:  "postcode",
+				Reference: "reference",
+				Slot: &contract.BookingSlot{
+					Date: &date.Date{
+						Day:   1,
+						Month: 12,
+						Year:  2023,
+					},
+					StartTime: 10,
+					EndTime:   12,
+				},
+				VulnerabilityDetails: &contract.VulnerabilityDetails{
+					Vulnerabilities: []contract.Vulnerability{
+						contract.Vulnerability_VULNERABILITY_HEARING,
+						contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					},
+					Other: "other",
+				},
+				ContactDetails: &contract.ContactDetails{
+					FirstName: "Home",
+					LastName:  "Alone",
+					Phone:     "tel",
+				},
+			},
+			expected: &lowribeck.CreateBookingRequest{
+				RequestID:            "0",
+				PostCode:             "postcode",
+				ReferenceID:          "reference",
+				AppointmentDate:      "01/12/2023",
+				AppointmentTime:      "10:00-12:00",
+				SiteContactName:      "Home Alone",
+				SiteContactNumber:    "tel",
+				SendingSystem:        "sendingSystem",
+				ReceivingSystem:      "receivingSystem",
+				Vulnerabilities:      "1,6",
+				VulnerabilitiesOther: "other",
+				CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+		{
+			desc:          "Empty appointment slot",
+			lb:            &contract.CreateBookingRequest{},
+			expectedError: fmt.Errorf("invalid booking slot"),
+		},
+		{
+			desc: "Empty appointment date",
+			lb: &contract.CreateBookingRequest{
+				Slot: &contract.BookingSlot{
+					StartTime: 10,
+					EndTime:   12,
+				},
+			},
+			expectedError: fmt.Errorf("invalid booking slot date"),
+		},
+	}
+
+	assert := assert.New(t)
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem")
+
+	for i, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			res, err := lbMapper.BookingRequest(uint32(i), tc.lb)
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported(), cmpopts.EquateApproxTime(time.Second))
 				assert.Empty(diff, tc.desc)
 			} else {
 				assert.EqualError(err, tc.expectedError.Error(), tc.desc)

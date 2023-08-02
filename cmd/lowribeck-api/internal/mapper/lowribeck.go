@@ -61,17 +61,19 @@ func (lb LowriBeck) BookingRequest(id uint32, req *contract.CreateBookingRequest
 	if err != nil {
 		return nil, err
 	}
+
 	return &lowribeck.CreateBookingRequest{
-		PostCode:          req.GetPostcode(),
-		ReferenceID:       req.GetReference(),
-		AppointmentDate:   appDate,
-		AppointmentTime:   appTime,
-		Vulnerabilities:   mapVulnerabilities(req.GetVulnerabilityDetails()),
-		SiteContactName:   mapContactName(req.GetContactDetails()),
-		SiteContactNumber: req.GetContactDetails().GetPhone(),
-		SendingSystem:     lb.sendingSystem,
-		ReceivingSystem:   lb.receivingSystem,
-		CreatedDate:       time.Now().UTC().Format(requestTimeFormat),
+		PostCode:             req.GetPostcode(),
+		ReferenceID:          req.GetReference(),
+		AppointmentDate:      appDate,
+		AppointmentTime:      appTime,
+		Vulnerabilities:      mapVulnerabilities(req.GetVulnerabilityDetails()),
+		VulnerabilitiesOther: req.GetVulnerabilityDetails().GetOther(),
+		SiteContactName:      mapContactName(req.GetContactDetails()),
+		SiteContactNumber:    req.GetContactDetails().GetPhone(),
+		SendingSystem:        lb.sendingSystem,
+		ReceivingSystem:      lb.receivingSystem,
+		CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
 		// An ID sent to LB which they return in the response and can be used for debugging issues with them
 		RequestID: fmt.Sprintf("%d", id),
 	}, nil
@@ -84,32 +86,6 @@ func (lb LowriBeck) BookingResponse(resp *lowribeck.CreateBookingResponse) (*con
 		ErrorCodes: code,
 	}, nil
 }
-
-// TODO REMOVE
-// {
-// 	"RequestId": "1234234",
-// 	"SendingSystem": "UTIL",
-// 	"ReceivingSystem": "LB",
-// 	"CreatedDate": "25/07/2020 12:47:41",
-// 	 "ReferenceId": "UTIL/4568973",
-// 	"AppointmentDate": "15/08/2023",
-// 	"AppointmentTime": "10:00-14:00",
-// 	 "PostCode": "LS8 4EX",
-// 	"Mpan": "",
-// 	"Mprn": ""
-// 	}
-
-// {
-//     "ReferenceId": "UTIL/4568973",
-//     "Mpan": "",
-//     "Mprn": "",
-//     "ResponseMessage": "Booking Confirmed",
-//     "ResponseCode": "B01",
-//     "RequestId": "1234234",
-//     "SendingSystem": "LB",
-//     "ReceivingSystem": "UTIL",
-//     "CreatedDate": "26/07/2023 14:24:34"
-// }
 
 func mapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
 	var err error
@@ -176,7 +152,6 @@ func mapAvailabilityErrorCodes(responseCode string) *contract.AvailabilityErrorC
 	return contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum()
 }
 
-// TODO
 func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contract.BookingErrorCodes) {
 	switch responseCode {
 	// B01 - Booking Confirmed
@@ -221,44 +196,12 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 		}
 
 	}
-	// BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE     BookingErrorCodes = 0
-	// BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS          BookingErrorCodes = 1
-	// BookingErrorCodes_BOOKING_INVALID_REQUEST             BookingErrorCodes = 2
-	// BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS        BookingErrorCodes = 3
-	// BookingErrorCodes_BOOKING_POSTCODE_REFERENCE_MISMATCH BookingErrorCodes = 4
-	// BookingErrorCodes_BOOKING_TIMEOUT                     BookingErrorCodes = 5
-	// BookingErrorCodes_BOOKING_INVALID_SITE                BookingErrorCodes = 6
-	// BookingErrorCodes_BOOKING_INTERNAL_ERROR              BookingErrorCodes = 7
-
-	// B09 - Generic LB error for failed to process request
-
-	// B09 - No available slots for requested postcode
-	// B09 - Rearranging request sent outside agreed time parameter
-	// B09 - Booking request sent outside agreed time parameter
-
-	// B09 - Emergency jobs cannot be rescheduled
-	// B09 - This jobs is currently on hold
-	// B09 - No Jobs found for Reference ID
-	// B09 - Failed to create Elec job
-	// B09 - Failed to create Gas job
-
-	// B09 - Unable able to reschedule the appt
-	// B10 - Not appointed as MOP or MAM
-
-	// B11 - No Elec GUID info for SMETS2 maintenance job request
-	// B11 - No Gas GUID info for SMETS2 maintenance job request
-	// B11 – No Comms Hub GUID info for SMETS2 maintenance job request
-	// B12 - No SSC info for trad elec maintenance job request
-	// B13 - Invalid Reference ID
-	// S01 – Invalid sending system
-	// S02 – Invalid receiving system
-
 	return false, contract.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum()
 }
 
 func mapBookingSlot(slot *contract.BookingSlot) (string, string, error) {
 	if slot == nil {
-		return "", "", fmt.Errorf("invalid booking slot time")
+		return "", "", fmt.Errorf("invalid booking slot")
 	}
 	slotDate := slot.GetDate()
 	if slotDate == nil {
@@ -270,18 +213,40 @@ func mapBookingSlot(slot *contract.BookingSlot) (string, string, error) {
 	return appDate, appTime, nil
 }
 
-// TODO
-func mapVulnerabilities(contact *contract.VulnerabilityDetails) string {
-	// 01 - Hearing Impaired
-	// 02 - Visually Impaired
-	// 03 - Elderly
-	// 04 - Disabled
-	// 05 - Electrical Medical Equipment
-	// 06 - Foreign Language Speaker
-	// 07 - Restricted Movement
-	// 08 - Serious Illness
-	// 09 - Other
-	return ""
+func mapVulnerabilities(vulnerabilities *contract.VulnerabilityDetails) string {
+	vulnCodes := make([]string, len(vulnerabilities.GetVulnerabilities()))
+	for i, vul := range vulnerabilities.GetVulnerabilities() {
+		switch vul {
+		// 01 - Hearing Impaired
+		case contract.Vulnerability_VULNERABILITY_HEARING:
+			vulnCodes[i] = "1"
+		// 02 - Visually Impaired
+		case contract.Vulnerability_VULNERABILITY_SIGHT:
+			vulnCodes[i] = "2"
+		// 03 - Elderly
+		case contract.Vulnerability_VULNERABILITY_PENSIONABLE_AGE:
+			vulnCodes[i] = "3"
+		// 04 - Disabled
+		case contract.Vulnerability_VULNERABILITY_LEARNING_DIFFICULTIES:
+			vulnCodes[i] = "4"
+		// 06 - Foreign Language Speaker
+		case contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY:
+			vulnCodes[i] = "6"
+		// 07 - Restricted Movement
+		case contract.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT:
+			vulnCodes[i] = "7"
+		// 08 - Serious Illness
+		case contract.Vulnerability_VULNERABILITY_ILLNESS:
+			vulnCodes[i] = "8"
+		// 09 - Other
+		case contract.Vulnerability_VULNERABILITY_OTHER,
+			contract.Vulnerability_VULNERABILITY_UNKNOWN:
+			vulnCodes[i] = "9"
+		}
+		// Unused LB codes
+		// 05 - Electrical Medical Equipment
+	}
+	return strings.Join(vulnCodes, ",")
 }
 
 func mapContactName(contact *contract.ContactDetails) string {
