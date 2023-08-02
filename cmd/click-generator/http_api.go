@@ -52,6 +52,7 @@ func runHTTPApi(c *cli.Context) error {
 	}
 	linkProvider, err := generator.NewLinkProvider(clickClient, &clickConfig)
 	if err != nil {
+		logrus.Errorf("failed to create link provides: %s", err.Error())
 		return fmt.Errorf("failed to create link provider: %w", err)
 	}
 
