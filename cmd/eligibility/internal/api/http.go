@@ -34,7 +34,7 @@ type campaignabilityStore interface {
 
 type occupancyStore interface {
 	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
-	GetLiveOccupancies(ctx context.Context) ([]string, error)
+	GetPendingEvaluationOccupancies(ctx context.Context) ([]string, error)
 }
 
 type evaluator interface {
@@ -218,7 +218,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 		go func() {
 			start := time.Now()
 			jobCtx := context.Background()
-			liveOccupancies, err := s.occupancyStore.GetLiveOccupancies(jobCtx)
+			liveOccupancies, err := s.occupancyStore.GetPendingEvaluationOccupancies(jobCtx)
 			if err != nil {
 				logrus.WithError(err).Error("failed to get live occupancies to evaluate")
 				return
