@@ -214,8 +214,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 
 	err = b.publisher.Sink(ctx, createBookingEvent, time.Now())
 	if err != nil {
-		logrus.Warnf("failed to sink create booking event: %+v", createBookingEvent)
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to sink create booking event, %s", err))
+		logrus.Errorf("failed to sink create booking event: %+v", createBookingEvent)
 	}
 
 	return &bookingv1.CreateBookingResponse{
@@ -258,8 +257,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 
 	err = b.publisher.Sink(ctx, rescheduleBookingEvent, time.Now())
 	if err != nil {
-		logrus.Warnf("failed to sink reschedule booking event: %+v", rescheduleBookingEvent)
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to sink rescheduled booking event, %s", err))
+		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingEvent)
 	}
 
 	return &bookingv1.RescheduleBookingResponse{
