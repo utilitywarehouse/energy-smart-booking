@@ -52,7 +52,7 @@ func runHTTPApi(c *cli.Context) error {
 		Intent:                c.String(intent),
 		Channel:               c.String(channel),
 	}
-	logrus.Infof("click config: %s", clickConfig)
+	logrus.Infof("click config: %+v", clickConfig)
 	linkProvider, err := generator.NewLinkProvider(clickClient, &clickConfig)
 	if err != nil {
 		logrus.Errorf("failed to create link provides: %s", err.Error())
