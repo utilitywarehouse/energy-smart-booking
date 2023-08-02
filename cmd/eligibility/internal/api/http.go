@@ -108,7 +108,7 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			if err != nil {
 				if errors.Is(err, store.ErrEligibilityNotFound) {
 					logrus.Debugf("eligibility not computed for account %s, occupancy %s", accountID, occupancyID)
-					w.WriteHeader(http.StatusInternalServerError)
+					w.WriteHeader(http.StatusNotFound)
 					return
 				}
 				logrus.Debugf("failed to get eligibility for account %s: %s", accountID, err.Error())
@@ -120,7 +120,7 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 			if err != nil {
 				if errors.Is(err, store.ErrSuppliabilityNotFound) {
 					logrus.Debugf("suppliability not computed for account %s, occupancy %s", accountID, occupancyID)
-					w.WriteHeader(http.StatusInternalServerError)
+					w.WriteHeader(http.StatusNotFound)
 					return
 				}
 				logrus.Debugf("failed to get suppliability for account %s: %s", accountID, err.Error())
