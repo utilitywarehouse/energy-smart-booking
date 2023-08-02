@@ -37,7 +37,7 @@ func runHTTPApi(c *cli.Context) error {
 	defer clickGRPCConn.Close()
 
 	clickClient := click.NewIssuerServiceClient(clickGRPCConn)
-	
+
 	clickConfig := generator.LinkProviderConfig{
 		ExpirationTimeSeconds: c.Int(clickLinkExpirySeconds),
 		ClickKeyID:            c.String(clickSigningKeyID),
