@@ -31,7 +31,7 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 	result := evaluation{reason: make(map[domain.IneligibleReason]struct{}, 0)}
 
 	if o.Site == nil {
-		result.addReason(domain.IneligibleReasonMissingData)
+		result.addReason(domain.IneligibleReasonMissingSiteData)
 	} else if !o.Site.WanCoverage {
 		result.addReason(domain.IneligibleReasonNoWanCoverage)
 	}
@@ -48,21 +48,19 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 	}
 
 	for _, s := range o.Services {
-		if s.Meterpoint == nil {
-			result.addReason(domain.IneligibleReasonMissingData)
-		} else if s.Meterpoint.AltHan {
+		// we only project meterpoints for electricity ssc or profile class changes or if a meterpoint is alt han
+		// if there is no entry, it means the meterpoint is not alt han
+		// profile class and ssc are evaluated in eligibility criteria
+		if s.Meterpoint != nil && s.Meterpoint.AltHan {
 			result.addReason(domain.IneligibleReasonAltHan)
 		}
 
-		if s.Meter == nil {
-			result.addReason(domain.IneligibleReasonMissingData)
-		} else {
-			if s.Meter.SupplyType == energy_domain.SupplyTypeGas {
-				if s.Meter.Capacity == nil {
-					result.addReason(domain.IneligibleReasonMissingData)
-				} else if *s.Meter.Capacity != 6 && *s.Meter.Capacity != 212 {
-					result.addReason(domain.IneligibleReasonMeterLargeCapacity)
-				}
+		// we need to evaluate the meter capacity only if it's a gas service
+		if s.SupplyType == energy_domain.SupplyTypeGas {
+			if s.Meter == nil || s.Meter.Capacity == nil {
+				result.addReason(domain.IneligibleReasonMissingMeterData)
+			} else if *s.Meter.Capacity != 6 && *s.Meter.Capacity != 212 {
+				result.addReason(domain.IneligibleReasonMeterLargeCapacity)
 			}
 		}
 	}
@@ -83,7 +81,7 @@ func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
 	}
 
 	if o.Site == nil {
-		result.addReason(domain.IneligibleReasonMissingData)
+		result.addReason(domain.IneligibleReasonMissingSiteData)
 	} else if !o.Site.WanCoverage {
 		result.addReason(domain.IneligibleReasonNoWanCoverage)
 	}
@@ -93,14 +91,17 @@ func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
 	}
 
 	for _, s := range o.Services {
-		if s.Meterpoint == nil {
-			result.addReason(domain.IneligibleReasonMissingData)
-		} else if s.Meterpoint.HasComplexTariff() {
-			result.addReason(domain.IneligibleReasonComplexTariff)
+		// complex tariff needs to be evaluated for electricity service only
+		if s.SupplyType == energy_domain.SupplyTypeElectricity {
+			if s.Meterpoint == nil {
+				result.addReason(domain.IneligibleReasonMissingMeterpointData)
+			} else if s.Meterpoint.HasComplexTariff() {
+				result.addReason(domain.IneligibleReasonComplexTariff)
+			}
 		}
 
 		if s.Meter == nil {
-			result.addReason(domain.IneligibleReasonMissingData)
+			result.addReason(domain.IneligibleReasonMissingMeterData)
 		} else if s.Meter.IsSmart() {
 			result.addReason(domain.IneligibleReasonAlreadySmart)
 		}

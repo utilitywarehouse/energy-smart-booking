@@ -20,7 +20,6 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 		return nil, err
 	}
 
-	// load meterpoint
 	for i, s := range services {
 		dbMeter, err := e.meterStore.Get(ctx, s.Mpxn)
 		if err != nil && !errors.Is(err, store.ErrMeterNotFound) {

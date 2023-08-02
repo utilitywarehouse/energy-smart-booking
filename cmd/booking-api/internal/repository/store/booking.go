@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -35,7 +36,7 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 		account_id,
 		status,
 
-		site_id,
+		occupancy_id,
 
 		contact_title,
 		contact_first_name,
@@ -57,7 +58,7 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 		booking.BookingID,
 		booking.AccountID,
 		booking.Status,
-		booking.SiteID,
+		booking.OccupancyID,
 		booking.Contact.Title,
 		booking.Contact.FirstName,
 		booking.Contact.LastName,
@@ -80,6 +81,16 @@ func (s *BookingStore) UpdateStatus(bookingID string, newStatus bookingv1.Bookin
 	s.batch.Queue(q, bookingID, newStatus)
 }
 
+func (s *BookingStore) UpdateSchedule(bookingID string, newSchedule *time.Time) {
+	q := `
+	UPDATE booking
+	SET booking_date = $2,
+		updated_at = now()
+	WHERE booking_id = $1;
+	`
+	s.batch.Queue(q, bookingID, *newSchedule)
+}
+
 func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID string) ([]models.Booking, error) {
 	q := `
 	SELECT
@@ -87,7 +98,7 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 		account_id,
 		status,
 
-		site_id,
+		occupancy_id,
 
 		contact_title,
 		contact_first_name,
@@ -117,7 +128,7 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 			&booking.BookingID,
 			&booking.AccountID,
 			&booking.Status,
-			&booking.SiteID,
+			&booking.OccupancyID,
 			&booking.Contact.Title,
 			&booking.Contact.FirstName,
 			&booking.Contact.LastName,

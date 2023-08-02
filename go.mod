@@ -32,7 +32,7 @@ require (
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
 	golang.org/x/sync v0.3.0
 	google.golang.org/api v0.126.0
-	google.golang.org/grpc v1.56.2
+	google.golang.org/grpc v1.57.0
 	google.golang.org/protobuf v1.31.0
 )
 
@@ -91,7 +91,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.11.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -134,7 +134,7 @@ require (
 	github.com/utilitywarehouse/energy-pkg/errorcodes v1.0.3 // indirect
 	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 // indirect
 	github.com/utilitywarehouse/iam-contracts v0.0.0-20230714173512-bc8b9cf7c9d2 // indirect
-	github.com/utilitywarehouse/protoc-gen-uwentity v1.4.0 // indirect
+	github.com/utilitywarehouse/protoc-gen-uwentity v1.5.0 // indirect
 	github.com/utilitywarehouse/uwos-go/v1/runtime v1.3.1 // indirect
 	github.com/utilitywarehouse/uwos-go/v1/time v1.1.1 // indirect
 	github.com/uw-labs/proximo v0.0.0-20230125153035-a4cf3926a211 // indirect
@@ -156,8 +156,8 @@ require (
 	golang.org/x/tools v0.11.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230724170836-66ad5b6ff146
-	google.golang.org/genproto/googleapis/api v0.0.0-20230724170836-66ad5b6ff146 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230724170836-66ad5b6ff146 // indirect
+	google.golang.org/genproto v0.0.0-20230726155614-23370e0ffb3e
+	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230726155614-23370e0ffb3e // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

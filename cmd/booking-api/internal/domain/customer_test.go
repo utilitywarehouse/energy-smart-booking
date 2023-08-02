@@ -280,11 +280,12 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	occSt := mocks.NewMockOccupancyStore(ctrl)
 
 	myDomain := domain.NewCustomerDomain(
 		mocks.NewMockAccountGateway(ctrl),
 		mocks.NewMockEligibilityGateway(ctrl),
-		mocks.NewMockOccupancyStore(ctrl),
+		occSt,
 		siteSt,
 		bookingSt)
 
@@ -299,7 +300,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(context.Context, *mocks.MockSiteStore, *mocks.MockBookingStore)
+		setup       func(context.Context, *mocks.MockOccupancyStore, *mocks.MockSiteStore, *mocks.MockBookingStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -307,13 +308,13 @@ func Test_GetCustomerBookings(t *testing.T) {
 	testCases := []testSetup{
 		{
 			description: "basic bookings retrieval",
-			setup: func(ctx context.Context, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
+			setup: func(ctx context.Context, occSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				bSt.EXPECT().GetBookingsByAccountID(ctx, "account-id-1").Return([]models.Booking{
 					{
-						BookingID: "booking-id-1",
-						AccountID: "account-id-1",
-						Status:    bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
-						SiteID:    "site-id-1",
+						BookingID:   "booking-id-1",
+						AccountID:   "account-id-1",
+						Status:      bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+						OccupancyID: "occupancy-id-1",
 						Contact: models.AccountDetails{
 							Title:     "Mr.",
 							FirstName: "Foo",
@@ -332,7 +333,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 						},
 					},
 				}, nil)
-				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
 					SiteID:                  "site-id-1",
 					Postcode:                "postcode",
 					UPRN:                    "uprn",
@@ -403,13 +404,13 @@ func Test_GetCustomerBookings(t *testing.T) {
 		},
 		{
 			description: "multiple bookings retrieval",
-			setup: func(ctx context.Context, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
+			setup: func(ctx context.Context, occSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				bSt.EXPECT().GetBookingsByAccountID(ctx, "account-id-1").Return([]models.Booking{
 					{
-						BookingID: "booking-id-1",
-						AccountID: "account-id-1",
-						Status:    bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
-						SiteID:    "site-id-1",
+						BookingID:   "booking-id-1",
+						AccountID:   "account-id-1",
+						Status:      bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+						OccupancyID: "occupancy-id-1",
 						Contact: models.AccountDetails{
 							Title:     "Mr.",
 							FirstName: "Foo",
@@ -428,10 +429,10 @@ func Test_GetCustomerBookings(t *testing.T) {
 						},
 					},
 					{
-						BookingID: "booking-id-2",
-						AccountID: "account-id-1",
-						Status:    bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
-						SiteID:    "site-id-2",
+						BookingID:   "booking-id-2",
+						AccountID:   "account-id-1",
+						Status:      bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+						OccupancyID: "occupancy-id-2",
 						Contact: models.AccountDetails{
 							Title:     "Ms.",
 							FirstName: "Laurie",
@@ -450,7 +451,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 						},
 					},
 				}, nil)
-				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
 					SiteID:                  "site-id-1",
 					Postcode:                "postcode-1",
 					UPRN:                    "uprn-1",
@@ -468,7 +469,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 					DeliveryPointSuffix:     "delivery-point-suffix-1",
 					SubBuildingNameNumber:   "sub-building-name-number-1",
 				}, nil)
-				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-2").Return(&models.Site{
+				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-2").Return(&models.Site{
 					SiteID:                  "site-id-2",
 					Postcode:                "postcode-2",
 					UPRN:                    "uprn-2",
@@ -582,7 +583,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			tc.setup(ctx, siteSt, bookingSt)
+			tc.setup(ctx, occSt, siteSt, bookingSt)
 
 			actual, err := myDomain.GetCustomerBookings(ctx, tc.input.accountID)
 
