@@ -40,7 +40,6 @@ var (
 	accountsAPIHost    = "accounts-api-host"
 	eligibilityAPIHost = "eligibility-api-host"
 	lowribeckAPIHost   = "lowribeck-api-host"
-	bookingTopic       = "booking-topic"
 )
 
 func init() {
@@ -65,15 +64,12 @@ func init() {
 				Required: true,
 			},
 			&cli.StringFlag{
-				Name:     bookingTopic,
-				EnvVars:  []string{"BOOKING_TOPIC"},
-				Required: true,
-			},
-			&cli.StringFlag{
 				Name:     flagPostgresDSN,
 				EnvVars:  []string{"POSTGRES_DSN"},
 				Required: true,
 			},
+			bookingTopic,
+			postgresFlag,
 		),
 	})
 }
@@ -119,9 +115,9 @@ func serverAction(c *cli.Context) error {
 	opsServer.Add("lowribeck-api", grpchealth.NewCheck(c.String(lowribeckAPIHost), "", "cannot connect to lowribeck-api"))
 	defer lowribeckConn.Close()
 
-	bookingSink, err := app.GetKafkaSinkWithBroker(c.String(bookingTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	bookingSink, err := app.GetKafkaSinkWithBroker(c.String(flagBookingTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
 	if err != nil {
-		return fmt.Errorf("unable to connect to booking [%s] kafka sink: %w", c.String(bookingTopic), err)
+		return fmt.Errorf("unable to connect to booking [%s] kafka sink: %w", c.String(flagBookingTopic), err)
 	}
 	defer bookingSink.Close()
 	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
