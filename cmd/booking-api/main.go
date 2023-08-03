@@ -17,8 +17,20 @@ const (
 var (
 	gitHash string
 
-	flagBatchSize   = "batch-size"
-	flagPostgresDSN = "dsn"
+	flagBatchSize    = "batch-size"
+	flagPostgresDSN  = "dsn"
+	flagBookingTopic = "booking-topic"
+
+	bookingTopic *cli.StringFlag = &cli.StringFlag{
+		Name:    flagBookingTopic,
+		EnvVars: []string{"BOOKING_TOPIC"},
+	}
+
+	postgresFlag *cli.StringFlag = &cli.StringFlag{
+		Name:     flagPostgresDSN,
+		EnvVars:  []string{"POSTGRES_DSN"},
+		Required: true,
+	}
 
 	application = &cli.App{
 		Name:   appName,

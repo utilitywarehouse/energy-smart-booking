@@ -31,7 +31,6 @@ var (
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
 
 	flagBookingRefTopic = "booking-reference-topic"
-	flagBookingTopic    = "smart-booking-topic"
 )
 
 func init() {
@@ -56,18 +55,12 @@ func init() {
 				Name:    flagBookingRefTopic,
 				EnvVars: []string{"BOOKING_REFERENCE_TOPIC"},
 			},
-			&cli.StringFlag{
-				Name:    flagBookingTopic,
-				EnvVars: []string{"CUSTOMER_BOOKING_TOPIC"},
-			},
-			&cli.StringFlag{
-				Name:    flagPostgresDSN,
-				EnvVars: []string{"POSTGRES_DSN"},
-			},
 			&cli.IntFlag{
 				Name:    flagBatchSize,
 				EnvVars: []string{"BATCH_SIZE"},
 			},
+			bookingTopic,
+			postgresFlag,
 		),
 	})
 }
