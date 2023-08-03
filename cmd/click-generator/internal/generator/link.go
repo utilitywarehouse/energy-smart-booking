@@ -72,6 +72,10 @@ func (p *LinkProvider) GenerateAuthenticated(ctx context.Context, accountNo stri
 
 func (p *LinkProvider) GenerateGenericLink(ctx context.Context, accountNo string) (string, error) {
 	clickLink, err := p.clickGRPC.IssueURL(ctx, &click.IssueURLRequest{
+		KeyId: p.config.ClickKeyID,
+		ValidFor: &types.Duration{
+			Seconds: int64(p.config.ExpirationTimeSeconds),
+		},
 		Target: &click.TargetSpec{
 			Web:    p.config.Location,
 			Mobile: p.config.MobileLocation,
