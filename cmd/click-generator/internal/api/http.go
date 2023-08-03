@@ -34,7 +34,29 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 			return
 		}
 
-		link, err := s.generator.Generate(ctx, accountNumber)
+		linkType := r.URL.Query().Get("type")
+		if linkType == "" {
+			logrus.Error("link type not specified")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		var (
+			link string
+			err  error
+		)
+
+		switch linkType {
+		default:
+			logrus.Errorf("unknown link type requested: %s", linkType)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		case "auth":
+			link, err = s.generator.GenerateAuthenticated(ctx, accountNumber)
+		case "generic":
+			link, err = s.generator.GenerateGenericLink(ctx, accountNumber)
+		}
+
 		if err != nil {
 			logrus.WithField("account_number", accountNumber).Error(err)
 			w.WriteHeader(http.StatusInternalServerError)

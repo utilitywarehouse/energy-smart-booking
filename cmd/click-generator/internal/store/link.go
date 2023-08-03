@@ -18,39 +18,37 @@ func NewLink(pool *pgxpool.Pool) *Link {
 	return &Link{pool: pool}
 }
 
-func (s *Link) Add(ctx context.Context, accountID, occupancyID, link string) error {
+func (s *Link) Add(ctx context.Context, accountNumber, link string) error {
 	q := `
-	INSERT INTO account_links(account_id, occupancy_id, link)
-	VALUES ($1, $2, $3)
-	ON CONFLICT (account_id, occupancy_id)
+	INSERT INTO account_links(account_number, link)
+	VALUES ($1, $2)
+	ON CONFLICT (account_number)
 	DO UPDATE
-	SET link = $3,
+	SET link = $2,
 	    updated_at = now();`
 
-	_, err := s.pool.Exec(ctx, q, accountID, occupancyID, link)
+	_, err := s.pool.Exec(ctx, q, accountNumber, link)
 
 	return err
 }
 
-func (s *Link) Remove(ctx context.Context, accountID, occupancyID string) error {
+func (s *Link) Remove(ctx context.Context, accountNumber string) error {
 	q := `
 	DELETE FROM account_links
-	WHERE account_id = $1
-	AND occupancy_id = $2;`
+	WHERE account_number = $1;`
 
-	_, err := s.pool.Exec(ctx, q, accountID, occupancyID)
+	_, err := s.pool.Exec(ctx, q, accountNumber)
 
 	return err
 }
 
-func (s *Link) Get(ctx context.Context, accountID, occupancyID string) (string, error) {
+func (s *Link) Get(ctx context.Context, accountNumber string) (string, error) {
 	q := `
 	SELECT link from account_links
-	WHERE account_id = $1
-	AND occupancy_id = $2;`
+	WHERE account_number = $1;`
 
 	var link string
-	if err := s.pool.QueryRow(ctx, q, accountID, occupancyID).Scan(&link); err != nil {
+	if err := s.pool.QueryRow(ctx, q, accountNumber).Scan(&link); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", ErrAccountLinkNotFound
 		}

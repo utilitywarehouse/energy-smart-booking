@@ -39,7 +39,7 @@ func NewLinkProvider(client click.IssuerServiceClient, config *LinkProviderConfi
 	}, nil
 }
 
-func (p *LinkProvider) Generate(ctx context.Context, accountNo string) (string, error) {
+func (p *LinkProvider) GenerateAuthenticated(ctx context.Context, accountNo string) (string, error) {
 	clickLink, err := p.clickGRPC.IssueURL(ctx, &click.IssueURLRequest{
 		KeyId: p.config.ClickKeyID,
 		ValidFor: &types.Duration{
@@ -55,6 +55,26 @@ func (p *LinkProvider) Generate(ctx context.Context, accountNo string) (string, 
 			Ttl: &types.Duration{
 				Seconds: int64(p.config.ExpirationTimeSeconds),
 			},
+		},
+		Tracking: &click.TrackingSpec{
+			Identity: accountNo,
+			Subject:  p.config.Subject,
+			Intent:   p.config.Intent,
+			Channel:  p.config.Channel,
+		},
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to generate click url: %w", err)
+	}
+
+	return clickLink.GetUrl(), nil
+}
+
+func (p *LinkProvider) GenerateGenericLink(ctx context.Context, accountNo string) (string, error) {
+	clickLink, err := p.clickGRPC.IssueURL(ctx, &click.IssueURLRequest{
+		Target: &click.TargetSpec{
+			Web:    p.config.Location,
+			Mobile: p.config.MobileLocation,
 		},
 		Tracking: &click.TrackingSpec{
 			Identity: accountNo,

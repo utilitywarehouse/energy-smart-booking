@@ -14,10 +14,6 @@ const (
 
 	postgresDSN = "postgres-dsn"
 
-	// Kafka topics
-	eligibilityTopic   = "eligibility-events-topic"
-	suppliabilityTopic = "suppliability-events-topic"
-
 	// Accounts Lookup
 	accountsAPIHost = "accounts-api-host"
 
@@ -33,8 +29,6 @@ const (
 	subject = "tracking-subject"
 	intent  = "tracking-intent"
 	channel = "tracking-channel"
-
-	batchSize = "batch-size"
 
 	httpPort = "http-port"
 )
@@ -108,35 +102,6 @@ func main() {
 					},
 				),
 				Before: app.Before,
-				Action: runCron,
-			},
-			{
-				Name:  "projector",
-				Usage: "projects eligibility and suppliability events",
-				Flags: app.DefaultFlags().WithKafkaRequired().WithCustom(
-					&cli.StringFlag{
-						Name:     postgresDSN,
-						EnvVars:  []string{"POSTGRES_DSN"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     eligibilityTopic,
-						EnvVars:  []string{"ELIGIBILITY_EVENTS_TOPIC"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     suppliabilityTopic,
-						EnvVars:  []string{"SUPPLIABILITY_EVENTS_TOPIC"},
-						Required: true,
-					},
-					&cli.IntFlag{
-						Name:    batchSize,
-						EnvVars: []string{"BATCH_SIZE"},
-						Value:   1,
-					},
-				),
-				Before: app.Before,
-				Action: runProjector,
 			},
 			{
 				Name: "api",
