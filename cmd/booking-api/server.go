@@ -47,23 +47,26 @@ func init() {
 		Name:   commandNameServer,
 		Usage:  commandUsageServer,
 		Action: serverAction,
-		Flags: app.DefaultFlags().WithGrpc().WithCustom(
-			&cli.StringFlag{
-				Name:     accountsAPIHost,
-				EnvVars:  []string{"ACCOUNTS_API_HOST"},
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     eligibilityAPIHost,
-				EnvVars:  []string{"ELIGIBILITY_API_HOST"},
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     lowribeckAPIHost,
-				EnvVars:  []string{"LOWRIBECK_API_HOST"},
-				Required: true,
-			},
-		),
+		Flags: app.DefaultFlags().
+			WithKafkaRequired().
+			WithGrpc().
+			WithCustom(
+				&cli.StringFlag{
+					Name:     accountsAPIHost,
+					EnvVars:  []string{"ACCOUNTS_API_HOST"},
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     eligibilityAPIHost,
+					EnvVars:  []string{"ELIGIBILITY_API_HOST"},
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     lowribeckAPIHost,
+					EnvVars:  []string{"LOWRIBECK_API_HOST"},
+					Required: true,
+				},
+			),
 	})
 }
 
