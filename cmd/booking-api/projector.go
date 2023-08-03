@@ -26,6 +26,8 @@ var (
 	commandNameProjector  = "projector"
 	commandUsageProjector = "a projector service that consumes events to internally project state"
 
+	flagBatchSize = "batch-size"
+
 	flagPlatformKafkaBrokers       = "platform-kafka-brokers"
 	flagPlatformKafkaVersion       = "platform-kafka-version"
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
@@ -59,8 +61,6 @@ func init() {
 				Name:    flagBatchSize,
 				EnvVars: []string{"BATCH_SIZE"},
 			},
-			bookingTopic,
-			postgresFlag,
 		),
 	})
 }

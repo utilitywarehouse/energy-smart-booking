@@ -17,26 +17,25 @@ const (
 var (
 	gitHash string
 
-	flagBatchSize    = "batch-size"
+	// shared flags
 	flagPostgresDSN  = "dsn"
 	flagBookingTopic = "booking-topic"
-
-	bookingTopic *cli.StringFlag = &cli.StringFlag{
-		Name:    flagBookingTopic,
-		EnvVars: []string{"BOOKING_TOPIC"},
-	}
-
-	postgresFlag *cli.StringFlag = &cli.StringFlag{
-		Name:     flagPostgresDSN,
-		EnvVars:  []string{"POSTGRES_DSN"},
-		Required: true,
-	}
 
 	application = &cli.App{
 		Name:   appName,
 		Usage:  appDesc,
 		Before: app.Before,
-		Flags:  app.DefaultFlags(),
+		Flags: app.DefaultFlags().WithCustom(
+			&cli.StringFlag{
+				Name:    flagBookingTopic,
+				EnvVars: []string{"BOOKING_TOPIC"},
+			},
+			&cli.StringFlag{
+				Name:     flagPostgresDSN,
+				EnvVars:  []string{"POSTGRES_DSN"},
+				Required: true,
+			},
+		),
 	}
 )
 
