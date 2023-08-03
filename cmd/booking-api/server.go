@@ -63,13 +63,6 @@ func init() {
 				EnvVars:  []string{"LOWRIBECK_API_HOST"},
 				Required: true,
 			},
-			&cli.StringFlag{
-				Name:     flagPostgresDSN,
-				EnvVars:  []string{"POSTGRES_DSN"},
-				Required: true,
-			},
-			bookingTopic,
-			postgresFlag,
 		),
 	})
 }
