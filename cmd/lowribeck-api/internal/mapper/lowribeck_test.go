@@ -252,17 +252,6 @@ func TestMapBookingRequest(t *testing.T) {
 	}
 }
 
-//	{
-//	    "ReferenceId": "UTIL/4568973",
-//	    "Mpan": "",
-//	    "Mprn": "",
-//	    "ResponseMessage": "Booking Confirmed",
-//	    "ResponseCode": "B01",
-//	    "RequestId": "1234234",
-//	    "SendingSystem": "LB",
-//	    "ReceivingSystem": "UTIL",
-//	    "CreatedDate": "26/07/2023 14:24:34"
-//	}
 func TestMapBookingResponse(t *testing.T) {
 	testCases := []struct {
 		desc          string
@@ -278,6 +267,83 @@ func TestMapBookingResponse(t *testing.T) {
 			},
 			expected: &contract.CreateBookingResponse{
 				Success: true,
+			},
+		},
+		{
+			desc: "Appointment not available",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B02",
+				ResponseMessage: "Appointment not available",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success:    false,
+				ErrorCodes: contract.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+			},
+		},
+		{
+			desc: "Invalid Appointment Time",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B07",
+				ResponseMessage: "Invalid Appt Time",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success:    false,
+				ErrorCodes: contract.BookingErrorCodes_BOOKING_INVALID_REQUEST.Enum(),
+			},
+		},
+		{
+			desc: "Duplicate Elec job exists",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B08",
+				ResponseMessage: "Duplicate Elec job exists",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success:    false,
+				ErrorCodes: contract.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum(),
+			},
+		},
+		{
+			desc: "No available slots for requested postcode",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B09",
+				ResponseMessage: "No available slots for requested postcode",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success:    false,
+				ErrorCodes: contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum(),
+			},
+		},
+		{
+			desc: "No available slots for requested postcode",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B09",
+				ResponseMessage: "No available slots for requested postcode",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success:    false,
+				ErrorCodes: contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum(),
+			},
+		},
+		{
+			desc: "Site status not suitable for request",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B09",
+				ResponseMessage: "Site status not suitable for request",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success:    false,
+				ErrorCodes: contract.BookingErrorCodes_BOOKING_INVALID_SITE.Enum(),
+			},
+		},
+		{
+			desc: "Post Code is missing or invalid",
+			lb: &lowribeck.CreateBookingResponse{
+				ResponseCode:    "B09",
+				ResponseMessage: "Post Code is missing or invalid",
+			},
+			expected: &contract.CreateBookingResponse{
+				Success:    false,
+				ErrorCodes: contract.BookingErrorCodes_BOOKING_POSTCODE_REFERENCE_MISMATCH.Enum(),
 			},
 		},
 	}

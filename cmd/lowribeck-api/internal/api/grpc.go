@@ -51,7 +51,6 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequest(requestID, req)
-	logrus.Debugf("Booking Req: %v", bookingReq)
 	if err != nil {
 		logrus.Errorf("error mapping booking request for reference(%s): %v", req.GetReference(), err)
 		return nil, status.Errorf(codes.InvalidArgument, "error mapping booking request: %s", err.Error())
@@ -61,6 +60,5 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 		logrus.Errorf("error making booking request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
 		return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
 	}
-	logrus.Debugf("Booking Resp: %v", resp)
 	return l.mapper.BookingResponse(resp)
 }
