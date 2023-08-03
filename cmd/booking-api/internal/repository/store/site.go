@@ -158,7 +158,7 @@ func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string
 		s.delivery_point_suffix,
 		s.sub_building_name_number
 	FROM site AS s 
-	JOIN occupancy AS o ON o.site_id=s.site_id
+	JOIN occupancy AS o ON o.site_id = s.site_id
 	WHERE o.occupancy_id = $1;`
 	if err := s.pool.QueryRow(ctx, q, occupancyID).
 		Scan(&site.SiteID,

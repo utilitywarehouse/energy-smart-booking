@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -195,6 +196,40 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 	}
 
 	return occupancy, nil
+}
+
+func (s *OccupancyStore) GetLiveOccupanciesIDsByAccountID(ctx context.Context, accountID string) ([]string, error) {
+
+	q := `
+	SELECT distinct o.id, o.created_at
+	FROM occupancies o
+	INNER JOIN services s 
+		ON o.id = s.occupancy_id
+	WHERE
+		o.account_id = $1
+	AND
+		s.is_live IS TRUE
+	ORDER BY
+		o.created_at DESC;`
+
+	rows, err := s.pool.Query(ctx, q, accountID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query occupancies by account id, %w", err)
+	}
+
+	ids := make([]string, 0)
+	for rows.Next() {
+		var (
+			id        string
+			createdAt time.Time
+		)
+		if err := rows.Scan(&id, &createdAt); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+
+	return ids, nil
 }
 
 func (s *OccupancyStore) queryOccupanciesByIdentifier(ctx context.Context, query, id string) ([]string, error) {
