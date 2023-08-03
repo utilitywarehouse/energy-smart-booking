@@ -26,12 +26,13 @@ var (
 	commandNameProjector  = "projector"
 	commandUsageProjector = "a projector service that consumes events to internally project state"
 
+	flagBatchSize = "batch-size"
+
 	flagPlatformKafkaBrokers       = "platform-kafka-brokers"
 	flagPlatformKafkaVersion       = "platform-kafka-version"
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
 
 	flagBookingRefTopic = "booking-reference-topic"
-	flagBookingTopic    = "smart-booking-topic"
 )
 
 func init() {
@@ -55,14 +56,6 @@ func init() {
 			&cli.StringFlag{
 				Name:    flagBookingRefTopic,
 				EnvVars: []string{"BOOKING_REFERENCE_TOPIC"},
-			},
-			&cli.StringFlag{
-				Name:    flagBookingTopic,
-				EnvVars: []string{"CUSTOMER_BOOKING_TOPIC"},
-			},
-			&cli.StringFlag{
-				Name:    flagPostgresDSN,
-				EnvVars: []string{"POSTGRES_DSN"},
 			},
 			&cli.IntFlag{
 				Name:    flagBatchSize,
