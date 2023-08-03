@@ -136,3 +136,29 @@ func TestLoadOccupancy(t *testing.T) {
 	expected.EvaluationResult.CampaignabilityEvaluated = true
 	assert.Equal(expected, occupancy)
 }
+
+func TestGetLiveOccupanciesIDsByAccountID(t *testing.T) {
+	ctx := context.Background()
+	assert := assert.New(t)
+
+	store := NewOccupancy(connect(ctx))
+	defer store.pool.Close()
+
+	_, err := store.pool.Exec(ctx, `
+	INSERT INTO occupancies(id, site_id, account_id, created_at) 
+	VALUES 
+	    ('occupancy-id-A', 'site-id-A', 'account-ID-A', now()),
+	    ('occupancy-id-B', 'site-id-A', 'account-ID-A', now());
+	
+	INSERT INTO services(id, mpxn, supply_type, is_live, occupancy_id) 
+	VALUES 
+	    ('service-id-A', 'service-mpxn-A', 'gas', true, 'occupancy-id-A'),
+	    ('service-id-B', 'service-mpxn-B', 'elec', true, 'occupancy-id-A'),
+	    ('service-id-C', 'service-mpxn-C', 'elec', false, 'occupancy-id-B');`)
+	assert.NoError(err, "failed to prepare db")
+
+	ids, err := store.GetLiveOccupanciesIDsByAccountID(ctx, "account-ID-A")
+	assert.NoError(err)
+	assert.Equal([]string{"occupancy-id-A"}, ids)
+
+}

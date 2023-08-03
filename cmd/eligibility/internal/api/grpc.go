@@ -21,7 +21,7 @@ type SuppliabilityStore interface {
 }
 
 type OccupancyStore interface {
-	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
+	GetLiveOccupanciesIDsByAccountID(ctx context.Context, accountID string) ([]string, error)
 }
 
 type AccountStore interface {
@@ -72,80 +72,69 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 	}
 
 	var (
-		isEligibile, isSuppliable bool
-		reasons                   domain.IneligibleReasons
+		eligible bool
+		reasons  domain.IneligibleReasons
 	)
 
-	occupancyIDs, err := a.occupancyStore.GetIDsByAccount(ctx, req.AccountId)
+	occupancyIDs, err := a.occupancyStore.GetLiveOccupanciesIDsByAccountID(ctx, req.AccountId)
 	if err != nil {
-		logrus.Debugf("failed to get occupancies for account ID %s: %s", req.GetAccountId(), err.Error())
+		logrus.Debugf("failed to get live occupancies for account ID %s: %s", req.GetAccountId(), err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 	}
 
+	// if there are no live occupancies for given account
+	// customer is not eligible to go through smart booking journey
 	if len(occupancyIDs) == 0 {
-		logrus.Debugf("no occupancies found for account ID %s", req.GetAccountId())
-		return nil, status.Errorf(codes.NotFound, "eligibility not found for account %s", req.AccountId)
-	}
-
-	for _, occupancyID := range occupancyIDs {
-		eligibility, err := a.eligibilityStore.Get(ctx, occupancyID, req.AccountId)
-		if err != nil {
-			if errors.Is(err, store.ErrEligibilityNotFound) {
-				logrus.Debugf("eligibility not computed for account %s, occupancy %s", req.AccountId, occupancyID)
-				return nil, status.Errorf(codes.NotFound, "eligibility not found for account %s", req.AccountId)
-			}
-			logrus.Debugf("failed to get eligibility for account %s: %s", req.AccountId, err.Error())
-			return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
-		}
-
-		suppliability, err := a.suppliabilityStore.Get(ctx, occupancyID, req.AccountId)
-		if err != nil {
-			if errors.Is(err, store.ErrSuppliabilityNotFound) {
-				logrus.Debugf("suppliability not computed for account %s, occupancy %s", req.AccountId, occupancyID)
-				return nil, status.Errorf(codes.NotFound, "suppliability not found for account %s", req.AccountId)
-			}
-			logrus.Debugf("failed to get suppliability for account %s: %s", req.AccountId, err.Error())
-			return nil, status.Errorf(codes.Internal, "failed to get suppliability for account %s", req.AccountId)
-		}
-
-		if len(eligibility.Reasons) == 0 {
-			isEligibile = true
-		}
-		if len(suppliability.Reasons) == 0 {
-			isSuppliable = true
-		}
-
-		if isEligibile && isSuppliable {
-			// check it has booking references assigned
-			serviceBookingRef, err := a.serviceStore.GetServicesWithBookingRef(ctx, occupancyID)
+		reasons = domain.IneligibleReasons{domain.IneligibleReasonNoActiveService}
+	} else {
+		for _, occupancyID := range occupancyIDs {
+			eligibility, err := a.eligibilityStore.Get(ctx, occupancyID, req.AccountId)
 			if err != nil {
-				logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
-				return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
+				if errors.Is(err, store.ErrEligibilityNotFound) {
+					logrus.Debugf("eligibility not computed for account %s, occupancy %s", req.AccountId, occupancyID)
+					return nil, status.Errorf(codes.NotFound, "eligibility not found for account %s", req.AccountId)
+				}
+				logrus.Debugf("failed to get eligibility for account %s: %s", req.AccountId, err.Error())
+				return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 			}
-			hasBookingRef := true
-			for _, s := range serviceBookingRef {
-				if s.BookingRef == "" {
-					hasBookingRef = false
-					break
+
+			suppliability, err := a.suppliabilityStore.Get(ctx, occupancyID, req.AccountId)
+			if err != nil {
+				if errors.Is(err, store.ErrSuppliabilityNotFound) {
+					logrus.Debugf("suppliability not computed for account %s, occupancy %s", req.AccountId, occupancyID)
+					return nil, status.Errorf(codes.NotFound, "suppliability not found for account %s", req.AccountId)
+				}
+				logrus.Debugf("failed to get suppliability for account %s: %s", req.AccountId, err.Error())
+				return nil, status.Errorf(codes.Internal, "failed to get suppliability for account %s", req.AccountId)
+			}
+
+			eligible = len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
+
+			if eligible {
+				// check it has booking references assigned
+				serviceBookingRef, err := a.serviceStore.GetServicesWithBookingRef(ctx, occupancyID)
+				if err != nil {
+					logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
+					return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
+				}
+				hasBookingRef := true
+				for _, s := range serviceBookingRef {
+					if s.BookingRef == "" {
+						hasBookingRef = false
+						break
+					}
+				}
+				if hasBookingRef {
+					return &smart_booking.GetAccountEligibilityForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
 				}
 			}
-			if hasBookingRef {
-				return &smart_booking.GetAccountEligibilityForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
+
+			// If none of the occupancies is eligible, we want to return the reasons for the first occupancy
+			if len(reasons) == 0 {
+				reasons = append(reasons, eligibility.Reasons...)
+				reasons = append(reasons, suppliability.Reasons...)
 			}
 		}
-
-		// If none of the occupancies is eligible, we want to return the reasons for the first occupancy which has active services
-		if !eligibility.Reasons.Contains(domain.IneligibleReasonNoActiveService) &&
-			!suppliability.Reasons.Contains(domain.IneligibleReasonNoActiveService) &&
-			len(reasons) == 0 {
-			reasons = append(reasons, eligibility.Reasons...)
-			reasons = append(reasons, suppliability.Reasons...)
-		}
-	}
-
-	// no eligible occupancy found and none of the occupancies had active service
-	if len(reasons) == 0 {
-		reasons = append(reasons, domain.IneligibleReasonNoActiveService)
 	}
 
 	protoReasons, err := reasons.MapToProto()
