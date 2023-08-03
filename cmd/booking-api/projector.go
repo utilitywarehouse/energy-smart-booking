@@ -40,7 +40,7 @@ func init() {
 		Name:   commandNameProjector,
 		Usage:  commandUsageProjector,
 		Action: projectorAction,
-		Flags: app.DefaultFlags().WithKafka().WithCustom(
+		Flags: app.DefaultFlags().WithCustom(
 			&cli.StringSliceFlag{
 				Name:    flagPlatformKafkaBrokers,
 				EnvVars: []string{"PLATFORM_KAFKA_BROKERS"},

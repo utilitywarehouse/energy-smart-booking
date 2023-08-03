@@ -25,7 +25,7 @@ var (
 		Name:   appName,
 		Usage:  appDesc,
 		Before: app.Before,
-		Flags: app.DefaultFlags().WithCustom(
+		Flags: app.DefaultFlags().WithKafka().WithCustom(
 			&cli.StringFlag{
 				Name:    flagBookingTopic,
 				EnvVars: []string{"BOOKING_TOPIC"},
