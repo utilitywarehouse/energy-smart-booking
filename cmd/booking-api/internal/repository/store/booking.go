@@ -2,12 +2,18 @@ package store
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+)
+
+var (
+	ErrBookingNotFound = errors.New("no booking found")
 )
 
 type BookingStore struct {
@@ -146,4 +152,57 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 		bookings = append(bookings, booking)
 	}
 	return bookings, nil
+}
+
+func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID string) (models.Booking, error) {
+	q := `
+	SELECT
+		booking_id,
+		account_id,
+		status,
+
+		site_id,
+
+		contact_title,
+		contact_first_name,
+		contact_last_name,
+		contact_phone,
+		contact_email,
+
+		booking_date,
+		booking_start_time,
+		booking_end_time,
+
+		vulnerabilities_list,
+		vulnerabilities_other
+	FROM booking
+	WHERE booking_id = $1; 
+	`
+	row := s.pool.QueryRow(ctx, q, bookingID)
+	booking := models.Booking{}
+	err := row.Scan(
+		&booking.BookingID,
+		&booking.AccountID,
+		&booking.Status,
+		&booking.OccupancyID,
+		&booking.Contact.Title,
+		&booking.Contact.FirstName,
+		&booking.Contact.LastName,
+		&booking.Contact.Mobile,
+		&booking.Contact.Email,
+		&booking.Slot.Date,
+		&booking.Slot.StartTime,
+		&booking.Slot.EndTime,
+		&booking.VulnerabilityDetails.Vulnerabilities,
+		&booking.VulnerabilityDetails.Other,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return models.Booking{}, ErrBookingNotFound
+		}
+
+		return models.Booking{}, fmt.Errorf("failed to scan row, %w", err)
+	}
+
+	return booking, nil
 }
