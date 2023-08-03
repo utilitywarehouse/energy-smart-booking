@@ -153,10 +153,12 @@ func mapAvailabilityErrorCodes(responseCode string) *contract.AvailabilityErrorC
 func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contract.BookingErrorCodes) {
 	switch responseCode {
 	// B01 - Booking Confirmed
-	case "B01":
+	// R01 - Reschedule Confirmed
+	case "B01", "R01":
 		return true, nil
-		// B02 - Appointment not available
-	case "B02":
+	// B02 - Appointment not available
+	// R02 - Appointment not available
+	case "B02", "R02":
 		return false, contract.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum()
 	// B03 - Invalid Elec Job Type Code
 	// B03 - Invalid Gas Job Type Code
@@ -166,11 +168,22 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 	// B06 – Invalid Date Format
 	// B07 - Invalid Appt Time
 	// B13 - Invalid Reference ID
-	case "B03", "B04", "B05", "B06", "B07", "B13":
+	// R03 - Invalid Elec Job Type Code
+	// R03 - Invalid Gas Job Type Code
+	// R04 - Invalid MPAN
+	// R05 - Invalid MPRN
+	// R06 - Invalid Appt Date
+	// R06 – Invalid Date Format
+	// R07 - Invalid Appt Time
+	// R12 - Invalid Reference ID
+	case "B03", "B04", "B05", "B06", "B07", "B13",
+		"R03", "R04", "R05", "R06", "R07", "R12":
 		return false, contract.BookingErrorCodes_BOOKING_INVALID_REQUEST.Enum()
 	// B08 - Duplicate Elec job exists
 	// B08 - Duplicate Gas job exists
-	case "B08":
+	// R08 - Duplicate Elec job exists
+	// R08 - Duplicate Gas job exists
+	case "B08", "R08":
 		return false, contract.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum()
 	case "B09":
 		switch responseMessage {
@@ -183,16 +196,21 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 			return false, contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum()
 		// B09 - Site status not suitable for request
 		// B09 - Not available as site is complete
+		// B09 - The site is currently on hold
 		case "Site status not suitable for request",
-			"Not available as site is complete":
+			"Not available as site is complete",
+			"The site is currently on hold":
 			return false, contract.BookingErrorCodes_BOOKING_INVALID_SITE.Enum()
 		// B09 - Post Code is missing or invalid
 		// B09 - Postcode and Reference ID mismatch
 		case "Post Code is missing or invalid",
 			"Postcode and Reference ID mismatch":
 			return false, contract.BookingErrorCodes_BOOKING_POSTCODE_REFERENCE_MISMATCH.Enum()
+		// B09 - No Jobs found for Reference ID
+		// R09 - No Jobs found for Reference ID
+		case "No Jobs found for Reference ID":
+			return false, contract.BookingErrorCodes_BOOKING_INVALID_REQUEST.Enum()
 		}
-
 	}
 	return false, contract.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum()
 }
