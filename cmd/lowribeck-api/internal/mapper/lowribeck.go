@@ -185,11 +185,12 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 	// R08 - Duplicate Gas job exists
 	case "B08", "R08":
 		return false, contract.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum()
-	case "B09":
+	case "B09", "R09":
 		switch responseMessage {
 		// B09 - No available slots for requested postcode
 		// B09 - Rearranging request sent outside agreed time parameter
 		// B09 - Booking request sent outside agreed time parameter
+		// R09 - No available slots for requested postcode
 		case "No available slots for requested postcode",
 			"Rearranging request sent outside agreed time parameter",
 			"Booking request sent outside agreed time parameter":
@@ -197,12 +198,17 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 		// B09 - Site status not suitable for request
 		// B09 - Not available as site is complete
 		// B09 - The site is currently on hold
+		// R09 – Site status not suitable for request
+		// R09 - Not available as site is complete
+		// R09 - The site is currently on hold
 		case "Site status not suitable for request",
 			"Not available as site is complete",
 			"The site is currently on hold":
 			return false, contract.BookingErrorCodes_BOOKING_INVALID_SITE.Enum()
 		// B09 - Post Code is missing or invalid
 		// B09 - Postcode and Reference ID mismatch
+		// R09 - Post Code is missing or invalid
+		// R09 - Postcode and Reference ID mismatch
 		case "Post Code is missing or invalid",
 			"Postcode and Reference ID mismatch":
 			return false, contract.BookingErrorCodes_BOOKING_POSTCODE_REFERENCE_MISMATCH.Enum()
@@ -211,6 +217,9 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 		case "No Jobs found for Reference ID":
 			return false, contract.BookingErrorCodes_BOOKING_INVALID_REQUEST.Enum()
 		}
+		// R11 – Rearranging request sent outside agreed time parameter
+	case "R11":
+		return false, contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum()
 	}
 	return false, contract.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum()
 }
