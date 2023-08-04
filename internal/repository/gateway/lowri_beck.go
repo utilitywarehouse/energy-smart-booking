@@ -66,7 +66,7 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 		},
 	})
 	if err != nil {
-		return bookingResponse.Success, fmt.Errorf("failed to get available slots, reason: %s, %w", bookingResponse.GetErrorCodes().String(), err)
+		return bookingResponse.Success, fmt.Errorf("failed to get available slots, %w", err)
 	}
 
 	return bookingResponse.Success, nil

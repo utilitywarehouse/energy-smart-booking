@@ -80,7 +80,7 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 		details := ev.GetDetails()
 		contactDetails := details.GetContactDetails()
 		slot := details.GetSlot()
-		dateTime, err := dateIntoTime(slot.GetDate())
+		dateTime, err := utilities.DateIntoTime(slot.GetDate())
 		if err != nil {
 			return err
 		}
@@ -110,7 +110,7 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 		})
 	case *bookingv1.BookingRescheduledEvent:
 		bookingID := ev.GetBookingId()
-		dt, err := dateIntoTime(ev.GetSlot().GetDate())
+		dt, err := utilities.DateIntoTime(ev.GetSlot().GetDate())
 		if err != nil {
 			return err
 		}
