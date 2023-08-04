@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -60,17 +61,87 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 	}, nil)
 
-	actual := []models.BookingSlot{
-		{
-			Date:      mustDate(t, "2000-05-05"),
-			StartTime: 10,
-			EndTime:   15,
+	actual := gateway.AvailableSlotsResponse{
+		BookingSlots: []models.BookingSlot{
+			{
+				Date:      mustDate(t, "2000-05-05"),
+				StartTime: 10,
+				EndTime:   15,
+			},
+			{
+				Date:      mustDate(t, "2001-05-05"),
+				StartTime: 14,
+				EndTime:   19,
+			},
 		},
-		{
-			Date:      mustDate(t, "2001-05-05"),
-			StartTime: 14,
-			EndTime:   19,
+		ErrorCode: nil,
+	}
+
+	expected, err := myGw.GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
+		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
+	}
+}
+
+func Test_GetAvailableSlots_HasError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
+	mai := mock_gateways.NewMockMachineAuthInjector(ctrl)
+
+	mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+
+	lbC.EXPECT().GetAvailableSlots(ctx, &lowribeckv1.GetAvailableSlotsRequest{
+		Postcode:  "E2 1ZZ",
+		Reference: "booking-reference-1",
+	}).Return(&lowribeckv1.GetAvailableSlotsResponse{
+		Slots: []*lowribeckv1.BookingSlot{
+			{
+				Date: &date.Date{
+					Year:  2000,
+					Month: 5,
+					Day:   5,
+				},
+				StartTime: 10,
+				EndTime:   15,
+			},
+			{
+				Date: &date.Date{
+					Year:  2001,
+					Month: 5,
+					Day:   5,
+				},
+				StartTime: 14,
+				EndTime:   19,
+			},
 		},
+		ErrorCodes: lowribeckv1.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum(),
+	}, nil)
+
+	actual := gateway.AvailableSlotsResponse{
+		BookingSlots: []models.BookingSlot{
+			{
+				Date:      mustDate(t, "2000-05-05"),
+				StartTime: 10,
+				EndTime:   15,
+			},
+			{
+				Date:      mustDate(t, "2001-05-05"),
+				StartTime: 14,
+				EndTime:   19,
+			},
+		},
+		ErrorCode: bookingv1.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum(),
 	}
 
 	expected, err := myGw.GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1")
@@ -127,7 +198,10 @@ func Test_GetAvailableSlots(t *testing.T) {
 // 		ErrorCodes: nil,
 // 	}, nil)
 
-// 	actual := true
+	actual := gateway.CreateBookingResponse{
+		Success:   true,
+		ErrorCode: nil,
+	}
 
 // 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 // 		Date:      mustDate(t, "2020-12-20"),
@@ -165,38 +239,39 @@ func Test_GetAvailableSlots(t *testing.T) {
 
 // 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
 
-// 	lbC.EXPECT().CreateBooking(ctx, &lowribeckv1.CreateBookingRequest{
-// 		Postcode:  "E2 1ZZ",
-// 		Reference: "booking-reference-1",
-// 		Slot: &lowribeckv1.BookingSlot{
-// 			Date: &date.Date{
-// 				Year:  2020,
-// 				Month: 12,
-// 				Day:   20,
-// 			},
-// 			StartTime: 15,
-// 			EndTime:   19,
-// 		},
-// 		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
-// 			Vulnerabilities: []lowribeckv1.Vulnerability{
-// 				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-// 			},
-// 			Other: "Bad Knee",
-// 		},
-// 		ContactDetails: &lowribeckv1.ContactDetails{
-// 			Title:     "Mr",
-// 			FirstName: "John",
-// 			LastName:  "Doe",
-// 			Phone:     "555-0777",
-// 		},
-// 	}).Return(&lowribeckv1.CreateBookingResponse{
-// 		Success:    false,
-// 		ErrorCodes: lowribeckv1.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum(),
-// 	}, oops)
+	lbC.EXPECT().CreateBooking(ctx, &lowribeckv1.CreateBookingRequest{
+		Postcode:  "E2 1ZZ",
+		Reference: "booking-reference-1",
+		Slot: &lowribeckv1.BookingSlot{
+			Date: &date.Date{
+				Year:  2020,
+				Month: 12,
+				Day:   20,
+			},
+			StartTime: 15,
+			EndTime:   19,
+		},
+		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+			Vulnerabilities: []lowribeckv1.Vulnerability{
+				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+			},
+			Other: "Bad Knee",
+		},
+		ContactDetails: &lowribeckv1.ContactDetails{
+			Title:     "Mr",
+			FirstName: "John",
+			LastName:  "Doe",
+			Phone:     "555-0777",
+		},
+	}).Return(&lowribeckv1.CreateBookingResponse{
+		Success:    false,
+		ErrorCodes: lowribeckv1.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum(),
+	}, nil)
 
-// 	actual := false
-
-// 	actualErr := fmt.Errorf("failed to get available slots, reason: %s, %w", lowribeckv1.BookingErrorCodes_BOOKING_INTERNAL_ERROR, oops)
+	actual := gateway.CreateBookingResponse{
+		Success:   false,
+		ErrorCode: bookingv1.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum(),
+	}
 
 // 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 // 		Date:      mustDate(t, "2020-12-20"),
@@ -212,9 +287,9 @@ func Test_GetAvailableSlots(t *testing.T) {
 // 		lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 // 	}, "Bad Knee")
 
-// 	if diff := cmp.Diff(actualErr.Error(), err.Error()); diff != "" {
-// 		t.Fatal(diff)
-// 	}
+	if err != nil {
+		t.Fatal(err)
+	}
 
 // 	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
 // 		t.Fatalf("expected: %+v, actual: %+v", expected, actual)

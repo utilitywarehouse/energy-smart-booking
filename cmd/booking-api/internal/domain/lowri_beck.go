@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,6 +13,10 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/proto"
+)
+
+var (
+	ErrLowriBeckErrorCode = errors.New("lowribeck returned an error code")
 )
 
 type GetAvailableSlotsParams struct {
@@ -36,7 +41,18 @@ type RescheduleBookingParams struct {
 }
 
 type GetAvailableSlotsResponse struct {
-	Slots []models.BookingSlot
+	Slots     []models.BookingSlot
+	ErrorCode *bookingv1.AvailabilityErrorCodes
+}
+
+type CreateBookingResponse struct {
+	Event     proto.Message
+	ErrorCode *bookingv1.BookingErrorCodes
+}
+
+type RescheduleBookingResponse struct {
+	Event     proto.Message
+	ErrorCode *bookingv1.BookingErrorCodes
 }
 
 func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailableSlotsParams) (GetAvailableSlotsResponse, error) {
@@ -48,14 +64,21 @@ func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailabl
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to find postcode and booking reference, %w", err)
 	}
 
-	slots, err := d.lowribeckGw.GetAvailableSlots(ctx, site.Postcode, bookingReference)
+	slotsResponse, err := d.lowribeckGw.GetAvailableSlots(ctx, site.Postcode, bookingReference)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", err)
 	}
 
+	if slotsResponse.ErrorCode != nil {
+		return GetAvailableSlotsResponse{
+			Slots:     nil,
+			ErrorCode: slotsResponse.ErrorCode,
+		}, ErrLowriBeckErrorCode
+	}
+
 	targetedSlots := []models.BookingSlot{}
 
-	for _, elem := range slots {
+	for _, elem := range slotsResponse.BookingSlots {
 		currentSlotTime := time.Date(elem.Date.Year(), elem.Date.Month(), elem.Date.Day(), 0, 0, 0, 0, time.UTC)
 
 		if currentSlotTime.After(fromAsTime) && currentSlotTime.Before(toAsTime) {
@@ -69,7 +92,7 @@ func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailabl
 
 }
 
-func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingParams) (proto.Message, error) {
+func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingParams) (CreateBookingResponse, error) {
 
 	var event *bookingv1.BookingCreatedEvent
 
@@ -77,15 +100,22 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 	site, bookingReference, occupancyID, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
-		return nil, err
+		return CreateBookingResponse{}, err
 	}
 
 	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, bookingReference, params.Slot, params.ContactDetails, lbVulnerabilities, params.VulnerabilityDetails.Other)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create booking, %w", err)
+		return CreateBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
 	}
 
-	if response {
+	if response.ErrorCode != nil {
+		return CreateBookingResponse{
+			Event:     nil,
+			ErrorCode: response.ErrorCode,
+		}, ErrLowriBeckErrorCode
+	}
+
+	if response.Success {
 		bookingID := uuid.New().String()
 
 		event = &bookingv1.BookingCreatedEvent{
@@ -133,31 +163,41 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 		}
 	}
 
-	return event, nil
+	return CreateBookingResponse{
+		Event:     event,
+		ErrorCode: nil,
+	}, nil
 }
 
-func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleBookingParams) (proto.Message, error) {
+func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleBookingParams) (RescheduleBookingResponse, error) {
 
 	var event *bookingv1.BookingRescheduledEvent = nil
 
 	site, bookingReference, _, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
-		return nil, err
+		return RescheduleBookingResponse{}, err
 	}
 
 	booking, err := d.bookingStore.GetBookingByBookingID(ctx, params.BookingID)
 	if err != nil {
-		return nil, err
+		return RescheduleBookingResponse{}, err
 	}
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(booking.VulnerabilityDetails.Vulnerabilities)
 
 	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, bookingReference, params.Slot, booking.Contact, lbVulnerabilities, booking.VulnerabilityDetails.Other)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create booking, %w", err)
+		return RescheduleBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
 	}
 
-	if response {
+	if response.ErrorCode != nil {
+		return RescheduleBookingResponse{
+			Event:     nil,
+			ErrorCode: response.ErrorCode,
+		}, ErrLowriBeckErrorCode
+	}
+
+	if response.Success {
 		event = &bookingv1.BookingRescheduledEvent{
 			BookingId: params.BookingID,
 			Slot: &bookingv1.BookingSlot{
@@ -173,7 +213,10 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		}
 	}
 
-	return event, nil
+	return RescheduleBookingResponse{
+		Event:     event,
+		ErrorCode: nil,
+	}, nil
 }
 
 // this method takes in an accountID and returns the postcode and the booking reference

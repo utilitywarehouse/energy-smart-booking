@@ -435,6 +435,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 							EndTime:   18,
 						},
 					},
+					ErrorCode: nil,
 				}, nil)
 
 			},
@@ -478,6 +479,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 							EndTime:   18,
 						},
 					},
+					ErrorCodes: nil,
 				},
 			},
 		},
@@ -585,53 +587,56 @@ func Test_CreateBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}
 
-				bkDomain.EXPECT().CreateBooking(ctx, params).Return(&bookingv1.BookingCreatedEvent{
-					BookingId: "booking-id-1",
-					Details: &bookingv1.Booking{
-						Id:        "booking-id-1",
-						AccountId: params.AccountID,
-						SiteAddress: &addressv1.Address{
-							Uprn: "uprn",
-							Paf: &addressv1.Address_PAF{
-								Organisation:            "o",
-								Department:              "d",
-								SubBuilding:             "sb",
-								BuildingName:            "bn",
-								BuildingNumber:          "bnu",
-								DependentThoroughfare:   "dt",
-								Thoroughfare:            "tf",
-								DoubleDependentLocality: "ddl",
-								DependentLocality:       "dl",
-								PostTown:                "pt",
-								Postcode:                "pc",
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{
+					Event: &bookingv1.BookingCreatedEvent{
+						BookingId: "booking-id-1",
+						Details: &bookingv1.Booking{
+							Id:        "booking-id-1",
+							AccountId: params.AccountID,
+							SiteAddress: &addressv1.Address{
+								Uprn: "uprn",
+								Paf: &addressv1.Address_PAF{
+									Organisation:            "o",
+									Department:              "d",
+									SubBuilding:             "sb",
+									BuildingName:            "bn",
+									BuildingNumber:          "bnu",
+									DependentThoroughfare:   "dt",
+									Thoroughfare:            "tf",
+									DoubleDependentLocality: "ddl",
+									DependentLocality:       "dl",
+									PostTown:                "pt",
+									Postcode:                "pc",
+								},
 							},
-						},
-						ContactDetails: &bookingv1.ContactDetails{
-							Title:     "Mr",
-							FirstName: "Joe",
-							LastName:  "Dough",
-							Phone:     "555-0555",
-							Email:     "jd@example.com",
-						},
-						Slot: &bookingv1.BookingSlot{
-							Date: &date.Date{
-								Year:  int32(2020),
-								Month: int32(10),
-								Day:   int32(10),
+							ContactDetails: &bookingv1.ContactDetails{
+								Title:     "Mr",
+								FirstName: "Joe",
+								LastName:  "Dough",
+								Phone:     "555-0555",
+								Email:     "jd@example.com",
 							},
-							StartTime: int32(10),
-							EndTime:   int32(10),
-						},
-						VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
-							Vulnerabilities: []bookingv1.Vulnerability{
-								bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+							Slot: &bookingv1.BookingSlot{
+								Date: &date.Date{
+									Year:  int32(2020),
+									Month: int32(10),
+									Day:   int32(10),
+								},
+								StartTime: int32(10),
+								EndTime:   int32(10),
 							},
-							Other: "Bad Knee",
+							VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+								Vulnerabilities: []bookingv1.Vulnerability{
+									bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+								},
+								Other: "Bad Knee",
+							},
+							Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 						},
-						Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+						OccupancyId:   "occupancy-id-1",
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 					},
-					OccupancyId:   "occupancy-id-1",
-					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					ErrorCode: nil,
 				}, nil)
 
 				publisher.EXPECT().Sink(ctx, &bookingv1.BookingCreatedEvent{
@@ -771,18 +776,21 @@ func Test_RescheduleBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}
 
-				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(&bookingv1.BookingRescheduledEvent{
-					BookingId:     "booking-id-1",
-					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
-					Slot: &bookingv1.BookingSlot{
-						Date: &date.Date{
-							Year:  2020,
-							Month: 1,
-							Day:   12,
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{
+					Event: &bookingv1.BookingRescheduledEvent{
+						BookingId:     "booking-id-1",
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+						Slot: &bookingv1.BookingSlot{
+							Date: &date.Date{
+								Year:  2020,
+								Month: 1,
+								Day:   12,
+							},
+							StartTime: 10,
+							EndTime:   20,
 						},
-						StartTime: 10,
-						EndTime:   20,
 					},
+					ErrorCode: nil,
 				}, nil)
 
 				publisher.EXPECT().Sink(ctx, &bookingv1.BookingRescheduledEvent{
@@ -802,7 +810,8 @@ func Test_RescheduleBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: &bookingv1.RescheduleBookingResponse{
-					BookingId: "booking-id-1",
+					BookingId:  "booking-id-1",
+					ErrorCodes: nil,
 				},
 				err: nil,
 			},

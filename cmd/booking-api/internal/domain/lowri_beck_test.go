@@ -17,8 +17,8 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain/mocks"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"google.golang.org/genproto/googleapis/type/date"
-	"google.golang.org/protobuf/proto"
 )
 
 func Test_GetAvailableSlots(t *testing.T) {
@@ -96,22 +96,25 @@ func Test_GetAvailableSlots(t *testing.T) {
 
 				svcSt.EXPECT().GetReferenceByOccupancyID(ctx, "occupancy-id-1").Return("booking-reference-1", nil)
 
-				lbGw.EXPECT().GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1").Return([]models.BookingSlot{
-					{
-						Date:      mustDate(t, "2023-12-05"),
-						StartTime: 9,
-						EndTime:   12,
+				lbGw.EXPECT().GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1").Return(gateway.AvailableSlotsResponse{
+					BookingSlots: []models.BookingSlot{
+						{
+							Date:      mustDate(t, "2023-12-05"),
+							StartTime: 9,
+							EndTime:   12,
+						},
+						{
+							Date:      mustDate(t, "2023-11-05"),
+							StartTime: 17,
+							EndTime:   19,
+						},
+						{
+							Date:      mustDate(t, "2023-12-10"),
+							StartTime: 11,
+							EndTime:   15,
+						},
 					},
-					{
-						Date:      mustDate(t, "2023-11-05"),
-						StartTime: 17,
-						EndTime:   19,
-					},
-					{
-						Date:      mustDate(t, "2023-12-10"),
-						StartTime: 11,
-						EndTime:   15,
-					},
+					ErrorCode: nil,
 				}, nil)
 
 			},
@@ -246,7 +249,7 @@ func Test_CreateBooking(t *testing.T) {
 	}
 
 	type outputParams struct {
-		event proto.Message
+		event domain.CreateBookingResponse
 		err   error
 	}
 
@@ -257,8 +260,6 @@ func Test_CreateBooking(t *testing.T) {
 		input  inputParams
 		output outputParams
 	}
-
-	var emptyMsg *bookingv1.BookingCreatedEvent
 
 	testCases := []testSetup{
 		{
@@ -335,57 +336,63 @@ func Test_CreateBooking(t *testing.T) {
 					Mobile:    "555-0145",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "").Return(true, nil)
+				}, "").Return(gateway.CreateBookingResponse{
+					Success:   true,
+					ErrorCode: nil,
+				}, nil)
 
 			},
 			output: outputParams{
-				event: &bookingv1.BookingCreatedEvent{
-					BookingId:     "my-uuid",
-					OccupancyId:   "occupancy-id-1",
-					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
-					Details: &bookingv1.Booking{
-						Id:        "my-uuid",
-						AccountId: "account-id-1",
-						SiteAddress: &addressv1.Address{
-							Uprn: "u",
-							Paf: &addressv1.Address_PAF{
-								Organisation:            "o",
-								Department:              "d",
-								SubBuilding:             "sb",
-								BuildingName:            "bn",
-								BuildingNumber:          "bn",
-								DependentThoroughfare:   "dt",
-								Thoroughfare:            "t",
-								DoubleDependentLocality: "ddl",
-								DependentLocality:       "dl",
-								PostTown:                "pt",
-								Postcode:                "E2 1ZZ",
+				event: domain.CreateBookingResponse{
+					Event: &bookingv1.BookingCreatedEvent{
+						BookingId:     "my-uuid",
+						OccupancyId:   "occupancy-id-1",
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+						Details: &bookingv1.Booking{
+							Id:        "my-uuid",
+							AccountId: "account-id-1",
+							SiteAddress: &addressv1.Address{
+								Uprn: "u",
+								Paf: &addressv1.Address_PAF{
+									Organisation:            "o",
+									Department:              "d",
+									SubBuilding:             "sb",
+									BuildingName:            "bn",
+									BuildingNumber:          "bn",
+									DependentThoroughfare:   "dt",
+									Thoroughfare:            "t",
+									DoubleDependentLocality: "ddl",
+									DependentLocality:       "dl",
+									PostTown:                "pt",
+									Postcode:                "E2 1ZZ",
+								},
 							},
-						},
-						ContactDetails: &bookingv1.ContactDetails{
-							Title:     "Mr",
-							FirstName: "John",
-							LastName:  "Dough",
-							Phone:     "555-0145",
-							Email:     "jdough@example.com",
-						},
-						Slot: &bookingv1.BookingSlot{
-							Date: &date.Date{
-								Year:  2023,
-								Month: 8,
-								Day:   27,
+							ContactDetails: &bookingv1.ContactDetails{
+								Title:     "Mr",
+								FirstName: "John",
+								LastName:  "Dough",
+								Phone:     "555-0145",
+								Email:     "jdough@example.com",
 							},
-							StartTime: 9,
-							EndTime:   15,
-						},
-						VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
-							Vulnerabilities: []bookingv1.Vulnerability{
-								bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+							Slot: &bookingv1.BookingSlot{
+								Date: &date.Date{
+									Year:  2023,
+									Month: 8,
+									Day:   27,
+								},
+								StartTime: 9,
+								EndTime:   15,
 							},
-							Other: "",
+							VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+								Vulnerabilities: []bookingv1.Vulnerability{
+									bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+								},
+								Other: "",
+							},
+							Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 						},
-						Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 					},
+					ErrorCode: nil,
 				},
 				err: nil,
 			},
@@ -463,12 +470,18 @@ func Test_CreateBooking(t *testing.T) {
 					Mobile:    "555-0145",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "").Return(false, nil)
+				}, "").Return(gateway.CreateBookingResponse{
+					Success:   false,
+					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+				}, nil)
 
 			},
 			output: outputParams{
-				event: emptyMsg,
-				err:   nil,
+				event: domain.CreateBookingResponse{
+					Event:     nil,
+					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+				},
+				err: nil,
 			},
 		},
 	}
@@ -517,7 +530,7 @@ func Test_RescheduleBooking(t *testing.T) {
 	}
 
 	type outputParams struct {
-		event proto.Message
+		event domain.RescheduleBookingResponse
 		err   error
 	}
 
@@ -528,8 +541,6 @@ func Test_RescheduleBooking(t *testing.T) {
 		input  inputParams
 		output outputParams
 	}
-
-	var emptyMsg *bookingv1.BookingRescheduledEvent
 
 	testCases := []testSetup{
 		{
@@ -618,21 +629,27 @@ func Test_RescheduleBooking(t *testing.T) {
 					Mobile:    "555-0145",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "Bad Knee").Return(true, nil)
+				}, "Bad Knee").Return(gateway.CreateBookingResponse{
+					Success:   true,
+					ErrorCode: nil,
+				}, nil)
 
 			},
 			output: outputParams{
-				event: &bookingv1.BookingRescheduledEvent{
-					BookingId: "my-uuid",
-					Slot: &bookingv1.BookingSlot{
-						Date: &date.Date{
-							Year:  2023,
-							Month: 8,
-							Day:   27,
+				event: domain.RescheduleBookingResponse{
+					Event: &bookingv1.BookingRescheduledEvent{
+						BookingId: "my-uuid",
+						Slot: &bookingv1.BookingSlot{
+							Date: &date.Date{
+								Year:  2023,
+								Month: 8,
+								Day:   27,
+							},
+							StartTime: 9,
+							EndTime:   15,
 						},
-						StartTime: 9,
-						EndTime:   15,
 					},
+					ErrorCode: nil,
 				},
 				err: nil,
 			},
@@ -723,12 +740,18 @@ func Test_RescheduleBooking(t *testing.T) {
 					Mobile:    "555-0145",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "Bad Knee").Return(false, nil)
+				}, "Bad Knee").Return(gateway.CreateBookingResponse{
+					Success:   false,
+					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+				}, nil)
 
 			},
 			output: outputParams{
-				event: emptyMsg,
-				err:   nil,
+				event: domain.RescheduleBookingResponse{
+					Event:     nil,
+					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+				},
+				err: nil,
 			},
 		},
 	}

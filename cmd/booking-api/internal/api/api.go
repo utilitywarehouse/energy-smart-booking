@@ -22,9 +22,9 @@ type BookingDomain interface {
 	GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error)
 	GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error)
 	GetCustomerBookings(ctx context.Context, accountID string) ([]*bookingv1.Booking, error)
-	CreateBooking(ctx context.Context, params domain.CreateBookingParams) (proto.Message, error)
+	CreateBooking(ctx context.Context, params domain.CreateBookingParams) (domain.CreateBookingResponse, error)
 	GetAvailableSlots(ctx context.Context, params domain.GetAvailableSlotsParams) (domain.GetAvailableSlotsResponse, error)
-	RescheduleBooking(ctx context.Context, params domain.RescheduleBookingParams) (proto.Message, error)
+	RescheduleBooking(ctx context.Context, params domain.RescheduleBookingParams) (domain.RescheduleBookingResponse, error)
 }
 
 type BookingPublisher interface {
@@ -141,14 +141,22 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 		To:        req.To,
 	}
 
-	availableSlots, err := b.bookingDomain.GetAvailableSlots(ctx, params)
+	availableSlotsResponse, err := b.bookingDomain.GetAvailableSlots(ctx, params)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get available slots, %s", err))
+		switch err {
+		case domain.ErrLowriBeckErrorCode:
+			return &bookingv1.GetAvailableSlotsResponse{
+				Slots:      nil,
+				ErrorCodes: availableSlotsResponse.ErrorCode,
+			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
+		}
 	}
 
-	bookingSlots := make([]*bookingv1.BookingSlot, len(availableSlots.Slots))
+	bookingSlots := make([]*bookingv1.BookingSlot, len(availableSlotsResponse.Slots))
 
-	for index, slot := range availableSlots.Slots {
+	for index, slot := range availableSlotsResponse.Slots {
 
 		bookingSlot := bookingv1.BookingSlot{
 			Date: &date.Date{
@@ -164,7 +172,8 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 	}
 
 	return &bookingv1.GetAvailableSlotsResponse{
-		Slots: bookingSlots,
+		Slots:      bookingSlots,
+		ErrorCodes: nil,
 	}, nil
 }
 
@@ -208,18 +217,27 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 		Source:               models.PlatformSourceToBookingSource(req.Platform),
 	}
 
-	createBookingEvent, err := b.bookingDomain.CreateBooking(ctx, params)
+	createBookingResponse, err := b.bookingDomain.CreateBooking(ctx, params)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to create booking, %s", err))
+		switch err {
+		case domain.ErrLowriBeckErrorCode:
+			return &bookingv1.CreateBookingResponse{
+				BookingId:  "",
+				ErrorCodes: createBookingResponse.ErrorCode,
+			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to create booking, %s", err)
+		}
 	}
 
-	err = b.publisher.Sink(ctx, createBookingEvent, time.Now())
+	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink create booking event: %+v", createBookingEvent)
+		logrus.Errorf("failed to sink create booking event: %+v", createBookingResponse.Event)
 	}
 
 	return &bookingv1.CreateBookingResponse{
-		BookingId: createBookingEvent.(*bookingv1.BookingCreatedEvent).BookingId,
+		BookingId:  createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
+		ErrorCodes: nil,
 	}, nil
 }
 
@@ -252,18 +270,27 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		Source: models.PlatformSourceToBookingSource(req.Platform),
 	}
 
-	rescheduleBookingEvent, err := b.bookingDomain.RescheduleBooking(ctx, params)
+	rescheduleBookingResponse, err := b.bookingDomain.RescheduleBooking(ctx, params)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to reschedule booking %s", err))
+		switch err {
+		case domain.ErrLowriBeckErrorCode:
+			return &bookingv1.RescheduleBookingResponse{
+				BookingId:  "",
+				ErrorCodes: rescheduleBookingResponse.ErrorCode,
+			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
+		}
 	}
 
-	err = b.publisher.Sink(ctx, rescheduleBookingEvent, time.Now())
+	err = b.publisher.Sink(ctx, rescheduleBookingResponse.Event, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingEvent)
+		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingResponse.Event)
 	}
 
 	return &bookingv1.RescheduleBookingResponse{
-		BookingId: rescheduleBookingEvent.(*bookingv1.BookingRescheduledEvent).BookingId,
+		BookingId:  rescheduleBookingResponse.Event.(*bookingv1.BookingRescheduledEvent).BookingId,
+		ErrorCodes: nil,
 	}, nil
 }
 
