@@ -38,6 +38,8 @@ func HandleOccupancy(store OccupancyStore, evaluator Evaluator, stateRebuild boo
 				return fmt.Errorf("error unmarshaling occupancy event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
 			}
 			switch x := inner.(type) {
+			default:
+				return nil
 			case *platform.OccupancyStartedEvent:
 				err = store.Add(ctx, x.GetOccupancyId(), x.GetSiteId(), x.GetCustomerAccountId(), env.OccurredAt.AsTime())
 			case *platform.OccupancySiteCorrectedEvent:
