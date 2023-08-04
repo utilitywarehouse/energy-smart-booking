@@ -42,6 +42,8 @@ func HandleMeterpoint(s MeterpointStore, occupancyStore OccupancyMeterpointStore
 				return fmt.Errorf("error unmarshaling meterpoint event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
 			}
 			switch x := inner.(type) {
+			default:
+				return nil
 			case *platform.ElectricityMeterpointProfileClassChangedEvent:
 				err = s.AddProfileClass(ctx, x.GetMpan(), domain.SupplyTypeElectricity, x.GetPc())
 			case *platform.ElectricityMeterPointSSCChangedEvent:
