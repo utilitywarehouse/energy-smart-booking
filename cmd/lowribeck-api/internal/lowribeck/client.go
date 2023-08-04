@@ -40,15 +40,9 @@ func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAv
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read body: %w", err)
-	}
 
 	var ar GetCalendarAvailabilityResponse
-	if err = json.Unmarshal(respBody, &ar); err != nil {
+	if err = json.Unmarshal(resp, &ar); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal body: %w", err)
 	}
 
@@ -60,23 +54,16 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read body: %w", err)
-	}
-	logrus.Debugf("response: [%s]", string(respBody))
 
 	var br CreateBookingResponse
-	if err = json.Unmarshal(respBody, &br); err != nil {
+	if err = json.Unmarshal(resp, &br); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal body: %w", err)
 	}
 
 	return &br, nil
 }
 
-func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string) (*http.Response, error) {
+func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string) ([]byte, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %w", err)
@@ -91,7 +78,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create new request")
+		return nil, fmt.Errorf("unable to create new request: %w", err)
 	}
 
 	request.SetBasicAuth(c.auth.user, c.auth.password)
@@ -99,8 +86,22 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	resp, err := c.http.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("unable to send http request: %v", err)
+		return nil, fmt.Errorf("unable to send http request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read body: %w", err)
 	}
 
-	return resp, nil
+	if resp.StatusCode != http.StatusOK {
+		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
+		logrus.Error(statusErr)
+		return nil, statusErr
+	}
+
+	logrus.Debugf("response: [%s]", string(bodyBytes))
+
+	return bodyBytes, nil
 }
