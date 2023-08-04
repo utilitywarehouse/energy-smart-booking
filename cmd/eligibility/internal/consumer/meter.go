@@ -54,6 +54,8 @@ func HandleMeter(s MeterStore, occupancyStore OccupancyMeterStore, evaluator Eva
 			}
 
 			switch x := inner.(type) {
+			default:
+				return nil
 			case *platform.ElectricityMeterDiscoveredEvent:
 				err = s.Add(ctx, &store.Meter{
 					ID:         x.GetMeterId(),
