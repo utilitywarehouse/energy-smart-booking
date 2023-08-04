@@ -17,14 +17,25 @@ const (
 var (
 	gitHash string
 
-	flagBatchSize   = "batch-size"
-	flagPostgresDSN = "dsn"
+	// shared flags
+	flagPostgresDSN  = "dsn"
+	flagBookingTopic = "booking-topic"
 
 	application = &cli.App{
 		Name:   appName,
 		Usage:  appDesc,
 		Before: app.Before,
-		Flags:  app.DefaultFlags(),
+		Flags: app.DefaultFlags().WithKafka().WithCustom(
+			&cli.StringFlag{
+				Name:    flagBookingTopic,
+				EnvVars: []string{"BOOKING_TOPIC"},
+			},
+			&cli.StringFlag{
+				Name:     flagPostgresDSN,
+				EnvVars:  []string{"POSTGRES_DSN"},
+				Required: true,
+			},
+		),
 	}
 )
 
