@@ -12,11 +12,6 @@ const (
 	appName = "energy-smart-booking-click-generator"
 	appDesc = "Generats CTA links for smart booking eligible customer accounts"
 
-	postgresDSN = "postgres-dsn"
-
-	// Accounts Lookup
-	accountsAPIHost = "accounts-api-host"
-
 	// Click
 	clickAPIHost           = "click-api-host"
 	clickSigningKeyID      = "click-signing-key-id"
