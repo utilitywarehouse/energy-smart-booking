@@ -26,7 +26,7 @@ var (
 	commandUsageBigQueryUsage  = "a consumer that reads from bookings topic and indexes events to big query"
 
 	bigQueryProjectID               = "big-query-project-id"
-	bigQueryCredentialsFile         = "big-query-credentials-file"
+	bigQueryCredentialsFile         = "big-query-credentials-file" //nolint: gosec
 	bigQueryDatasetID               = "big-query-dataset-id"
 	bigQueryRescheduledBookingTable = "big-query-rescheduled-booking-table"
 	bigQueryBookingTable            = "big-query-booking-table"
