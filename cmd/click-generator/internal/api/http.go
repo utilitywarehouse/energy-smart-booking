@@ -20,7 +20,7 @@ func NewHandler(generator *generator.LinkProvider) *Handler {
 }
 
 const (
-	endpointGenerate = "generate"
+	endpointGenerate = "/generate"
 )
 
 type GenerateLinkRequest struct {
@@ -28,10 +28,10 @@ type GenerateLinkRequest struct {
 }
 
 func (s *Handler) Register(ctx context.Context, router *mux.Router) {
-	router.Handle(endpointGenerate, s.generatePreAuth(ctx)).Methods(http.MethodPost)
+	router.Handle(endpointGenerate, s.generate(ctx)).Methods(http.MethodPost)
 }
 
-func (s *Handler) generatePreAuth(ctx context.Context) http.Handler {
+func (s *Handler) generate(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req GenerateLinkRequest
 		b, err := io.ReadAll(r.Body)

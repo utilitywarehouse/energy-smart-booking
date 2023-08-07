@@ -41,69 +41,6 @@ func main() {
 		Usage: appDesc,
 		Commands: []*cli.Command{
 			{
-				Name:  "generator",
-				Usage: "generates links for all smart booking journey eligible accounts",
-
-				Flags: app.DefaultFlags().WithKafkaRequired().WithCustom(
-					&cli.StringFlag{
-						Name:     postgresDSN,
-						EnvVars:  []string{"POSTGRES_DSN"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     accountsAPIHost,
-						EnvVars:  []string{"ACCOUNTS_API_HOST"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     clickAPIHost,
-						EnvVars:  []string{"CLICK_API_HOST"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     clickSigningKeyID,
-						EnvVars:  []string{"CLICK_SIGNING_KEY_ID"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     clickScope,
-						EnvVars:  []string{"CLICK_SCOPE"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     clickWebLocation,
-						EnvVars:  []string{"CLICK_WEB_LOCATION"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     clickMobileLocation,
-						EnvVars:  []string{"CLICK_MOBILE_LOCATION"},
-						Required: true,
-					},
-					&cli.IntFlag{
-						Name:     clickLinkExpirySeconds,
-						EnvVars:  []string{"CLICK_LINK_EXPIRY_SECONDS"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     subject,
-						EnvVars:  []string{"TRACKING_SUBJECT"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     intent,
-						EnvVars:  []string{"TRACKING_INTENT"},
-						Required: true,
-					},
-					&cli.StringFlag{
-						Name:     channel,
-						EnvVars:  []string{"TRACKING_CHANNEL"},
-						Required: true,
-					},
-				),
-				Before: app.Before,
-			},
-			{
 				Name: "api",
 				Flags: app.DefaultFlags().WithCustom(
 					&cli.StringFlag{
