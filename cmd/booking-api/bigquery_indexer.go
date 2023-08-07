@@ -39,24 +39,29 @@ func init() {
 		Action: runBigQueryIndexerAction,
 		Flags: app.DefaultFlags().WithCustom(
 			&cli.StringFlag{
-				Name:    bigQueryProjectID,
-				EnvVars: []string{"BIG_QUERY_PROJECT_ID"},
+				Name:     bigQueryProjectID,
+				EnvVars:  []string{"BIG_QUERY_PROJECT_ID"},
+				Required: true,
 			},
 			&cli.StringFlag{
-				Name:    bigQueryCredentialsFile,
-				EnvVars: []string{"BIG_QUERY_CREDENTIALS_FILE"},
+				Name:     bigQueryCredentialsFile,
+				EnvVars:  []string{"BIG_QUERY_CREDENTIALS_FILE"},
+				Required: true,
 			},
 			&cli.StringFlag{
-				Name:    bigQueryDatasetID,
-				EnvVars: []string{"BIG_QUERY_DATASET_ID"},
+				Name:     bigQueryDatasetID,
+				EnvVars:  []string{"BIG_QUERY_DATASET_ID"},
+				Required: true,
 			},
 			&cli.StringFlag{
-				Name:    bigQueryRescheduledBookingTable,
-				EnvVars: []string{"BIG_QUERY_RESCHEDULED_BOOKING_TABLE"},
+				Name:     bigQueryRescheduledBookingTable,
+				EnvVars:  []string{"BIG_QUERY_RESCHEDULED_BOOKING_TABLE"},
+				Required: true,
 			},
 			&cli.StringFlag{
-				Name:    bigQueryBookingTable,
-				EnvVars: []string{"BIG_QUERY_BOOKING_TABLE"},
+				Name:     bigQueryBookingTable,
+				EnvVars:  []string{"BIG_QUERY_BOOKING_TABLE"},
+				Required: true,
 			},
 		),
 	})
