@@ -10,63 +10,80 @@ import (
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
+	utilities "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/utils"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"
 )
 
-/*booking_id             TEXT PRIMARY KEY,
-  account_id             TEXT NOT NULL,
-  status                 INT NOT NULL,
+type RescheduleBooking struct {
+	BookingID   string    `bigquery:"booking_id"`
+	Source      string    `bigquery:"source"`
+	BookingDate time.Time `bigquery:"booking_date"`
+	StartTime   int32     `bigquery:"start_time"`
+	EndTime     int32     `bigquery:"end_time"`
 
-  -- address (normalized)
-  occupancy_id           TEXT NOT NULL,
-
-  -- contact details
-  contact_title          TEXT NOT NULL,
-  contact_first_name     TEXT NOT NULL,
-  contact_last_name      TEXT NOT NULL,
-  contact_phone          TEXT NOT NULL,
-  contact_email          TEXT NOT NULL,
-
-  -- booking slot
-  booking_date           DATE NOT NULL,
-  booking_start_time     INT NOT NULL,
-  booking_end_time       INT NOT NULL,
-
-  -- vulnerability details
-  vulnerabilities_list   INT[] NOT NULL,
-  vulnerabilities_other  TEXT NOT NULL,*/
+	CreatedAt time.Time `bigquery:"created_at"`
+}
 
 type Booking struct {
-	BookingID            string    `bigquery:"booking_id"`
-	AccountID            string    `bigquery:"account_id"`
-	Status               string    `bigquery:"status"`
-	Source               string    `bigquery:"source"`
-	OccupancyID          string    `bigquery:"occupancy_id"`
-	BookingDate          time.Time `bigquery:"booking_date"`
-	StartTime            int32     `bigquery:"start_time"`
-	EndTime              int32     `bigquery:"end_time"`
-	VulnerabilitiesList  []string  `bigquery:"vulnerabilities_list"`
-	VulnerabilitiesOther string    `bigquery:vulnerabilities_other"`
+	BookingID          string    `bigquery:"booking_id"`
+	AccountID          string    `bigquery:"account_id"`
+	Status             string    `bigquery:"status"`
+	OccupancyID        string    `bigquery:"occupancy_id"`
+	Title              string    `bigquery:"title"`
+	FirstName          string    `bigquery:"first_name"`
+	LastName           string    `bigquery:"last_name"`
+	Phone              string    `bigquery:"phone"`
+	Email              string    `bigquery:"email"`
+	BookingDate        time.Time `bigquery:"booking_date"`
+	BookingStartTime   int32     `bigquery:"start_time"`
+	BookingEndTime     int32     `bigquery:"end_date"`
+	VulnerabilityList  []string  `bigquery:"vulnerability_list"`
+	VulnerabilityOther string    `bigquery:"vulnerability_other"`
 
-	OccurredAt time.Time `bigquery:"occurred_at"`
+	CreatedAt time.Time `bigquery:"created_at"`
 }
 
-type BookingIndexer struct {
-	client  *bigquery.Client
-	dataset string
-	table   string
+type RescheduledBookingIndexer struct {
+	client                  *bigquery.Client
+	dataset                 string
+	bookingsTable           string
+	rescheduleBookingsTable string
+
+	bookingBuffer           []Booking
+	rescheduleBookingBuffer []RescheduleBooking
 }
 
-func NewBookingIndexer(client *bigquery.Client, dataset, table string) *BookingIndexer {
-	return &BookingIndexer{
-		client:  client,
-		dataset: dataset,
-		table:   table,
+func NewRescheduledBookingIndexer(client *bigquery.Client, dataset, bookingsTable, rescheduleBookingsTable string) *RescheduledBookingIndexer {
+	return &RescheduledBookingIndexer{
+		client:                  client,
+		dataset:                 dataset,
+		bookingsTable:           bookingsTable,
+		rescheduleBookingsTable: rescheduleBookingsTable,
 	}
 }
 
-func (i *BookingIndexer) Handle(ctx context.Context, message substrate.Message) error {
+func (i *RescheduledBookingIndexer) PreHandle(_ context.Context) error {
+	i.bookingBuffer = []Booking{}
+	i.rescheduleBookingBuffer = []RescheduleBooking{}
+	return nil
+}
+
+func (i *RescheduledBookingIndexer) PostHandle(ctx context.Context) error {
+	err := i.client.Dataset(i.dataset).Table(i.rescheduleBookingsTable).Inserter().Put(ctx, i.rescheduleBookingBuffer)
+	if err != nil {
+		return fmt.Errorf("failed to put %d rows in reschedule bookings table, %w", len(i.rescheduleBookingBuffer), err)
+	}
+
+	err = i.client.Dataset(i.dataset).Table(i.bookingsTable).Inserter().Put(ctx, i.bookingBuffer)
+	if err != nil {
+		return fmt.Errorf("failed to put %d rows in bookings table, %w", len(i.bookingBuffer), err)
+	}
+
+	return nil
+}
+
+func (i *RescheduledBookingIndexer) Handle(ctx context.Context, message substrate.Message) error {
 	var env energy_contracts.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err
@@ -83,37 +100,65 @@ func (i *BookingIndexer) Handle(ctx context.Context, message substrate.Message) 
 		return fmt.Errorf("error unmarshaling event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
 	}
 	switch x := inner.(type) {
-	default:
-		return nil
 	case *bookingv1.BookingCreatedEvent:
-		update := Booking{
-			BookingID:   x.GetBookingId(),
-			AccountID:   x.GetDetails().AccountId,
-			Status:      x.GetDetails().Status.String(),
-			Source:      x.BookingSource.String(),
-			OccupancyID: x.GetOccupancyId(),
-			BookingDate: utilities.DateIntoTime(x.GetDetails().GetSlot().GetDate()),
-			StartTime:   x.Details.Slot.GetStartTime(),
-			EndTime:     x.Details.Slot.GetEndTime(),
-			OccurredAt:  env.OccurredAt.AsTime(),
+
+		bookingDate, err := utilities.DateIntoTime(x.GetDetails().GetSlot().GetDate())
+		if err != nil {
+			return fmt.Errorf("failed to convert date.Date type into time.Time, %w", err)
 		}
-		err = i.client.Dataset(i.dataset).Table(i.table).Inserter().Put(ctx, update)
+
+		createdBooking := Booking{
+			BookingID:          x.GetBookingId(),
+			AccountID:          x.GetDetails().GetAccountId(),
+			Status:             x.GetDetails().GetStatus().String(),
+			OccupancyID:        x.GetOccupancyId(),
+			Title:              x.GetDetails().ContactDetails.Title,
+			FirstName:          x.GetDetails().ContactDetails.FirstName,
+			LastName:           x.GetDetails().ContactDetails.LastName,
+			Phone:              x.GetDetails().ContactDetails.Phone,
+			Email:              x.GetDetails().ContactDetails.Email,
+			BookingDate:        *bookingDate,
+			BookingStartTime:   x.GetDetails().Slot.StartTime,
+			BookingEndTime:     x.GetDetails().Slot.EndTime,
+			VulnerabilityList:  vulnerabilitiesAsStringSlice(x.GetDetails().VulnerabilityDetails.Vulnerabilities),
+			VulnerabilityOther: x.GetDetails().VulnerabilityDetails.Other,
+			CreatedAt:          env.CreatedAt.AsTime(),
+		}
+
+		i.bookingBuffer = append(i.bookingBuffer, createdBooking)
+
 	case *bookingv1.BookingRescheduledEvent:
 
-		update := Booking{
-			BookingID: x.GetBookingId(),
-			Source:    x.BookingSource.String(),
-
-			BookingDate: utilities.DateIntoTime(x.GetDetails().GetSlot().GetDate()),
-			StartTime:   x.Details.Slot.GetStartTime(),
-			EndTime:     x.Details.Slot.GetEndTime(),
-			OccurredAt:  env.OccurredAt.AsTime(),
+		bookingDate, err := utilities.DateIntoTime(x.GetSlot().GetDate())
+		if err != nil {
+			return fmt.Errorf("failed to convert date.Date type into time.Time, %w", err)
 		}
-		err = i.client.Dataset(i.dataset).Table(i.table).Inserter().Put(ctx, update)
+
+		rescheduleBooking := RescheduleBooking{
+			BookingID:   x.GetBookingId(),
+			Source:      x.BookingSource.String(),
+			BookingDate: *bookingDate,
+			StartTime:   x.GetSlot().StartTime,
+			EndTime:     x.GetSlot().EndTime,
+			CreatedAt:   env.CreatedAt.AsTime(),
+		}
+
+		i.rescheduleBookingBuffer = append(i.rescheduleBookingBuffer, rescheduleBooking)
+
 	}
 	if err != nil {
 		return fmt.Errorf("failed to index campaignability event %s: %w", env.Uuid, err)
 	}
 
 	return nil
+}
+
+func vulnerabilitiesAsStringSlice(vulnerabilities []bookingv1.Vulnerability) []string {
+	vulns := []string{}
+
+	for _, vulnerability := range vulnerabilities {
+		vulns = append(vulns, vulnerability.String())
+	}
+
+	return vulns
 }

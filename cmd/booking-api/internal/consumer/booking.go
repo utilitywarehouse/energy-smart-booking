@@ -9,6 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
+	utilities "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/utils"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/genproto/googleapis/type/date"
