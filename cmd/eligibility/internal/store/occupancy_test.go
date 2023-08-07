@@ -90,7 +90,7 @@ func TestLoadOccupancy(t *testing.T) {
 	expected := domain.Occupancy{
 		ID:       "occupancyID1",
 		Account:  domain.Account{ID: "accountID1"},
-		Site:     nil,
+		Site:     &domain.Site{ID: "siteID1"},
 		Services: nil,
 		EvaluationResult: domain.OccupancyEvaluation{
 			OccupancyID: "occupancyID1",
