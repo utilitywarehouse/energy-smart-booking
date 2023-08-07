@@ -174,13 +174,16 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 		occupancy.EvaluationResult.CampaignabilityEvaluated = true
 	}
 
-	if postCode.Valid {
+	if siteID.Valid {
 		occupancy.Site = &domain.Site{
-			ID:          siteID.String,
-			Postcode:    sitePostCode.String,
-			WanCoverage: wanCoverage.Bool,
+			ID: siteID.String,
+		}
+		if postCode.Valid {
+			occupancy.Site.Postcode = postCode.String
+			occupancy.Site.WanCoverage = wanCoverage.Bool
 		}
 	}
+
 	occupancy.Account = domain.Account{
 		ID: occupancyAccountID,
 	}
