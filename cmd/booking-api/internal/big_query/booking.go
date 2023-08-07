@@ -100,13 +100,10 @@ func (i *BookingIndexer) Handle(ctx context.Context, message substrate.Message) 
 		err = i.client.Dataset(i.dataset).Table(i.table).Inserter().Put(ctx, update)
 	case *bookingv1.BookingRescheduledEvent:
 
-		x.
 		update := Booking{
-			BookingID:   x.GetBookingId(),
-			AccountID:   x.GetDetails().AccountId,
-			Status:      x.GetDetails().Status.String(),
-			Source:      x.BookingSource.String(),
-			OccupancyID: x.GetOccupancyId(),
+			BookingID: x.GetBookingId(),
+			Source:    x.BookingSource.String(),
+
 			BookingDate: utilities.DateIntoTime(x.GetDetails().GetSlot().GetDate()),
 			StartTime:   x.Details.Slot.GetStartTime(),
 			EndTime:     x.Details.Slot.GetEndTime(),
