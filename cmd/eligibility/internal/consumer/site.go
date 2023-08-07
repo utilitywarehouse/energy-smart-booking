@@ -41,6 +41,8 @@ func HandleSite(store SiteStore, occupancyStore OccupancySiteStore, evaluator Ev
 				return fmt.Errorf("error unmarshaling site event [%s] %s: %w", env.GetUuid(), env.GetMessage().GetTypeUrl(), err)
 			}
 			switch x := inner.(type) {
+			default:
+				return nil
 			case *platform.SiteDiscoveredEvent:
 				if x.GetAddress() == nil {
 					log.Infof("skip site event %s: empty address", x.GetSiteId())

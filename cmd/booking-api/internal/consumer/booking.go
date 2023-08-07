@@ -49,7 +49,7 @@ func (h *BookingHandler) PostHandle(ctx context.Context) error {
 func dateIntoTime(d *date.Date) (*time.Time, error) {
 	t, err := time.ParseInLocation(
 		time.DateOnly,
-		fmt.Sprintf("%d-%d-%d", d.Year, d.Month, d.Day),
+		fmt.Sprintf("%d-%02d-%02d", d.Year, d.Month, d.Day),
 		time.UTC,
 	)
 	if err != nil {
