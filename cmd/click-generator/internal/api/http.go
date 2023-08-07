@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -18,17 +20,34 @@ func NewHandler(generator *generator.LinkProvider) *Handler {
 }
 
 const (
-	endpointGenerate = "/accounts/{number}/generate"
+	endpointGenerate = "generate"
 )
 
-func (s *Handler) Register(ctx context.Context, router *mux.Router) {
-	router.Handle(endpointGenerate, s.patch(ctx)).Methods(http.MethodPatch)
+type GenerateLinkRequest struct {
+	AccountNumber string `json:"account_number"`
 }
 
-func (s *Handler) patch(ctx context.Context) http.Handler {
+func (s *Handler) Register(ctx context.Context, router *mux.Router) {
+	router.Handle(endpointGenerate, s.generatePreAuth(ctx)).Methods(http.MethodPost)
+}
+
+func (s *Handler) generatePreAuth(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		accountNumber, ok := mux.Vars(r)["number"]
-		if !ok {
+		var req GenerateLinkRequest
+		b, err := io.ReadAll(r.Body)
+		if err != nil {
+			logrus.Errorf("Failed to read body content: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		err = json.Unmarshal(b, &req)
+		if err != nil {
+			logrus.Errorf("Failed to unmarshall body content: %s", err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if req.AccountNumber == "" {
 			logrus.Error("account number not provided")
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -41,10 +60,7 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 			return
 		}
 
-		var (
-			link string
-			err  error
-		)
+		var link string
 
 		switch linkType {
 		default:
@@ -52,13 +68,13 @@ func (s *Handler) patch(ctx context.Context) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		case "auth":
-			link, err = s.generator.GenerateAuthenticated(ctx, accountNumber)
+			link, err = s.generator.GenerateAuthenticated(ctx, req.AccountNumber)
 		case "generic":
-			link, err = s.generator.GenerateGenericLink(ctx, accountNumber)
+			link, err = s.generator.GenerateGenericLink(ctx, req.AccountNumber)
 		}
 
 		if err != nil {
-			logrus.WithField("account_number", accountNumber).Error(err)
+			logrus.WithField("account_number", req.AccountNumber).Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
