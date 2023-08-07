@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -42,8 +44,15 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	availabilityReq := l.mapper.AvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {
-		logrus.Errorf("error making get available slots request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
-		return nil, status.Errorf(codes.Internal, "error making get available slots request: %s", err.Error())
+		logrus.Errorf("invalid available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
+		switch {
+		case errors.Is(err, mapper.ErrInvalidRequest):
+			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots request: %v", err)
+
+		case errors.Is(err, mapper.ErrAppointmentNotFound):
+			return nil, status.Errorf(codes.NotFound, "error making get available slots request: %v", err)
+		}
+		return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", err)
 	}
 	return l.mapper.AvailableSlotsResponse(resp)
 }
@@ -52,12 +61,25 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequest(requestID, req)
 	if err != nil {
-		logrus.Errorf("error mapping booking request for reference(%s): %v", req.GetReference(), err)
-		return nil, status.Errorf(codes.InvalidArgument, "error mapping booking request: %s", err.Error())
+		logrus.Errorf("error mapping booking request for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
+		return nil, status.Errorf(codes.InvalidArgument, "error mapping booking request: %v", err)
 	}
 	resp, err := l.client.CreateBooking(ctx, bookingReq)
 	if err != nil {
-		logrus.Errorf("error making booking request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
+		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
+		switch {
+		case errors.Is(err, mapper.ErrInvalidRequest):
+			return nil, status.Errorf(codes.InvalidArgument, "error making booking request: %v", err)
+
+		case errors.Is(err, mapper.ErrAppointmentNotFound):
+			return nil, status.Errorf(codes.NotFound, "error making booking request: %v", err)
+
+		case errors.Is(err, mapper.ErrAppointmentAlreadyExists):
+			return nil, status.Errorf(codes.AlreadyExists, "error making booking request: %v", err)
+
+		case errors.Is(err, mapper.ErrAppointmentOutOfRange):
+			return nil, status.Errorf(codes.OutOfRange, "error making booking request: %v", err)
+		}
 		return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
 	}
 	return l.mapper.BookingResponse(resp)

@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -14,6 +15,20 @@ const (
 	requestTimeFormat     = "02/01/2006 15:04:05"
 	appointmentDateFormat = "02/01/2006"
 	appointmentTimeFormat = "%d:00-%d:00"
+)
+
+var (
+	ErrInvalidRequest           = errors.New("invalid request")
+	ErrAppointmentNotFound      = errors.New("no appointments found")
+	ErrAppointmentOutOfRange    = errors.New("appointment out of range")
+	ErrAppointmentAlreadyExists = errors.New("appointment already exists")
+	ErrInternalError            = errors.New("internal server error")
+
+	invalidPostcode        = "invalid postcode"
+	invalidReference       = "invalid reference"
+	invalidSite            = "invalid site"
+	invalidAppointmentDate = "invalid appointment date"
+	invalidAppointmentTime = "invalid appointment time"
 )
 
 type LowriBeck struct {
@@ -46,13 +61,12 @@ func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabili
 		return nil, err
 	}
 
-	var code *contract.AvailabilityErrorCodes
-	if resp.ResponseCode != "" {
-		code = mapAvailabilityErrorCodes(resp.ResponseCode)
+	if err := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage); err != nil {
+		return nil, err
 	}
+
 	return &contract.GetAvailableSlotsResponse{
-		Slots:      slots,
-		ErrorCodes: code,
+		Slots: slots,
 	}, nil
 }
 
@@ -80,10 +94,12 @@ func (lb LowriBeck) BookingRequest(id uint32, req *contract.CreateBookingRequest
 }
 
 func (lb LowriBeck) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
-	success, code := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
+	success, err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
+	if err != nil {
+		return nil, err
+	}
 	return &contract.CreateBookingResponse{
-		Success:    success,
-		ErrorCodes: code,
+		Success: success,
 	}, nil
 }
 
@@ -140,17 +156,32 @@ func mapAvailabilityAppointmentTime(appointmentTime string) (int32, int32, error
 	return start, end, nil
 }
 
-func mapAvailabilityErrorCodes(responseCode string) *contract.AvailabilityErrorCodes {
+func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 	switch responseCode {
+	case "":
+		return nil
+	//EA01 - No available slots for requested postcode
 	case "EA01":
-		return contract.AvailabilityErrorCodes_AVAILABILITY_NO_AVAILABLE_SLOTS.Enum()
-	case "EA02", "EA03":
-		return contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST.Enum()
+		return ErrAppointmentNotFound
+		// EA02 - Unable to identify postcode
+	case "EA02":
+		return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidPostcode)
+	case "EA03":
+		// EA03 - Rearranging request sent outside agreed time parameter
+		// EA03 - Booking request sent outside agreed time parameter
+		switch responseMessage {
+		case "Rearranging request sent outside agreed time parameter",
+			"Booking request sent outside agreed time parameter":
+			return ErrAppointmentOutOfRange
+		// EA03 - Work Reference Invalid
+		case "Work Reference Invalid":
+			return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidReference)
+		}
 	}
-	return contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum()
+	return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 }
 
-func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contract.BookingErrorCodes) {
+func mapBookingResponseCodes(responseCode, responseMessage string) (bool, error) {
 	switch responseCode {
 	// B01 - Booking Confirmed
 	// R01 - Reschedule Confirmed
@@ -159,42 +190,49 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 	// B02 - Appointment not available
 	// R02 - Appointment not available
 	case "B02", "R02":
-		return false, contract.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum()
+		return false, ErrAppointmentNotFound
 	// B03 - Invalid Elec Job Type Code
 	// B03 - Invalid Gas Job Type Code
 	// B04 - Invalid MPAN
 	// B05 - Invalid MPRN
-	// B06 - Invalid Appt Date
-	// B06 – Invalid Date Format
-	// B07 - Invalid Appt Time
-	// B13 - Invalid Reference ID
 	// R03 - Invalid Elec Job Type Code
 	// R03 - Invalid Gas Job Type Code
 	// R04 - Invalid MPAN
 	// R05 - Invalid MPRN
+	// We never send these fields
+	case "B03", "B04", "B05", "R03", "R04", "R05":
+		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, responseMessage)
+	// B06 - Invalid Appt Date
+	// B06 – Invalid Date Format
 	// R06 - Invalid Appt Date
 	// R06 – Invalid Date Format
+	case "B06", "R06":
+		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidAppointmentDate)
 	// R07 - Invalid Appt Time
+	// B07 - Invalid Appt Time
+	case "B07", "R07":
+		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidAppointmentTime)
+	// B13 - Invalid Reference ID
 	// R12 - Invalid Reference ID
-	case "B03", "B04", "B05", "B06", "B07", "B13",
-		"R03", "R04", "R05", "R06", "R07", "R12":
-		return false, contract.BookingErrorCodes_BOOKING_INVALID_REQUEST.Enum()
+	case "B13", "R12":
+		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidReference)
 	// B08 - Duplicate Elec job exists
 	// B08 - Duplicate Gas job exists
 	// R08 - Duplicate Elec job exists
 	// R08 - Duplicate Gas job exists
 	case "B08", "R08":
-		return false, contract.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum()
+		return false, ErrAppointmentAlreadyExists
 	case "B09", "R09":
 		switch responseMessage {
 		// B09 - No available slots for requested postcode
+		// R09 - No available slots for requested postcode
+		case "No available slots for requested postcode":
+			return false, ErrAppointmentNotFound
 		// B09 - Rearranging request sent outside agreed time parameter
 		// B09 - Booking request sent outside agreed time parameter
-		// R09 - No available slots for requested postcode
-		case "No available slots for requested postcode",
-			"Rearranging request sent outside agreed time parameter",
+		case "Rearranging request sent outside agreed time parameter",
 			"Booking request sent outside agreed time parameter":
-			return false, contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum()
+			return false, ErrAppointmentOutOfRange
 		// B09 - Site status not suitable for request
 		// B09 - Not available as site is complete
 		// B09 - The site is currently on hold
@@ -204,24 +242,24 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, *contr
 		case "Site status not suitable for request",
 			"Not available as site is complete",
 			"The site is currently on hold":
-			return false, contract.BookingErrorCodes_BOOKING_INVALID_SITE.Enum()
+			return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidSite)
 		// B09 - Post Code is missing or invalid
 		// B09 - Postcode and Reference ID mismatch
 		// R09 - Post Code is missing or invalid
 		// R09 - Postcode and Reference ID mismatch
 		case "Post Code is missing or invalid",
 			"Postcode and Reference ID mismatch":
-			return false, contract.BookingErrorCodes_BOOKING_POSTCODE_REFERENCE_MISMATCH.Enum()
+			return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidPostcode)
 		// B09 - No Jobs found for Reference ID
 		// R09 - No Jobs found for Reference ID
 		case "No Jobs found for Reference ID":
-			return false, contract.BookingErrorCodes_BOOKING_INVALID_REQUEST.Enum()
+			return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidReference)
 		}
 		// R11 – Rearranging request sent outside agreed time parameter
 	case "R11":
-		return false, contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum()
+		return false, ErrAppointmentOutOfRange
 	}
-	return false, contract.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum()
+	return false, fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 }
 
 func mapBookingSlot(slot *contract.BookingSlot) (string, string, error) {
@@ -275,5 +313,7 @@ func mapVulnerabilities(vulnerabilities *contract.VulnerabilityDetails) string {
 }
 
 func mapContactName(contact *contract.ContactDetails) string {
-	return strings.TrimSpace(contact.GetFirstName() + " " + contact.GetLastName())
+	contactName := strings.TrimSpace(contact.GetTitle() + " " + contact.GetFirstName())
+	return strings.TrimSpace(contactName + " " + contact.GetLastName())
+
 }
