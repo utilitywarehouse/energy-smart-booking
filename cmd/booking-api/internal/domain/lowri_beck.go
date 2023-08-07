@@ -41,8 +41,7 @@ type RescheduleBookingParams struct {
 }
 
 type GetAvailableSlotsResponse struct {
-	Slots     []models.BookingSlot
-	ErrorCode *bookingv1.AvailabilityErrorCodes
+	Slots []models.BookingSlot
 }
 
 type CreateBookingResponse struct {
@@ -67,13 +66,6 @@ func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailabl
 	slotsResponse, err := d.lowribeckGw.GetAvailableSlots(ctx, site.Postcode, bookingReference)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", err)
-	}
-
-	if slotsResponse.ErrorCode != nil {
-		return GetAvailableSlotsResponse{
-			Slots:     nil,
-			ErrorCode: slotsResponse.ErrorCode,
-		}, ErrLowriBeckErrorCode
 	}
 
 	targetedSlots := []models.BookingSlot{}

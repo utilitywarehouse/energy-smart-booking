@@ -435,7 +435,6 @@ func Test_GetAvailableSlot(t *testing.T) {
 							EndTime:   18,
 						},
 					},
-					ErrorCode: nil,
 				}, nil)
 
 			},
@@ -479,7 +478,6 @@ func Test_GetAvailableSlot(t *testing.T) {
 							EndTime:   18,
 						},
 					},
-					ErrorCodes: nil,
 				},
 			},
 		},
@@ -691,7 +689,8 @@ func Test_CreateBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: &bookingv1.CreateBookingResponse{
-					BookingId: "booking-id-1",
+					BookingId:  "booking-id-1",
+					ErrorCodes: bookingv1.BookingErrorCodes_BOOKING_ERROR_UNSET,
 				},
 				err: nil,
 			},

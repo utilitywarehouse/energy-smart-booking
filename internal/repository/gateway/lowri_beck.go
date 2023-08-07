@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,14 @@ import (
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+var (
+	ErrBadParameters = errors.New("bad parameters")
+	ErrNotFound      = errors.New("not found")
+	ErrInternal      = errors.New("internal error")
 )
 
 type LowriBeckGateway struct {
@@ -22,7 +31,6 @@ func NewLowriBeckGateway(mai MachineAuthInjector, client LowriBeckClient) LowriB
 
 type AvailableSlotsResponse struct {
 	BookingSlots []models.BookingSlot
-	ErrorCode    *bookingv1.AvailabilityErrorCodes
 }
 
 type CreateBookingResponse struct {
@@ -31,13 +39,19 @@ type CreateBookingResponse struct {
 }
 
 func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (AvailableSlotsResponse, error) {
-	var errorCode *bookingv1.AvailabilityErrorCodes = nil
-
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), &lowribeckv1.GetAvailableSlotsRequest{
 		Postcode:  postcode,
 		Reference: reference,
 	})
 	if err != nil {
+		switch status.Convert(err).Code() {
+		case codes.Internal:
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w, %w", ErrInternal, err)
+		case codes.NotFound:
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w, %w", ErrNotFound, err)
+		case codes.InvalidArgument:
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w, %w", ErrBadParameters, err)
+		}
 		return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", err)
 	}
 
@@ -51,18 +65,8 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		})
 	}
 
-	if availableSlots.ErrorCodes != nil {
-		eCode, err := models.AvailabilityLowriBeckErrorCodeToBookingErrorCode(*availableSlots.ErrorCodes)
-		if err != nil {
-			return AvailableSlotsResponse{}, err
-		}
-
-		errorCode = &eCode
-	}
-
 	return AvailableSlotsResponse{
 		BookingSlots: slots,
-		ErrorCode:    errorCode,
 	}, nil
 }
 
@@ -93,11 +97,17 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 		},
 	})
 	if err != nil {
+		switch status.Convert(err).Code() {
+		case codes.Internal:
+			//return nil, fmt.Errorf("failed to find service for mpxn: [%s], %w", mpxn, ErrServiceNotFound)
+		default:
+			// return nil, fmt.Errorf("failed to find service for mpxn: [%s] with code: %s", mpxn, status.Convert(err).Code().String())
+		}
 		return CreateBookingResponse{}, fmt.Errorf("failed to get available slots, %w", err)
 	}
 
-	if bookingResponse.ErrorCodes != nil {
-		eCode, err := models.BookingLowriBeckErrorCodeToBookingErrorCode(*bookingResponse.ErrorCodes)
+	if bookingResponse.ErrorCodes != lowribeckv1.BookingErrorCodes_BOOKING_ERROR_UNSET {
+		eCode := models.BookingLowriBeckErrorCodeToBookingErrorCode(bookingResponse.ErrorCodes)
 		if err != nil {
 			return CreateBookingResponse{}, err
 		}

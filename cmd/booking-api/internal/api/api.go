@@ -143,12 +143,23 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 
 	availableSlotsResponse, err := b.bookingDomain.GetAvailableSlots(ctx, params)
 	if err != nil {
-		switch err {
-		case domain.ErrLowriBeckErrorCode:
+		switch {
+		case errors.Is(err, domain.ErrLowriBeckErrorCode):
 			return &bookingv1.GetAvailableSlotsResponse{
-				Slots:      nil,
-				ErrorCodes: availableSlotsResponse.ErrorCode,
+				Slots: nil,
 			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
+		case errors.Is(err, gateway.ErrBadParameters):
+			return &bookingv1.GetAvailableSlotsResponse{
+				Slots: nil,
+			}, status.Errorf(codes.InvalidArgument, "failed to get available slots, %s", err)
+		case errors.Is(err, gateway.ErrInternal):
+			return &bookingv1.GetAvailableSlotsResponse{
+				Slots: nil,
+			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
+		case errors.Is(err, gateway.ErrNotFound):
+			return &bookingv1.GetAvailableSlotsResponse{
+				Slots: nil,
+			}, status.Errorf(codes.NotFound, "failed to get available slots, %s", err)
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
 		}
@@ -172,8 +183,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 	}
 
 	return &bookingv1.GetAvailableSlotsResponse{
-		Slots:      bookingSlots,
-		ErrorCodes: nil,
+		Slots: bookingSlots,
 	}, nil
 }
 
@@ -222,8 +232,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 		switch err {
 		case domain.ErrLowriBeckErrorCode:
 			return &bookingv1.CreateBookingResponse{
-				BookingId:  "",
-				ErrorCodes: createBookingResponse.ErrorCode,
+				BookingId: "",
 			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to create booking, %s", err)
@@ -237,7 +246,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 
 	return &bookingv1.CreateBookingResponse{
 		BookingId:  createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
-		ErrorCodes: nil,
+		ErrorCodes: bookingv1.BookingErrorCodes_BOOKING_ERROR_UNSET,
 	}, nil
 }
 

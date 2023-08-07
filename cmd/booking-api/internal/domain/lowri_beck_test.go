@@ -114,7 +114,6 @@ func Test_GetAvailableSlots(t *testing.T) {
 							EndTime:   15,
 						},
 					},
-					ErrorCode: nil,
 				}, nil)
 
 			},

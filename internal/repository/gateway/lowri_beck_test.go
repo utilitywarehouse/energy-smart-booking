@@ -74,7 +74,6 @@ func Test_GetAvailableSlots(t *testing.T) {
 				EndTime:   19,
 			},
 		},
-		ErrorCode: nil,
 	}
 
 	expected, err := myGw.GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1")
@@ -125,7 +124,6 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 				EndTime:   19,
 			},
 		},
-		ErrorCodes: lowribeckv1.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum(),
 	}, nil)
 
 	actual := gateway.AvailableSlotsResponse{
@@ -141,7 +139,6 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 				EndTime:   19,
 			},
 		},
-		ErrorCode: bookingv1.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum(),
 	}
 
 	expected, err := myGw.GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1")
@@ -169,34 +166,33 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 
 // 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
 
-// 	lbC.EXPECT().CreateBooking(ctx, &lowribeckv1.CreateBookingRequest{
-// 		Postcode:  "E2 1ZZ",
-// 		Reference: "booking-reference-1",
-// 		Slot: &lowribeckv1.BookingSlot{
-// 			Date: &date.Date{
-// 				Year:  2020,
-// 				Month: 12,
-// 				Day:   20,
-// 			},
-// 			StartTime: 15,
-// 			EndTime:   19,
-// 		},
-// 		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
-// 			Vulnerabilities: []lowribeckv1.Vulnerability{
-// 				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-// 			},
-// 			Other: "Bad Knee",
-// 		},
-// 		ContactDetails: &lowribeckv1.ContactDetails{
-// 			Title:     "Mr",
-// 			FirstName: "John",
-// 			LastName:  "Doe",
-// 			Phone:     "555-0777",
-// 		},
-// 	}).Return(&lowribeckv1.CreateBookingResponse{
-// 		Success:    true,
-// 		ErrorCodes: nil,
-// 	}, nil)
+	lbC.EXPECT().CreateBooking(ctx, &lowribeckv1.CreateBookingRequest{
+		Postcode:  "E2 1ZZ",
+		Reference: "booking-reference-1",
+		Slot: &lowribeckv1.BookingSlot{
+			Date: &date.Date{
+				Year:  2020,
+				Month: 12,
+				Day:   20,
+			},
+			StartTime: 15,
+			EndTime:   19,
+		},
+		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+			Vulnerabilities: []lowribeckv1.Vulnerability{
+				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+			},
+			Other: "Bad Knee",
+		},
+		ContactDetails: &lowribeckv1.ContactDetails{
+			Title:     "Mr",
+			FirstName: "John",
+			LastName:  "Doe",
+			Phone:     "555-0777",
+		},
+	}).Return(&lowribeckv1.CreateBookingResponse{
+		Success: true,
+	}, nil)
 
 	actual := gateway.CreateBookingResponse{
 		Success:   true,
@@ -265,12 +261,12 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 		},
 	}).Return(&lowribeckv1.CreateBookingResponse{
 		Success:    false,
-		ErrorCodes: lowribeckv1.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum(),
+		ErrorCodes: *lowribeckv1.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum(),
 	}, nil)
 
 	actual := gateway.CreateBookingResponse{
 		Success:   false,
-		ErrorCode: bookingv1.BookingErrorCodes_BOOKING_INTERNAL_ERROR.Enum(),
+		ErrorCode: bookingv1.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum(),
 	}
 
 // 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
