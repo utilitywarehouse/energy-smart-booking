@@ -123,7 +123,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 				ResponseCode:    "EA02",
 				ResponseMessage: "Unable to identify postcode",
 			},
-			expectedError: fmt.Errorf("invalid request [invalid postcode]"),
+			expectedError: fmt.Errorf("invalid request [postcode]"),
 		},
 		{
 			desc: "Failed - invalid request response 2",
@@ -281,7 +281,7 @@ func TestMapBookingResponse(t *testing.T) {
 			expected: &contract.CreateBookingResponse{
 				Success: false,
 			},
-			expectedError: fmt.Errorf("invalid request [invalid appointment time]"),
+			expectedError: fmt.Errorf("invalid request [appointment time]"),
 		},
 		{
 			desc: "Duplicate Elec job exists",
@@ -314,7 +314,7 @@ func TestMapBookingResponse(t *testing.T) {
 			expected: &contract.CreateBookingResponse{
 				Success: false,
 			},
-			expectedError: fmt.Errorf("invalid request [invalid site]"),
+			expectedError: fmt.Errorf("invalid request [site]"),
 		},
 		{
 			desc: "Post Code is missing or invalid",
@@ -325,7 +325,7 @@ func TestMapBookingResponse(t *testing.T) {
 			expected: &contract.CreateBookingResponse{
 				Success: false,
 			},
-			expectedError: fmt.Errorf("invalid request [invalid postcode]"),
+			expectedError: fmt.Errorf("invalid request [postcode]"),
 		},
 	}
 
