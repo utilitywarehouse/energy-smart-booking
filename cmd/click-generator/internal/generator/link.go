@@ -64,7 +64,7 @@ func (p *LinkProvider) GenerateAuthenticated(ctx context.Context, accountNo stri
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("failed to generate click url: %w", err)
+		return "", fmt.Errorf("failed to generate authenticated click url: %w", err)
 	}
 
 	return clickLink.GetUrl(), nil
@@ -88,7 +88,7 @@ func (p *LinkProvider) GenerateGenericLink(ctx context.Context, accountNo string
 		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("failed to generate click url: %w", err)
+		return "", fmt.Errorf("failed to generate generic click url: %w", err)
 	}
 
 	return clickLink.GetUrl(), nil
