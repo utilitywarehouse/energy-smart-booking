@@ -9,6 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
+	utilities "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/utils"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/genproto/googleapis/type/date"
@@ -80,7 +81,7 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 		details := ev.GetDetails()
 		contactDetails := details.GetContactDetails()
 		slot := details.GetSlot()
-		dateTime, err := dateIntoTime(slot.GetDate())
+		dateTime, err := utilities.DateIntoTime(slot.GetDate())
 		if err != nil {
 			return err
 		}
@@ -110,7 +111,7 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 		})
 	case *bookingv1.BookingRescheduledEvent:
 		bookingID := ev.GetBookingId()
-		dt, err := dateIntoTime(ev.GetSlot().GetDate())
+		dt, err := utilities.DateIntoTime(ev.GetSlot().GetDate())
 		if err != nil {
 			return err
 		}
