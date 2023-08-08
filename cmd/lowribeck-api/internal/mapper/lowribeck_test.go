@@ -115,9 +115,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 				ResponseCode:    "EA01",
 				ResponseMessage: "No available slots for requested postcode",
 			},
-			expected: &contract.GetAvailableSlotsResponse{
-				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_NO_AVAILABLE_SLOTS.Enum(),
-			},
+			expectedError: fmt.Errorf("no appointments found"),
 		},
 		{
 			desc: "Failed - invalid request response 1",
@@ -125,9 +123,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 				ResponseCode:    "EA02",
 				ResponseMessage: "Unable to identify postcode",
 			},
-			expected: &contract.GetAvailableSlotsResponse{
-				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST.Enum(),
-			},
+			expectedError: fmt.Errorf("invalid request [postcode]"),
 		},
 		{
 			desc: "Failed - invalid request response 2",
@@ -135,9 +131,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 				ResponseCode:    "EA03",
 				ResponseMessage: "Postcode and Reference ID mismatch",
 			},
-			expected: &contract.GetAvailableSlotsResponse{
-				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_INVALID_REQUEST.Enum(),
-			},
+			expectedError: fmt.Errorf("internal server error [Postcode and Reference ID mismatch]"),
 		},
 		{
 			desc: "Failed - generic response",
@@ -146,9 +140,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 				ResponseCode:    "EC04",
 				ResponseMessage: "Generic LB error for failed to process request",
 			},
-			expected: &contract.GetAvailableSlotsResponse{
-				ErrorCodes: contract.AvailabilityErrorCodes_AVAILABILITY_INTERNAL_ERROR.Enum(),
-			},
+			expectedError: fmt.Errorf("internal server error [Generic LB error for failed to process request]"),
 		},
 	}
 
@@ -276,9 +268,9 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseMessage: "Appointment not available",
 			},
 			expected: &contract.CreateBookingResponse{
-				Success:    false,
-				ErrorCodes: contract.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+				Success: false,
 			},
+			expectedError: fmt.Errorf("no appointments found"),
 		},
 		{
 			desc: "Invalid Appointment Time",
@@ -287,9 +279,9 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseMessage: "Invalid Appt Time",
 			},
 			expected: &contract.CreateBookingResponse{
-				Success:    false,
-				ErrorCodes: contract.BookingErrorCodes_BOOKING_INVALID_REQUEST.Enum(),
+				Success: false,
 			},
+			expectedError: fmt.Errorf("invalid request [appointment time]"),
 		},
 		{
 			desc: "Duplicate Elec job exists",
@@ -298,9 +290,9 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseMessage: "Duplicate Elec job exists",
 			},
 			expected: &contract.CreateBookingResponse{
-				Success:    false,
-				ErrorCodes: contract.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum(),
+				Success: false,
 			},
+			expectedError: fmt.Errorf("appointment already exists"),
 		},
 		{
 			desc: "No available slots for requested postcode",
@@ -309,20 +301,9 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseMessage: "No available slots for requested postcode",
 			},
 			expected: &contract.CreateBookingResponse{
-				Success:    false,
-				ErrorCodes: contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum(),
+				Success: false,
 			},
-		},
-		{
-			desc: "No available slots for requested postcode",
-			lb: &lowribeck.CreateBookingResponse{
-				ResponseCode:    "B09",
-				ResponseMessage: "No available slots for requested postcode",
-			},
-			expected: &contract.CreateBookingResponse{
-				Success:    false,
-				ErrorCodes: contract.BookingErrorCodes_BOOKING_NO_AVAILABLE_SLOTS.Enum(),
-			},
+			expectedError: fmt.Errorf("no appointments found"),
 		},
 		{
 			desc: "Site status not suitable for request",
@@ -331,9 +312,9 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseMessage: "Site status not suitable for request",
 			},
 			expected: &contract.CreateBookingResponse{
-				Success:    false,
-				ErrorCodes: contract.BookingErrorCodes_BOOKING_INVALID_SITE.Enum(),
+				Success: false,
 			},
+			expectedError: fmt.Errorf("invalid request [site]"),
 		},
 		{
 			desc: "Post Code is missing or invalid",
@@ -342,9 +323,9 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseMessage: "Post Code is missing or invalid",
 			},
 			expected: &contract.CreateBookingResponse{
-				Success:    false,
-				ErrorCodes: contract.BookingErrorCodes_BOOKING_POSTCODE_REFERENCE_MISMATCH.Enum(),
+				Success: false,
 			},
+			expectedError: fmt.Errorf("invalid request [postcode]"),
 		},
 	}
 
