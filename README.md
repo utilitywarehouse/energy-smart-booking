@@ -57,6 +57,27 @@ Generate the mocks:
 
 ## Booking Services Overview
 
+### LowriBeck API Wrapper
+Calls the third party LowriBeck API for booking smart meter installation appointments. There are two endpoints, the first is GetAvailableSlots which returns all the available slots for a postcode and the following GRPC statuses:
+| HTTP | gRPC | Description |
+| --- | --- | --- |
+| 200 | OK | No error. |
+| 400 | INVALID_ARGUMENT | Client specified an invalid argument. Check error message for more information. |
+| 404 | NOT_FOUND | No available slots for requested postcode. |
+| 500 | INTERNAL | Internal server error. Typically a server bug. |
+
+
+The second endpoint is CreateBooking which returns whether a booking was successful and the following GRPC statuses:
+| HTTP | gRPC | Description |
+| --- | --- | --- |
+| 200 | OK | No error. |
+| 400 | INVALID_ARGUMENT | Client specified an invalid argument. Check error message for more information will be either postcode, reference, site, appointment date or appointment time. |
+| 400 | OUT_OF_RANGE | Booking request sent outside agreed time parameter. |
+| 404 | NOT_FOUND | No available slots for requested postcode. |
+| 409 | ALREADY_EXISTS | Duplicate booking exists. |
+| 500 | INTERNAL | Internal server error. Typically a server bug. |
+
+
 ### opt-out
 
 TBC
