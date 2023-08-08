@@ -94,12 +94,12 @@ func (lb LowriBeck) BookingRequest(id uint32, req *contract.CreateBookingRequest
 }
 
 func (lb LowriBeck) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
-	success, err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
+	err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
 	if err != nil {
 		return nil, err
 	}
 	return &contract.CreateBookingResponse{
-		Success: success,
+		Success: true,
 	}, nil
 }
 
@@ -181,16 +181,16 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 	return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 }
 
-func mapBookingResponseCodes(responseCode, responseMessage string) (bool, error) {
+func mapBookingResponseCodes(responseCode, responseMessage string) error {
 	switch responseCode {
 	// B01 - Booking Confirmed
 	// R01 - Reschedule Confirmed
 	case "B01", "R01":
-		return true, nil
+		return nil
 	// B02 - Appointment not available
 	// R02 - Appointment not available
 	case "B02", "R02":
-		return false, ErrAppointmentNotFound
+		return ErrAppointmentNotFound
 	// B03 - Invalid Elec Job Type Code
 	// B03 - Invalid Gas Job Type Code
 	// B04 - Invalid MPAN
@@ -201,38 +201,38 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, error)
 	// R05 - Invalid MPRN
 	// We never send these fields
 	case "B03", "B04", "B05", "R03", "R04", "R05":
-		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, responseMessage)
+		return fmt.Errorf("%w [%s]", ErrInvalidRequest, responseMessage)
 	// B06 - Invalid Appt Date
 	// B06 – Invalid Date Format
 	// R06 - Invalid Appt Date
 	// R06 – Invalid Date Format
 	case "B06", "R06":
-		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidAppointmentDate)
+		return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidAppointmentDate)
 	// R07 - Invalid Appt Time
 	// B07 - Invalid Appt Time
 	case "B07", "R07":
-		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidAppointmentTime)
+		return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidAppointmentTime)
 	// B13 - Invalid Reference ID
 	// R12 - Invalid Reference ID
 	case "B13", "R12":
-		return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidReference)
+		return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidReference)
 	// B08 - Duplicate Elec job exists
 	// B08 - Duplicate Gas job exists
 	// R08 - Duplicate Elec job exists
 	// R08 - Duplicate Gas job exists
 	case "B08", "R08":
-		return false, ErrAppointmentAlreadyExists
+		return ErrAppointmentAlreadyExists
 	case "B09", "R09":
 		switch responseMessage {
 		// B09 - No available slots for requested postcode
 		// R09 - No available slots for requested postcode
 		case "No available slots for requested postcode":
-			return false, ErrAppointmentNotFound
+			return ErrAppointmentNotFound
 		// B09 - Rearranging request sent outside agreed time parameter
 		// B09 - Booking request sent outside agreed time parameter
 		case "Rearranging request sent outside agreed time parameter",
 			"Booking request sent outside agreed time parameter":
-			return false, ErrAppointmentOutOfRange
+			return ErrAppointmentOutOfRange
 		// B09 - Site status not suitable for request
 		// B09 - Not available as site is complete
 		// B09 - The site is currently on hold
@@ -242,24 +242,24 @@ func mapBookingResponseCodes(responseCode, responseMessage string) (bool, error)
 		case "Site status not suitable for request",
 			"Not available as site is complete",
 			"The site is currently on hold":
-			return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidSite)
+			return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidSite)
 		// B09 - Post Code is missing or invalid
 		// B09 - Postcode and Reference ID mismatch
 		// R09 - Post Code is missing or invalid
 		// R09 - Postcode and Reference ID mismatch
 		case "Post Code is missing or invalid",
 			"Postcode and Reference ID mismatch":
-			return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidPostcode)
+			return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidPostcode)
 		// B09 - No Jobs found for Reference ID
 		// R09 - No Jobs found for Reference ID
 		case "No Jobs found for Reference ID":
-			return false, fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidReference)
+			return fmt.Errorf("%w [%s]", ErrInvalidRequest, invalidReference)
 		}
 		// R11 – Rearranging request sent outside agreed time parameter
 	case "R11":
-		return false, ErrAppointmentOutOfRange
+		return ErrAppointmentOutOfRange
 	}
-	return false, fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
+	return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 }
 
 func mapBookingSlot(slot *contract.BookingSlot) (string, string, error) {
