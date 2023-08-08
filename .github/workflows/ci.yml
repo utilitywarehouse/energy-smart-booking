@@ -12,7 +12,9 @@ jobs:
       opt_out: ${{ steps.check_files.outputs.opt_out }}
       lowribeck_api: ${{ steps.check_files.outputs.lowribeck_api }}
       booking_api: ${{ steps.check_files.outputs.booking_api }}
+      booking_click: ${{ steps.check_files.outputs.booking_click }}
       booking_services: ${{ steps.check_files.outputs.booking_services }}
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -38,6 +40,9 @@ jobs:
             elif [[ $file == cmd/booking-api/** ]]; then
               echo "This modified file is under the 'cmd/booking-api' folder."
               echo "::set-output name=booking_api::true"
+            elif [[ $file == cmd/click-generator/** ]]; then
+              echo "This modified file is under the 'cmd/click-generator' folder."
+              echo "::set-output name=booking_click::true"
             elif [[ $file != cmd/** ]]; then
               echo "This modified file applies for all booking services"
               echo "::set-output name=booking_services::true"
@@ -78,6 +83,15 @@ jobs:
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
+    secrets: inherit
+
+  build_booking_click:
+    needs: check
+    if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_click == 'true'
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: cmd/click-generator
+      service: energy-smart-booking-click-generator
     secrets: inherit
 
   build_booking_services:

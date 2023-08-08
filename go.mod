@@ -15,6 +15,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
+	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b
 	github.com/utilitywarehouse/energy-contracts v1.83.2
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
@@ -79,7 +80,7 @@ require (
 	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
