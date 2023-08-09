@@ -7,7 +7,6 @@ import (
 
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 )
 
@@ -151,7 +150,7 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 		return ErrAppointmentNotFound
 		// EA02 - Unable to identify postcode
 	case "EA02":
-		return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidPostcode)
+		return NewInvalidRequestError(InvalidPostcode)
 	case "EA03":
 		// EA03 - Rearranging request sent outside agreed time parameter
 		// EA03 - Booking request sent outside agreed time parameter
@@ -161,7 +160,7 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 			return ErrAppointmentOutOfRange
 		// EA03 - Work Reference Invalid
 		case "Work Reference Invalid":
-			return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidReference)
+			return NewInvalidRequestError(InvalidReference)
 		}
 	}
 	return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
@@ -228,18 +227,18 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 		case "Site status not suitable for request",
 			"Not available as site is complete",
 			"The site is currently on hold":
-			return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidSite)
+			return NewInvalidRequestError(InvalidSite)
 		// B09 - Post Code is missing or invalid
 		// B09 - Postcode and Reference ID mismatch
 		// R09 - Post Code is missing or invalid
 		// R09 - Postcode and Reference ID mismatch
 		case "Post Code is missing or invalid",
 			"Postcode and Reference ID mismatch":
-			return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidPostcode)
+			return NewInvalidRequestError(InvalidPostcode)
 		// B09 - No Jobs found for Reference ID
 		// R09 - No Jobs found for Reference ID
 		case "No Jobs found for Reference ID":
-			return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidReference)
+			return NewInvalidRequestError(InvalidReference)
 		}
 		// R11 – Rearranging request sent outside agreed time parameter
 	case "R11":
