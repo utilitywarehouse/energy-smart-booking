@@ -37,7 +37,7 @@ type Booking struct {
 	Email              string    `bigquery:"email"`
 	BookingDate        time.Time `bigquery:"booking_date"`
 	BookingStartTime   int32     `bigquery:"start_time"`
-	BookingEndTime     int32     `bigquery:"end_date"`
+	BookingEndTime     int32     `bigquery:"end_time"`
 	VulnerabilityList  []string  `bigquery:"vulnerability_list"`
 	VulnerabilityOther string    `bigquery:"vulnerability_other"`
 
