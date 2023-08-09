@@ -18,7 +18,7 @@ var (
 	gitHash string
 
 	// shared flags
-	flagPostgresDSN  = "dsn"
+	flagPostgresDSN  = "postgres-dsn"
 	flagBookingTopic = "booking-topic"
 
 	application = &cli.App{
@@ -29,11 +29,6 @@ var (
 			&cli.StringFlag{
 				Name:    flagBookingTopic,
 				EnvVars: []string{"BOOKING_TOPIC"},
-			},
-			&cli.StringFlag{
-				Name:     flagPostgresDSN,
-				EnvVars:  []string{"POSTGRES_DSN"},
-				Required: true,
 			},
 		),
 	}
