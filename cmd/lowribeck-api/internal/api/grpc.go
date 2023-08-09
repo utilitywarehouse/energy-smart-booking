@@ -49,7 +49,11 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 		switch {
 		case errors.Is(err, mapper.ErrInvalidRequest):
 			if invErr, ok := err.(*mapper.InvalidRequestError); ok {
-				invReqError := createInvalidRequestError(invErr)
+				invReqError, err := createInvalidRequestError(invErr)
+				if err != nil {
+					logrus.Errorf("internal error for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
+					return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
+				}
 				return nil, invReqError
 			}
 		case errors.Is(err, mapper.ErrAppointmentNotFound):
@@ -73,7 +77,11 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 		switch {
 		case errors.Is(err, mapper.ErrInvalidRequest):
 			if invErr, ok := err.(*mapper.InvalidRequestError); ok {
-				invReqError := createInvalidRequestError(invErr)
+				invReqError, err := createInvalidRequestError(invErr)
+				if err != nil {
+					logrus.Errorf("internal error for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
+					return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
+				}
 				return nil, invReqError
 			}
 		case errors.Is(err, mapper.ErrAppointmentNotFound):
@@ -90,7 +98,7 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	return l.mapper.BookingResponse(resp)
 }
 
-func createInvalidRequestError(invErr *mapper.InvalidRequestError) error {
+func createInvalidRequestError(invErr *mapper.InvalidRequestError) (error, error) {
 	var param contract.Parameters
 	switch invErr.GetParameter() {
 	case mapper.InvalidPostcode:
@@ -106,9 +114,11 @@ func createInvalidRequestError(invErr *mapper.InvalidRequestError) error {
 	default:
 		param = contract.Parameters_PARAMETERS_UNKNOWN
 	}
-	invReqError := status.New(codes.InvalidArgument, fmt.Sprintf("error making get available slots request: %v", invErr))
-	invReqError.WithDetails(&contract.InvalidParameterResponse{
+	invReqError, err := status.New(codes.InvalidArgument, fmt.Sprintf("error making get available slots request: %v", invErr)).WithDetails(&contract.InvalidParameterResponse{
 		Parameters: param,
 	})
-	return invReqError.Err()
+	if err != nil {
+		return nil, err
+	}
+	return invReqError.Err(), nil
 }
