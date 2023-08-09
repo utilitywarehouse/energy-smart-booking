@@ -243,6 +243,8 @@ func Test_CreateBooking(t *testing.T) {
 
 	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, svcSt, brSt, bookingSt)
 
+	var emptyMsg *bookingv1.BookingCreatedEvent
+
 	type inputParams struct {
 		params domain.CreateBookingParams
 	}
@@ -474,7 +476,7 @@ func Test_CreateBooking(t *testing.T) {
 			},
 			output: outputParams{
 				event: domain.CreateBookingResponse{
-					Event: nil,
+					Event: emptyMsg,
 				},
 				err: nil,
 			},
@@ -536,6 +538,8 @@ func Test_RescheduleBooking(t *testing.T) {
 		input  inputParams
 		output outputParams
 	}
+
+	var emptyMsg *bookingv1.BookingRescheduledEvent
 
 	testCases := []testSetup{
 		{
@@ -740,7 +744,7 @@ func Test_RescheduleBooking(t *testing.T) {
 			},
 			output: outputParams{
 				event: domain.RescheduleBookingResponse{
-					Event: nil,
+					Event: emptyMsg,
 				},
 				err: nil,
 			},
