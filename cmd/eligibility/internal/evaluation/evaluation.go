@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/metrics"
 )
 
 func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
@@ -35,6 +36,8 @@ func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
 	}
 
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("full").Inc()
+
 	return nil
 }
 
@@ -49,6 +52,8 @@ func (e *Evaluator) RunCampaignability(ctx context.Context, occupancyID string) 
 	if err != nil {
 		return fmt.Errorf("failed to evaluate campaignability for occupancy %s: %w", occupancyID, err)
 	}
+
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("campaignability").Inc()
 
 	return nil
 }
@@ -65,6 +70,8 @@ func (e *Evaluator) RunSuppliability(ctx context.Context, occupancyID string) er
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
 	}
 
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("suppliability").Inc()
+
 	return nil
 }
 
@@ -79,6 +86,8 @@ func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) erro
 	if err != nil {
 		return fmt.Errorf("failed to evaluate eligibility for occupancy %s: %w", occupancyID, err)
 	}
+
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("eligibility").Inc()
 
 	return nil
 }
