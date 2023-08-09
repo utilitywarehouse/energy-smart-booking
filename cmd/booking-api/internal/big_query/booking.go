@@ -28,6 +28,7 @@ type RescheduleBooking struct {
 type Booking struct {
 	BookingID          string    `bigquery:"booking_id"`
 	AccountID          string    `bigquery:"account_id"`
+	Source             string    `bigquery:"source"`
 	Status             string    `bigquery:"status"`
 	OccupancyID        string    `bigquery:"occupancy_id"`
 	Title              string    `bigquery:"title"`
@@ -111,6 +112,7 @@ func (i *RescheduledBookingIndexer) Handle(ctx context.Context, message substrat
 			BookingID:          x.GetBookingId(),
 			AccountID:          x.GetDetails().GetAccountId(),
 			Status:             x.GetDetails().GetStatus().String(),
+			Source:             x.BookingSource.String(),
 			OccupancyID:        x.GetOccupancyId(),
 			Title:              x.GetDetails().ContactDetails.Title,
 			FirstName:          x.GetDetails().ContactDetails.FirstName,
