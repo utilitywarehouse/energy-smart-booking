@@ -45,6 +45,16 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	})
 	if err != nil {
 		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
+
+		details := status.Convert(err).Details()
+
+		for _, detail := range details {
+			switch x := detail.(type) {
+			case lowribeckv1.InvalidParameterResponse:
+				logrus.Errorf("!found details!, %s", x.GetParameters().String())
+			}
+		}
+
 		switch status.Convert(err).Code() {
 		case codes.Internal:
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternal)
@@ -107,20 +117,21 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 		},
 	})
 	if err != nil {
+		details := status.Convert(err).Details()
+
+		for _, detail := range details {
+			switch x := detail.(type) {
+			case lowribeckv1.InvalidParameterResponse:
+				logrus.Errorf("!found details!, %s", x.GetParameters().String())
+			}
+		}
+
 		switch status.Convert(err).Code() {
 		case codes.Internal:
 			return CreateBookingResponse{
 				Success: false,
 			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
 		case codes.InvalidArgument:
-			details := status.Convert(err).Details()
-
-			for _, detail := range details {
-				switch x := detail.(type) {
-				case lowribeckv1.InvalidParameterResponse:
-					logrus.Errorf("!found details!, %s", x.GetParameters().String())
-				}
-			}
 			return CreateBookingResponse{
 				Success: false,
 			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
