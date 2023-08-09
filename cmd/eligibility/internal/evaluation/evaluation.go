@@ -7,16 +7,10 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/metrics"
 )
-
-var smartBookingEvaluationCounter = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "smart_booking_evaluation_total",
-	Help: "the total number of evaluations for smart booking",
-}, []string{"criteria"})
 
 func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
 	occupancy, err := e.LoadOccupancy(ctx, occupancyID)
@@ -42,7 +36,7 @@ func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
 	}
 
-	smartBookingEvaluationCounter.WithLabelValues("full").Inc()
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("full").Inc()
 
 	return nil
 }
@@ -59,7 +53,7 @@ func (e *Evaluator) RunCampaignability(ctx context.Context, occupancyID string) 
 		return fmt.Errorf("failed to evaluate campaignability for occupancy %s: %w", occupancyID, err)
 	}
 
-	smartBookingEvaluationCounter.WithLabelValues("campaignability").Inc()
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("campaignability").Inc()
 
 	return nil
 }
@@ -76,7 +70,7 @@ func (e *Evaluator) RunSuppliability(ctx context.Context, occupancyID string) er
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
 	}
 
-	smartBookingEvaluationCounter.WithLabelValues("suppliability").Inc()
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("suppliability").Inc()
 
 	return nil
 }
@@ -93,7 +87,7 @@ func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) erro
 		return fmt.Errorf("failed to evaluate eligibility for occupancy %s: %w", occupancyID, err)
 	}
 
-	smartBookingEvaluationCounter.WithLabelValues("eligibility").Inc()
+	metrics.SmartBookingEvaluationCounter.WithLabelValues("eligibility").Inc()
 
 	return nil
 }
