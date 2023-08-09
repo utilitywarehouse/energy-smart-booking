@@ -774,11 +774,14 @@ github.com/utilitywarehouse/energy-contracts v1.40.5/go.mod h1:f5Py9Z5wck54nNoEb
 github.com/utilitywarehouse/energy-contracts v1.40.6/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/utilitywarehouse/energy-contracts v1.84.2 h1:7ONjIkT8pyryEWefTPPv+Pip4DaHxPavOwHbC0ghZ/4=
 github.com/utilitywarehouse/energy-contracts v1.84.2/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 =======
 =======
 >>>>>>> f254ac2 (rework error codes)
+=======
+>>>>>>> 3ce1239 (stash)
 <<<<<<< HEAD
 =======
 =======
@@ -787,8 +790,11 @@ github.com/utilitywarehouse/energy-contracts v1.84.2/go.mod h1:vkAe/DkAqjsGr87Ek
 github.com/utilitywarehouse/energy-contracts v1.83.2 h1:LgcQXfE4z/gfVKbdrYYhHhOwuc8z5+1pHX/hpl/56Rg=
 github.com/utilitywarehouse/energy-contracts v1.83.2/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 >>>>>>> b5b31c0 (propagate lowribeck error code)
+=======
+>>>>>>> 98e2c7d (stash)
 github.com/utilitywarehouse/energy-contracts v1.84.0 h1:nbUko+SSRET6mTdSXylJnuGpEO4LDXaFvBo9OJSUK3E=
 github.com/utilitywarehouse/energy-contracts v1.84.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+<<<<<<< HEAD
 =======
 github.com/utilitywarehouse/energy-contracts v1.83.4-0.20230804111000-fcb06f36984e h1:NKqxXee8F0PXbsjQbccaqNgyhN2Kc4meNZ9Yu8rt/As=
 github.com/utilitywarehouse/energy-contracts v1.83.4-0.20230804111000-fcb06f36984e/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
@@ -801,6 +807,8 @@ github.com/utilitywarehouse/energy-contracts v1.83.4 h1:ZZ5fSdqUeJSzDo9wzEVVHZ1b
 github.com/utilitywarehouse/energy-contracts v1.83.4/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 >>>>>>> b960e64 (rework error codes)
 >>>>>>> f254ac2 (rework error codes)
+=======
+>>>>>>> 3ce1239 (stash)
 github.com/utilitywarehouse/energy-deadletter-handler v0.0.0-20190502092759-d3b66424a4d7/go.mod h1:dkpwhHcDkdaDmBTQTIWdWWyFW0foWm4duKT1sHhr2es=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32 h1:AQf3esEkg/rPxiO97HniPIA7c+bSNz+U0v2NueFZkN0=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32/go.mod h1:2Hlz8GeCkNq5V/VXHL/SuEPieOtGpvrADHc84ukqqe8=

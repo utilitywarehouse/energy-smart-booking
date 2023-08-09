@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
@@ -15,9 +16,10 @@ import (
 )
 
 var (
-	ErrBadParameters = errors.New("bad parameters")
-	ErrNotFound      = errors.New("not found")
-	ErrInternal      = errors.New("internal error")
+	ErrBadParameters      = errors.New("bad parameters")
+	ErrNotFound           = errors.New("not found")
+	ErrInternal           = errors.New("internal error")
+	ErrUnhandledErrorCode = errors.New("error code not handled")
 )
 
 type LowriBeckGateway struct {
@@ -34,8 +36,7 @@ type AvailableSlotsResponse struct {
 }
 
 type CreateBookingResponse struct {
-	Success   bool
-	ErrorCode *bookingv1.BookingErrorCodes
+	Success bool
 }
 
 func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (AvailableSlotsResponse, error) {
@@ -44,15 +45,26 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		Reference: reference,
 	})
 	if err != nil {
+		logrus.Errorf("failed to get available slots, %w", ErrInternal, err)
 		switch status.Convert(err).Code() {
 		case codes.Internal:
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w, %w", ErrInternal, err)
+			myDetails := status.Convert(err).Details()
+
+			for _, detail := range myDetails {
+				switch t := detail.(type) {
+				case *lowribeckv1.Bla:
+				case *lowribeckv1.Ble:
+				case *lowribeckv1.Bli:
+				}
+
+			}
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternal)
 		case codes.NotFound:
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w, %w", ErrNotFound, err)
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrNotFound)
 		case codes.InvalidArgument:
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w, %w", ErrBadParameters, err)
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrBadParameters)
 		}
-		return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", err)
+		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
 
 	slots := []models.BookingSlot{}
