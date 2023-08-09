@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -16,14 +15,6 @@ const (
 	requestTimeFormat     = "02/01/2006 15:04:05"
 	appointmentDateFormat = "02/01/2006"
 	appointmentTimeFormat = "%d:00-%d:00"
-)
-
-var (
-	ErrInvalidRequest           = errors.New("invalid request")
-	ErrAppointmentNotFound      = errors.New("no appointments found")
-	ErrAppointmentOutOfRange    = errors.New("appointment out of range")
-	ErrAppointmentAlreadyExists = errors.New("appointment already exists")
-	ErrInternalError            = errors.New("internal server error")
 )
 
 type LowriBeck struct {
@@ -196,21 +187,21 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 	// R05 - Invalid MPRN
 	// We never send these fields
 	case "B03", "B04", "B05", "R03", "R04", "R05":
-		return fmt.Errorf("%w [%s]", ErrInvalidRequest, responseMessage)
+		return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 	// B06 - Invalid Appt Date
 	// B06 – Invalid Date Format
 	// R06 - Invalid Appt Date
 	// R06 – Invalid Date Format
 	case "B06", "R06":
-		return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidAppointmentDate)
+		return NewInvalidRequestError(InvalidAppointmentDate)
 	// R07 - Invalid Appt Time
 	// B07 - Invalid Appt Time
 	case "B07", "R07":
-		return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidAppointmentTime)
+		return NewInvalidRequestError(InvalidAppointmentTime)
 	// B13 - Invalid Reference ID
 	// R12 - Invalid Reference ID
 	case "B13", "R12":
-		return fmt.Errorf("%w [%s]", ErrInvalidRequest, models.InvalidReference)
+		return NewInvalidRequestError(InvalidReference)
 	// B08 - Duplicate Elec job exists
 	// B08 - Duplicate Gas job exists
 	// R08 - Duplicate Elec job exists

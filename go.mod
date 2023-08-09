@@ -16,7 +16,7 @@ require (
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b
-	github.com/utilitywarehouse/energy-contracts v1.84.0
+	github.com/utilitywarehouse/energy-contracts v1.84.2-0.20230808172834-0e6179f87835
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5

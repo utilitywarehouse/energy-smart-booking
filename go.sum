@@ -658,6 +658,10 @@ github.com/utilitywarehouse/energy-contracts v1.40.5/go.mod h1:f5Py9Z5wck54nNoEb
 github.com/utilitywarehouse/energy-contracts v1.40.6/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
 github.com/utilitywarehouse/energy-contracts v1.84.0 h1:nbUko+SSRET6mTdSXylJnuGpEO4LDXaFvBo9OJSUK3E=
 github.com/utilitywarehouse/energy-contracts v1.84.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.84.2-0.20230808172057-c3255ffe0d4d h1:UD4l1J0+6Ku6FEDlwMCiE+DVcKaSKei6mppJqpyPdqs=
+github.com/utilitywarehouse/energy-contracts v1.84.2-0.20230808172057-c3255ffe0d4d/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.84.2-0.20230808172834-0e6179f87835 h1:EDNzvhoddYssuVm/+e3kkQqFLHNUWth+fo+y3mZiYEE=
+github.com/utilitywarehouse/energy-contracts v1.84.2-0.20230808172834-0e6179f87835/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 github.com/utilitywarehouse/energy-deadletter-handler v0.0.0-20190502092759-d3b66424a4d7/go.mod h1:dkpwhHcDkdaDmBTQTIWdWWyFW0foWm4duKT1sHhr2es=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32 h1:AQf3esEkg/rPxiO97HniPIA7c+bSNz+U0v2NueFZkN0=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32/go.mod h1:2Hlz8GeCkNq5V/VXHL/SuEPieOtGpvrADHc84ukqqe8=

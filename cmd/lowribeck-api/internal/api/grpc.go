@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -47,8 +48,10 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 		logrus.Errorf("invalid available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
 		switch {
 		case errors.Is(err, mapper.ErrInvalidRequest):
-			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots request: %v", err)
-
+			if invErr, ok := err.(*mapper.InvalidRequestError); ok {
+				invReqError := createInvalidRequestError(invErr)
+				return nil, invReqError
+			}
 		case errors.Is(err, mapper.ErrAppointmentNotFound):
 			return nil, status.Errorf(codes.NotFound, "error making get available slots request: %v", err)
 		}
@@ -69,8 +72,10 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
 		switch {
 		case errors.Is(err, mapper.ErrInvalidRequest):
-			return nil, status.Errorf(codes.InvalidArgument, "error making booking request: %v", err)
-
+			if invErr, ok := err.(*mapper.InvalidRequestError); ok {
+				invReqError := createInvalidRequestError(invErr)
+				return nil, invReqError
+			}
 		case errors.Is(err, mapper.ErrAppointmentNotFound):
 			return nil, status.Errorf(codes.NotFound, "error making booking request: %v", err)
 
@@ -83,4 +88,27 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 		return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
 	}
 	return l.mapper.BookingResponse(resp)
+}
+
+func createInvalidRequestError(invErr *mapper.InvalidRequestError) error {
+	var param contract.Parameters
+	switch invErr.GetParameter() {
+	case mapper.InvalidPostcode:
+		param = contract.Parameters_PARAMETERS_POSTCODE
+	case mapper.InvalidReference:
+		param = contract.Parameters_PARAMETERS_REFERENCE
+	case mapper.InvalidSite:
+		param = contract.Parameters_PARAMETERS_SITE
+	case mapper.InvalidAppointmentDate:
+		param = contract.Parameters_PARAMETERS_APPPOINTMENT_DATE
+	case mapper.InvalidAppointmentTime:
+		param = contract.Parameters_PARAMETERS_APPPOINTMENT_TIME
+	default:
+		param = contract.Parameters_PARAMETERS_UNKNOWN
+	}
+	invReqError := status.New(codes.InvalidArgument, fmt.Sprintf("error making get available slots request: %v", invErr))
+	invReqError.WithDetails(&contract.InvalidParameterResponse{
+		Parameters: param,
+	})
+	return invReqError.Err()
 }
