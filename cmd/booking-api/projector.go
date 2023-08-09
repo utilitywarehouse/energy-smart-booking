@@ -61,6 +61,11 @@ func init() {
 				Name:    flagBatchSize,
 				EnvVars: []string{"BATCH_SIZE"},
 			},
+			&cli.StringFlag{
+				Name:     flagPostgresDSN,
+				EnvVars:  []string{"POSTGRES_DSN"},
+				Required: true,
+			},
 		),
 	})
 }
