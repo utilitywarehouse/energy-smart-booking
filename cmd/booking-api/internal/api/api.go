@@ -245,8 +245,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 	}
 
 	return &bookingv1.CreateBookingResponse{
-		BookingId:  createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
-		ErrorCodes: bookingv1.BookingErrorCodes_BOOKING_ERROR_UNSET,
+		BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
 	}, nil
 }
 
@@ -284,8 +283,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		switch err {
 		case domain.ErrLowriBeckErrorCode:
 			return &bookingv1.RescheduleBookingResponse{
-				BookingId:  "",
-				ErrorCodes: rescheduleBookingResponse.ErrorCode,
+				BookingId: "",
 			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
@@ -298,8 +296,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 	}
 
 	return &bookingv1.RescheduleBookingResponse{
-		BookingId:  rescheduleBookingResponse.Event.(*bookingv1.BookingRescheduledEvent).BookingId,
-		ErrorCodes: nil,
+		BookingId: rescheduleBookingResponse.Event.(*bookingv1.BookingRescheduledEvent).BookingId,
 	}, nil
 }
 

@@ -9,7 +9,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -195,8 +194,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 	}, nil)
 
 	actual := gateway.CreateBookingResponse{
-		Success:   true,
-		ErrorCode: nil,
+		Success: true,
 	}
 
 // 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
@@ -260,13 +258,11 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			Phone:     "555-0777",
 		},
 	}).Return(&lowribeckv1.CreateBookingResponse{
-		Success:    false,
-		ErrorCodes: *lowribeckv1.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum(),
+		Success: false,
 	}, nil)
 
 	actual := gateway.CreateBookingResponse{
-		Success:   false,
-		ErrorCode: bookingv1.BookingErrorCodes_BOOKING_DUPLICATE_JOB_EXISTS.Enum(),
+		Success: false,
 	}
 
 // 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{

@@ -45,13 +45,11 @@ type GetAvailableSlotsResponse struct {
 }
 
 type CreateBookingResponse struct {
-	Event     proto.Message
-	ErrorCode *bookingv1.BookingErrorCodes
+	Event proto.Message
 }
 
 type RescheduleBookingResponse struct {
-	Event     proto.Message
-	ErrorCode *bookingv1.BookingErrorCodes
+	Event proto.Message
 }
 
 func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailableSlotsParams) (GetAvailableSlotsResponse, error) {
@@ -98,13 +96,6 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, bookingReference, params.Slot, params.ContactDetails, lbVulnerabilities, params.VulnerabilityDetails.Other)
 	if err != nil {
 		return CreateBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
-	}
-
-	if response.ErrorCode != nil {
-		return CreateBookingResponse{
-			Event:     nil,
-			ErrorCode: response.ErrorCode,
-		}, ErrLowriBeckErrorCode
 	}
 
 	if response.Success {
@@ -156,8 +147,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 	}
 
 	return CreateBookingResponse{
-		Event:     event,
-		ErrorCode: nil,
+		Event: event,
 	}, nil
 }
 
@@ -182,13 +172,6 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		return RescheduleBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
 	}
 
-	if response.ErrorCode != nil {
-		return RescheduleBookingResponse{
-			Event:     nil,
-			ErrorCode: response.ErrorCode,
-		}, ErrLowriBeckErrorCode
-	}
-
 	if response.Success {
 		event = &bookingv1.BookingRescheduledEvent{
 			BookingId: params.BookingID,
@@ -206,8 +189,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 	}
 
 	return RescheduleBookingResponse{
-		Event:     event,
-		ErrorCode: nil,
+		Event: event,
 	}, nil
 }
 

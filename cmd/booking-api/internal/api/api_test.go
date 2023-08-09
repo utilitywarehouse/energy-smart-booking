@@ -634,7 +634,6 @@ func Test_CreateBooking(t *testing.T) {
 						OccupancyId:   "occupancy-id-1",
 						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 					},
-					ErrorCode: nil,
 				}, nil)
 
 				publisher.EXPECT().Sink(ctx, &bookingv1.BookingCreatedEvent{
@@ -689,8 +688,7 @@ func Test_CreateBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: &bookingv1.CreateBookingResponse{
-					BookingId:  "booking-id-1",
-					ErrorCodes: bookingv1.BookingErrorCodes_BOOKING_ERROR_UNSET,
+					BookingId: "booking-id-1",
 				},
 				err: nil,
 			},
@@ -789,7 +787,6 @@ func Test_RescheduleBooking(t *testing.T) {
 							EndTime:   20,
 						},
 					},
-					ErrorCode: nil,
 				}, nil)
 
 				publisher.EXPECT().Sink(ctx, &bookingv1.BookingRescheduledEvent{
@@ -809,8 +806,7 @@ func Test_RescheduleBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: &bookingv1.RescheduleBookingResponse{
-					BookingId:  "booking-id-1",
-					ErrorCodes: nil,
+					BookingId: "booking-id-1",
 				},
 				err: nil,
 			},

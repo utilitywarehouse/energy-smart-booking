@@ -336,8 +336,7 @@ func Test_CreateBooking(t *testing.T) {
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 				}, "").Return(gateway.CreateBookingResponse{
-					Success:   true,
-					ErrorCode: nil,
+					Success: true,
 				}, nil)
 
 			},
@@ -391,7 +390,6 @@ func Test_CreateBooking(t *testing.T) {
 							Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 						},
 					},
-					ErrorCode: nil,
 				},
 				err: nil,
 			},
@@ -470,15 +468,13 @@ func Test_CreateBooking(t *testing.T) {
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 				}, "").Return(gateway.CreateBookingResponse{
-					Success:   false,
-					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+					Success: false,
 				}, nil)
 
 			},
 			output: outputParams{
 				event: domain.CreateBookingResponse{
-					Event:     nil,
-					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+					Event: nil,
 				},
 				err: nil,
 			},
@@ -629,8 +625,7 @@ func Test_RescheduleBooking(t *testing.T) {
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 				}, "Bad Knee").Return(gateway.CreateBookingResponse{
-					Success:   true,
-					ErrorCode: nil,
+					Success: true,
 				}, nil)
 
 			},
@@ -648,7 +643,6 @@ func Test_RescheduleBooking(t *testing.T) {
 							EndTime:   15,
 						},
 					},
-					ErrorCode: nil,
 				},
 				err: nil,
 			},
@@ -740,15 +734,13 @@ func Test_RescheduleBooking(t *testing.T) {
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 				}, "Bad Knee").Return(gateway.CreateBookingResponse{
-					Success:   false,
-					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+					Success: false,
 				}, nil)
 
 			},
 			output: outputParams{
 				event: domain.RescheduleBookingResponse{
-					Event:     nil,
-					ErrorCode: bookingv1.BookingErrorCodes_BOOKING_APPOINTMENT_UNAVAILABLE.Enum(),
+					Event: nil,
 				},
 				err: nil,
 			},

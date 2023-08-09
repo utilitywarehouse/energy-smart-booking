@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
@@ -45,23 +44,23 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		Reference: reference,
 	})
 	if err != nil {
-		logrus.Errorf("failed to get available slots, %w", ErrInternal, err)
+		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
 		switch status.Convert(err).Code() {
 		case codes.Internal:
-			myDetails := status.Convert(err).Details()
-
-			for _, detail := range myDetails {
-				switch t := detail.(type) {
-				case *lowribeckv1.Bla:
-				case *lowribeckv1.Ble:
-				case *lowribeckv1.Bli:
-				}
-
-			}
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternal)
 		case codes.NotFound:
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrNotFound)
 		case codes.InvalidArgument:
+
+			details := status.Convert(err).Details()
+
+			for _, detail := range details {
+				switch x := detail.(type) {
+				case lowribeckv1.InvalidParameterResponse:
+					logrus.Errorf("!found details!, %s", x.GetParameters().String())
+				}
+			}
+
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrBadParameters)
 		}
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
@@ -83,7 +82,6 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 }
 
 func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (CreateBookingResponse, error) {
-	var errorCode *bookingv1.BookingErrorCodes = nil
 
 	bookingResponse, err := g.client.CreateBooking(g.mai.ToCtx(ctx), &lowribeckv1.CreateBookingRequest{
 		Postcode:  postcode,
@@ -111,24 +109,29 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 	if err != nil {
 		switch status.Convert(err).Code() {
 		case codes.Internal:
-			//return nil, fmt.Errorf("failed to find service for mpxn: [%s], %w", mpxn, ErrServiceNotFound)
+			return CreateBookingResponse{
+				Success: false,
+			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
+		case codes.InvalidArgument:
+			details := status.Convert(err).Details()
+
+			for _, detail := range details {
+				switch x := detail.(type) {
+				case lowribeckv1.InvalidParameterResponse:
+					logrus.Errorf("!found details!, %s", x.GetParameters().String())
+				}
+			}
+			return CreateBookingResponse{
+				Success: false,
+			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
 		default:
-			// return nil, fmt.Errorf("failed to find service for mpxn: [%s] with code: %s", mpxn, status.Convert(err).Code().String())
+			return CreateBookingResponse{
+				Success: false,
+			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
 		}
-		return CreateBookingResponse{}, fmt.Errorf("failed to get available slots, %w", err)
-	}
-
-	if bookingResponse.ErrorCodes != lowribeckv1.BookingErrorCodes_BOOKING_ERROR_UNSET {
-		eCode := models.BookingLowriBeckErrorCodeToBookingErrorCode(bookingResponse.ErrorCodes)
-		if err != nil {
-			return CreateBookingResponse{}, err
-		}
-
-		errorCode = &eCode
 	}
 
 	return CreateBookingResponse{
-		Success:   bookingResponse.Success,
-		ErrorCode: errorCode,
+		Success: bookingResponse.Success,
 	}, nil
 }
