@@ -60,6 +60,10 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 	ON CONFLICT (booking_id)
 	DO NOTHING;
 	`
+	vulnerabilitiesList := booking.VulnerabilityDetails.Vulnerabilities
+	if vulnerabilitiesList == nil {
+		vulnerabilitiesList = models.Vulnerabilities{}
+	}
 	s.batch.Queue(q,
 		booking.BookingID,
 		booking.AccountID,
@@ -73,7 +77,7 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 		booking.Slot.Date,
 		booking.Slot.StartTime,
 		booking.Slot.EndTime,
-		booking.VulnerabilityDetails.Vulnerabilities,
+		vulnerabilitiesList,
 		booking.VulnerabilityDetails.Other)
 }
 
