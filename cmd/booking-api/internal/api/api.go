@@ -148,7 +148,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 		case errors.Is(err, gateway.ErrInvalidArgument):
 			return &bookingv1.GetAvailableSlotsResponse{
 				Slots: nil,
-			}, status.Errorf(codes.InvalidArgument, "failed to get available slots, %s", err)
+			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
 
 		case errors.Is(err, gateway.ErrInternalBadParameters):
 			return &bookingv1.GetAvailableSlotsResponse{
@@ -164,6 +164,16 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 			return &bookingv1.GetAvailableSlotsResponse{
 				Slots: nil,
 			}, status.Errorf(codes.NotFound, "failed to get available slots, %s", err)
+
+		case errors.Is(err, gateway.ErrInvalidAppointmentDate):
+			return &bookingv1.GetAvailableSlotsResponse{
+				Slots: nil,
+			}, status.Errorf(codes.InvalidArgument, "failed to get available slots, %s", err)
+
+		case errors.Is(err, gateway.ErrInvalidAppointmentTime):
+			return &bookingv1.GetAvailableSlotsResponse{
+				Slots: nil,
+			}, status.Errorf(codes.InvalidArgument, "failed to get available slots, %s", err)
 
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
@@ -264,6 +274,17 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 			return &bookingv1.CreateBookingResponse{
 				BookingId: "",
 			}, status.Errorf(codes.AlreadyExists, "failed to create booking, %s", err)
+
+		case errors.Is(err, gateway.ErrInvalidAppointmentDate):
+			return &bookingv1.CreateBookingResponse{
+				BookingId: "",
+			}, status.Errorf(codes.InvalidArgument, "failed to create booking, %s", err)
+
+		case errors.Is(err, gateway.ErrInvalidAppointmentTime):
+			return &bookingv1.CreateBookingResponse{
+				BookingId: "",
+			}, status.Errorf(codes.InvalidArgument, "failed to create booking, %s", err)
+
 		}
 	}
 
@@ -339,6 +360,16 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 			return &bookingv1.RescheduleBookingResponse{
 				BookingId: "",
 			}, status.Errorf(codes.AlreadyExists, "failed to reschedule booking, %s", err)
+
+		case errors.Is(err, gateway.ErrInvalidAppointmentDate):
+			return &bookingv1.RescheduleBookingResponse{
+				BookingId: "",
+			}, status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", err)
+
+		case errors.Is(err, gateway.ErrInvalidAppointmentTime):
+			return &bookingv1.RescheduleBookingResponse{
+				BookingId: "",
+			}, status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", err)
 
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)

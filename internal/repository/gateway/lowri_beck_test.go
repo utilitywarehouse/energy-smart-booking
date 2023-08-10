@@ -173,7 +173,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			outputErr: gateway.ErrUnhandledErrorCode,
 		},
 		{
-			description: "get available slots receives an invalid argument status error with ",
+			description: "get available slots receives an invalid argument status error with details - postcode",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
 				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
@@ -192,6 +192,48 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 
 			},
 			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInternalBadParameters),
+		},
+		{
+			description: "get available slots receives an invalid argument status error with details - date",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus.Err())
+
+			},
+			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInvalidAppointmentDate),
+		},
+		{
+			description: "get available slots receives an invalid argument status error with details - time",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus.Err())
+
+			},
+			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInvalidAppointmentTime),
 		},
 	}
 
@@ -426,6 +468,46 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 				}, errorStatus.Err())
 			},
 			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrInternalBadParameters),
+		},
+		{
+			description: "Create booking returns an invalid argument status code and with details - date",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus.Err())
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrInvalidAppointmentDate),
+		},
+		{
+			description: "Create booking returns an invalid argument status code and with details - time",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus.Err())
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrInvalidAppointmentTime),
 		},
 	}
 

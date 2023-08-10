@@ -15,13 +15,15 @@ import (
 )
 
 var (
-	ErrInvalidArgument       = errors.New("invalid arguments")
-	ErrInternalBadParameters = errors.New("internal bad parameters")
-	ErrNotFound              = errors.New("not found")
-	ErrInternal              = errors.New("internal error")
-	ErrUnhandledErrorCode    = errors.New("error code not handled")
-	ErrAlreadyExists         = errors.New("already exists")
-	ErrOutOfRange            = errors.New("out of range")
+	ErrInvalidArgument        = errors.New("invalid arguments")
+	ErrInvalidAppointmentDate = errors.New("invalid appointment date")
+	ErrInvalidAppointmentTime = errors.New("invalid appointment time")
+	ErrInternalBadParameters  = errors.New("internal bad parameters")
+	ErrNotFound               = errors.New("not found")
+	ErrInternal               = errors.New("internal error")
+	ErrUnhandledErrorCode     = errors.New("error code not handled")
+	ErrAlreadyExists          = errors.New("already exists")
+	ErrOutOfRange             = errors.New("out of range")
 )
 
 type LowriBeckGateway struct {
@@ -64,9 +66,11 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
 
 					switch x.GetParameters() {
-					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
-						lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
-						lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE:
+						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInvalidAppointmentDate)
+					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME:
+						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInvalidAppointmentTime)
+					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
 						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
 						lowribeckv1.Parameters_PARAMETERS_SITE:
 						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternalBadParameters)
@@ -134,14 +138,24 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
 
 					switch x.GetParameters() {
-					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
-						lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
-						lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
 						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
 						lowribeckv1.Parameters_PARAMETERS_SITE:
+
 						return CreateBookingResponse{
 							Success: false,
 						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInternalBadParameters)
+					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE:
+
+						return CreateBookingResponse{
+							Success: false,
+						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInvalidAppointmentDate)
+
+					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME:
+
+						return CreateBookingResponse{
+							Success: false,
+						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInvalidAppointmentTime)
 					}
 				}
 			}
