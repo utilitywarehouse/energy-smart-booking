@@ -21,7 +21,7 @@ require (
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
-	github.com/utilitywarehouse/energy-pkg/ops v0.0.4
+	github.com/utilitywarehouse/energy-pkg/ops v0.0.6
 	github.com/utilitywarehouse/energy-pkg/postgres v0.3.5
 	github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3
 	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16
