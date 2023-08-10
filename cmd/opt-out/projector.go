@@ -13,7 +13,7 @@ import (
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
-	"github.com/utilitywarehouse/energy-pkg/substratemessage"
+	"github.com/utilitywarehouse/energy-pkg/substratemessage/v2"
 	"github.com/utilitywarehouse/energy-services/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/consumer"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"

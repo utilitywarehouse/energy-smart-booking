@@ -792,7 +792,6 @@ github.com/utilitywarehouse/energy-pkg/ops v0.0.4 h1:fs/tghT7Sa+nfyFgCCPMyzV9Jrw
 github.com/utilitywarehouse/energy-pkg/ops v0.0.4/go.mod h1:MaFkt+NCCQJJ9rFCNWFyOsXil+SNH8CtLTrnZhkf1Hc=
 github.com/utilitywarehouse/energy-pkg/postgres v0.3.5 h1:fBO7f9bKFpKrRkZVRnJsrfLcZO/IxT08vQRVOy9GVQQ=
 github.com/utilitywarehouse/energy-pkg/postgres v0.3.5/go.mod h1:2+pigd0VcosSO5oIHVH3A66RyFZY5/e8kwp5pzDHT74=
-github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3 h1:fhz60+/P4uqYAeAsh+2cUTcTETgKC9cf3AKmaRU+d2Y=
 github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3/go.mod h1:AxnZUCs4zxWluliX1hKCtwfh2LhXI43dwuKywwYoCOQ=
 github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16 h1:USDAvGertU4+NxBr0EQwMIHoMG74qzA1SgsKhjI6orI=
 github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16/go.mod h1:bw2x7AyJ01Ip7NqlMhVvtcwIQbt3S2zv+ZoijfsYCC0=
@@ -801,7 +800,6 @@ github.com/utilitywarehouse/energy-services v0.4.5/go.mod h1:yXP6NsnPmJMKxOnt1J9
 github.com/utilitywarehouse/ensek-contracts v0.0.0-20190320093256-314ecf521432/go.mod h1:Ha9ns+GT+ZXqYId21c9y1pRwiEAunqXKprfP3W5dDF4=
 github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 h1:9FhFDvYCbsKhHO4mLJbmb3dFroInvausfvYu8yZJpJE=
 github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543/go.mod h1:FY7ihaXC85xcuUAR65IDK3jGuDMJGeu/rGvDN3SGO2w=
-github.com/utilitywarehouse/go-ops-health-checks v0.0.0-20190620125157-116dc5b340a8 h1:ijDt1b+z/RFlW7WQtSmWNzc7rahgagCo30fLjv+BC9U=
 github.com/utilitywarehouse/go-ops-health-checks v0.0.0-20190620125157-116dc5b340a8/go.mod h1:wq5uuiW7XcLVrbrQkIOSQ26E+Fs0zb9n9Qzc9c3oyDU=
 github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0 h1:jYMHGD8KFS0gVW3C3OEMCTO5iU9bYC0WnFvt3qrrU+8=
 github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0/go.mod h1:a8pLW/wbp9MY7zm6367ICYlEvtpG7EsUQbAs2rngBec=

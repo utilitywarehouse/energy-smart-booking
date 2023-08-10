@@ -8,7 +8,7 @@ import (
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
-	"github.com/utilitywarehouse/energy-pkg/substratemessage"
+	"github.com/utilitywarehouse/energy-pkg/substratemessage/v2"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"

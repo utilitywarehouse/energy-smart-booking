@@ -11,7 +11,7 @@ import (
 	energy_entities "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/service/v1"
 	"github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
-	"github.com/utilitywarehouse/energy-pkg/substratemessage"
+	"github.com/utilitywarehouse/energy-pkg/substratemessage/v2"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"

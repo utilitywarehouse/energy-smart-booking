@@ -9,7 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	"github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
-	"github.com/utilitywarehouse/energy-pkg/substratemessage"
+	"github.com/utilitywarehouse/energy-pkg/substratemessage/v2"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/proto"
 )
