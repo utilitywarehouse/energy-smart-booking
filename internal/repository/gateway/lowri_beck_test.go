@@ -98,59 +98,116 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
 	mai := mock_gateways.NewMockMachineAuthInjector(ctrl)
 
-	mai.EXPECT().ToCtx(ctx).Return(ctx)
-
 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
 
-	lbC.EXPECT().GetAvailableSlots(ctx, &lowribeckv1.GetAvailableSlotsRequest{
+	availableSlotsRequest := &lowribeckv1.GetAvailableSlotsRequest{
 		Postcode:  "E2 1ZZ",
 		Reference: "booking-reference-1",
-	}).Return(&lowribeckv1.GetAvailableSlotsResponse{
-		Slots: []*lowribeckv1.BookingSlot{
-			{
-				Date: &date.Date{
-					Year:  2000,
-					Month: 5,
-					Day:   5,
-				},
-				StartTime: 10,
-				EndTime:   15,
+	}
+
+	type testCases struct {
+		description string
+		setup       func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector)
+		outputErr   error
+	}
+
+	tcs := []testCases{
+		{
+			description: "get available slots receives an internal status error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.Internal, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
 			},
-			{
-				Date: &date.Date{
-					Year:  2001,
-					Month: 5,
-					Day:   5,
-				},
-				StartTime: 14,
-				EndTime:   19,
-			},
+			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInternal),
 		},
-	}, nil)
+		{
+			description: "get available slots receives a not found error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-	actual := gateway.AvailableSlotsResponse{
-		BookingSlots: []models.BookingSlot{
-			{
-				Date:      mustDate(t, "2000-05-05"),
-				StartTime: 10,
-				EndTime:   15,
+				errorStatus := status.New(codes.NotFound, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
 			},
-			{
-				Date:      mustDate(t, "2001-05-05"),
-				StartTime: 14,
-				EndTime:   19,
+			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrNotFound),
+		},
+		{
+			description: "get available slots receives an invalid argument error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.InvalidArgument, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
 			},
+			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInvalidArgument),
+		},
+		{
+			description: "get available slots receives an unhandled error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.Unauthenticated, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
+			},
+			outputErr: gateway.ErrUnhandledErrorCode,
+		},
+		{
+			description: "get available slots receives an invalid argument status error with ",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus.Err())
+
+			},
+			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInternalBadParameters),
 		},
 	}
 
-	expected, err := myGw.GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1")
-	if err != nil {
-		t.Fatal(err)
+	for _, tc := range tcs {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(lbC, mai)
+
+			_, err := myGw.GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1")
+
+			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
+				t.Fatal(diff)
+			}
+		})
 	}
 
-	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
-		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
-	}
 }
 
 // TODO - Seperate PR
@@ -319,7 +376,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "Create booking returns out of range status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.AlreadyExists, "oops").Err()
+				errorStatus := status.New(codes.OutOfRange, "oops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -330,21 +387,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrOutOfRange),
 		},
 		{
-			description: "Create booking returns out of range status code",
-			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
-
-				errorStatus := status.New(codes.AlreadyExists, "oops").Err()
-
-				mai.EXPECT().ToCtx(ctx).Return(ctx)
-
-				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
-					Success: false,
-				}, errorStatus)
-			},
-			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrOutOfRange),
-		},
-		{
-			description: "Create booking returns out of range status code",
+			description: "Create booking returns not found status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
 				errorStatus := status.New(codes.NotFound, "oops").Err()
@@ -356,6 +399,40 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 				}, errorStatus)
 			},
 			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrNotFound),
+		},
+		{
+			description: "Create booking returns an unhandled status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.Unimplemented, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: gateway.ErrUnhandledErrorCode,
+		},
+		{
+			description: "Create booking returns an invalid argument status code and with details",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus.Err())
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrInternalBadParameters),
 		},
 	}
 

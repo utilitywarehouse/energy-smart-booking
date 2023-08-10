@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -13,10 +12,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/proto"
-)
-
-var (
-	ErrLowriBeckErrorCode = errors.New("lowribeck returned an error code")
 )
 
 type GetAvailableSlotsParams struct {
