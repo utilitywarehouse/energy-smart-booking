@@ -19,6 +19,7 @@ jobs:
       DOCKER_PASSWORD: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
       SERVICE: ${{ inputs.service }}
       SOURCE_FILES: ${{ inputs.source_files }}
+      DEV_SUFFIX: ${{ inputs.subpackage }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -39,5 +40,10 @@ jobs:
 
       - run: make test SOURCE_FILES=$SOURCE_FILES
 
-      - name: Docker Build
+      - name: Docker Build Master
+        if: github.ref == 'refs/head/master'
         run: make ci-docker-build SOURCE_FILES=$SOURCE_FILES SERVICE=$SERVICE
+
+      - name: Docker Build Branch
+        if: github.ref != 'refs/head/master'
+        run: make ci-docker-build-branch SOURCE_FILES=$SOURCE_FILES SERVICE=$SERVICE

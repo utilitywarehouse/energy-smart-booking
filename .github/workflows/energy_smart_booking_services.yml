@@ -9,6 +9,7 @@ jobs:
     with:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
+      subpackage: "opt-out"
     secrets: inherit
 
   eligibility:
@@ -16,6 +17,7 @@ jobs:
     with:
       source_files: cmd/eligibility
       service: energy-smart-booking-eligibility
+      subpackage: "eligibility"
     secrets: inherit
 
   lowribeck-api:
@@ -23,6 +25,7 @@ jobs:
       with:
         source_files: cmd/lowribeck-api
         service: energy-smart-booking-lowribeck-api
+      subpackage: "lowribeck-api"
       secrets: inherit
 
   booking-api:
@@ -30,4 +33,5 @@ jobs:
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
+      subpackage: "api"
     secrets: inherit
