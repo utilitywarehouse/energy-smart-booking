@@ -49,6 +49,10 @@ build: $(SERVICE)
 test:
 	cd $(SOURCE_FILES) && GO111MODULE=on $(BUILDENV) go test $(TESTFLAGS) ./...
 
+.PHONY: test-all
+test-all:
+	GO111MODULE=on $(BUILDENV) go test $(TESTFLAGS) ./...
+
 .PHONY: all
 all: SOURCE_FILES=${SOURCE_FILES} clean $(LINTER) lint test build
 
