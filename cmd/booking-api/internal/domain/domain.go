@@ -5,6 +5,7 @@ import (
 
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 )
 
 type AccountGateway interface {
@@ -24,8 +25,8 @@ type SiteStore interface {
 }
 
 type LowriBeckGateway interface {
-	GetAvailableSlots(ctx context.Context, postcode, reference string) ([]models.BookingSlot, error)
-	CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (bool, error)
+	GetAvailableSlots(ctx context.Context, postcode, reference string) (gateway.AvailableSlotsResponse, error)
+	CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (gateway.CreateBookingResponse, error)
 }
 
 type ServiceStore interface {
