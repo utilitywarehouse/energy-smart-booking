@@ -14,41 +14,46 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
-	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230629114247-0a38c25eb354
+	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230804082711-dd3b2cdcc24d
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b
-	github.com/utilitywarehouse/energy-contracts v1.84.0
+	github.com/utilitywarehouse/energy-contracts v1.84.2
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
-	github.com/utilitywarehouse/energy-pkg/ops v0.0.4
+	github.com/utilitywarehouse/energy-pkg/ops v0.0.5
 	github.com/utilitywarehouse/energy-pkg/postgres v0.3.5
 	github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3
 	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16
 	github.com/utilitywarehouse/energy-services v0.4.5
 	github.com/utilitywarehouse/go-ops-health-checks v0.0.0-20190620125157-116dc5b340a8
 	github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0
-	github.com/utilitywarehouse/uwos-go/v1/iam v1.20.0
-	github.com/uw-labs/substrate v0.0.0-20230324124119-dbc62c85ad0b
+	github.com/utilitywarehouse/uwos-go/v1/iam v1.20.2
+	github.com/uw-labs/substrate v0.0.0-20220414133007-f8a269c291fb
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
 	golang.org/x/sync v0.3.0
 	google.golang.org/api v0.126.0
+	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130
 	google.golang.org/grpc v1.57.0
 	google.golang.org/protobuf v1.31.0
 )
 
 require (
+	cloud.google.com/go/compute v1.20.1 // indirect
+	cloud.google.com/go/iam v1.1.0 // indirect
 	github.com/alvaroloes/enumer v1.1.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pascaldekloe/name v1.0.1 // indirect
+	github.com/utilitywarehouse/iam-contracts v0.0.0-20230802063806-798f6e78cde7 // indirect
+	github.com/uw-labs/proximo v0.0.0-20220414061427-df1336fd551c // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230726155614-23370e0ffb3e // indirect
 )
 
 require (
 	cloud.google.com/go v0.110.4 // indirect
-	cloud.google.com/go/compute v1.22.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
-	cloud.google.com/go/iam v1.1.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Shopify/sarama v1.38.1 // indirect
@@ -73,7 +78,7 @@ require (
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
-	github.com/envoyproxy/go-control-plane v0.11.1 // indirect
+	github.com/envoyproxy/go-control-plane v0.11.1-0.20230524094728-9239064ad72f // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.2 // indirect
 	github.com/franela/goreq v0.0.0-20171204163338-bcd34c9993f8 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
@@ -131,14 +136,12 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/testcontainers/testcontainers-go v0.21.0
-	github.com/utilitywarehouse/energy-pkg/domain v1.24.8
+	github.com/utilitywarehouse/energy-pkg/domain v1.22.5
 	github.com/utilitywarehouse/energy-pkg/errorcodes v1.0.3 // indirect
 	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 // indirect
-	github.com/utilitywarehouse/iam-contracts v0.0.0-20230714173512-bc8b9cf7c9d2 // indirect
 	github.com/utilitywarehouse/protoc-gen-uwentity v1.5.0 // indirect
 	github.com/utilitywarehouse/uwos-go/v1/runtime v1.3.1 // indirect
-	github.com/utilitywarehouse/uwos-go/v1/time v1.1.1 // indirect
-	github.com/uw-labs/proximo v0.0.0-20230125153035-a4cf3926a211 // indirect
+	github.com/utilitywarehouse/uwos-go/v1/time v1.1.2 // indirect
 	github.com/uw-labs/sync v0.0.0-20220413223303-ecb5d1fd966e // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
@@ -157,8 +160,5 @@ require (
 	golang.org/x/tools v0.11.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20230726155614-23370e0ffb3e
-	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20230726155614-23370e0ffb3e // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
