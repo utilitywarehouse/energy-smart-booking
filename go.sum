@@ -788,8 +788,8 @@ github.com/utilitywarehouse/energy-pkg/grpc v0.1.5 h1:KlGZ4cGr4WR8BqAwqYyENiTMal
 github.com/utilitywarehouse/energy-pkg/grpc v0.1.5/go.mod h1:7tVVEpDYjCUj6DbJY/v0RqRiCTfnXHtvH3CB6rRNr1Y=
 github.com/utilitywarehouse/energy-pkg/metrics v1.0.2 h1:GyKCtu4nCPjqnOPlDd2F5QdaM4dgOTplfBXoHKV5SII=
 github.com/utilitywarehouse/energy-pkg/metrics v1.0.2/go.mod h1:RkYQJV4WSH1PSejF/YxGXp5B6z7jKCnLpLclIWQkGeA=
-github.com/utilitywarehouse/energy-pkg/ops v0.0.5 h1:FNe6ckxhyFE6FDc01hSILTsadBFUW3CJixzrry4FiiQ=
-github.com/utilitywarehouse/energy-pkg/ops v0.0.5/go.mod h1:MaFkt+NCCQJJ9rFCNWFyOsXil+SNH8CtLTrnZhkf1Hc=
+github.com/utilitywarehouse/energy-pkg/ops v0.0.4 h1:fs/tghT7Sa+nfyFgCCPMyzV9JrwSe46pF2VfgdAQ6JA=
+github.com/utilitywarehouse/energy-pkg/ops v0.0.4/go.mod h1:MaFkt+NCCQJJ9rFCNWFyOsXil+SNH8CtLTrnZhkf1Hc=
 github.com/utilitywarehouse/energy-pkg/postgres v0.3.5 h1:fBO7f9bKFpKrRkZVRnJsrfLcZO/IxT08vQRVOy9GVQQ=
 github.com/utilitywarehouse/energy-pkg/postgres v0.3.5/go.mod h1:2+pigd0VcosSO5oIHVH3A66RyFZY5/e8kwp5pzDHT74=
 github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3 h1:fhz60+/P4uqYAeAsh+2cUTcTETgKC9cf3AKmaRU+d2Y=
