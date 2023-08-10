@@ -61,7 +61,7 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 	DO NOTHING;
 	`
 	vulnerabilitiesList := booking.VulnerabilityDetails.Vulnerabilities
-	if vulnerabilitiesList == nil {
+	if vulnerabilitiesList.IsEmpty() {
 		vulnerabilitiesList = models.Vulnerabilities{}
 	}
 	s.batch.Queue(q,

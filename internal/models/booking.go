@@ -21,6 +21,10 @@ func DateFromString(value string) (time.Time, error) {
 
 type Vulnerabilities []bookingv1.Vulnerability
 
+func (v *Vulnerabilities) IsEmpty() bool {
+	return v == nil || len(*v) == 0
+}
+
 type VulnerabilityDetails struct {
 	Vulnerabilities Vulnerabilities
 	Other           string
