@@ -3,6 +3,7 @@ package gateway_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	mock_gateways "github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway/mocks"
 	"google.golang.org/genproto/googleapis/type/date"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -229,11 +232,21 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 // 	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
 // 	mai := mock_gateways.NewMockMachineAuthInjector(ctrl)
 
+<<<<<<< HEAD
 // 	mai.EXPECT().ToCtx(ctx).Return(ctx)
 
 // 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+=======
+	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+>>>>>>> eb238c9 (wip)
 
-	lbC.EXPECT().CreateBooking(ctx, &lowribeckv1.CreateBookingRequest{
+	type testCases struct {
+		description string
+		setup       func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector)
+		outputErr   error
+	}
+
+	lbcreatebookingRequest := &lowribeckv1.CreateBookingRequest{
 		Postcode:  "E2 1ZZ",
 		Reference: "booking-reference-1",
 		Slot: &lowribeckv1.BookingSlot{
@@ -257,14 +270,100 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			LastName:  "Doe",
 			Phone:     "555-0777",
 		},
-	}).Return(&lowribeckv1.CreateBookingResponse{
-		Success: false,
-	}, nil)
+	}
+
+	tcs := []testCases{
+		{
+			description: "Create booking returns internal error status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.Internal, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrInternal),
+		},
+		{
+			description: "Create booking returns invalid argument status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.InvalidArgument, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrInvalidArgument),
+		},
+		{
+			description: "Create booking returns already exists status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.AlreadyExists, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrAlreadyExists),
+		},
+		{
+			description: "Create booking returns out of range status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.AlreadyExists, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrOutOfRange),
+		},
+		{
+			description: "Create booking returns out of range status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.AlreadyExists, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrOutOfRange),
+		},
+		{
+			description: "Create booking returns out of range status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.NotFound, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().CreateBooking(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: fmt.Errorf("failed to call lowribeck create booking, %w", gateway.ErrNotFound),
+		},
+	}
 
 	actual := gateway.CreateBookingResponse{
 		Success: false,
 	}
 
+<<<<<<< HEAD
 // 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 // 		Date:      mustDate(t, "2020-12-20"),
 // 		StartTime: 15,
@@ -278,15 +377,43 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 // 	}, []lowribeckv1.Vulnerability{
 // 		lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 // 	}, "Bad Knee")
+=======
+	for _, tc := range tcs {
+		t.Run(tc.description, func(t *testing.T) {
+			tc.setup(lbC, mai)
+>>>>>>> eb238c9 (wip)
 
-	if err != nil {
-		t.Fatal(err)
-	}
+			expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+				Date:      mustDate(t, "2020-12-20"),
+				StartTime: 15,
+				EndTime:   19,
+			}, models.AccountDetails{
+				Title:     "Mr",
+				FirstName: "John",
+				LastName:  "Doe",
+				Email:     "jdoe@example.com",
+				Mobile:    "555-0777",
+			}, []lowribeckv1.Vulnerability{
+				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+			}, "Bad Knee")
 
+<<<<<<< HEAD
 // 	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
 // 		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
 // 	}
 // }
+=======
+			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
+				t.Fatal(diff)
+			}
+
+			if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
+				t.Fatalf("expected: %+v, actual: %+v", expected, actual)
+			}
+		})
+	}
+}
+>>>>>>> eb238c9 (wip)
 
 func mustDate(t *testing.T, value string) time.Time {
 	t.Helper()

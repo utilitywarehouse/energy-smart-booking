@@ -15,10 +15,13 @@ import (
 )
 
 var (
-	ErrBadParameters      = errors.New("bad parameters")
-	ErrNotFound           = errors.New("not found")
-	ErrInternal           = errors.New("internal error")
-	ErrUnhandledErrorCode = errors.New("error code not handled")
+	ErrInvalidArgument       = errors.New("invalid arguments")
+	ErrInternalBadParameters = errors.New("internal bad parameters")
+	ErrNotFound              = errors.New("not found")
+	ErrInternal              = errors.New("internal error")
+	ErrUnhandledErrorCode    = errors.New("error code not handled")
+	ErrAlreadyExists         = errors.New("already exists")
+	ErrOutOfRange            = errors.New("out of range")
 )
 
 type LowriBeckGateway struct {
@@ -46,15 +49,6 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	if err != nil {
 		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
 
-		details := status.Convert(err).Details()
-
-		for _, detail := range details {
-			switch x := detail.(type) {
-			case lowribeckv1.InvalidParameterResponse:
-				logrus.Errorf("!found details!, %s", x.GetParameters().String())
-			}
-		}
-
 		switch status.Convert(err).Code() {
 		case codes.Internal:
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternal)
@@ -67,11 +61,20 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 			for _, detail := range details {
 				switch x := detail.(type) {
 				case lowribeckv1.InvalidParameterResponse:
-					logrus.Errorf("!found details!, %s", x.GetParameters().String())
+					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+
+					switch x.GetParameters() {
+					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
+						lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
+						lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
+						lowribeckv1.Parameters_PARAMETERS_SITE:
+						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternalBadParameters)
+					}
 				}
 			}
 
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrBadParameters)
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInvalidArgument)
 		}
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
@@ -128,17 +131,37 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 
 		switch status.Convert(err).Code() {
 		case codes.Internal:
-			return CreateBookingResponse{
-				Success: false,
-			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
+			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInternal)
 		case codes.InvalidArgument:
-			return CreateBookingResponse{
-				Success: false,
-			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
+
+			details := status.Convert(err).Details()
+
+			for _, detail := range details {
+				switch x := detail.(type) {
+				case lowribeckv1.InvalidParameterResponse:
+					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+
+					switch x.GetParameters() {
+					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
+						lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
+						lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
+						lowribeckv1.Parameters_PARAMETERS_SITE:
+						return CreateBookingResponse{
+							Success: false,
+						}, fmt.Errorf("failed to get available slots, %w", ErrInternalBadParameters)
+					}
+				}
+			}
+			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInvalidArgument)
+		case codes.AlreadyExists:
+			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrAlreadyExists)
+		case codes.OutOfRange:
+			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrOutOfRange)
+		case codes.NotFound:
+			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrNotFound)
 		default:
-			return CreateBookingResponse{
-				Success: false,
-			}, fmt.Errorf("failed to call lowribeck create booking, %w", err)
+			return CreateBookingResponse{Success: false}, ErrUnhandledErrorCode
 		}
 	}
 
