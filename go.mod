@@ -22,7 +22,7 @@ require (
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
 	github.com/utilitywarehouse/energy-pkg/ops v0.0.5
-	github.com/utilitywarehouse/energy-pkg/postgres v0.3.2
+	github.com/utilitywarehouse/energy-pkg/postgres v0.3.5
 	github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3
 	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16
 	github.com/utilitywarehouse/energy-services v0.4.5
@@ -49,7 +49,6 @@ require (
 	github.com/uw-labs/proximo v0.0.0-20220414061427-df1336fd551c // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230726155614-23370e0ffb3e // indirect
-	gotest.tools/v3 v3.5.0 // indirect
 )
 
 require (
@@ -68,7 +67,7 @@ require (
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
 	github.com/cncf/udpa/go v0.0.0-20220112060539-c52dc94e7fbe // indirect
 	github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4 // indirect
-	github.com/containerd/containerd v1.7.0-beta.0 // indirect
+	github.com/containerd/containerd v1.7.2 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

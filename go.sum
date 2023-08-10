@@ -50,7 +50,7 @@ cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RX
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 cloud.google.com/go/storage v1.30.1 h1:uOdMxAs8HExqBlnLtnQyP0YkvbiDpdGShGKtx6U/oNM=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
-github.com/AdaLogics/go-fuzz-headers v0.0.0-20221007124625-37f5449ff7df h1:kDJd/7926nFt3yQeX/o3D/LMoJmlmYKe5AdC3uDGOm4=
+github.com/AdaLogics/go-fuzz-headers v0.0.0-20230106234847-43070de90fa1 h1:EKPd1INOIyr5hWOWhvpmQpY6tKjeG0hT1s3AMC/9fic=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 h1:L/gRVlceqvL25UVaW/CKtUDjefjrs0SPonmDGUVOYP0=
 github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
@@ -61,7 +61,7 @@ github.com/DataDog/zstd v1.4.1/go.mod h1:1jcaCB/ufaK+sKp1NBhlGmpz41jOoPQ35bpF36t
 github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c h1:RGWPOewvKIROun94nF7v2cua9qP+thov/7M50KEoeSU=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
 github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5+sAH+4kjUM=
-github.com/Microsoft/hcsshim v0.10.0-rc.1 h1:Lms8jwpaIdIUvoBNee8ZuvIi1XnNy9uvnxSC9L1q1x4=
+github.com/Microsoft/hcsshim v0.10.0-rc.8 h1:YSZVvlIIDD1UxQpJp0h+dnpLUw+TrY0cx8obKsp3bek=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
 github.com/Shopify/sarama v1.22.1/go.mod h1:FRzlvRpMFO/639zY1SDxUxkqH97Y0ndM5CbGj6oG3As=
@@ -143,8 +143,8 @@ github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4 h1:/inchEIKaYC1Akx+H+g
 github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4/go.mod h1:eXthEFrGJvWHgFFCl3hGmgk+/aYT6PnTQLykKQRLhEs=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd/go.mod h1:sE/e/2PUdi/liOCUjSTXgM1o87ZssimdTWN964YiIeI=
-github.com/containerd/containerd v1.7.0-beta.0 h1:TmelrlMneeWvAbqqTB9XQ3yCc3voPrBT/k80D8kj5dw=
-github.com/containerd/containerd v1.7.0-beta.0/go.mod h1:d+x3kmR4hnXSGTCbLRpBFnP5lOEjqm7dLwZ4UCz01WI=
+github.com/containerd/containerd v1.7.2 h1:UF2gdONnxO8I6byZXDi5sXWiWvlW3D/sci7dTQimEJo=
+github.com/containerd/containerd v1.7.2/go.mod h1:afcz74+K10M/+cjGHIVQrCt3RAQhUSCAjJ9iMYhhkuI=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-etcd v2.0.0+incompatible/go.mod h1:Jez6KQU2B/sWsbdaef3ED8NzMklzPG4d5KIOhIy30Tk=
 github.com/coreos/go-semver v0.2.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=
@@ -790,8 +790,8 @@ github.com/utilitywarehouse/energy-pkg/metrics v1.0.2 h1:GyKCtu4nCPjqnOPlDd2F5Qd
 github.com/utilitywarehouse/energy-pkg/metrics v1.0.2/go.mod h1:RkYQJV4WSH1PSejF/YxGXp5B6z7jKCnLpLclIWQkGeA=
 github.com/utilitywarehouse/energy-pkg/ops v0.0.5 h1:FNe6ckxhyFE6FDc01hSILTsadBFUW3CJixzrry4FiiQ=
 github.com/utilitywarehouse/energy-pkg/ops v0.0.5/go.mod h1:MaFkt+NCCQJJ9rFCNWFyOsXil+SNH8CtLTrnZhkf1Hc=
-github.com/utilitywarehouse/energy-pkg/postgres v0.3.2 h1:LZLH2u0T94/ftXETafai574roZbOKnXO/E/xFRQ8G3c=
-github.com/utilitywarehouse/energy-pkg/postgres v0.3.2/go.mod h1:o+Alju4wC4FuojCj+K4ItUMS5zaleOM5Dc73snBq6vs=
+github.com/utilitywarehouse/energy-pkg/postgres v0.3.5 h1:fBO7f9bKFpKrRkZVRnJsrfLcZO/IxT08vQRVOy9GVQQ=
+github.com/utilitywarehouse/energy-pkg/postgres v0.3.5/go.mod h1:2+pigd0VcosSO5oIHVH3A66RyFZY5/e8kwp5pzDHT74=
 github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3 h1:fhz60+/P4uqYAeAsh+2cUTcTETgKC9cf3AKmaRU+d2Y=
 github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3/go.mod h1:AxnZUCs4zxWluliX1hKCtwfh2LhXI43dwuKywwYoCOQ=
 github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16 h1:USDAvGertU4+NxBr0EQwMIHoMG74qzA1SgsKhjI6orI=
@@ -1385,7 +1385,6 @@ gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b/go.mod h1:K4uyk7z7BCEPqu6E+C
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gotest.tools/v3 v3.5.0 h1:Ljk6PdHdOhAb5aDMWXjDLMMhph+BpztA4v1QdqEW2eY=
-gotest.tools/v3 v3.5.0/go.mod h1:isy3WKz7GK6uNw/sbHzfKBLvlvXwUyV06n6brMxxopU=
 honnef.co/go/tools v0.0.0-20180728063816-88497007e858/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
