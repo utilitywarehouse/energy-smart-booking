@@ -210,20 +210,19 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 
 }
 
-// TODO - Seperate PR
-// func Test_GetCreateBooking(t *testing.T) {
-// 	ctrl := gomock.NewController(t)
+func Test_GetCreateBooking(t *testing.T) {
+	ctrl := gomock.NewController(t)
 
-// 	ctx := context.Background()
+	ctx := context.Background()
 
-// 	defer ctrl.Finish()
+	defer ctrl.Finish()
 
-// 	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
-// 	mai := mock_gateways.NewMockMachineAuthInjector(ctrl)
+	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
+	mai := mock_gateways.NewMockMachineAuthInjector(ctrl)
 
-// 	mai.EXPECT().ToCtx(ctx).Return(ctx)
+	mai.EXPECT().ToCtx(ctx).Return(ctx)
 
-// 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+	myGw := gateway.NewLowriBeckGateway(mai, lbC)
 
 	lbC.EXPECT().CreateBooking(ctx, &lowribeckv1.CreateBookingRequest{
 		Postcode:  "E2 1ZZ",
@@ -257,45 +256,39 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 		Success: true,
 	}
 
-// 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
-// 		Date:      mustDate(t, "2020-12-20"),
-// 		StartTime: 15,
-// 		EndTime:   19,
-// 	}, models.AccountDetails{
-// 		Title:     "Mr",
-// 		FirstName: "John",
-// 		LastName:  "Doe",
-// 		Email:     "jdoe@example.com",
-// 		Mobile:    "555-0777",
-// 	}, []lowribeckv1.Vulnerability{
-// 		lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-// 	}, "Bad Knee")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
+	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+		Date:      mustDate(t, "2020-12-20"),
+		StartTime: 15,
+		EndTime:   19,
+	}, models.AccountDetails{
+		Title:     "Mr",
+		FirstName: "John",
+		LastName:  "Doe",
+		Email:     "jdoe@example.com",
+		Mobile:    "555-0777",
+	}, []lowribeckv1.Vulnerability{
+		lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+	}, "Bad Knee")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-// 	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
-// 		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
-// 	}
-// }
+	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
+		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
+	}
+}
 
-// func Test_GetCreateBooking_HasErrors(t *testing.T) {
-// 	ctrl := gomock.NewController(t)
+func Test_GetCreateBooking_HasErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
 
-// 	ctx := context.Background()
+	ctx := context.Background()
 
-// 	defer ctrl.Finish()
+	defer ctrl.Finish()
 
-// 	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
-// 	mai := mock_gateways.NewMockMachineAuthInjector(ctrl)
+	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
+	mai := mock_gateways.NewMockMachineAuthInjector(ctrl)
 
-<<<<<<< HEAD
-// 	mai.EXPECT().ToCtx(ctx).Return(ctx)
-
-// 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
-=======
 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
->>>>>>> eb238c9 (wip)
 
 	type testCases struct {
 		description string
@@ -440,25 +433,9 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 		Success: false,
 	}
 
-<<<<<<< HEAD
-// 	expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
-// 		Date:      mustDate(t, "2020-12-20"),
-// 		StartTime: 15,
-// 		EndTime:   19,
-// 	}, models.AccountDetails{
-// 		Title:     "Mr",
-// 		FirstName: "John",
-// 		LastName:  "Doe",
-// 		Email:     "jdoe@example.com",
-// 		Mobile:    "555-0777",
-// 	}, []lowribeckv1.Vulnerability{
-// 		lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-// 	}, "Bad Knee")
-=======
 	for _, tc := range tcs {
 		t.Run(tc.description, func(t *testing.T) {
 			tc.setup(lbC, mai)
->>>>>>> eb238c9 (wip)
 
 			expected, err := myGw.CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 				Date:      mustDate(t, "2020-12-20"),
@@ -474,12 +451,6 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 			}, "Bad Knee")
 
-<<<<<<< HEAD
-// 	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
-// 		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
-// 	}
-// }
-=======
 			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
 				t.Fatal(diff)
 			}
@@ -490,7 +461,6 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 		})
 	}
 }
->>>>>>> eb238c9 (wip)
 
 func mustDate(t *testing.T, value string) time.Time {
 	t.Helper()
