@@ -75,7 +75,7 @@ func init() {
 func serverAction(c *cli.Context) error {
 	log.WithField("git_hash", gitHash).WithField("command", commandNameServer).Info("starting app")
 
-	opsServer := makeOps(c)
+	opsServer := makeOps(c, commandNameServer)
 
 	mn, err := machine.New()
 	if err != nil {

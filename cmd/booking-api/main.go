@@ -34,11 +34,11 @@ var (
 	}
 )
 
-func makeOps(c *cli.Context) *ops.Server {
+func makeOps(c *cli.Context, cmdName string) *ops.Server {
 	return ops.Default().
 		WithPort(c.Int(app.OpsPort)).
 		WithHash(gitHash).
-		WithDetails(appName, appDesc)
+		WithDetails(appName+cmdName, appDesc)
 }
 
 func main() {

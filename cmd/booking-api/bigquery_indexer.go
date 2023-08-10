@@ -74,7 +74,7 @@ func runBigQueryIndexerAction(c *cli.Context) error {
 	opsServer := ops.Default().
 		WithPort(c.Int(app.OpsPort)).
 		WithHash(gitHash).
-		WithDetails(appName, appDesc)
+		WithDetails(appName+commandNameBigQueryIndexer, appDesc)
 
 	g, ctx := errgroup.WithContext(ctx)
 

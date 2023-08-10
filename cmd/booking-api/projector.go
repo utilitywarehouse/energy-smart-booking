@@ -130,7 +130,7 @@ func projectorAction(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
-	opsServer := makeOps(c)
+	opsServer := makeOps(c, commandNameProjector)
 	sources, err := makeSources(
 		c,
 		opsServer,
