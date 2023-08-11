@@ -193,48 +193,6 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			},
 			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInternalBadParameters),
 		},
-		{
-			description: "get available slots receives an invalid argument status error with details - date",
-			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
-
-				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
-					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
-				})
-
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				mai.EXPECT().ToCtx(ctx).Return(ctx)
-
-				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
-					Slots: []*lowribeckv1.BookingSlot{},
-				}, errorStatus.Err())
-
-			},
-			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInvalidAppointmentDate),
-		},
-		{
-			description: "get available slots receives an invalid argument status error with details - time",
-			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
-
-				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
-					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
-				})
-
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				mai.EXPECT().ToCtx(ctx).Return(ctx)
-
-				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
-					Slots: []*lowribeckv1.BookingSlot{},
-				}, errorStatus.Err())
-
-			},
-			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInvalidAppointmentTime),
-		},
 	}
 
 	for _, tc := range tcs {

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,6 +13,10 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/proto"
+)
+
+var (
+	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
 )
 
 type GetAvailableSlotsParams struct {
@@ -69,6 +74,12 @@ func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailabl
 		if currentSlotTime.After(fromAsTime) && currentSlotTime.Before(toAsTime) {
 			targetedSlots = append(targetedSlots, elem)
 		}
+	}
+
+	if len(targetedSlots) == 0 {
+		return GetAvailableSlotsResponse{
+			Slots: targetedSlots,
+		}, ErrNoAvailableSlotsForProvidedDates
 	}
 
 	return GetAvailableSlotsResponse{

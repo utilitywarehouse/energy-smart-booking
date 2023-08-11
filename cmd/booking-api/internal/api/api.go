@@ -165,15 +165,10 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 				Slots: nil,
 			}, status.Errorf(codes.NotFound, "failed to get available slots, %s", err)
 
-		case errors.Is(err, gateway.ErrInvalidAppointmentDate):
+		case errors.Is(err, domain.ErrNoAvailableSlotsForProvidedDates):
 			return &bookingv1.GetAvailableSlotsResponse{
 				Slots: nil,
-			}, status.Errorf(codes.InvalidArgument, "failed to get available slots, %s", err)
-
-		case errors.Is(err, gateway.ErrInvalidAppointmentTime):
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.InvalidArgument, "failed to get available slots, %s", err)
+			}, status.Errorf(codes.NotFound, "failed to get available slots, %s", err)
 
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
