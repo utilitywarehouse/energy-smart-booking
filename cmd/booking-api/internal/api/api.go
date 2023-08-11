@@ -168,10 +168,12 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 		case errors.Is(err, domain.ErrNoAvailableSlotsForProvidedDates):
 			return &bookingv1.GetAvailableSlotsResponse{
 				Slots: nil,
-			}, status.Errorf(codes.NotFound, "failed to get available slots, %s", err)
+			}, status.Errorf(codes.OutOfRange, "failed to get available slots, %s", err)
 
 		default:
-			return nil, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
+			return &bookingv1.GetAvailableSlotsResponse{
+				Slots: nil,
+			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
 		}
 	}
 
@@ -280,6 +282,11 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 				BookingId: "",
 			}, status.Errorf(codes.InvalidArgument, "failed to create booking, %s", err)
 
+		default:
+			return &bookingv1.CreateBookingResponse{
+				BookingId: "",
+			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
+
 		}
 	}
 
@@ -367,7 +374,9 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 			}, status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", err)
 
 		default:
-			return nil, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
+			return &bookingv1.RescheduleBookingResponse{
+				BookingId: "",
+			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
 		}
 	}
 

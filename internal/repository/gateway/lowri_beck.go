@@ -67,8 +67,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 
 					switch x.GetParameters() {
 					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
-						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
-						lowribeckv1.Parameters_PARAMETERS_SITE:
+						lowribeckv1.Parameters_PARAMETERS_REFERENCE:
 						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternalBadParameters)
 					}
 				}

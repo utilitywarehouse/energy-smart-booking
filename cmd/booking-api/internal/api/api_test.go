@@ -4,6 +4,7 @@ package api_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -13,12 +14,17 @@ import (
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"google.golang.org/genproto/googleapis/type/date"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api/mocks"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 )
+
+var oops = errors.New("oops...")
 
 func Test_GetCustomerContactDetails(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -481,6 +487,276 @@ func Test_GetAvailableSlot(t *testing.T) {
 				},
 			},
 		},
+		{
+			description: "available slots returns a gateway.ErrInvalidArgument error",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				}
+
+				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				}, gateway.ErrInvalidArgument)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetAvailableSlotsResponse{
+					Slots: nil,
+				},
+				err: status.Errorf(codes.Internal, "failed to get available slots, %s", gateway.ErrInvalidArgument.Error()),
+			},
+		},
+		{
+			description: "available slots returns a gateway.ErrInternalBadParameters error",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				}
+
+				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				}, gateway.ErrInternalBadParameters)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetAvailableSlotsResponse{
+					Slots: nil,
+				},
+				err: status.Errorf(codes.Internal, "failed to get available slots, %s", gateway.ErrInternalBadParameters.Error()),
+			},
+		},
+		{
+			description: "call to available slots returns an internal error",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				}
+
+				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				}, gateway.ErrInternal)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetAvailableSlotsResponse{
+					Slots: nil,
+				},
+				err: status.Errorf(codes.Internal, "failed to get available slots, %s", gateway.ErrInternal.Error()),
+			},
+		},
+		{
+			description: "available slots returns a gateway.ErrNotFound error",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				}
+
+				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				}, gateway.ErrNotFound)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetAvailableSlotsResponse{
+					Slots: nil,
+				},
+				err: status.Errorf(codes.NotFound, "failed to get available slots, %s", gateway.ErrNotFound.Error()),
+			},
+		},
+		{
+			description: "available slots call returns a domain.ErrNoAvailableSlotsForProvidedDates",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				}
+
+				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				}, domain.ErrNoAvailableSlotsForProvidedDates)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetAvailableSlotsResponse{
+					Slots: nil,
+				},
+				err: status.Errorf(codes.OutOfRange, "failed to get available slots, %s", domain.ErrNoAvailableSlotsForProvidedDates.Error()),
+			},
+		},
+		{
+			description: "available slots call returns a generic error",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				}
+
+				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				}, oops)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetAvailableSlotsResponse{
+					Slots: nil,
+				},
+				err: status.Errorf(codes.Internal, "failed to get available slots, %s", oops),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -489,8 +765,10 @@ func Test_GetAvailableSlot(t *testing.T) {
 			tc.setup(ctx, bookingDomain, bookingPublisher)
 
 			expected, err := myAPIHandler.GetAvailableSlots(ctx, tc.input.req)
-			if err != nil {
-				t.Fatal(err)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
 			}
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetAvailableSlotsResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
@@ -693,6 +971,656 @@ func Test_CreateBooking(t *testing.T) {
 				err: nil,
 			},
 		},
+		{
+			description: "create booking call returns a gateway.ErrInvalidArgument",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrInvalidArgument)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to create booking, %s", gateway.ErrInvalidArgument.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrInternalBadParameters",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrInternalBadParameters)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to create booking, %s", gateway.ErrInternalBadParameters.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrInternal",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrInternal)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to create booking, %s", gateway.ErrInternal.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrNotFound",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrNotFound)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.NotFound, "failed to create booking, %s", gateway.ErrNotFound.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrOutOfRange",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrOutOfRange)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.OutOfRange, "failed to create booking, %s", gateway.ErrOutOfRange.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrAlreadyExists",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrAlreadyExists)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.AlreadyExists, "failed to create booking, %s", gateway.ErrAlreadyExists.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrAlreadyExists",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrAlreadyExists)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.AlreadyExists, "failed to create booking, %s", gateway.ErrAlreadyExists.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrInvalidAppointmentDate",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrInvalidAppointmentDate)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.InvalidArgument, "failed to create booking, %s", gateway.ErrInvalidAppointmentDate.Error()),
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrInvalidAppointmentTime",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, gateway.ErrInvalidAppointmentTime)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.InvalidArgument, "failed to create booking, %s", gateway.ErrInvalidAppointmentTime.Error()),
+			},
+		},
+		{
+			description: "create booking call returns an error",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.CreateBookingParams{
+					AccountID: "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, oops)
+
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to create booking, %s", oops.Error()),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -701,8 +1629,10 @@ func Test_CreateBooking(t *testing.T) {
 			tc.setup(ctx, bookingDomain, bookingPublisher)
 
 			expected, err := myAPIHandler.CreateBooking(ctx, tc.input.req)
-			if err != nil {
-				t.Fatal(err)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
 			}
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.CreateBookingResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
@@ -743,7 +1673,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should get the account details by account id",
+			description: "should reschedule a booking",
 			input: inputParams{
 				req: &bookingv1.RescheduleBookingRequest{
 					AccountId: "account-id-1",
@@ -811,6 +1741,375 @@ func Test_RescheduleBooking(t *testing.T) {
 				err: nil,
 			},
 		},
+		{
+			description: "reschedule booking call returns a gateway.ErrInvalidArgument",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInvalidArgument)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to reschedule booking, %s", gateway.ErrInvalidArgument.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns a gateway.ErrInternalBadParameters",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInternalBadParameters)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to reschedule booking, %s", gateway.ErrInternalBadParameters.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns a gateway.ErrInternal",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInternal)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to reschedule booking, %s", gateway.ErrInternal.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns a gateway.ErrNotFound",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrNotFound)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.NotFound, "failed to reschedule booking, %s", gateway.ErrNotFound.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns a gateway.ErrOutOfRange",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrOutOfRange)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.OutOfRange, "failed to reschedule booking, %s", gateway.ErrOutOfRange.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns a gateway.ErrAlreadyExists",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrAlreadyExists)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.AlreadyExists, "failed to reschedule booking, %s", gateway.ErrAlreadyExists.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns a gateway.ErrInvalidAppointmentDate",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInvalidAppointmentDate)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", gateway.ErrInvalidAppointmentDate.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns a gateway.ErrInvalidAppointmentTime",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInvalidAppointmentTime)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", gateway.ErrInvalidAppointmentTime.Error()),
+			},
+		},
+		{
+			description: "reschedule booking call returns an error",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.January, 12, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, oops)
+
+			},
+			output: outputParams{
+				res: &bookingv1.RescheduleBookingResponse{
+					BookingId: "",
+				},
+				err: status.Errorf(codes.Internal, "failed to reschedule booking, %s", oops.Error()),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -819,8 +2118,10 @@ func Test_RescheduleBooking(t *testing.T) {
 			tc.setup(ctx, bookingDomain, bookingPublisher)
 
 			expected, err := myAPIHandler.RescheduleBooking(ctx, tc.input.req)
-			if err != nil {
-				t.Fatal(err)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
 			}
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.RescheduleBookingResponse{})); diff != "" {
