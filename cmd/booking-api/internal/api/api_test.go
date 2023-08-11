@@ -713,6 +713,51 @@ func Test_GetAvailableSlot(t *testing.T) {
 			},
 		},
 		{
+			description: "available slots call returns a gateway.ErrOutOfRange",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				params := domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				}
+
+				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				}, gateway.ErrOutOfRange)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetAvailableSlotsResponse{
+					Slots: nil,
+				},
+				err: status.Errorf(codes.OutOfRange, "failed to get available slots, %s", gateway.ErrOutOfRange.Error()),
+			},
+		},
+		{
 			description: "available slots call returns a generic error",
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsRequest{

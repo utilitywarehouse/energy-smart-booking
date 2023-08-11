@@ -56,6 +56,8 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternal)
 		case codes.NotFound:
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrNotFound)
+		case codes.OutOfRange:
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrOutOfRange)
 		case codes.InvalidArgument:
 
 			details := status.Convert(err).Details()

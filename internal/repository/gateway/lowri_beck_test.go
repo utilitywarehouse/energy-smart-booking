@@ -193,6 +193,21 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			},
 			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrInternalBadParameters),
 		},
+		{
+			description: "get available slots receives an out of range error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
+
+				errorStatus := status.New(codes.OutOfRange, "oops").Err()
+
+				mai.EXPECT().ToCtx(ctx).Return(ctx)
+
+				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
+			},
+			outputErr: fmt.Errorf("failed to get available slots, %w", gateway.ErrOutOfRange),
+		},
 	}
 
 	for _, tc := range tcs {
