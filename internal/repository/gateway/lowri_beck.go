@@ -56,6 +56,8 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternal)
 		case codes.NotFound:
 			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrNotFound)
+		case codes.OutOfRange:
+			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrOutOfRange)
 		case codes.InvalidArgument:
 
 			details := status.Convert(err).Details()
@@ -66,13 +68,8 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
 
 					switch x.GetParameters() {
-					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE:
-						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInvalidAppointmentDate)
-					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME:
-						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInvalidAppointmentTime)
 					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
-						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
-						lowribeckv1.Parameters_PARAMETERS_SITE:
+						lowribeckv1.Parameters_PARAMETERS_REFERENCE:
 						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternalBadParameters)
 					}
 				}

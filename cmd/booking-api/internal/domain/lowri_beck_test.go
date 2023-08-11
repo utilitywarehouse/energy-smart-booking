@@ -136,6 +136,73 @@ func Test_GetAvailableSlots(t *testing.T) {
 			},
 		},
 		{
+			description: "should return an error because no dates available for provided date",
+			input: inputParams{
+				params: domain.GetAvailableSlotsParams{
+					AccountID: "account-id-1",
+					From: &date.Date{
+						Year:  2020,
+						Month: 12,
+						Day:   1,
+					},
+					To: &date.Date{
+						Year:  2020,
+						Month: 12,
+						Day:   30,
+					},
+				},
+			},
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
+				sSt *mocks.MockSiteStore, svcSt *mocks.MockServiceStore, bookRefStore *mocks.MockBookingReferenceStore, lbGw *mocks.MockLowriBeckGateway) {
+
+				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return(
+					[]models.Occupancy{
+						{
+							OccupancyID: "occupancy-id-1",
+							SiteID:      "site-id-1",
+							AccountID:   "account-id-1",
+							CreatedAt:   time.Now(),
+						},
+					}, nil)
+
+				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
+
+				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
+					SiteID:   "site-id-1",
+					Postcode: "E2 1ZZ",
+				}, nil)
+
+				svcSt.EXPECT().GetReferenceByOccupancyID(ctx, "occupancy-id-1").Return("booking-reference-1", nil)
+
+				lbGw.EXPECT().GetAvailableSlots(ctx, "E2 1ZZ", "booking-reference-1").Return(gateway.AvailableSlotsResponse{
+					BookingSlots: []models.BookingSlot{
+						{
+							Date:      mustDate(t, "2023-12-05"),
+							StartTime: 9,
+							EndTime:   12,
+						},
+						{
+							Date:      mustDate(t, "2023-11-05"),
+							StartTime: 17,
+							EndTime:   19,
+						},
+						{
+							Date:      mustDate(t, "2023-12-10"),
+							StartTime: 11,
+							EndTime:   15,
+						},
+					},
+				}, nil)
+
+			},
+			output: outputParams{
+				output: domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				},
+				err: domain.ErrNoAvailableSlotsForProvidedDates,
+			},
+		},
+		{
 			description: "should return err ErrNoOccupanciesFound",
 			input: inputParams{
 				params: domain.GetAvailableSlotsParams{
