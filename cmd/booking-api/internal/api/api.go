@@ -248,7 +248,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 		case errors.Is(err, gateway.ErrInvalidArgument):
 			return &bookingv1.CreateBookingResponse{
 				BookingId: "",
-			}, status.Errorf(codes.InvalidArgument, "failed to create booking, %s", err)
+			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
 
 		case errors.Is(err, gateway.ErrInternalBadParameters):
 			return &bookingv1.CreateBookingResponse{
@@ -334,7 +334,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		case errors.Is(err, gateway.ErrInvalidArgument):
 			return &bookingv1.RescheduleBookingResponse{
 				BookingId: "",
-			}, status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", err)
+			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
 
 		case errors.Is(err, gateway.ErrInternalBadParameters):
 			return &bookingv1.RescheduleBookingResponse{
