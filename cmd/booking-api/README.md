@@ -1,5 +1,30 @@
+# Booking API projector
+
+The Booking API projector is the component that relies on consuming from different topics and recreating the state of the entities inherent to the topic. Currently the Booking API projector projects these entities:
+
+ - Booking (source: booking topic)
+ - Booking References ( source: booking reference topic from one of the components that reads a lowribeck file and transforms it into booking references )
+ - Occupancies ( source: energy-platform )
+ - Service State ( source: energy-platform )
+ - Site (source: energy-platform )
+
+# Booking Big Query Indexer
+
+The booking big query indexer consumes events from the booking topic and indexes them in big query. Depending on the nature of the event it will populate to its corresponding table.
 
 # Booking API server
+
+The booking API server is the component that is responsible to establish the communication with its Frontend counterpart to fulfill the smart-booking journey. The booking API server is responsible to retrieve user's information, user's bookings, user's address
+and relay the communication for booking requests to lowribeck and interpret the response.
+
+The API is composed by various requests:
+ - Get Customer Contact Details
+ - Get Customer Site Address
+ - Get Customer Bookings
+ - Get Available Slots
+ - Create Booking
+ - Reschedule Booking
+
 The Booking API gRPC server can return different types of error codes. These error codes are also supplied with an error message to give more context to the nature of the error.
 The nature of these errors can be:
 
@@ -12,6 +37,7 @@ The nature of these errors can be:
 	 - The Lowri-Beck wrapper error means that something has failed when doing a request to Lowri-Beck, there are different types of errors: bad parameter supplied, internal error, duplication error, not existent error.
 
 The Booking API gRPC must handle these errors to the client applications in a way that all the inherent logic is abstracted and these applications know how to handle failures. (Retry with different parameters, Impossibility to continue, Try Again Later)
+
 
 ## Get Customer Contact Details
 The Get Customer Contact Details will return the supplied account ID's contact details:
