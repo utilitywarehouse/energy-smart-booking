@@ -19,7 +19,7 @@ type AltHanStore interface {
 }
 
 type OccupancyAltHanStore interface {
-	GetIDsByAccount(ctx context.Context, accountID string) ([]string, error)
+	GetIDsByMPXN(ctx context.Context, mpxn string) ([]string, error)
 }
 
 type SuppliableEvaluator interface {
@@ -59,10 +59,10 @@ func HandleAltHan(store AltHanStore, occupancyStore OccupancyAltHanStore, evalua
 			}
 
 			if !stateRebuild {
-				accountID := inner.(altHanIdentifier).GetAccountId()
-				occupanciesIDs, err := occupancyStore.GetIDsByAccount(ctx, accountID)
+				mpxn := inner.(altHanIdentifier).GetEntityIdentifier()
+				occupanciesIDs, err := occupancyStore.GetIDsByMPXN(ctx, mpxn)
 				if err != nil {
-					return fmt.Errorf("failed to get occupancies for msg %s, account ID %s: %w", env.GetUuid(), accountID, err)
+					return fmt.Errorf("failed to get occupancies for alt han msg %s, mpxn %s: %w", env.GetUuid(), mpxn, err)
 				}
 				for _, occupancyID := range occupanciesIDs {
 					err = evaluator.RunSuppliability(ctx, occupancyID)
@@ -77,5 +77,5 @@ func HandleAltHan(store AltHanStore, occupancyStore OccupancyAltHanStore, evalua
 }
 
 type altHanIdentifier interface {
-	GetAccountId() string
+	GetEntityIdentifier() string
 }
