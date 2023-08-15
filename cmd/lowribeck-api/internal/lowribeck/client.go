@@ -147,10 +147,6 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 		logrus.Debug("health check got an unauthorized (401) status code, check the username and password being used")
 
 		return ErrNotOKStatusCode
-	case http.StatusForbidden:
-		logrus.Debug("health check got a forbidden (403) status code")
-
-		return ErrNotOKStatusCode
 	default:
 		logrus.Debugf("health check got status code: %d", resp.StatusCode)
 

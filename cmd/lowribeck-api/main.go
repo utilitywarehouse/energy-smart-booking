@@ -97,13 +97,7 @@ func runServer(c *cli.Context) error {
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 
 	client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
-	opsServer.Add("lowribeck-api", func(cr *op.CheckResponse) {
-		if err := client.HealthCheck(ctx); err != nil {
-			cr.Unhealthy("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
-		}
-
-		cr.Healthy("LowriBeck connection is healthy")
-	})
+	opsServer.Add("lowribeck-api", lowribeckChecker(ctx, client.HealthCheck))
 
 	g.Go(func() error {
 		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
@@ -144,4 +138,14 @@ func runServer(c *cli.Context) error {
 	})
 
 	return g.Wait()
+}
+
+func lowribeckChecker(ctx context.Context, healthCheckFn func(context.Context) error) func(cr *op.CheckResponse) {
+	return func(cr *op.CheckResponse) {
+		if err := healthCheckFn(ctx); err != nil {
+			cr.Unhealthy("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
+		}
+
+		cr.Healthy("LowriBeck connection is healthy")
+	}
 }
