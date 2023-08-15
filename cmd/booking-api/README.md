@@ -78,7 +78,7 @@ This request relies on the account-platform's gRPC server to provide this inform
 
 
 
-## Error Codes & Description
+### Error Codes & Description
 |gRPC Error Code  | Description  |
 |--|--|
 | Internal | When there is an internal error it means something wrong happened during the database access or the account-platform gRPC server call. |
