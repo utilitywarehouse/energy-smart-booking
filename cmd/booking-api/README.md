@@ -38,6 +38,24 @@ The nature of these errors can be:
 
 The Booking API gRPC must handle these errors to the client applications in a way that all the inherent logic is abstracted and these applications know how to handle failures. (Retry with different parameters, Impossibility to continue, Try Again Later)
 
+## Composite Types
+
+### Booking Slot
+
+| Field | Type/Description |
+| -- | -- |
+| Date | A string containing a date in "yyyy-mm-dd" format |
+| Start Time | An int representing an hour in the day |
+| End Time | An int representing an hour in the day |
+
+### Vulnerabilities
+
+| Field | Type/Description |
+| -- | -- |
+| Vulnerabilities | A list of Vulnerability enums |
+| Other | A freeform text field |
+
+### ContactDetails
 
 ## Get Customer Contact Details
 The Get Customer Contact Details will return the supplied account ID's contact details:
