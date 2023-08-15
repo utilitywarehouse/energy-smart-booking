@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -19,6 +22,9 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func runGRPCApi(c *cli.Context) error {
@@ -59,6 +65,33 @@ func runGRPCApi(c *cli.Context) error {
 		return grpcServer.Serve(listen)
 	})
 
+	// register http gw
+	// http gateway
+	gwMux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			UseProtoNames:   true,
+			UseEnumNumbers:  true,
+			EmitUnpopulated: true,
+			Indent:          " ",
+		},
+	}))
+
+	httpServer := &http.Server{
+		Addr:              net.JoinHostPort("", c.String(httpPort)),
+		Handler:           gwMux,
+		ReadHeaderTimeout: 3 * time.Second,
+	}
+	grpcAddr := net.JoinHostPort("", c.String(grpcPort))
+
+	err = smart_booking.RegisterEligiblityAPIHandlerFromEndpoint(ctx, gwMux, grpcAddr, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
+	if err != nil {
+		return err
+	}
+
+	g.Go(func() error {
+		return httpServer.ListenAndServe()
+	})
+
 	g.Go(func() error {
 		return opsServer.Start(ctx)
 	})
@@ -68,6 +101,7 @@ func runGRPCApi(c *cli.Context) error {
 	g.Go(func() error {
 		select {
 		case <-ctx.Done():
+			httpServer.Close()
 			return ctx.Err()
 		case <-sigChan:
 			logrus.Info("cancelling context")
