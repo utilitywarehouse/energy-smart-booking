@@ -231,7 +231,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should get the account details by account id",
+			description: "should get the customer bookings",
 			input: inputParams{
 				req: &bookingv1.GetCustomerBookingsRequest{
 					AccountId: "account-id-1",
@@ -336,6 +336,25 @@ func Test_GetCustomerBookings(t *testing.T) {
 				},
 			},
 		},
+		{
+			description: "should error when getting the customer bookings",
+			input: inputParams{
+				req: &bookingv1.GetCustomerBookingsRequest{
+					AccountId: "account-id-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+
+				bkDomain.EXPECT().GetCustomerBookings(ctx, "account-id-1").Return(nil, oops)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetCustomerBookingsResponse{
+					Bookings: nil,
+				},
+				err: status.Errorf(codes.Internal, "failed to get customer bookings, %s", oops),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -344,8 +363,15 @@ func Test_GetCustomerBookings(t *testing.T) {
 			tc.setup(ctx, bookingDomain, bookingPublisher)
 
 			expected, err := myAPIHandler.GetCustomerBookings(ctx, tc.input.req)
+
 			if err != nil {
-				t.Fatal(err)
+				if tc.output.err != nil {
+					if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+						t.Fatal(diff)
+					}
+				} else {
+					t.Fatal(err)
+				}
 			}
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, addressv1.Address{}, bookingv1.BookingSlot{}, bookingv1.Booking{}, bookingv1.ContactDetails{},

@@ -115,7 +115,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 
 	bookings, err := b.bookingDomain.GetCustomerBookings(ctx, req.GetAccountId())
 	if err != nil {
-		return nil, err
+		return &bookingv1.GetCustomerBookingsResponse{Bookings: nil}, status.Errorf(codes.Internal, "failed to get customer bookings, %s", err)
 	}
 
 	return &bookingv1.GetCustomerBookingsResponse{Bookings: bookings}, nil
