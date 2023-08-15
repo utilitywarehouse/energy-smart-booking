@@ -42,6 +42,11 @@ The Booking API gRPC must handle these errors to the client applications in a wa
 ## Get Customer Contact Details
 The Get Customer Contact Details will return the supplied account ID's contact details:
 
+### Request
+| Field | Type |
+| -- | -- |
+| AccountID | String |
+
 ### Response
 | Field | Type |
 | -- | -- |
