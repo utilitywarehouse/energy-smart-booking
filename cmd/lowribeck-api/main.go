@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
@@ -142,8 +143,12 @@ func runServer(c *cli.Context) error {
 
 func lowribeckChecker(ctx context.Context, healthCheckFn func(context.Context) error) func(cr *op.CheckResponse) {
 	return func(cr *op.CheckResponse) {
-		if err := healthCheckFn(ctx); err != nil {
+		err := healthCheckFn(ctx)
+		if err != nil {
+			logrus.Debugf("health check got error: %s", err)
 			cr.Unhealthy("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
+
+			return
 		}
 
 		cr.Healthy("LowriBeck connection is healthy")

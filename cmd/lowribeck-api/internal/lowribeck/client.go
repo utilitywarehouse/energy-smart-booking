@@ -118,10 +118,12 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 
 	logrus.Debugf("requesting healthcheck")
 
+	requestUrl := c.baseURL + healthCheckURL
+
 	request, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		c.baseURL+healthCheckURL,
+		requestUrl,
 		nil,
 	)
 	if err != nil {
@@ -147,6 +149,10 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 		return nil
 	case http.StatusUnauthorized:
 		logrus.Info("health check got an unauthorized (401) status code, check the username and password being used")
+
+		return ErrNotOKStatusCode
+	case http.StatusNotFound:
+		logrus.Infof("health check failed got a not found(404) status code, the request URL is: %s", requestUrl)
 
 		return ErrNotOKStatusCode
 	default:
