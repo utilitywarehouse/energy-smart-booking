@@ -81,6 +81,12 @@ func main() {
 						EnvVars:  []string{"POSTGRES_DSN"},
 						Required: true,
 					},
+					&cli.IntFlag{
+						Name:    httpPort,
+						Usage:   "The port to listen on for API http connections",
+						EnvVars: []string{"HTTP_PORT"},
+						Value:   8091,
+					},
 				),
 				Before: app.Before,
 				Action: runGRPCApi,
