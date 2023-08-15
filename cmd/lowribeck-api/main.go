@@ -144,12 +144,13 @@ func runServer(c *cli.Context) error {
 func lowribeckChecker(ctx context.Context, healthCheckFn func(context.Context) error) func(cr *op.CheckResponse) {
 	return func(cr *op.CheckResponse) {
 		err := healthCheckFn(ctx)
-		logrus.Debugf("health check got error: %s", err)
 		if err != nil {
 			logrus.Debugf("health check got error: %s", err)
 			cr.Unhealthy("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
-		} else {
-			cr.Healthy("LowriBeck connection is healthy")
+
+			return
 		}
+
+		cr.Healthy("LowriBeck connection is healthy")
 	}
 }
