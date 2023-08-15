@@ -128,8 +128,12 @@ The Create Booking results in a call to Lowri-Beck being made and a booking bein
 ## Reschedule Booking
 The Reschedule Booking results in a call to Lowri-Beck being made and a previously created booking having its booking slot changed. The Reschedule Booking takes in the following parameters:
 
- - AccountID
- - Booking Slot that is composed by a date and a start and end time (in hours)
+### Request
+
+| Field | Type/Description |
+| -- | -- |
+| AccountID | A string containing the account ID of the user |
+| Booking Slot | [BookingSlot](#composite-types) |
  
  The response parameter will be the internal booking ID (The Booking API generated uuid during a Create Booking call) in case of success.
  
