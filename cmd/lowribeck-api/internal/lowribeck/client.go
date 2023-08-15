@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/sirupsen/logrus"
 )
 
 var (
 	ErrNotOKStatusCode = errors.New("error status code is not 200(OK)")
+	ErrTimeout         = errors.New("timeout occurred")
 )
 
 const (
@@ -131,7 +133,10 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 
 	resp, err := c.http.Do(request)
 	if err != nil {
-		return fmt.Errorf("unable to send http request: %w", err)
+		if os.IsTimeout(err) {
+			return ErrTimeout
+		}
+		return fmt.Errorf("unable to do healtcheck http request: %w", err)
 	}
 	defer resp.Body.Close()
 

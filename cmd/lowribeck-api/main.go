@@ -99,7 +99,7 @@ func runServer(c *cli.Context) error {
 	client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
 	opsServer.Add("lowribeck-api", func(cr *op.CheckResponse) {
 		if err := client.HealthCheck(ctx); err != nil {
-			cr.Unhealthy(err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
+			cr.Unhealthy("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
 		}
 
 		cr.Healthy("LowriBeck connection is healthy")
