@@ -66,7 +66,6 @@ func runGRPCApi(c *cli.Context) error {
 	})
 
 	// register http gw
-	// http gateway
 	gwMux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{
 			UseProtoNames:   true,

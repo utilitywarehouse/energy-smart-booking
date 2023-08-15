@@ -43,9 +43,6 @@ func runHTTPApi(c *cli.Context) error {
 	meterStore := store.NewMeter(pool)
 	occupancyStore := store.NewOccupancy(pool)
 	serviceStore := store.NewService(pool)
-	eligibilityStore := store.NewEligibility(pool)
-	suppliabilityStore := store.NewSuppliability(pool)
-	campaignabilityStore := store.NewCampaignability(pool)
 
 	eligibilitySink, err := app.GetKafkaSink(c, c.String(eligibilityTopic))
 	if err != nil {
@@ -75,7 +72,7 @@ func runHTTPApi(c *cli.Context) error {
 	)
 
 	router := mux.NewRouter()
-	apiHandler := api.NewHandler(eligibilityStore, campaignabilityStore, suppliabilityStore, occupancyStore, evaluator)
+	apiHandler := api.NewHandler(occupancyStore, evaluator)
 	apiHandler.Register(ctx, router)
 
 	httpServer := &http.Server{

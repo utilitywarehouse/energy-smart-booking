@@ -93,7 +93,7 @@ func main() {
 			},
 			{
 				Name:  "http-api",
-				Usage: "run a http API for clients to query eligibility of an account for smart booking",
+				Usage: "run a http API to trigger full eligibility evaluation",
 				Flags: app.DefaultFlags().WithKafkaRequired().WithCustom(
 
 					&cli.IntFlag{
