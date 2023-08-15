@@ -70,7 +70,7 @@ func runGRPCApi(c *cli.Context) error {
 	gwMux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{
 		MarshalOptions: protojson.MarshalOptions{
 			UseProtoNames:   true,
-			UseEnumNumbers:  true,
+			UseEnumNumbers:  false,
 			EmitUnpopulated: true,
 			Indent:          " ",
 		},
