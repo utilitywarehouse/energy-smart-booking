@@ -26,8 +26,8 @@ import (
 )
 
 const (
-	appName = "energy-smart-booking-opt-out"
-	appDesc = "handles energy smart booking account opt outs"
+	appName = "energy-smart-booking-lowri-beck-api"
+	appDesc = "communicates with lowri beck third party API and exposes a gRPC server"
 
 	//LowriBeck config
 	baseURL         = "base-url"
