@@ -19,6 +19,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
+	"github.com/utilitywarehouse/go-operational/op"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 )
@@ -95,6 +96,15 @@ func runServer(c *cli.Context) error {
 
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 
+	client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
+	opsServer.Add("lowribeck-api", func(cr *op.CheckResponse) {
+		if err := client.HealthCheck(ctx); err != nil {
+			cr.Unhealthy(err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
+		}
+
+		cr.Healthy("LowriBeck connection is healthy")
+	})
+
 	g.Go(func() error {
 		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
 		reflection.Register(grpcServer)
@@ -105,7 +115,6 @@ func runServer(c *cli.Context) error {
 		}
 		defer listen.Close()
 
-		client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
 		mapper := mapper.NewLowriBeckMapper(c.String(sendingSystem), c.String(receivingSystem))
 		lowribeckAPI := api.New(client, mapper)
 		contracts.RegisterLowriBeckAPIServer(grpcServer, lowribeckAPI)

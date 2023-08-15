@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,11 +12,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	ErrNotOKStatusCode = errors.New("error status code is not 200(OK)")
+)
+
 const (
 	contentHeader   = "Content-Type"
 	contentJSON     = "application/json"
 	availabilityURL = "getCalendarAvailability"
 	bookingURL      = "book"
+	healthCheckURL  = "health/get"
 )
 
 type Client struct {
@@ -104,4 +110,45 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 	logrus.Debugf("response: [%s]", string(bodyBytes))
 
 	return bodyBytes, nil
+}
+
+func (c *Client) HealthCheck(ctx context.Context) error {
+
+	logrus.Debugf("requesting healthcheck")
+
+	request, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		c.baseURL+healthCheckURL,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create new request: %w", err)
+	}
+
+	request.SetBasicAuth(c.auth.user, c.auth.password)
+	request.Header.Add(contentHeader, contentJSON)
+
+	resp, err := c.http.Do(request)
+	if err != nil {
+		return fmt.Errorf("unable to send http request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		return nil
+	case http.StatusUnauthorized:
+		logrus.Debug("health check got an unauthorized (401) status code, check the username and password being used")
+
+		return ErrNotOKStatusCode
+	case http.StatusForbidden:
+		logrus.Debug("health check got a forbidden (403) status code")
+
+		return ErrNotOKStatusCode
+	default:
+		logrus.Debugf("health check got status code: %d", resp.StatusCode)
+
+		return ErrNotOKStatusCode
+	}
 }
