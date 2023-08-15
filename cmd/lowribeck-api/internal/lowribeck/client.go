@@ -21,8 +21,8 @@ var (
 const (
 	contentHeader   = "Content-Type"
 	contentJSON     = "application/json"
-	availabilityURL = "getCalendarAvailability"
-	bookingURL      = "book"
+	availabilityURL = "appointmentManagement/getCalendarAvailability"
+	bookingURL      = "appointmentManagement/book"
 	healthCheckURL  = "health/get"
 )
 
