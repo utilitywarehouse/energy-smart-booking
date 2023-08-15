@@ -86,9 +86,11 @@ It takes in the account ID and the result should be a list of bookings.
 ## Get Available Slots
 The Get Available Slots is a call to Lowri-Beck that takes the following request parameters:
 
- - AccountID : user's account ID
- - From: A date in a yyyy-mm-dd format
- - To: A date in a yyyy-mm-dd format 
+| Field | Type/Description |
+| -- | -- |
+| AccountID | String containing user's account ID |
+| From | String containing a date in a yyyy-mm-dd format |
+| To | String containing a date in a yyyy-mm-dd format  |
 
 The response parameters will be a list of Booking Slots.
 
