@@ -107,12 +107,13 @@ More information can be found [here](https://github.com/utilitywarehouse/energy-
 ## Create Booking
 The Create Booking results in a call to Lowri-Beck being made and a booking being created. The Create Booking takes in the following parameters:
 
- - AccountID
- - Booking Slot that is composed by a date and a start and end time (in hours)
- - Vulnerabilities: a set of enumerable conditions
-	 - Other: a freetext field
- - Contact Details: the contact details of the account holder associated with the account ID
- - Platform: the platform that is creating the request, can be mobile, web, my-app. It is not relevant for lowri-beck but it is important internally to understand where the request is being made from.
+| Field | Type/Description |
+| -- | -- |
+| AccountID | String containing a user's account ID |
+| Booking Slot | [BookingSlot](#composite-types) |
+| Vulnerabilities | [Vulnerabilities](#composite-types) |
+| Contact Details | [ContactDetails](#composite-types) |
+| Platform | the platform that is creating the request, can be mobile, web, my-app. It is not relevant for lowri-beck but it is important internally to understand where the request is being made from. |
  
  The response parameter will be the internally generated booking ID (The Booking API generated uuid) in case of success.
 ### Error Codes & Description 
