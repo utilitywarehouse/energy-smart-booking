@@ -89,7 +89,7 @@ This request relies on the account-platform's gRPC server to provide this inform
 ## Get Customer Site Address
 The Get Customer Site Address will return the supplied account ID's site address for the booking they are attempting to schedule(or reschedule).
 
-## Error Codes & Description
+### Error Codes & Description
 |gRPC Error Code  | Description  |
 |--|--|
 | Internal | When there is an internal error it means something wrong happened during the database access or the gRPC eligibility server call. |
