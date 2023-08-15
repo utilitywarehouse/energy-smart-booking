@@ -81,13 +81,19 @@ func main() {
 						EnvVars:  []string{"POSTGRES_DSN"},
 						Required: true,
 					},
+					&cli.IntFlag{
+						Name:    httpPort,
+						Usage:   "The port to listen on for API http connections",
+						EnvVars: []string{"HTTP_PORT"},
+						Value:   8091,
+					},
 				),
 				Before: app.Before,
 				Action: runGRPCApi,
 			},
 			{
 				Name:  "http-api",
-				Usage: "run a http API for clients to query eligibility of an account for smart booking",
+				Usage: "run a http API to trigger full eligibility evaluation",
 				Flags: app.DefaultFlags().WithKafkaRequired().WithCustom(
 
 					&cli.IntFlag{
