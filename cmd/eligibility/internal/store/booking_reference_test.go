@@ -30,6 +30,9 @@ func TestBookingRef(t *testing.T) {
 	assert.NoError(err, "failed to retrieve booking ref")
 	assert.Equal("ref2", ref, "mismatch")
 
-	_, err = store.GetReference(ctx, "mpxn2")
+	err = store.Remove(ctx, mpxn)
+	assert.NoError(err, "failed to remove booking ref")
+
+	_, err = store.GetReference(ctx, mpxn)
 	assert.ErrorIs(err, ErrBookingReferenceNotFound)
 }

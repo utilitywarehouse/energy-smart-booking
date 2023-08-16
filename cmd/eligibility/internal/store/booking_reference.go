@@ -31,6 +31,14 @@ func (s *BookingRefStore) Add(ctx context.Context, mpxn string, bookingRef strin
 	return err
 }
 
+func (s *BookingRefStore) Remove(ctx context.Context, mpxn string) error {
+	if _, err := s.pool.Exec(ctx, `DELETE FROM booking_references where mpxn = $1`, mpxn); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *BookingRefStore) GetReference(ctx context.Context, mpxn string) (string, error) {
 	var ref string
 

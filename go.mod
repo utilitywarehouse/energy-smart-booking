@@ -16,7 +16,7 @@ require (
 	github.com/urfave/cli/v2 v2.25.7
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230804082711-dd3b2cdcc24d
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b
-	github.com/utilitywarehouse/energy-contracts v1.84.2
+	github.com/utilitywarehouse/energy-contracts v1.86.0
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
@@ -97,7 +97,7 @@ require (
 	github.com/googleapis/gax-go/v2 v2.11.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.2 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.2
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
@@ -138,7 +138,7 @@ require (
 	github.com/testcontainers/testcontainers-go v0.21.0
 	github.com/utilitywarehouse/energy-pkg/domain v1.22.5
 	github.com/utilitywarehouse/energy-pkg/errorcodes v1.0.3 // indirect
-	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 // indirect
+	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543
 	github.com/utilitywarehouse/protoc-gen-uwentity v1.5.0 // indirect
 	github.com/utilitywarehouse/uwos-go/v1/runtime v1.3.1 // indirect
 	github.com/utilitywarehouse/uwos-go/v1/time v1.1.2 // indirect

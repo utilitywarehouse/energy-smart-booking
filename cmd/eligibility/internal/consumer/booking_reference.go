@@ -15,6 +15,7 @@ import (
 
 type BookingRefStore interface {
 	Add(ctx context.Context, mpxn, reference string) error
+	Remove(ctx context.Context, mpxn string) error
 	GetReference(ctx context.Context, mpxn string) (string, error)
 }
 
@@ -39,9 +40,11 @@ func HandleBookingRef(store BookingRefStore) substratemessage.BatchHandlerFunc {
 			switch x := inner.(type) {
 			case *smart.BookingMpxnReferenceCreatedEvent:
 				err = store.Add(ctx, x.GetMpxn(), x.GetReference())
-				if err != nil {
-					return fmt.Errorf("failed to persist booking ref for event %s: %w", env.GetUuid(), err)
-				}
+			case *smart.BookingMpxnReferenceRemovedEvent:
+				err = store.Remove(ctx, x.GetMpxn())
+			}
+			if err != nil {
+				return fmt.Errorf("failed to process booking ref event %s: %w", env.GetUuid(), err)
 			}
 		}
 		return nil
