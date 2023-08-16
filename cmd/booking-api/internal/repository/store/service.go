@@ -96,8 +96,7 @@ func (s *ServiceStore) GetReferenceByOccupancyID(ctx context.Context, occupancyI
 	var bookingReference string
 
 	err := s.pool.QueryRow(ctx, q, occupancyID).Scan(&bookingReference)
-	end := time.Now()
-	metrics.QueryElapsedHistogram.WithLabelValues("get_reference_by_occupancy_id").Observe(float64(end.Sub(start).Milliseconds()))
+	metrics.QueryElapsedHistogram.WithLabelValues("get_reference_by_occupancy_id").Observe(float64(time.Since(start).Milliseconds()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", ErrReferenceNotFound

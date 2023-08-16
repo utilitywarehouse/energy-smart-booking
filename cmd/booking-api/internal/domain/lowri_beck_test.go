@@ -89,7 +89,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
 
-				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
 					SiteID:   "site-id-1",
 					Postcode: "E2 1ZZ",
 				}, nil)
@@ -167,7 +167,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
 
-				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
 					SiteID:   "site-id-1",
 					Postcode: "E2 1ZZ",
 				}, nil)
@@ -371,7 +371,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
 
-				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
 					SiteID:                  "site-id-1",
 					Postcode:                "E2 1ZZ",
 					UPRN:                    "u",
@@ -503,7 +503,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
 
-				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
 					SiteID:                  "site-id-1",
 					Postcode:                "E2 1ZZ",
 					UPRN:                    "u",
@@ -637,7 +637,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
 
-				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
 					SiteID:                  "site-id-1",
 					Postcode:                "E2 1ZZ",
 					UPRN:                    "u",
@@ -746,7 +746,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(true, nil)
 
-				sSt.EXPECT().GetSiteByOccupancyID(ctx, "occupancy-id-1").Return(&models.Site{
+				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-1").Return(&models.Site{
 					SiteID:                  "site-id-1",
 					Postcode:                "E2 1ZZ",
 					UPRN:                    "u",

@@ -91,6 +91,57 @@ func (s *SiteStore) Upsert(site models.Site) {
 		site.SubBuildingNameNumber)
 }
 
+func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error) {
+
+	var site models.Site
+	q := `SELECT 
+			site_id,
+			postcode,
+			uprn,
+			building_name_number,
+			dependent_thoroughfare,
+			thoroughfare,
+			double_dependent_locality,
+			dependent_locality,
+			locality,
+			county,
+			town,
+			department,
+			organisation,
+			po_box,
+			delivery_point_suffix,
+			sub_building_name_number
+	 FROM site 
+	 WHERE
+	 	site_id = $1;`
+	err := s.pool.QueryRow(ctx, q, siteID).
+		Scan(&site.SiteID,
+			&site.Postcode,
+			&site.UPRN,
+			&site.BuildingNameNumber,
+			&site.DependentThoroughfare,
+			&site.Thoroughfare,
+			&site.DoubleDependentLocality,
+			&site.DependentLocality,
+			&site.Locality,
+			&site.County,
+			&site.Town,
+			&site.Department,
+			&site.Organisation,
+			&site.PoBox,
+			&site.DeliveryPointSuffix,
+			&site.SubBuildingNameNumber)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrSiteNotFound
+		}
+		return nil, err
+	}
+
+	return &site, nil
+}
+
 func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string) (*models.Site, error) {
 
 	start := time.Now()
@@ -135,8 +186,8 @@ func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string
 			&site.PoBox,
 			&site.DeliveryPointSuffix,
 			&site.SubBuildingNameNumber)
-	end := time.Now()
-	metrics.QueryElapsedHistogram.WithLabelValues("get_site_by_occupancy_id").Observe(float64(end.Sub(start).Milliseconds()))
+
+	metrics.QueryElapsedHistogram.WithLabelValues("get_site_by_occupancy_id").Observe(float64(time.Since(start).Milliseconds()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrSiteNotFound

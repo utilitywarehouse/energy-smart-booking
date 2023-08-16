@@ -22,6 +22,7 @@ type OccupancyStore interface {
 
 type SiteStore interface {
 	GetSiteByOccupancyID(ctx context.Context, occupancyID string) (*models.Site, error)
+	GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error)
 }
 
 type LowriBeckGateway interface {

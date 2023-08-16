@@ -89,8 +89,8 @@ func (s *OccupancyStore) GetLiveOccupanciesByAccountID(ctx context.Context, acco
 		o.created_at DESC;`
 
 	rows, err := s.pool.Query(ctx, q, accountID)
-	end := time.Now()
-	metrics.QueryElapsedHistogram.WithLabelValues("get_live_occupancies_by_account_id").Observe(float64(end.Sub(start).Milliseconds()))
+
+	metrics.QueryElapsedHistogram.WithLabelValues("get_live_occupancies_by_account_id").Observe(float64(time.Since(start).Milliseconds()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to query get occupancies by account id, %w", err)
 	}

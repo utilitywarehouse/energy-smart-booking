@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
@@ -161,8 +160,6 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 
 func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID string) (models.Booking, error) {
 
-	start := time.Now()
-
 	q := `
 	SELECT
 		booking_id,
@@ -187,10 +184,6 @@ func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID stri
 	WHERE booking_id = $1; 
 	`
 	row := s.pool.QueryRow(ctx, q, bookingID)
-
-	end := time.Now()
-
-	metrics.QueryElapsedHistogram.WithLabelValues("get_booking_by_booking_id").Observe(float64(end.Sub(start).Milliseconds()))
 
 	booking := models.Booking{}
 	err := row.Scan(
