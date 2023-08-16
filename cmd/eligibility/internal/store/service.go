@@ -148,7 +148,8 @@ func (s *ServiceStore) GetServicesWithBookingRef(ctx context.Context, occupancyI
 	FROM services s 
 	LEFT JOIN booking_references b
 	ON s.mpxn = b.mpxn
-	WHERE s.occupancy_id = $1;`
+	WHERE s.occupancy_id = $1
+	AND b.deleted_at IS NULL;`
 
 	rows, err := s.pool.Query(ctx, q, occupancyID)
 	if err != nil {
