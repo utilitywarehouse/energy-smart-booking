@@ -85,7 +85,8 @@ func (s *ServiceStore) GetReferenceByOccupancyID(ctx context.Context, occupancyI
 		booking_reference br ON s.mpxn = br.mpxn 
 	WHERE 
 		s.occupancy_id = $1
-		AND s.is_live IS TRUE;
+		AND s.is_live IS TRUE
+		AND br.deleted_at IS NULL;
 	`
 
 	var bookingReference string

@@ -166,3 +166,68 @@ func Test_BookingReferenceStore_GetReferenceByMPXN(t *testing.T) {
 
 	}
 }
+
+func Test_BookingReference_Remove(t *testing.T) {
+	ctx := context.Background()
+
+	testContainer, err := setupTestContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dsn, err := postgres.GetTestContainerDSN(testContainer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := store.Setup(ctx, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = populateDB(ctx, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bookingReferenceStore := store.NewBookingReference(db)
+
+	type inputParams struct {
+		mpxn string
+	}
+
+	type testSetup struct {
+		description string
+		input       inputParams
+		output      error
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should remove booking reference for given mpxn",
+			input: inputParams{
+				mpxn: "mpxn",
+			},
+			output: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+
+		t.Run(tc.description, func(t *testing.T) {
+			bookingReferenceStore.Begin()
+			bookingReferenceStore.Remove(tc.input.mpxn)
+			err = bookingReferenceStore.Commit(ctx)
+
+			if err != nil {
+				if tc.output != nil {
+					if diff := cmp.Diff(err, tc.output, cmpopts.EquateErrors()); diff != "" {
+						t.Fatal(diff)
+					}
+				} else {
+					t.Fatal(err)
+				}
+			}
+		})
+	}
+}

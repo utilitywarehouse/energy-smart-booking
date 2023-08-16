@@ -15,6 +15,7 @@ import (
 
 type BookingReferenceStore interface {
 	Upsert(bookingReference models.BookingReference)
+	Remove(mpxn string)
 
 	Begin()
 	Commit(ctx context.Context) error
@@ -65,6 +66,8 @@ func (h *BookingReferenceHandler) Handle(ctx context.Context, message substrate.
 		}
 
 		h.store.Upsert(bookingReference)
+	case *smart.BookingMpxnReferenceRemovedEvent:
+		h.store.Remove(ev.GetMpxn())
 	}
 
 	return nil
