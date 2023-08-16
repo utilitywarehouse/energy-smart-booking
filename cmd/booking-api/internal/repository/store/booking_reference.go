@@ -38,15 +38,21 @@ func (s *BookingReferenceStore) Upsert(bookingReference models.BookingReference)
 	VALUES ($1, $2)
 	ON CONFLICT (mpxn)
 	DO UPDATE 
-	SET reference = $2, updated_at = now();`
+	SET reference = $2, updated_at = now(), deleted_at = NULL;`
 
 	s.batch.Queue(q, bookingReference.MPXN, bookingReference.Reference)
+}
+
+func (s *BookingReferenceStore) Remove(mpxn string) {
+	q := `UPDATE booking_reference SET deleted_at = now() WHERE mpxn = $1`
+
+	s.batch.Queue(q, mpxn)
 }
 
 func (s *BookingReferenceStore) GetReferenceByMPXN(ctx context.Context, mpxn string) (string, error) {
 	var reference sql.NullString
 
-	q := `SELECT reference FROM booking_reference WHERE mpxn = $1;`
+	q := `SELECT reference FROM booking_reference WHERE mpxn = $1 AND deleted_at IS NULL;`
 	if err := s.pool.QueryRow(ctx, q, mpxn).
 		Scan(&reference); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
