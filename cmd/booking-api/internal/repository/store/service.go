@@ -9,6 +9,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
@@ -78,6 +79,9 @@ func (s *ServiceStore) Upsert(service models.Service) {
 }
 
 func (s *ServiceStore) GetReferenceByOccupancyID(ctx context.Context, occupancyID string) (string, error) {
+
+	start := time.Now()
+
 	q := `
 	SELECT br.reference
 	FROM service s
@@ -92,6 +96,8 @@ func (s *ServiceStore) GetReferenceByOccupancyID(ctx context.Context, occupancyI
 	var bookingReference string
 
 	err := s.pool.QueryRow(ctx, q, occupancyID).Scan(&bookingReference)
+	end := time.Now()
+	metrics.QueryElapsedHistogram.WithLabelValues("get_reference_by_occupancy_id").Observe(float64(end.Sub(start).Milliseconds()))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return "", ErrReferenceNotFound

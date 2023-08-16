@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
@@ -68,6 +70,8 @@ func (s *OccupancyStore) GetOccupancyByID(ctx context.Context, occupancyID strin
 func (s *OccupancyStore) GetLiveOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error) {
 	occupancies := make([]models.Occupancy, 0)
 
+	start := time.Now()
+
 	q := `SELECT 
 		o.occupancy_id,
 		o.site_id,
@@ -85,6 +89,8 @@ func (s *OccupancyStore) GetLiveOccupanciesByAccountID(ctx context.Context, acco
 		o.created_at DESC;`
 
 	rows, err := s.pool.Query(ctx, q, accountID)
+	end := time.Now()
+	metrics.QueryElapsedHistogram.WithLabelValues("get_live_occupancies_by_account_id").Observe(float64(end.Sub(start).Milliseconds()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to query get occupancies by account id, %w", err)
 	}

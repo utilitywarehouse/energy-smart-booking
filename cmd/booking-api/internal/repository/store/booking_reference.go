@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
@@ -52,6 +54,8 @@ func (s *BookingReferenceStore) Remove(mpxn string) {
 func (s *BookingReferenceStore) GetReferenceByMPXN(ctx context.Context, mpxn string) (string, error) {
 	var reference sql.NullString
 
+	start := time.Now()
+
 	q := `SELECT reference FROM booking_reference WHERE mpxn = $1 AND deleted_at IS NULL;`
 	if err := s.pool.QueryRow(ctx, q, mpxn).
 		Scan(&reference); err != nil {
@@ -60,6 +64,9 @@ func (s *BookingReferenceStore) GetReferenceByMPXN(ctx context.Context, mpxn str
 		}
 		return "", err
 	}
+
+	end := time.Now()
+	metrics.QueryElapsedHistogram.WithLabelValues("get_reference_by_mpxn").Observe(float64(end.Sub(start).Milliseconds()))
 
 	return reference.String, nil
 }

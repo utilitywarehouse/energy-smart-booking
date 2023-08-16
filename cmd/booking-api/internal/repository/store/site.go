@@ -3,9 +3,11 @@ package store
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
@@ -89,55 +91,10 @@ func (s *SiteStore) Upsert(site models.Site) {
 		site.SubBuildingNameNumber)
 }
 
-func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error) {
-	var site models.Site
-	q := `SELECT 
-			site_id,
-			postcode,
-			uprn,
-			building_name_number,
-			dependent_thoroughfare,
-			thoroughfare,
-			double_dependent_locality,
-			dependent_locality,
-			locality,
-			county,
-			town,
-			department,
-			organisation,
-			po_box,
-			delivery_point_suffix,
-			sub_building_name_number
-	 FROM site 
-	 WHERE
-	 	site_id = $1;`
-	if err := s.pool.QueryRow(ctx, q, siteID).
-		Scan(&site.SiteID,
-			&site.Postcode,
-			&site.UPRN,
-			&site.BuildingNameNumber,
-			&site.DependentThoroughfare,
-			&site.Thoroughfare,
-			&site.DoubleDependentLocality,
-			&site.DependentLocality,
-			&site.Locality,
-			&site.County,
-			&site.Town,
-			&site.Department,
-			&site.Organisation,
-			&site.PoBox,
-			&site.DeliveryPointSuffix,
-			&site.SubBuildingNameNumber); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrSiteNotFound
-		}
-		return nil, err
-	}
-
-	return &site, nil
-}
-
 func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string) (*models.Site, error) {
+
+	start := time.Now()
+
 	var site models.Site
 	q := `
 	SELECT 
@@ -160,7 +117,8 @@ func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string
 	FROM site AS s 
 	JOIN occupancy AS o ON o.site_id = s.site_id
 	WHERE o.occupancy_id = $1;`
-	if err := s.pool.QueryRow(ctx, q, occupancyID).
+
+	err := s.pool.QueryRow(ctx, q, occupancyID).
 		Scan(&site.SiteID,
 			&site.Postcode,
 			&site.UPRN,
@@ -176,7 +134,10 @@ func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string
 			&site.Organisation,
 			&site.PoBox,
 			&site.DeliveryPointSuffix,
-			&site.SubBuildingNameNumber); err != nil {
+			&site.SubBuildingNameNumber)
+	end := time.Now()
+	metrics.QueryElapsedHistogram.WithLabelValues("get_site_by_occupancy_id").Observe(float64(end.Sub(start).Milliseconds()))
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrSiteNotFound
 		}
