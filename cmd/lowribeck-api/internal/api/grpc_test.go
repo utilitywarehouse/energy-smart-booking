@@ -208,7 +208,7 @@ func Test_CreateBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			mapper.bookingRequest = tc.req
-			mapper.booingResponse = tc.expected
+			mapper.booking = tc.expected
 
 			client.EXPECT().CreateBooking(ctx, tc.req).Return(tc.clientResp, tc.clientErr)
 
@@ -232,7 +232,7 @@ type fakeMapper struct {
 	availabilityRequest  *lowribeck.GetCalendarAvailabilityRequest
 	availabilityResponse *contract.GetAvailableSlotsResponse
 	bookingRequest       *lowribeck.CreateBookingRequest
-	booingResponse       *contract.CreateBookingResponse
+	booking              *contract.CreateBookingResponse
 }
 
 func (f *fakeMapper) AvailabilityRequest(_ uint32, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
@@ -246,5 +246,5 @@ func (f *fakeMapper) BookingRequest(_ uint32, resp *contract.CreateBookingReques
 	return f.bookingRequest, nil
 }
 func (f *fakeMapper) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
-	return f.booingResponse, nil
+	return f.booking, nil
 }
