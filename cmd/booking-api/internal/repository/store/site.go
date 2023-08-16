@@ -90,6 +90,7 @@ func (s *SiteStore) Upsert(site models.Site) {
 }
 
 func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error) {
+
 	var site models.Site
 	q := `SELECT 
 			site_id,
@@ -111,7 +112,7 @@ func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models
 	 FROM site 
 	 WHERE
 	 	site_id = $1;`
-	if err := s.pool.QueryRow(ctx, q, siteID).
+	err := s.pool.QueryRow(ctx, q, siteID).
 		Scan(&site.SiteID,
 			&site.Postcode,
 			&site.UPRN,
@@ -127,7 +128,9 @@ func (s *SiteStore) GetSiteBySiteID(ctx context.Context, siteID string) (*models
 			&site.Organisation,
 			&site.PoBox,
 			&site.DeliveryPointSuffix,
-			&site.SubBuildingNameNumber); err != nil {
+			&site.SubBuildingNameNumber)
+
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrSiteNotFound
 		}
@@ -160,7 +163,8 @@ func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string
 	FROM site AS s 
 	JOIN occupancy AS o ON o.site_id = s.site_id
 	WHERE o.occupancy_id = $1;`
-	if err := s.pool.QueryRow(ctx, q, occupancyID).
+
+	err := s.pool.QueryRow(ctx, q, occupancyID).
 		Scan(&site.SiteID,
 			&site.Postcode,
 			&site.UPRN,
@@ -176,7 +180,9 @@ func (s *SiteStore) GetSiteByOccupancyID(ctx context.Context, occupancyID string
 			&site.Organisation,
 			&site.PoBox,
 			&site.DeliveryPointSuffix,
-			&site.SubBuildingNameNumber); err != nil {
+			&site.SubBuildingNameNumber)
+
+	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrSiteNotFound
 		}
