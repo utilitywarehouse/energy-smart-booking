@@ -55,7 +55,7 @@ func (d BookingDomain) GetAccountAddressByAccountID(ctx context.Context, account
 		return models.AccountAddress{}, ErrNoEligibleOccupanciesFound
 	}
 
-	site, err := d.siteStore.GetSiteByOccupancyID(ctx, targetOccupancy.OccupancyID)
+	site, err := d.siteStore.GetSiteBySiteID(ctx, targetOccupancy.SiteID)
 	if err != nil {
 		return models.AccountAddress{}, fmt.Errorf("failed to get site with site_id :%s, %w", targetOccupancy.SiteID, err)
 	}
