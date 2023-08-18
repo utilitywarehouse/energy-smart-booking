@@ -62,6 +62,12 @@ func runHTTPApi(c *cli.Context) error {
 	}
 	campaignabilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(campaignabilitySink), appName)
 
+	bookingEligibilitySync, err := app.GetKafkaSinkWithKeyFunc(c, c.String(bookingJourneyEligibilityTopic), keyFunc)
+	if err != nil {
+		return fmt.Errorf("unable to create booking journey eligibility sink: %w", err)
+	}
+	bookingEligibilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingEligibilitySync), appName)
+
 	evaluator := evaluation.NewEvaluator(
 		occupancyStore,
 		serviceStore,
@@ -69,6 +75,7 @@ func runHTTPApi(c *cli.Context) error {
 		eligibilitySyncPublisher,
 		suppliabilitySyncPublisher,
 		campaignabilitySyncPublisher,
+		bookingEligibilitySyncPublisher,
 	)
 
 	router := mux.NewRouter()
