@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	envelope "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	"github.com/utilitywarehouse/energy-pkg/substratemessage"
@@ -22,6 +23,7 @@ import (
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/proto"
 )
 
 func runEvaluator(c *cli.Context) error {
@@ -143,6 +145,12 @@ func runEvaluator(c *cli.Context) error {
 	}
 	campaignabilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(campaignabilitySink), appName)
 
+	bookingEligibilitySync, err := app.GetKafkaSinkWithKeyFunc(c, c.String(bookingJourneyEligibilityTopic), keyFunc)
+	if err != nil {
+		return fmt.Errorf("unable to create booking journey eligibility sink: %w", err)
+	}
+	bookingEligibilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingEligibilitySync), appName)
+
 	evaluator := evaluation.NewEvaluator(
 		occupancyStore,
 		serviceStore,
@@ -150,6 +158,7 @@ func runEvaluator(c *cli.Context) error {
 		eligibilitySyncPublisher,
 		suppliabilitySyncPublisher,
 		campaignabilitySyncPublisher,
+		bookingEligibilitySyncPublisher,
 	)
 
 	g.Go(func() error {
@@ -207,4 +216,28 @@ func runEvaluator(c *cli.Context) error {
 	})
 
 	return g.Wait()
+}
+
+func keyFunc(m substrate.Message) []byte {
+	var env envelope.Envelope
+	if err := proto.Unmarshal(m.Data(), &env); err != nil {
+		return nil
+	}
+
+	inner, err := env.Message.UnmarshalNew()
+	if err != nil {
+		logrus.WithError(err).Warn("error unmarshalling inner for key function")
+		return nil
+	}
+	e, ok := inner.(occupancyEligibility)
+	if !ok {
+		logrus.Warnf("message in event [%s] does not have an occupancy ID", env.Uuid)
+		return nil
+	}
+
+	return []byte(e.GetOccupancyId())
+}
+
+type occupancyEligibility interface {
+	GetOccupancyId() string
 }

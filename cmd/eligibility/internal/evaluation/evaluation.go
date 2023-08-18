@@ -18,27 +18,36 @@ func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
 		return fmt.Errorf("failed to load occupanncy for ID %s: %w", occupancyID, err)
 	}
 
-	reasons := evaluateCampaignability(occupancy)
-	err = e.publishCampaignabilityIfChanged(ctx, occupancy, reasons)
+	cReasons := evaluateCampaignability(occupancy)
+	err = e.publishCampaignabilityIfChanged(ctx, occupancy, cReasons)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate campaignability for occupancy %s: %w", occupancyID, err)
 	}
 
-	reasons = evaluateEligibility(occupancy)
-	err = e.publishEligibilityIfChanged(ctx, occupancy, reasons)
+	eReasons := evaluateEligibility(occupancy)
+	err = e.publishEligibilityIfChanged(ctx, occupancy, eReasons)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate eligibility for occupancy %s: %w", occupancyID, err)
 	}
 
-	reasons = evaluateSuppliability(occupancy)
-	err = e.publishSuppliabilityIfChanged(ctx, occupancy, reasons)
+	sReasons := evaluateSuppliability(occupancy)
+	err = e.publishSuppliabilityIfChanged(ctx, occupancy, sReasons)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate suppliability for occupancy %s: %w", occupancyID, err)
 	}
 
 	metrics.SmartBookingEvaluationCounter.WithLabelValues("full").Inc()
 
-	return nil
+	occupancy.EvaluationResult.CampaignabilityEvaluated = true
+	occupancy.EvaluationResult.Campaignability = cReasons
+	occupancy.EvaluationResult.SuppliabilityEvaluated = true
+	occupancy.EvaluationResult.Suppliability = sReasons
+	occupancy.EvaluationResult.EligibilityEvaluated = true
+	occupancy.EvaluationResult.Eligibility = eReasons
+
+	err = e.publishSmartBookingJourneyEligibilityIfNeeded(ctx, occupancy)
+
+	return err
 }
 
 func (e *Evaluator) RunCampaignability(ctx context.Context, occupancyID string) error {
@@ -55,7 +64,12 @@ func (e *Evaluator) RunCampaignability(ctx context.Context, occupancyID string) 
 
 	metrics.SmartBookingEvaluationCounter.WithLabelValues("campaignability").Inc()
 
-	return nil
+	occupancy.EvaluationResult.CampaignabilityEvaluated = true
+	occupancy.EvaluationResult.Campaignability = reasons
+
+	err = e.publishSmartBookingJourneyEligibilityIfNeeded(ctx, occupancy)
+
+	return err
 }
 
 func (e *Evaluator) RunSuppliability(ctx context.Context, occupancyID string) error {
@@ -72,7 +86,12 @@ func (e *Evaluator) RunSuppliability(ctx context.Context, occupancyID string) er
 
 	metrics.SmartBookingEvaluationCounter.WithLabelValues("suppliability").Inc()
 
-	return nil
+	occupancy.EvaluationResult.SuppliabilityEvaluated = true
+	occupancy.EvaluationResult.Suppliability = reasons
+
+	err = e.publishSmartBookingJourneyEligibilityIfNeeded(ctx, occupancy)
+
+	return err
 }
 
 func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) error {
@@ -89,7 +108,12 @@ func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) erro
 
 	metrics.SmartBookingEvaluationCounter.WithLabelValues("eligibility").Inc()
 
-	return nil
+	occupancy.EvaluationResult.EligibilityEvaluated = true
+	occupancy.EvaluationResult.Eligibility = reasons
+
+	err = e.publishSmartBookingJourneyEligibilityIfNeeded(ctx, occupancy)
+
+	return err
 }
 
 func (e *Evaluator) publishCampaignabilityIfChanged(ctx context.Context, occupancy *domain.Occupancy, reasons domain.IneligibleReasons) error {
@@ -175,6 +199,33 @@ func (e *Evaluator) publishEligibilityIfChanged(ctx context.Context, occupancy *
 			Reasons:     protoReasons,
 		}, time.Now().UTC()); err != nil {
 			return fmt.Errorf("failed to publish eligibility changed event for occupancy %s, account %s: %w", occupancy.ID, occupancy.Account.ID, err)
+		}
+	}
+
+	return nil
+}
+
+func (e *Evaluator) publishSmartBookingJourneyEligibilityIfNeeded(ctx context.Context, occupancy *domain.Occupancy) error {
+	if occupancy.EvaluationResult.CampaignabilityEvaluated &&
+		occupancy.EvaluationResult.SuppliabilityEvaluated &&
+		occupancy.EvaluationResult.EligibilityEvaluated {
+		var err error
+
+		eligible := len(occupancy.EvaluationResult.Campaignability) == 0 &&
+			len(occupancy.EvaluationResult.Suppliability) == 0 &&
+			len(occupancy.EvaluationResult.Eligibility) == 0
+
+		if eligible {
+			err = e.bookingEligibilitySync.Sink(ctx, &smart.SmartBookingJourneyOccupancyAddedEvent{
+				OccupancyId: occupancy.ID,
+			}, time.Now().UTC())
+		} else {
+			err = e.bookingEligibilitySync.Sink(ctx, &smart.SmartBookingJourneyOccupancyRemovedEvent{
+				OccupancyId: occupancy.ID,
+			}, time.Now().UTC())
+		}
+		if err != nil {
+			return fmt.Errorf("failed to publish smart booking journey eligibility event for occupancy ID %s: %w", occupancy.ID, err)
 		}
 	}
 
