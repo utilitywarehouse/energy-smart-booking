@@ -145,7 +145,7 @@ func runEvaluator(c *cli.Context) error {
 	}
 	campaignabilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(campaignabilitySink), appName)
 
-	bookingEligibilitySync, err := app.GetKafkaSinkWithKeyFunc(c, c.String(bookingJourneyEligibilityTopic), keyFunc)
+	bookingEligibilitySink, err := app.GetKafkaSinkWithKeyFunc(c, c.String(bookingJourneyEligibilityTopic), keyFunc)
 	if err != nil {
 		return fmt.Errorf("unable to create booking journey eligibility sink: %w", err)
 	}
