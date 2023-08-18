@@ -149,7 +149,7 @@ func runEvaluator(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to create booking journey eligibility sink: %w", err)
 	}
-	bookingEligibilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingEligibilitySync), appName)
+	bookingEligibilitySyncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingEligibilitySink), appName)
 
 	evaluator := evaluation.NewEvaluator(
 		occupancyStore,
