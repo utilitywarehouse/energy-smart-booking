@@ -346,7 +346,7 @@ func TestRunSuppliability(t *testing.T) {
 	}
 
 	var capacity float32 = 6
-	
+
 	testCases := []testCase{
 		{
 			description: "occupancy suppliable if gas service only",
