@@ -67,13 +67,11 @@ func TestOccupancy(t *testing.T) {
 
 	ids, err = store.GetLiveOccupanciesPendingEvaluation(ctx)
 	assert.NoError(err)
-	sort.Strings(ids)
-	assert.Equal([]string{"occupancy_id1", "occupancy_id2"}, ids)
+	assert.ElementsMatch([]string{"occupancy_id1", "occupancy_id2"}, ids)
 
 	ids, err = store.GetLiveOccupancies(ctx)
 	assert.NoError(err)
-	sort.Strings(ids)
-	assert.Equal([]string{"occupancy_id1", "occupancy_id2"}, ids)
+	assert.ElementsMatch([]string{"occupancy_id1", "occupancy_id2"}, ids)
 }
 
 func TestLoadOccupancy(t *testing.T) {
