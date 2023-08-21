@@ -14,6 +14,7 @@ type OccupancyStore interface {
 
 type ServiceStore interface {
 	LoadLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]domain.Service, error)
+	GetServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
 }
 
 type MeterStore interface {

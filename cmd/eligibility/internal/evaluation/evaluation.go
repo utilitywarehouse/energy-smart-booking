@@ -206,26 +206,42 @@ func (e *Evaluator) publishEligibilityIfChanged(ctx context.Context, occupancy *
 }
 
 func (e *Evaluator) publishSmartBookingJourneyEligibilityIfNeeded(ctx context.Context, occupancy *domain.Occupancy) error {
+
 	if occupancy.EvaluationResult.CampaignabilityEvaluated &&
 		occupancy.EvaluationResult.SuppliabilityEvaluated &&
 		occupancy.EvaluationResult.EligibilityEvaluated {
-		var err error
+
+		serviceBookingRef, err := e.serviceStore.GetServicesWithBookingRef(ctx, occupancy.ID)
+		if err != nil {
+			return fmt.Errorf("failed to check booking ref for services of occupancy ID %s: %w", occupancy.ID, err)
+		}
+		hasBookingRef := true
+		for _, s := range serviceBookingRef {
+			if s.BookingRef == "" {
+				hasBookingRef = false
+				break
+			}
+		}
 
 		eligible := len(occupancy.EvaluationResult.Campaignability) == 0 &&
 			len(occupancy.EvaluationResult.Suppliability) == 0 &&
 			len(occupancy.EvaluationResult.Eligibility) == 0
 
-		if eligible {
+		if eligible && hasBookingRef {
 			err = e.bookingEligibilitySync.Sink(ctx, &smart.SmartBookingJourneyOccupancyAddedEvent{
 				OccupancyId: occupancy.ID,
+				Reference:   serviceBookingRef[0].BookingRef,
 			}, time.Now().UTC())
+			if err != nil {
+				return fmt.Errorf("failed to publish smart booking journey eligibility added event for occupancy ID %s: %w", occupancy.ID, err)
+			}
 		} else {
 			err = e.bookingEligibilitySync.Sink(ctx, &smart.SmartBookingJourneyOccupancyRemovedEvent{
 				OccupancyId: occupancy.ID,
 			}, time.Now().UTC())
-		}
-		if err != nil {
-			return fmt.Errorf("failed to publish smart booking journey eligibility event for occupancy ID %s: %w", occupancy.ID, err)
+			if err != nil {
+				return fmt.Errorf("failed to publish smart booking journey eligibility removed event for occupancy ID %s: %w", occupancy.ID, err)
+			}
 		}
 	}
 
