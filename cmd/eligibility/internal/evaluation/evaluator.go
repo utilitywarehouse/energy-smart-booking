@@ -18,7 +18,7 @@ type ServiceStore interface {
 }
 
 type MeterStore interface {
-	Get(ctx context.Context, mpxn string) (store.Meter, error)
+	Get(ctx context.Context, mpxn string) (domain.Meter, error)
 }
 
 type Evaluator struct {

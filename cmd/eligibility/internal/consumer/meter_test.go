@@ -6,8 +6,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
-	"github.com/utilitywarehouse/energy-pkg/domain"
+	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
@@ -64,11 +65,11 @@ func TestElectricityMeterConsumer(t *testing.T) {
 	meter, err := s.Get(ctx, "mpan1")
 	assert.NoError(err, "failed to get meter")
 
-	expected := store.Meter{
+	expected := domain.Meter{
 		ID:         "meterID1",
 		Mpxn:       "mpan1",
-		Msn:        "msn1",
-		SupplyType: domain.SupplyTypeElectricity,
+		MSN:        "msn1",
+		SupplyType: energy_domain.SupplyTypeElectricity,
 		Capacity:   nil,
 		MeterType:  platform.MeterTypeElec_METER_TYPE_ELEC_S2ADE.String(),
 	}
@@ -150,11 +151,11 @@ func TestGasMeterConsumer(t *testing.T) {
 	meter, err := s.Get(ctx, "mprn1")
 	assert.NoError(err, "failed to get meter")
 
-	expected := store.Meter{
+	expected := domain.Meter{
 		ID:         "meterID1",
 		Mpxn:       "mprn1",
-		Msn:        "msn1",
-		SupplyType: domain.SupplyTypeGas,
+		MSN:        "msn1",
+		SupplyType: energy_domain.SupplyTypeGas,
 		Capacity:   &capacity,
 		MeterType:  platform.MeterTypeGas_METER_TYPE_GAS_SMETS2.String(),
 	}
