@@ -17,20 +17,21 @@ const (
 	energyPlatformKafkaVersion = "energy-platform-kafka-version"
 
 	// Kafka topics
-	eligibilityTopic     = "eligibility-events-topic"
+	eligibilityTopic     = "eligibility-events-topic" //nolint:gosec
 	campaignabilityTopic = "campaignability-events-topic"
 	suppliabilityTopic   = "suppliability-events-topic"
 
-	altHanTopic       = "alt-han-events-topic"
-	optOutTopic       = "opt-out-events-topic"
-	accountPsrTopic   = "account-psr-events-topic"
-	bookingRefTopic   = "booking-reference-events-topic"
-	meterTopic        = "meter-events-topic"
-	meterpointTopic   = "meterpoint-events-topic"
-	occupancyTopic    = "occupancy-events-topic"
-	serviceStateTopic = "service-state-events-topic"
-	siteTopic         = "site-events-topic"
-	wanCoverageTopic  = "wan-coverage-events-topic"
+	altHanTopic                    = "alt-han-events-topic"
+	optOutTopic                    = "opt-out-events-topic"
+	accountPsrTopic                = "account-psr-events-topic"
+	bookingRefTopic                = "booking-reference-events-topic"
+	meterTopic                     = "meter-events-topic"
+	meterpointTopic                = "meterpoint-events-topic"
+	occupancyTopic                 = "occupancy-events-topic"
+	serviceStateTopic              = "service-state-events-topic"
+	siteTopic                      = "site-events-topic"
+	wanCoverageTopic               = "wan-coverage-events-topic"
+	bookingJourneyEligibilityTopic = "booking-journey-eligibility-topic"
 
 	batchSize    = "batch-size"
 	postgresDSN  = "postgres-dsn"
@@ -207,6 +208,11 @@ func main() {
 					&cli.StringFlag{
 						Name:     wanCoverageTopic,
 						EnvVars:  []string{"WAN_COVERAGE_EVENTS_TOPIC"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bookingJourneyEligibilityTopic,
+						EnvVars:  []string{"BOOKING_JOURNEY_ELIGIBILITY_EVENTS_TOPIC"},
 						Required: true,
 					},
 					&cli.IntFlag{

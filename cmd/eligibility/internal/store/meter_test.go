@@ -7,8 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
-	"github.com/utilitywarehouse/energy-pkg/domain"
+	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-pkg/fabrication"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
 
 func date(year, month, day int) time.Time { //nolint:unparam
@@ -31,11 +32,11 @@ func TestMeter(t *testing.T) {
 	meterID := fabrication.NewMeterID(mpxn, serialNumber)
 	installationDate := date(2020, 2, 1)
 
-	err := s.Add(ctx, &Meter{
+	err := s.Add(ctx, &domain.Meter{
 		ID:         meterID,
 		Mpxn:       mpxn,
-		Msn:        serialNumber,
-		SupplyType: domain.SupplyTypeElectricity,
+		MSN:        serialNumber,
+		SupplyType: energy_domain.SupplyTypeElectricity,
 		MeterType:  platform.MeterTypeElec_METER_TYPE_ELEC_S2AD.String(),
 	})
 	assert.NoError(err, "failed to add meter")
@@ -46,11 +47,11 @@ func TestMeter(t *testing.T) {
 	err = s.AddMeterType(ctx, meterID, platform.MeterTypeElec_METER_TYPE_ELEC_SMETS1.String())
 	assert.NoError(err, "failed to update meter type")
 
-	expected := Meter{
+	expected := domain.Meter{
 		ID:         meterID,
 		Mpxn:       mpxn,
-		Msn:        serialNumber,
-		SupplyType: domain.SupplyTypeElectricity,
+		MSN:        serialNumber,
+		SupplyType: energy_domain.SupplyTypeElectricity,
 		MeterType:  platform.MeterTypeElec_METER_TYPE_ELEC_SMETS1.String(),
 	}
 
@@ -77,11 +78,11 @@ func TestMeter(t *testing.T) {
 	meterID1 := fabrication.NewMeterID(mpxn, serialNumber1)
 	installationDate1 := date(2022, 2, 1)
 
-	err = s.Add(ctx, &Meter{
+	err = s.Add(ctx, &domain.Meter{
 		ID:         meterID1,
 		Mpxn:       mpxn,
-		Msn:        serialNumber1,
-		SupplyType: domain.SupplyTypeElectricity,
+		MSN:        serialNumber1,
+		SupplyType: energy_domain.SupplyTypeElectricity,
 	})
 	assert.NoError(err, "failed to add meter")
 
@@ -92,11 +93,11 @@ func TestMeter(t *testing.T) {
 	meter, err = s.Get(ctx, mpxn)
 	assert.NoError(err)
 
-	expected = Meter{
+	expected = domain.Meter{
 		ID:         meterID1,
 		Mpxn:       mpxn,
-		Msn:        serialNumber1,
-		SupplyType: domain.SupplyTypeElectricity,
+		MSN:        serialNumber1,
+		SupplyType: energy_domain.SupplyTypeElectricity,
 	}
 	assert.Equal(expected, meter, "mismatch")
 }

@@ -35,6 +35,7 @@ type Meterpoint struct {
 }
 
 type Meter struct {
+	ID         string
 	Mpxn       string
 	MSN        string
 	SupplyType domain.SupplyType

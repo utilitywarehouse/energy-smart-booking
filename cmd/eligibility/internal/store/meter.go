@@ -8,7 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/utilitywarehouse/energy-pkg/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
 
 var ErrMeterNotFound = errors.New("meter not found")
@@ -17,27 +17,18 @@ type MeterStore struct {
 	pool *pgxpool.Pool
 }
 
-type Meter struct {
-	ID         string
-	Mpxn       string
-	Msn        string
-	SupplyType domain.SupplyType
-	Capacity   *float32
-	MeterType  string
-}
-
 func NewMeter(pool *pgxpool.Pool) *MeterStore {
 	return &MeterStore{pool: pool}
 }
 
-func (s *MeterStore) Add(ctx context.Context, meter *Meter) error {
+func (s *MeterStore) Add(ctx context.Context, meter *domain.Meter) error {
 	q := `
 	INSERT INTO meters(id, mpxn, msn, supply_type, meter_type)
 	VALUES ($1, $2, $3, $4, $5)
 	ON CONFLICT (id)
 	DO NOTHING;`
 
-	_, err := s.pool.Exec(ctx, q, meter.ID, meter.Mpxn, meter.Msn, meter.SupplyType.String(), meter.MeterType)
+	_, err := s.pool.Exec(ctx, q, meter.ID, meter.Mpxn, meter.MSN, meter.SupplyType.String(), meter.MeterType)
 
 	return err
 }
@@ -82,9 +73,9 @@ func (s *MeterStore) UninstallMeter(ctx context.Context, meterID string, at time
 	return err
 }
 
-func (s *MeterStore) Get(ctx context.Context, mpxn string) (Meter, error) {
+func (s *MeterStore) Get(ctx context.Context, mpxn string) (domain.Meter, error) {
 	var (
-		meter    Meter
+		meter    domain.Meter
 		capacity sql.NullFloat64
 	)
 
@@ -100,16 +91,16 @@ func (s *MeterStore) Get(ctx context.Context, mpxn string) (Meter, error) {
 	err := s.pool.QueryRow(ctx, q, mpxn).Scan(
 		&meter.ID,
 		&meter.Mpxn,
-		&meter.Msn,
+		&meter.MSN,
 		&meter.SupplyType,
 		&capacity,
 		&meter.MeterType,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return Meter{}, ErrMeterNotFound
+			return domain.Meter{}, ErrMeterNotFound
 		}
-		return Meter{}, err
+		return domain.Meter{}, err
 	}
 	if capacity.Valid {
 		val := float32(capacity.Float64)

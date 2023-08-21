@@ -28,7 +28,7 @@ func (e *Evaluator) LoadOccupancy(ctx context.Context, id string) (*domain.Occup
 		if err == nil {
 			services[i].Meter = &domain.Meter{
 				Mpxn:       dbMeter.Mpxn,
-				MSN:        dbMeter.Msn,
+				MSN:        dbMeter.MSN,
 				SupplyType: dbMeter.SupplyType,
 				Capacity:   dbMeter.Capacity,
 				MeterType:  dbMeter.MeterType,

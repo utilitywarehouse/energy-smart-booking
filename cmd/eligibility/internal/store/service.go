@@ -142,13 +142,14 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 	return services, nil
 }
 
-func (s *ServiceStore) GetServicesWithBookingRef(ctx context.Context, occupancyID string) ([]ServiceBookingRef, error) {
+func (s *ServiceStore) GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]ServiceBookingRef, error) {
 	q := `
 	SELECT s.id, b.reference
 	FROM services s 
 	LEFT JOIN booking_references b
 	ON s.mpxn = b.mpxn
 	WHERE s.occupancy_id = $1
+	AND s.is_live is true 
 	AND b.deleted_at IS NULL;`
 
 	rows, err := s.pool.Query(ctx, q, occupancyID)

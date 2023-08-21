@@ -29,7 +29,7 @@ type AccountStore interface {
 }
 
 type ServiceStore interface {
-	GetServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
+	GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
 }
 
 type EligibilityGRPCApi struct {
@@ -112,7 +112,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 			if eligible {
 				// check it has booking references assigned
-				serviceBookingRef, err := a.serviceStore.GetServicesWithBookingRef(ctx, occupancyID)
+				serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, occupancyID)
 				if err != nil {
 					logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
 					return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
@@ -189,7 +189,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 
 	if eligible {
 		// check it has booking references assigned
-		serviceBookingRef, err := a.serviceStore.GetServicesWithBookingRef(ctx, req.OccupancyId)
+		serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, req.OccupancyId)
 		if err != nil {
 			logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
 			return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)

@@ -14,29 +14,33 @@ type OccupancyStore interface {
 
 type ServiceStore interface {
 	LoadLiveServicesByOccupancyID(ctx context.Context, occupancyID string) ([]domain.Service, error)
+	GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
 }
 
 type MeterStore interface {
-	Get(ctx context.Context, mpxn string) (store.Meter, error)
+	Get(ctx context.Context, mpxn string) (domain.Meter, error)
 }
 
 type Evaluator struct {
-	occupancyStore      OccupancyStore
-	serviceStore        ServiceStore
-	meterStore          MeterStore
-	eligibilitySync     publisher.SyncPublisher
-	suppliabilitySync   publisher.SyncPublisher
-	campaignabilitySync publisher.SyncPublisher
+	occupancyStore         OccupancyStore
+	serviceStore           ServiceStore
+	meterStore             MeterStore
+	eligibilitySync        publisher.SyncPublisher
+	suppliabilitySync      publisher.SyncPublisher
+	campaignabilitySync    publisher.SyncPublisher
+	bookingEligibilitySync publisher.SyncPublisher
 }
 
 func NewEvaluator(occupanciesStore OccupancyStore, serviceStore ServiceStore, meterStore MeterStore,
-	eligibilitySync publisher.SyncPublisher, suppliabilitySync publisher.SyncPublisher, campaignabilitySync publisher.SyncPublisher) *Evaluator {
+	eligibilitySync publisher.SyncPublisher, suppliabilitySync publisher.SyncPublisher, campaignabilitySync publisher.SyncPublisher,
+	bookingEligibilitySync publisher.SyncPublisher) *Evaluator {
 	return &Evaluator{
-		occupancyStore:      occupanciesStore,
-		serviceStore:        serviceStore,
-		meterStore:          meterStore,
-		eligibilitySync:     eligibilitySync,
-		suppliabilitySync:   suppliabilitySync,
-		campaignabilitySync: campaignabilitySync,
+		occupancyStore:         occupanciesStore,
+		serviceStore:           serviceStore,
+		meterStore:             meterStore,
+		eligibilitySync:        eligibilitySync,
+		suppliabilitySync:      suppliabilitySync,
+		campaignabilitySync:    campaignabilitySync,
+		bookingEligibilitySync: bookingEligibilitySync,
 	}
 }
