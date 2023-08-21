@@ -40,13 +40,6 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 		result.addReason(domain.IneligibleReasonNoActiveService)
 	}
 
-	if len(o.Services) == 1 {
-		if o.Services[0].SupplyType == energy_domain.SupplyTypeGas {
-			result.addReason(domain.IneligibleReasonGasServiceOnly)
-			return result.status()
-		}
-	}
-
 	for _, s := range o.Services {
 		// we only project meterpoints for electricity ssc or profile class changes or if a meterpoint is alt han
 		// if there is no entry, it means the meterpoint is not alt han
