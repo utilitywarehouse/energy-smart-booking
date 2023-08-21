@@ -123,6 +123,11 @@ func main() {
 						EnvVars:  []string{"CAMPAIGNABILITY_EVENTS_TOPIC"},
 						Required: true,
 					},
+					&cli.StringFlag{
+						Name:     bookingJourneyEligibilityTopic,
+						EnvVars:  []string{"BOOKING_JOURNEY_ELIGIBILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
 				),
 				Before: app.Before,
 				Action: runHTTPApi,
