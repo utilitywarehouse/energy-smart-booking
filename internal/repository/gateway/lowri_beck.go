@@ -142,13 +142,13 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 						return CreateBookingResponse{
 							Success: false,
 						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInternalBadParameters)
-					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE:
+					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE:
 
 						return CreateBookingResponse{
 							Success: false,
 						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInvalidAppointmentDate)
 
-					case lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME:
+					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME:
 
 						return CreateBookingResponse{
 							Success: false,

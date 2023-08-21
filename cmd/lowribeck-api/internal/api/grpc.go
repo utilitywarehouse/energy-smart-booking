@@ -118,9 +118,9 @@ func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (
 	case mapper.InvalidSite:
 		param = contract.Parameters_PARAMETERS_SITE
 	case mapper.InvalidAppointmentDate:
-		param = contract.Parameters_PARAMETERS_APPPOINTMENT_DATE
+		param = contract.Parameters_PARAMETERS_APPOINTMENT_DATE
 	case mapper.InvalidAppointmentTime:
-		param = contract.Parameters_PARAMETERS_APPPOINTMENT_TIME
+		param = contract.Parameters_PARAMETERS_APPOINTMENT_TIME
 	default:
 		param = contract.Parameters_PARAMETERS_UNKNOWN
 	}

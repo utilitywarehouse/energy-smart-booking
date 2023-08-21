@@ -447,7 +447,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
 				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
-					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_DATE,
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE,
 				})
 
 				if err != nil {
@@ -467,7 +467,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
 				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
-					Parameters: lowribeckv1.Parameters_PARAMETERS_APPPOINTMENT_TIME,
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME,
 				})
 
 				if err != nil {
