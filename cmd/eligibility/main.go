@@ -17,7 +17,7 @@ const (
 	energyPlatformKafkaVersion = "energy-platform-kafka-version"
 
 	// Kafka topics
-	eligibilityTopic     = "eligibility-events-topic"
+	eligibilityTopic     = "eligibility-events-topic" //nolint:gosec
 	campaignabilityTopic = "campaignability-events-topic"
 	suppliabilityTopic   = "suppliability-events-topic"
 
