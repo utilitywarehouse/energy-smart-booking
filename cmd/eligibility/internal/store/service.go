@@ -142,7 +142,7 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 	return services, nil
 }
 
-func (s *ServiceStore) GetServicesWithBookingRef(ctx context.Context, occupancyID string) ([]ServiceBookingRef, error) {
+func (s *ServiceStore) GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]ServiceBookingRef, error) {
 	q := `
 	SELECT s.id, b.reference
 	FROM services s 

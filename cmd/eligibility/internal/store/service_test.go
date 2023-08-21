@@ -96,7 +96,7 @@ func TestGetServicesWithBookingRef(t *testing.T) {
 		INSERT INTO booking_references(mpxn, reference) VALUES('mpxn_1', 'ref');`)
 	assert.NoError(err)
 
-	serviceBookingRef, err := s.GetServicesWithBookingRef(ctx, "occupancy_id_1")
+	serviceBookingRef, err := s.GetLiveServicesWithBookingRef(ctx, "occupancy_id_1")
 	assert.NoError(err)
 	expected := []ServiceBookingRef{
 		{

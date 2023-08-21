@@ -1753,7 +1753,7 @@ func (s *mockStore) LoadLiveServicesByOccupancyID(_ context.Context, occupancyID
 	return s.servicesByOccupancy[occupancyID], nil
 }
 
-func (s *mockStore) GetServicesWithBookingRef(_ context.Context, occupancyID string) ([]store.ServiceBookingRef, error) {
+func (s *mockStore) GetLiveServicesWithBookingRef(_ context.Context, occupancyID string) ([]store.ServiceBookingRef, error) {
 	services := s.servicesByOccupancy[occupancyID]
 	refs := make([]store.ServiceBookingRef, len(services))
 
