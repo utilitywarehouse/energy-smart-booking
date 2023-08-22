@@ -125,6 +125,7 @@ func (i *RescheduledBookingIndexer) Handle(ctx context.Context, message substrat
 			BookingEndTime:     x.GetDetails().Slot.EndTime,
 			VulnerabilityList:  vulnerabilitiesAsStringSlice(x.GetDetails().VulnerabilityDetails.Vulnerabilities),
 			VulnerabilityOther: x.GetDetails().VulnerabilityDetails.Other,
+			ExternalReference:  x.GetDetails().ExternalReference,
 			CreatedAt:          env.CreatedAt.AsTime(),
 		}
 
