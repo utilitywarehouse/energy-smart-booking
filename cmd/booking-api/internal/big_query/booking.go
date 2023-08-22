@@ -28,6 +28,7 @@ type RescheduleBooking struct {
 type Booking struct {
 	BookingID          string    `bigquery:"booking_id"`
 	AccountID          string    `bigquery:"account_id"`
+	ExternalReference  string    `bigquery:"external_reference"`
 	Source             string    `bigquery:"source"`
 	Status             string    `bigquery:"status"`
 	OccupancyID        string    `bigquery:"occupancy_id"`

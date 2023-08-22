@@ -146,6 +146,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 				},
 				VulnerabilityDetails: params.VulnerabilityDetails,
 				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+				ExternalReference:    bookingReference,
 			},
 			OccupancyId:   occupancyID,
 			BookingSource: params.Source,

@@ -52,7 +52,7 @@ type TestCaseBase[Input any, Expected any] struct {
 }
 
 func makeDummyBooking(
-	bookingID, accountID, occuID string,
+	bookingID, accountID, occuID, bookingReference string,
 	bookingStatus bookingv1.BookingStatus,
 	slot models.BookingSlot,
 	vulnerabilities models.Vulnerabilities,
@@ -74,6 +74,7 @@ func makeDummyBooking(
 			Vulnerabilities: vulnerabilities,
 			Other:           "",
 		},
+		BookingReference: bookingReference,
 	}
 }
 
@@ -98,6 +99,7 @@ func Test_BookingStore_Upsert(t *testing.T) {
 				"booking-id-1",
 				"account-id-1",
 				"occupancy-id-1",
+				"booking-reference-1",
 				bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 				makeBookingSlot(t, "2023-09-16", 13, 15),
 				models.Vulnerabilities{bookingv1.Vulnerability_VULNERABILITY_ILLNESS},
@@ -134,14 +136,14 @@ func Test_BookingStore_UpsertAndQuery(t *testing.T) {
 				QueriedAccountID: "account-id-1",
 				Insertions: []models.Booking{
 					makeDummyBooking(
-						"booking-id-1", "account-id-1", "occupancy-id-1",
+						"booking-id-1", "account-id-1", "occupancy-id-1", "booking-reference-1",
 						bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 						makeBookingSlot(t, "2023-05-01", 13, 15),
 						models.Vulnerabilities{}),
 				}},
 			E: []models.Booking{
 				makeDummyBooking(
-					"booking-id-1", "account-id-1", "occupancy-id-1",
+					"booking-id-1", "account-id-1", "occupancy-id-1", "booking-reference-1",
 					bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 					makeBookingSlot(t, "2023-05-01", 13, 15),
 					models.Vulnerabilities{}),
@@ -153,29 +155,29 @@ func Test_BookingStore_UpsertAndQuery(t *testing.T) {
 				QueriedAccountID: "account-id-1",
 				Insertions: []models.Booking{
 					makeDummyBooking(
-						"booking-id-1", "account-id-1", "occupancy-id-1",
+						"booking-id-1", "account-id-1", "occupancy-id-1", "booking-reference-1",
 						bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 						makeBookingSlot(t, "2023-05-01", 13, 15),
 						models.Vulnerabilities{}),
 					makeDummyBooking(
-						"booking-id-2", "account-id-1", "occupancy-id-2",
+						"booking-id-2", "account-id-1", "occupancy-id-2", "booking-reference-2",
 						bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 						makeBookingSlot(t, "2023-09-16", 13, 15),
 						models.Vulnerabilities{}),
 					makeDummyBooking(
-						"booking-id-3", "account-id-2", "occupancy-id-3",
+						"booking-id-3", "account-id-2", "occupancy-id-3", "booking-reference-3",
 						bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 						makeBookingSlot(t, "2023-08-07", 10, 12),
 						models.Vulnerabilities{}),
 				}},
 			E: []models.Booking{
 				makeDummyBooking(
-					"booking-id-1", "account-id-1", "occupancy-id-1",
+					"booking-id-1", "account-id-1", "occupancy-id-1", "booking-reference-1",
 					bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 					makeBookingSlot(t, "2023-05-01", 13, 15),
 					models.Vulnerabilities{}),
 				makeDummyBooking(
-					"booking-id-2", "account-id-1", "occupancy-id-2",
+					"booking-id-2", "account-id-1", "occupancy-id-2", "booking-reference-2",
 					bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 					makeBookingSlot(t, "2023-09-16", 13, 15),
 					models.Vulnerabilities{}),
