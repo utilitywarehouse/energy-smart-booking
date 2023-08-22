@@ -456,7 +456,8 @@ func Test_CreateBooking(t *testing.T) {
 								},
 								Other: "",
 							},
-							Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+							Status:            bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+							ExternalReference: "booking-reference-1",
 						},
 					},
 				},
@@ -681,6 +682,7 @@ func Test_RescheduleBooking(t *testing.T) {
 						},
 						Other: "Bad Knee",
 					},
+					BookingReference: "booking-reference-1",
 				}, nil)
 
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{

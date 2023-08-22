@@ -108,6 +108,7 @@ func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) 
 				Vulnerabilities: vulns.GetVulnerabilities(),
 				Other:           vulns.GetOther(),
 			},
+			BookingReference: details.GetExternalReference(),
 		})
 	case *bookingv1.BookingRescheduledEvent:
 		bookingID := ev.GetBookingId()

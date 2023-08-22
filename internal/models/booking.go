@@ -38,4 +38,5 @@ type Booking struct {
 	Contact              AccountDetails
 	Slot                 BookingSlot
 	VulnerabilityDetails VulnerabilityDetails
+	BookingReference     string
 }
