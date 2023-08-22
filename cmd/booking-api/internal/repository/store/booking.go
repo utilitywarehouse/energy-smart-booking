@@ -159,6 +159,7 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 }
 
 func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID string) (models.Booking, error) {
+
 	q := `
 	SELECT
 		booking_id,
@@ -183,6 +184,7 @@ func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID stri
 	WHERE booking_id = $1; 
 	`
 	row := s.pool.QueryRow(ctx, q, bookingID)
+
 	booking := models.Booking{}
 	err := row.Scan(
 		&booking.BookingID,

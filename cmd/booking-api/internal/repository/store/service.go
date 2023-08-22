@@ -78,6 +78,7 @@ func (s *ServiceStore) Upsert(service models.Service) {
 }
 
 func (s *ServiceStore) GetReferenceByOccupancyID(ctx context.Context, occupancyID string) (string, error) {
+
 	q := `
 	SELECT br.reference
 	FROM service s
