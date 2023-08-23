@@ -21,6 +21,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
 	"github.com/utilitywarehouse/go-operational/op"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 )
@@ -94,6 +95,16 @@ func runServer(c *cli.Context) error {
 		WithDetails(appName, appDesc)
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	closer, err := telemetry.Register(ctx,
+		telemetry.WithServiceName(appName),
+		telemetry.WithTeam("energy-smart"),
+		telemetry.WithServiceVersion(gitHash),
+	)
+	if err != nil {
+		fmt.Println("Telemetry cannot be registered")
+	}
+	defer closer.Close()
 
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 

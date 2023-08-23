@@ -11,6 +11,9 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -79,6 +82,11 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("request: [%s]", string(body))
 
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
+		trace.WithAttributes(attribute.String("req", string(body))),
+	)
+	defer span.End()
+
 	request, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
@@ -110,6 +118,8 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 	}
 
 	logrus.Debugf("response: [%s]", string(bodyBytes))
+
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
 
 	return bodyBytes, nil
 }
