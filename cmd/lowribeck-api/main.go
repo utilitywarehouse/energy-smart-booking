@@ -102,7 +102,7 @@ func runServer(c *cli.Context) error {
 		telemetry.WithServiceVersion(gitHash),
 	)
 	if err != nil {
-		log.Errorf("Telemetry cannot be registered: v", err)
+		log.Errorf("Telemetry cannot be registered: %v", err)
 	}
 	defer closer.Close()
 
