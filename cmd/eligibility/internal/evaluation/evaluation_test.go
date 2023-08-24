@@ -414,6 +414,128 @@ func TestRunSuppliability(t *testing.T) {
 			},
 		},
 		{
+			description: "occupancy suppliable if meter exists with no capacity defined",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            domain.IneligibleReasons{domain.IneligibleReasonMissingMeterData},
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeGas,
+						Capacity:   nil,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyAddedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not suppliable if meter does not exist",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore:             &mockStore{meters: map[string]domain.Meter{}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METER_DATA},
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
 			description: "occupancy not suppliable for smart booking journey with no previous suppliability evaluation",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
