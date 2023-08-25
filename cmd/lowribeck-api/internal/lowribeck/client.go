@@ -150,12 +150,12 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 
 		return ErrNotOKStatusCode
 	case http.StatusNotFound:
-		logrus.Error("health check failed got a not found(404) status code, the request URL is: %s", requestUrl)
+		logrus.Errorf("health check failed got a not found(404) status code, the request URL is: %s", requestUrl)
 
 		return ErrNotOKStatusCode
 	
 	default:
-		logrus.Error("health check got status code: %d", resp.StatusCode)
+		logrus.Errorf("health check got status code: %d", resp.StatusCode)
 
 		return ErrNotOKStatusCode
 	}
