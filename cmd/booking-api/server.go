@@ -24,6 +24,7 @@ import (
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
@@ -121,6 +122,16 @@ func serverAction(c *cli.Context) error {
 	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	closer, err := telemetry.Register(ctx,
+		telemetry.WithServiceName(appName),
+		telemetry.WithTeam("energy-smart"),
+		telemetry.WithServiceVersion(gitHash),
+	)
+	if err != nil {
+		log.Errorf("Telemetry cannot be registered: %v", err)
+	}
+	defer closer.Close()
 
 	grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
 	reflection.Register(grpcServer)
