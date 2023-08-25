@@ -19,7 +19,11 @@ type BookingRefStore interface {
 	GetReference(ctx context.Context, mpxn string) (string, error)
 }
 
-func HandleBookingRef(store BookingRefStore) substratemessage.BatchHandlerFunc {
+type OccupancyBookingRefStore interface {
+	GetIDsByMPXN(ctx context.Context, mpxn string) ([]string, error)
+}
+
+func HandleBookingRef(store BookingRefStore, occupancyStore OccupancyBookingRefStore, evaluator Evaluator, stateRebuild bool) substratemessage.BatchHandlerFunc {
 	return func(ctx context.Context, messages []substrate.Message) error {
 		for _, msg := range messages {
 			var env energy_contracts.Envelope
@@ -46,7 +50,26 @@ func HandleBookingRef(store BookingRefStore) substratemessage.BatchHandlerFunc {
 			if err != nil {
 				return fmt.Errorf("failed to process booking ref event %s: %w", env.GetUuid(), err)
 			}
+
+			if !stateRebuild {
+				mpxn := inner.(refIdentifier).GetMpxn()
+				occupanciesIDs, err := occupancyStore.GetIDsByMPXN(ctx, mpxn)
+				if err != nil {
+					return fmt.Errorf("failed to get occupancies for msg %s, mpxn %s: %w", env.GetUuid(), mpxn, err)
+				}
+				for _, occupancyID := range occupanciesIDs {
+					err = evaluator.RunFull(ctx, occupancyID)
+					if err != nil {
+						return fmt.Errorf("failed to run evaluation for meter msg %s, occupancyID %s: %w", env.GetUuid(), occupancyID, err)
+					}
+				}
+			}
 		}
+
 		return nil
 	}
+}
+
+type refIdentifier interface {
+	GetMpxn() string
 }

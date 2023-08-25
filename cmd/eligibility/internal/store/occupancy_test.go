@@ -57,21 +57,27 @@ func TestOccupancy(t *testing.T) {
 
 	q := `
 		INSERT INTO services(id, occupancy_id, mpxn, supply_type, is_live)
-		VALUES ('id1', 'occupancy_id1', 'mpxn', 'gas', true), 
-		       ('id2', 'occupancy_id1', 'mpxn', 'elec', true),
-		       ('id3', 'occupancy_id2', 'mpxn', 'gas', false),
-		       ('id4', 'occupancy_id2', 'mpxn', 'elec', true);`
+		VALUES ('id1', 'occupancy1', 'mpxn1', 'gas', true), 
+		       ('id2', 'occupancy1', 'mpxn2', 'elec', true),
+		       ('id3', 'occupancy2', 'mpxn3', 'gas', false),
+		       ('id4', 'occupancy2', 'mpxn4', 'elec', true);`
 
 	_, err = store.pool.Exec(ctx, q)
 	assert.NoError(err)
 
+	// get by mpxn
+	ids, err = store.GetIDsByMPXN(ctx, "mpxn1")
+	assert.NoError(err)
+	assert.True(len(ids) == 1)
+	assert.Equal("occupancy1", ids[0])
+
 	ids, err = store.GetLiveOccupanciesPendingEvaluation(ctx)
 	assert.NoError(err)
-	assert.ElementsMatch([]string{"occupancy_id1", "occupancy_id2"}, ids)
+	assert.ElementsMatch([]string{"occupancy1", "occupancy2"}, ids)
 
 	ids, err = store.GetLiveOccupancies(ctx)
 	assert.NoError(err)
-	assert.ElementsMatch([]string{"occupancy_id1", "occupancy_id2"}, ids)
+	assert.ElementsMatch([]string{"occupancy1", "occupancy2"}, ids)
 }
 
 func TestLoadOccupancy(t *testing.T) {
