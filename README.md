@@ -88,3 +88,17 @@ Please refer to this(https://github.com/utilitywarehouse/energy-smart-booking/bl
 
 TBC
 
+### click-generator
+Click generator is a service used for testing smart booking journey when we use pre authenticated
+links. 
+The solution uses https://github.com/utilitywarehouse/click.uw.co.uk for link generation and exposes 
+and endpoint inside UW via ingress definition:
+
+DEV: https://smart-booking-click-api.dev.merit.uw.systems/generate?type=auth
+
+PROD: https://smart-booking-click-api.prod.aws.uw.systems/generate?type=auth
+
+Example of usage:
+POST https://smart-booking-click-api.dev.merit.uw.systems/generate?type=auth
+
+Body: { "account_number": "7821689" }
