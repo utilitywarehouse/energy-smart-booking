@@ -37,8 +37,9 @@ func TestBookingRefConsumer(t *testing.T) {
 		}
 	}()
 	s := store.NewBookingRef(pool)
+	occ := store.NewOccupancy(pool)
 
-	handler := HandleBookingRef(s)
+	handler := HandleBookingRef(s, occ, nil, false)
 
 	ev1, err := test_common.MakeMessage(&smart.BookingMpxnReferenceCreatedEvent{
 		Mpxn:      "mpxn1",

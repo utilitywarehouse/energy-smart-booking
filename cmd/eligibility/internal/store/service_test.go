@@ -20,7 +20,7 @@ func TestService(t *testing.T) {
 	err := s.Add(ctx, &Service{
 		ID:          "service1",
 		Mpxn:        mpxn,
-		OccupancyID: "occupancy1",
+		OccupancyID: "service-occupancy-1",
 		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      false,
 	})
@@ -35,7 +35,7 @@ func TestService(t *testing.T) {
 	expected := Service{
 		ID:          "service1",
 		Mpxn:        mpxn,
-		OccupancyID: "occupancy1",
+		OccupancyID: "service-occupancy-1",
 		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      false,
 		StartDate:   &startDate,
@@ -43,20 +43,20 @@ func TestService(t *testing.T) {
 	}
 	assert.Equal(expected, service, "mismatch")
 
-	liveServices, err := s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
+	liveServices, err := s.LoadLiveServicesByOccupancyID(ctx, "service-occupancy-1")
 	assert.NoError(err, "failed to get live services")
 	assert.Equal(0, len(liveServices), "mismatch: should have 0 live services")
 
 	err = s.Add(ctx, &Service{
 		ID:          "service1",
 		Mpxn:        mpxn,
-		OccupancyID: "occupancy1",
+		OccupancyID: "service-occupancy-1",
 		SupplyType:  energy_domain.SupplyTypeGas,
 		IsLive:      true,
 	})
 	assert.NoError(err, "failed to update service")
 
-	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
+	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "service-occupancy-1")
 	assert.NoError(err, "failed to get live services")
 	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
 	expectedSv := domain.Service{
@@ -69,7 +69,7 @@ func TestService(t *testing.T) {
 	_, err = s.pool.Exec(ctx, `INSERT INTO meterpoints(mpxn, supply_type, alt_han, profile_class, ssc) VALUES('service_mpxn', 'gas', true, 'PROFILE_CLASS_01', 'ssc');`)
 	assert.NoError(err)
 
-	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "occupancy1")
+	liveServices, err = s.LoadLiveServicesByOccupancyID(ctx, "service-occupancy-1")
 	assert.NoError(err, "failed to get live services")
 	assert.Equal(1, len(liveServices), "mismatch: should have 1 live service")
 

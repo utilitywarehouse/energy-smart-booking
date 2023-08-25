@@ -346,6 +346,7 @@ func TestRunSuppliability(t *testing.T) {
 	}
 
 	var capacity float32 = 6
+	var largeCapacity float32 = 21
 
 	testCases := []testCase{
 		{
@@ -410,6 +411,448 @@ func TestRunSuppliability(t *testing.T) {
 				assert.Equal(&smart.SuppliableOccupancyAddedEvent{
 					OccupancyId: "occupancy-id",
 					AccountId:   "account-id",
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy suppliable if meter exists with no capacity defined",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            domain.IneligibleReasons{domain.IneligibleReasonMissingMeterData},
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeGas,
+						Capacity:   nil,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyAddedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not suppliable if meter does not exist",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore:             &mockStore{meters: map[string]domain.Meter{}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METER_DATA},
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy suppliable if meter has large capacity",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeGas,
+						Capacity:   &largeCapacity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_METER_LARGE_CAPACITY},
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not suppliable if site does not exist",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeGas,
+						Capacity:   nil,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_MISSING_SITE_DATA},
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not suppliable if site does not have wan coverage",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: false,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeGas,
+						Capacity:   nil,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_NO_WAN_COVERAGE},
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not suppliable if no active services",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeGas,
+						Capacity:   nil,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_NOT_ACTIVE},
+				}, sMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not suppliable if meterpoint alt han",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeGas,
+							BookingReference: "booking-ref",
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:   "mpxn",
+								AltHan: true,
+							},
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeGas,
+						Capacity:   nil,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only suppliable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(sMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.SuppliableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_ALT_HAN},
 				}, sMockSync.Msgs[0])
 			},
 		},
@@ -881,6 +1324,134 @@ func TestRunCampaignability(t *testing.T) {
 
 	testCases := []testCase{
 		{
+			description: "occupancy not campaignable if account opt out",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID:     "account-id",
+							OptOut: true,
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: false,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
+								SSC:          "ssc",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only campaignable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(sMockSync.Msgs) == 0)
+
+				assert.True(len(cMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.CampaignableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_SMART_BOOKING_OPT_OUT},
+				}, cMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not campaignable if no active services",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   true,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: false,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only campaignable + booking events should be published
+				assert.True(len(eMockSync.Msgs) == 0)
+				assert.True(len(sMockSync.Msgs) == 0)
+
+				assert.True(len(cMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.CampaignableOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_NOT_ACTIVE},
+				}, cMockSync.Msgs[0])
+			},
+		},
+		{
 			description: "occupancy not campaignable for smart booking journey with no previous campaignability evaluation",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
@@ -1350,6 +1921,541 @@ func TestRunEligibility(t *testing.T) {
 	}
 
 	testCases := []testCase{
+		{
+			description: "occupancy not eligible for if account has psr codes",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID:       "account-id",
+							PSRCodes: []string{"10"},
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
+								SSC:          "ssc",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_ACCOUNT_PSR_VULNERABILITIES},
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not eligible for if site missing",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
+								SSC:          "ssc",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_MISSING_SITE_DATA},
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not eligible for if site does not have wan coverage",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: false,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
+								SSC:          "ssc",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_NO_WAN_COVERAGE},
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not eligible for if no active services",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_NOT_ACTIVE},
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not eligible for if missing meterpoint data",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:               "service-id",
+							Mpxn:             "mpxn",
+							SupplyType:       energy_domain.SupplyTypeElectricity,
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METERPOINT_DATA},
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not eligible for if it has complex tariff",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_02,
+								SSC:          "0003",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  "some_type",
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_COMPLEX_TARIFF},
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not eligible for if missing meter data",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
+								SSC:          "ssc",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore:             &mockStore{meters: map[string]domain.Meter{}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_MISSING_METER_DATA},
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
+			description: "occupancy not eligible for if meter already smart",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
+								SSC:          "ssc",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        "msn",
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  platform.MeterTypeElec_METER_TYPE_ELEC_S2A.String(),
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_ALREADY_SMART},
+				}, eMockSync.Msgs[0])
+			},
+		},
 		{
 			description: "occupancy not eligible for smart booking journey with no previous eligibility evaluation",
 			occupancyID: "occupancy-id",
