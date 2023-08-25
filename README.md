@@ -92,7 +92,7 @@ TBC
 Click generator is a service used for testing smart booking journey when we use pre authenticated
 links. 
 The solution uses https://github.com/utilitywarehouse/click.uw.co.uk for link generation and exposes 
-and endpoint inside UW via ingress definition:
+an endpoint inside UW via ingress definition:
 
 DEV: https://smart-booking-click-api.dev.merit.uw.systems/generate?type=auth
 
