@@ -58,9 +58,9 @@ func TestOccupancy(t *testing.T) {
 	q := `
 		INSERT INTO services(id, occupancy_id, mpxn, supply_type, is_live)
 		VALUES ('id1', 'occupancy1', 'mpxn1', 'gas', true), 
-		       ('id2', 'occupancy1', 'mpxn2', 'elec', true),
+		       ('id2', 'occupancy1', 'mpxn2', 'electricity', true),
 		       ('id3', 'occupancy2', 'mpxn3', 'gas', false),
-		       ('id4', 'occupancy2', 'mpxn4', 'elec', true);`
+		       ('id4', 'occupancy2', 'mpxn4', 'electricity', true);`
 
 	_, err = store.pool.Exec(ctx, q)
 	assert.NoError(err)
