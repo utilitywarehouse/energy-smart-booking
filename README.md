@@ -79,7 +79,7 @@ The second endpoint is CreateBooking which returns whether a booking was success
 | 500 | INTERNAL | Internal server error. Typically a server bug. |
 
 
-## Booking API
+### Booking API
 
 Please refer to this(https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/booking-api/README.md) README.
 
