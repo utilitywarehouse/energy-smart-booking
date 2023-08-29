@@ -175,7 +175,7 @@ func runEvaluator(c *cli.Context) error {
 	})
 	g.Go(func() error {
 		defer logrus.Info("booking ref events consumer finished")
-		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, bookingRefSource, consumer.HandleBookingRef(bookingRefStore))
+		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, bookingRefSource, consumer.HandleBookingRef(bookingRefStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
 		defer logrus.Info("meter events consumer finished")

@@ -79,7 +79,7 @@ The second endpoint is CreateBooking which returns whether a booking was success
 | 500 | INTERNAL | Internal server error. Typically a server bug. |
 
 
-## Booking API
+### Booking API
 
 Please refer to this(https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/booking-api/README.md) README.
 
@@ -88,3 +88,48 @@ Please refer to this(https://github.com/utilitywarehouse/energy-smart-booking/bl
 
 TBC
 
+### click-generator
+Click generator is a service used for testing smart booking journey when we use pre authenticated
+links. 
+The solution uses https://github.com/utilitywarehouse/click.uw.co.uk for link generation and exposes 
+an endpoint inside UW via ingress definition:
+
+DEV: https://smart-booking-click-api.dev.merit.uw.systems/generate?type=auth
+
+PROD: https://smart-booking-click-api.prod.aws.uw.systems/generate?type=auth
+
+Example of usage:
+POST https://smart-booking-click-api.dev.merit.uw.systems/generate?type=auth
+
+Body: { "account_number": "7821689" }
+
+### Eligibility
+Eligibility services are responsible in evaluating and emitting eligibility related
+events for the scope of smart meter booking journey.
+
+Services under eligibility:
+1. Evaluator
+    
+    Evaluator service is responsible for listening to different events that can impact
+    the eligibility of an occupancy to go through a smart booking journey and trigger the 
+    evaluation.
+    Each time an evaluation runs, it compares the new results with the previous ones stored
+    and publishes update events if changed.
+    Data sources diagram - https://miro.com/app/board/uXjVMKuEWPo=/
+    
+    More details on evaluation criteria can be found at https://wiki.uw.systems/posts/campaignability-eligibility-suppliability-evaluation-xov7il5y.
+2. GRPC API
+
+    Provides a gRPC API to query eligibility for a given account or a (account, occupancy)
+pair. 
+3. HTTP API
+    
+    Provides a http API to run full evaluation for all live occupancies which are not evaluated 
+or to re-run full evaluation.
+    
+    The http api is not exposed, as it's meant to be used as a tool to trigger eligibility when something
+didn't run as expected / evaluation is missing because of different reasons.
+
+4. BQ indexer
+    
+    Indexes eligibility related events in BigQuery tables.
