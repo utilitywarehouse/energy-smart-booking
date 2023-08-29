@@ -110,7 +110,7 @@ events for the scope of smart meter booking journey.
 Services under eligibility:
 1. Evaluator
     
-    Evaluator service is responsible to listen to different events that can impact
+    Evaluator service is responsible for listening to different events that can impact
     the eligibility of an occupancy to go through a smart booking journey and trigger the 
     evaluation.
     Each time an evaluation runs, it compares the new results with the previous ones stored
