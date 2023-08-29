@@ -33,6 +33,8 @@ var (
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
 
 	flagBookingRefTopic = "booking-reference-topic"
+
+	flagOccupancyEligibleTopic = "occupancy-eligible-topic"
 )
 
 func init() {
@@ -56,6 +58,10 @@ func init() {
 			&cli.StringFlag{
 				Name:    flagBookingRefTopic,
 				EnvVars: []string{"BOOKING_REFERENCE_TOPIC"},
+			},
+			&cli.StringFlag{
+				Name:    flagOccupancyEligibleTopic,
+				EnvVars: []string{"OCCUPANCY_ELIGIBLE_TOPIC"},
 			},
 			&cli.IntFlag{
 				Name:    flagBatchSize,
@@ -193,6 +199,11 @@ func projectorAction(c *cli.Context) error {
 			FlagTopic: flagBookingTopic,
 			BatchSize: batchSize,
 			Handler:   consumer.HandleBooking(store.NewBooking(pool), store.NewOccupancy(pool)),
+		},
+		{
+			FlagTopic: flagOccupancyEligibleTopic,
+			BatchSize: batchSize,
+			Handler:   consumer.NewOccupancyEligibleHandler(store.NewOccupancyEligible(pool)),
 		},
 	})
 	if err != nil {

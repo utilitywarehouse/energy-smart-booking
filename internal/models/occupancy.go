@@ -15,3 +15,10 @@ func (o Occupancy) IsEmpty() bool {
 		o.OccupancyID == "" &&
 		o.SiteID == ""
 }
+
+type OccupancyEligibility struct {
+	OccupancyID string
+	Reference   string
+
+	DeletedAt *time.Time
+}
