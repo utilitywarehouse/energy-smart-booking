@@ -148,6 +148,7 @@ func projectorAction(c *cli.Context) error {
 				FlagsTopic: []string{
 					flagBookingRefTopic,
 					flagBookingTopic,
+					flagOccupancyEligibleTopic,
 				},
 			},
 			{
