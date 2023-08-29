@@ -85,8 +85,13 @@ Please refer to this(https://github.com/utilitywarehouse/energy-smart-booking/bl
 
 
 ### opt-out
+Handles opt-outs for smart meter installation. 
+The purpose of the service is to be used in-house (no customer facing exposure) to mark the 
+customers that don't wish to be campaigned about or go through a smart meter installment process. 
+The UI for this service can be found at https://energy-smart-booking-opt-out-ui.prod.aws.uw.systems/
+Events AccountBookingOptOutAdded/RemovedEvent are published every time we update the list of opt-outs,
+either by adding or removing an account from there. 
 
-TBC
 
 ### click-generator
 Click generator is a service used for testing smart booking journey when we use pre authenticated
