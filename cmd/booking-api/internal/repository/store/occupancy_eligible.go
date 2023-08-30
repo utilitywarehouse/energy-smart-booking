@@ -33,7 +33,7 @@ func (s *OccupancyEligibleStore) Upsert(occupancy models.OccupancyEligibility) {
 	INSERT INTO occupancy_eligible (occupancy_id, reference)
 	VALUES ($1, $2)
 	ON CONFLICT (occupancy_id)
-	DO UPDATE SET reference = $2, updated_at = NOW();`
+	DO UPDATE SET reference = $2, updated_at = NOW(), deleted_at = NULL;`
 
 	s.batch.Queue(q, occupancy.OccupancyID, occupancy.Reference)
 }

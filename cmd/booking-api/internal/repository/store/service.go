@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -75,32 +74,6 @@ func (s *ServiceStore) Upsert(service models.Service) {
 		sql.NullTime{Time: defaultIfNull(service.StartDate), Valid: service.StartDate != nil},
 		sql.NullTime{Time: defaultIfNull(service.EndDate), Valid: service.EndDate != nil},
 		service.IsLive)
-}
-
-func (s *ServiceStore) GetReferenceByOccupancyID(ctx context.Context, occupancyID string) (string, error) {
-
-	q := `
-	SELECT br.reference
-	FROM service s
-	JOIN 
-		booking_reference br ON s.mpxn = br.mpxn 
-	WHERE 
-		s.occupancy_id = $1
-		AND s.is_live IS TRUE
-		AND br.deleted_at IS NULL;
-	`
-
-	var bookingReference string
-
-	err := s.pool.QueryRow(ctx, q, occupancyID).Scan(&bookingReference)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return "", ErrReferenceNotFound
-		}
-		return "", fmt.Errorf("failed to scan row, %w", err)
-	}
-
-	return bookingReference, nil
 }
 
 func defaultIfNull(t *time.Time) time.Time {

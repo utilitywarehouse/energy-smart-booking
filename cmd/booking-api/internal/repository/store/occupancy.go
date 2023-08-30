@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -67,49 +66,6 @@ func (s *OccupancyStore) GetOccupancyByID(ctx context.Context, occupancyID strin
 	return &occ, nil
 }
 
-func (s *OccupancyStore) GetLiveOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error) {
-	occupancies := make([]models.Occupancy, 0)
-
-	q := `SELECT 
-		o.occupancy_id,
-		o.site_id,
-		o.account_id,
-		o.created_at
-	FROM 
-		occupancy o
-	INNER JOIN service s 
-		ON o.occupancy_id = s.occupancy_id
-	WHERE
-		o.account_id = $1
-	AND
-		s.is_live IS TRUE
-	ORDER BY
-		o.created_at DESC;`
-
-	rows, err := s.pool.Query(ctx, q, accountID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to query get occupancies by account id, %w", err)
-	}
-
-	for rows.Next() {
-		var occ models.Occupancy
-
-		err := rows.Scan(&occ.OccupancyID, &occ.SiteID, &occ.AccountID, &occ.CreatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan row, %w", err)
-
-		}
-
-		occupancies = append(occupancies, occ)
-	}
-
-	if rows.Err() != nil {
-		return nil, fmt.Errorf("error found in rows, %w", err)
-	}
-
-	return occupancies, nil
-}
-
 func (s *OccupancyStore) GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error) {
 	var site models.Site
 	var occupancyEligibility models.OccupancyEligibility
@@ -136,12 +92,11 @@ func (s *OccupancyStore) GetSiteExternalReferenceByAccountID(ctx context.Context
 		oe.reference
 	
 		FROM occupancy_eligible oe
-		JOIN service s ON oe.occupancy_id = s.occupancy_id
 		JOIN occupancy o ON o.occupancy_id = oe.occupancy_id
 		JOIN site si ON si.site_id = o.site_id
 	
 		WHERE o.account_id = $1
-		AND s.is_live IS TRUE
+		AND oe.deleted_at IS NULL
 		ORDER BY
 			o.created_at DESC;`
 
