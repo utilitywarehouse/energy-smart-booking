@@ -206,7 +206,7 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 
 	site, occupancyEligible, err := d.occupancyStore.GetSiteExternalReferenceByAccountID(ctx, accountID)
 	if err != nil {
-		if errors.Is(err, store.ErrNoOccupancyEligibleFound) {
+		if errors.Is(err, store.ErrNoEligibleOccupancyFound) {
 			return models.Site{}, models.OccupancyEligibility{}, ErrNoEligibleOccupanciesFound
 		}
 		return models.Site{}, models.OccupancyEligibility{}, fmt.Errorf("failed to get live occupancies by accountID, %w", err)

@@ -208,7 +208,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 					&models.OccupancyEligibility{
 						OccupancyID: "occupancy-id-1",
 						Reference:   "booking-reference-1",
-					}, store.ErrNoOccupancyEligibleFound)
+					}, store.ErrNoEligibleOccupancyFound)
 			},
 			output: outputParams{
 				output: domain.GetAvailableSlotsResponse{

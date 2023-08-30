@@ -14,7 +14,7 @@ var (
 	ErrOccupancyNotFound = errors.New("occupancy not found")
 	ErrFailedUpdate      = errors.New("no rows were affected by update statement")
 
-	ErrNoOccupancyEligibleFound = errors.New("eligible occupancy not found")
+	ErrNoEligibleOccupancyFound = errors.New("eligible occupancy not found")
 )
 
 type OccupancyStore struct {
@@ -166,7 +166,7 @@ func (s *OccupancyStore) GetSiteExternalReferenceByAccountID(ctx context.Context
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, nil, ErrNoOccupancyEligibleFound
+			return nil, nil, ErrNoEligibleOccupancyFound
 		}
 	}
 
