@@ -12,18 +12,12 @@ type AccountGateway interface {
 	GetAccountByAccountID(ctx context.Context, accountID string) (models.Account, error)
 }
 
-type EligibilityGateway interface {
-	GetEligibility(ctx context.Context, accountID, occupancyID string) (bool, error)
-}
-
 type OccupancyStore interface {
-	GetLiveOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error)
 	GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error)
 }
 
 type SiteStore interface {
 	GetSiteByOccupancyID(ctx context.Context, occupancyID string) (*models.Site, error)
-	GetSiteBySiteID(ctx context.Context, siteID string) (*models.Site, error)
 }
 
 type LowriBeckGateway interface {
@@ -38,7 +32,6 @@ type BookingStore interface {
 
 type BookingDomain struct {
 	accounts       AccountGateway
-	eligibilityGw  EligibilityGateway
 	lowribeckGw    LowriBeckGateway
 	occupancyStore OccupancyStore
 	siteStore      SiteStore
@@ -46,7 +39,6 @@ type BookingDomain struct {
 }
 
 func NewBookingDomain(accounts AccountGateway,
-	eligibilityGw EligibilityGateway,
 	lowribeckGw LowriBeckGateway,
 	occupancyStore OccupancyStore,
 	siteStore SiteStore,
@@ -54,7 +46,6 @@ func NewBookingDomain(accounts AccountGateway,
 ) BookingDomain {
 	return BookingDomain{
 		accounts,
-		eligibilityGw,
 		lowribeckGw,
 		occupancyStore,
 		siteStore,

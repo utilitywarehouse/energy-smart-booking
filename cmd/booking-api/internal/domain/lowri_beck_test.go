@@ -30,13 +30,12 @@ func Test_GetAvailableSlots(t *testing.T) {
 	defer ctrl.Finish()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		params domain.GetAvailableSlotsParams
@@ -49,10 +48,9 @@ func Test_GetAvailableSlots(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-			sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway)
-		input  inputParams
-		output outputParams
+		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway)
+		input       inputParams
+		output      outputParams
 	}
 
 	testCases := []testSetup{
@@ -73,8 +71,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-				sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -141,8 +138,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-				sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -198,8 +194,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-				sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -222,7 +217,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, accGw, eliGw, occSt, siteSt, lbGw)
+			tc.setup(ctx, occSt, lbGw)
 
 			actual, err := myDomain.GetAvailableSlots(ctx, tc.input.params)
 
@@ -247,13 +242,12 @@ func Test_CreateBooking(t *testing.T) {
 	defer ctrl.Finish()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
 
 	var emptyMsg *bookingv1.BookingCreatedEvent
 
@@ -268,10 +262,9 @@ func Test_CreateBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-			sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway)
-		input  inputParams
-		output outputParams
+		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway)
+		input       inputParams
+		output      outputParams
 	}
 
 	testCases := []testSetup{
@@ -301,8 +294,7 @@ func Test_CreateBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-				sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -425,8 +417,7 @@ func Test_CreateBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-				sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -481,7 +472,7 @@ func Test_CreateBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, accGw, eliGw, occSt, siteSt, lbGw)
+			tc.setup(ctx, occSt, lbGw)
 
 			actual, err := myDomain.CreateBooking(ctx, tc.input.params)
 
@@ -507,13 +498,12 @@ func Test_RescheduleBooking(t *testing.T) {
 	defer ctrl.Finish()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		params domain.RescheduleBookingParams
@@ -526,10 +516,9 @@ func Test_RescheduleBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-			sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway)
-		input  inputParams
-		output outputParams
+		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway)
+		input       inputParams
+		output      outputParams
 	}
 
 	var emptyMsg *bookingv1.BookingRescheduledEvent
@@ -548,8 +537,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-				sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -649,8 +637,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore,
-				sSt *mocks.MockSiteStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -730,7 +717,7 @@ func Test_RescheduleBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, accGw, eliGw, occSt, siteSt, lbGw)
+			tc.setup(ctx, occSt, lbGw)
 
 			actual, err := myDomain.RescheduleBooking(ctx, tc.input.params)
 

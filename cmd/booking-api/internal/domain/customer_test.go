@@ -14,6 +14,7 @@ import (
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain/mocks"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 )
@@ -35,13 +36,12 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	defer ctrl.Finish()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		accountID string
@@ -54,7 +54,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore)
+		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway)
 		input       inputParams
 		output      outputParams
 	}
@@ -65,7 +65,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 			input: inputParams{
 				accountID: "account-id-1",
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway) {
 				aGw.EXPECT().GetAccountByAccountID(ctx, "account-id-1").Return(models.Account{
 					AccountID: "account-id-1",
 					Details: models.AccountDetails{
@@ -95,7 +95,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, accGw, eliGw, occSt, siteSt)
+			tc.setup(ctx, accGw)
 
 			expected, err := myDomain.GetCustomerContactDetails(ctx, tc.input.accountID)
 			if err != nil {
@@ -117,13 +117,12 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 	defer ctrl.Finish()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		accountID string
@@ -136,7 +135,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore)
+		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -147,51 +146,28 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 			input: inputParams{
 				accountID: "account-id-1",
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
-				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return(
-					[]models.Occupancy{
-						{
-							OccupancyID: "occupancy-id-1",
-							SiteID:      "site-id-1",
-							AccountID:   "account-id-1",
-							CreatedAt:   time.Time{},
-						},
-						{
-							OccupancyID: "occupancy-id-2",
-							SiteID:      "site-id-2",
-							AccountID:   "account-id-1",
-							CreatedAt:   time.Time{},
-						},
-						{
-							OccupancyID: "occupancy-id-3",
-							SiteID:      "site-id-3",
-							AccountID:   "account-id-1",
-							CreatedAt:   time.Time{},
-						},
-					}, nil)
-
-				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(false, nil)
-				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-2").Return(true, nil)
-
-				sSt.EXPECT().GetSiteBySiteID(ctx, "site-id-2").Return(
-					&models.Site{
-						SiteID:                  "site-id-2",
-						Postcode:                "post-code",
-						UPRN:                    "uprn",
-						BuildingNameNumber:      "building-name-number",
-						DependentThoroughfare:   "dependent-thoroughfare",
-						Thoroughfare:            "thoroughfare",
-						DoubleDependentLocality: "ddl-1",
-						DependentLocality:       "dl-1",
-						Locality:                "locality",
-						County:                  "county",
-						Town:                    "town",
-						Department:              "department",
-						Organisation:            "organisation",
-						PoBox:                   "pobox",
-						DeliveryPointSuffix:     "delivery-point-suffix",
-						SubBuildingNameNumber:   "sub-building-name-number",
-					}, nil)
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore) {
+				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(&models.Site{
+					SiteID:                  "site-id-1",
+					Postcode:                "post-code",
+					UPRN:                    "uprn",
+					BuildingNameNumber:      "building-name-number",
+					SubBuildingNameNumber:   "sub-building-name-number",
+					DependentThoroughfare:   "dependent-thoroughfare",
+					Thoroughfare:            "thoroughfare",
+					DoubleDependentLocality: "ddl-1",
+					DependentLocality:       "dl-1",
+					Locality:                "locality",
+					County:                  "county",
+					Town:                    "town",
+					Department:              "department",
+					Organisation:            "organisation",
+					PoBox:                   "pobox",
+					DeliveryPointSuffix:     "delivery-point-suffix",
+				}, &models.OccupancyEligibility{
+					OccupancyID: "occupancy-id-1",
+					Reference:   "reference-1",
+				}, nil)
 			},
 			output: outputParams{
 				address: models.AccountAddress{
@@ -213,41 +189,12 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 			},
 		},
 		{
-			description: "account does not have occupancies",
+			description: "account does not have eligible occupancies",
 			input: inputParams{
 				accountID: "account-id-1",
 			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
-				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{}, nil)
-			},
-			output: outputParams{
-				address: models.AccountAddress{},
-				err:     domain.ErrNoOccupanciesFound,
-			},
-		},
-		{
-			description: "account does not have any eligible occupancies",
-			input: inputParams{
-				accountID: "account-id-1",
-			},
-			setup: func(ctx context.Context, aGw *mocks.MockAccountGateway, eGw *mocks.MockEligibilityGateway, oSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore) {
-				oSt.EXPECT().GetLiveOccupanciesByAccountID(ctx, "account-id-1").Return([]models.Occupancy{
-					{
-						OccupancyID: "occupancy-id-1",
-						SiteID:      "site-id-1",
-						AccountID:   "account-id-1",
-						CreatedAt:   time.Time{},
-					},
-					{
-						OccupancyID: "occupancy-id-2",
-						SiteID:      "site-id-2",
-						AccountID:   "account-id-1",
-						CreatedAt:   time.Time{},
-					},
-				}, nil)
-
-				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-1").Return(false, nil)
-				eGw.EXPECT().GetEligibility(ctx, "account-id-1", "occupancy-id-2").Return(false, nil)
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore) {
+				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(&models.Site{}, &models.OccupancyEligibility{}, store.ErrNoEligibleOccupancyFound)
 			},
 			output: outputParams{
 				address: models.AccountAddress{},
@@ -259,7 +206,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, accGw, eliGw, occSt, siteSt)
+			tc.setup(ctx, occSt)
 
 			expected, err := myDomain.GetAccountAddressByAccountID(ctx, tc.input.accountID)
 
@@ -281,16 +228,13 @@ func Test_GetCustomerBookings(t *testing.T) {
 	ctx := context.Background()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	eliGw := mocks.NewMockEligibilityGateway(ctrl)
 	lGw := mocks.NewMockLowriBeckGateway(ctrl)
 	oSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
-	occSt := mocks.NewMockOccupancyStore(ctrl)
 
 	myDomain := domain.NewBookingDomain(
 		accGw,
-		eliGw,
 		lGw,
 		oSt,
 		siteSt,
@@ -307,7 +251,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(context.Context, *mocks.MockOccupancyStore, *mocks.MockSiteStore, *mocks.MockBookingStore)
+		setup       func(context.Context, *mocks.MockSiteStore, *mocks.MockBookingStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -315,7 +259,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 	testCases := []testSetup{
 		{
 			description: "basic bookings retrieval",
-			setup: func(ctx context.Context, occSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
+			setup: func(ctx context.Context, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				bSt.EXPECT().GetBookingsByAccountID(ctx, "account-id-1").Return([]models.Booking{
 					{
 						BookingID:   "booking-id-1",
@@ -411,7 +355,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 		},
 		{
 			description: "multiple bookings retrieval",
-			setup: func(ctx context.Context, occSt *mocks.MockOccupancyStore, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
+			setup: func(ctx context.Context, sSt *mocks.MockSiteStore, bSt *mocks.MockBookingStore) {
 				bSt.EXPECT().GetBookingsByAccountID(ctx, "account-id-1").Return([]models.Booking{
 					{
 						BookingID:   "booking-id-1",
@@ -590,7 +534,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			tc.setup(ctx, occSt, siteSt, bookingSt)
+			tc.setup(ctx, siteSt, bookingSt)
 
 			actual, err := myDomain.GetCustomerBookings(ctx, tc.input.accountID)
 

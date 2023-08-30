@@ -83,8 +83,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 	accountAddress, err := b.bookingDomain.GetAccountAddressByAccountID(ctx, req.GetAccountId())
 	if err != nil {
 		switch {
-		case errors.Is(err, domain.ErrNoOccupanciesFound) ||
-			errors.Is(err, domain.ErrNoEligibleOccupanciesFound):
+		case errors.Is(err, domain.ErrNoEligibleOccupanciesFound):
 			return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get account address by account id %s", err))
 		default:
 			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get account address by account id %s", err))
