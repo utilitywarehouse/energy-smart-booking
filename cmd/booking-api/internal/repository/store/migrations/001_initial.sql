@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS occupancy (
 
     created_at             TIMESTAMP NOT NULL,
     updated_at             TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);  
+);
 CREATE INDEX occupancy_site_id_idx ON occupancy(site_id);
 
 CREATE TABLE IF NOT EXISTS site (
