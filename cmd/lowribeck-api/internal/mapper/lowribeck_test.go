@@ -129,9 +129,17 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 			desc: "Failed - invalid request response 2",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
 				ResponseCode:    "EA03",
-				ResponseMessage: "Postcode and Reference ID mismatch",
+				ResponseMessage: "Postcode mismatch",
 			},
-			expectedError: fmt.Errorf("internal server error [Postcode and Reference ID mismatch]"),
+			expectedError: fmt.Errorf("invalid request [postcode]"),
+		},
+		{
+			desc: "Failed - invalid request response 3",
+			lb: &lowribeck.GetCalendarAvailabilityResponse{
+				ResponseCode:    "EA03",
+				ResponseMessage: "Not available as site is complete",
+			},
+			expectedError: fmt.Errorf("internal server error [Not available as site is complete]"),
 		},
 		{
 			desc: "Failed - generic response",
