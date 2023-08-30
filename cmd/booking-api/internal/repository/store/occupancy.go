@@ -136,8 +136,8 @@ func (s *OccupancyStore) GetSiteExternalReferenceByAccountID(ctx context.Context
 		oe.reference
 	
 		FROM occupancy_eligible oe
-		LEFT JOIN service s ON oe.occupancy_id = s.occupancy_id
-		LEFT JOIN occupancy o ON o.occupancy_id = oe.occupancy_id
+		JOIN service s ON oe.occupancy_id = s.occupancy_id
+		JOIN occupancy o ON o.occupancy_id = oe.occupancy_id
 		JOIN site si ON si.site_id = o.site_id
 	
 		WHERE o.account_id = $1
