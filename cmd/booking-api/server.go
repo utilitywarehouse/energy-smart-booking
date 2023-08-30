@@ -36,9 +36,8 @@ var (
 	commandNameServer  = "server"
 	commandUsageServer = "a listen server handling booking requests"
 
-	accountsAPIHost    = "accounts-api-host"
-	eligibilityAPIHost = "eligibility-api-host"
-	lowribeckAPIHost   = "lowribeck-api-host"
+	accountsAPIHost  = "accounts-api-host"
+	lowribeckAPIHost = "lowribeck-api-host"
 )
 
 func init() {
