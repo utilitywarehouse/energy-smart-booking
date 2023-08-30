@@ -18,6 +18,7 @@ type EligibilityGateway interface {
 
 type OccupancyStore interface {
 	GetLiveOccupanciesByAccountID(ctx context.Context, accountID string) ([]models.Occupancy, error)
+	GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error)
 }
 
 type SiteStore interface {
@@ -30,28 +31,18 @@ type LowriBeckGateway interface {
 	CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (gateway.CreateBookingResponse, error)
 }
 
-type ServiceStore interface {
-	GetReferenceByOccupancyID(ctx context.Context, occupancyID string) (string, error)
-}
-
-type BookingReferenceStore interface {
-	GetReferenceByMPXN(ctx context.Context, mpxn string) (string, error)
-}
-
 type BookingStore interface {
 	GetBookingByBookingID(ctx context.Context, bookingID string) (models.Booking, error)
 	GetBookingsByAccountID(ctx context.Context, accountID string) ([]models.Booking, error)
 }
 
 type BookingDomain struct {
-	accounts              AccountGateway
-	eligibilityGw         EligibilityGateway
-	lowribeckGw           LowriBeckGateway
-	occupancyStore        OccupancyStore
-	siteStore             SiteStore
-	serviceStore          ServiceStore
-	bookingReferenceStore BookingReferenceStore
-	bookingStore          BookingStore
+	accounts       AccountGateway
+	eligibilityGw  EligibilityGateway
+	lowribeckGw    LowriBeckGateway
+	occupancyStore OccupancyStore
+	siteStore      SiteStore
+	bookingStore   BookingStore
 }
 
 func NewBookingDomain(accounts AccountGateway,
@@ -59,8 +50,6 @@ func NewBookingDomain(accounts AccountGateway,
 	lowribeckGw LowriBeckGateway,
 	occupancyStore OccupancyStore,
 	siteStore SiteStore,
-	serviceStore ServiceStore,
-	bookingReferenceStore BookingReferenceStore,
 	bookingStore BookingStore,
 ) BookingDomain {
 	return BookingDomain{
@@ -69,8 +58,6 @@ func NewBookingDomain(accounts AccountGateway,
 		lowribeckGw,
 		occupancyStore,
 		siteStore,
-		serviceStore,
-		bookingReferenceStore,
 		bookingStore,
 	}
 }

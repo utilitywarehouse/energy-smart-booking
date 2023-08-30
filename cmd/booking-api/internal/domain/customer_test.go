@@ -39,11 +39,9 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
-	svcSt := mocks.NewMockServiceStore(ctrl)
-	brSt := mocks.NewMockBookingReferenceStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, svcSt, brSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		accountID string
@@ -123,11 +121,9 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
-	svcSt := mocks.NewMockServiceStore(ctrl)
-	brSt := mocks.NewMockBookingReferenceStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, svcSt, brSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, eliGw, lbGw, occSt, siteSt, bookingSt)
 
 	type inputParams struct {
 		accountID string
@@ -289,8 +285,6 @@ func Test_GetCustomerBookings(t *testing.T) {
 	lGw := mocks.NewMockLowriBeckGateway(ctrl)
 	oSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
-	svcSt := mocks.NewMockServiceStore(ctrl)
-	bookingReferenceStore := mocks.NewMockBookingReferenceStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 
@@ -300,8 +294,6 @@ func Test_GetCustomerBookings(t *testing.T) {
 		lGw,
 		oSt,
 		siteSt,
-		svcSt,
-		bookingReferenceStore,
 		bookingSt)
 
 	type inputParams struct {

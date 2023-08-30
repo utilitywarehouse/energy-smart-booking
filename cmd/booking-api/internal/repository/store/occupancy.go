@@ -13,6 +13,8 @@ import (
 var (
 	ErrOccupancyNotFound = errors.New("occupancy not found")
 	ErrFailedUpdate      = errors.New("no rows were affected by update statement")
+
+	ErrNoOccupancyEligibleFound = errors.New("eligible occupancy not found")
 )
 
 type OccupancyStore struct {
@@ -106,4 +108,67 @@ func (s *OccupancyStore) GetLiveOccupanciesByAccountID(ctx context.Context, acco
 	}
 
 	return occupancies, nil
+}
+
+func (s *OccupancyStore) GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error) {
+	var site models.Site
+	var occupancyEligibility models.OccupancyEligibility
+
+	q := `
+	SELECT
+		si.site_id,
+		si.postcode,
+		si.uprn,
+		si.building_name_number,
+		si.dependent_thoroughfare,
+		si.thoroughfare,
+		si.double_dependent_locality,
+		si.dependent_locality,
+		si.locality,
+		si.county,
+		si.town,
+		si.department,
+		si.organisation,
+		si.po_box,
+		si.delivery_point_suffix,
+		si.sub_building_name_number,
+		oe.occupancy_id,
+		oe.reference
+	
+		FROM occupancy_eligible oe
+		LEFT JOIN service s ON oe.occupancy_id = s.occupancy_id
+		LEFT JOIN occupancy o ON o.occupancy_id = oe.occupancy_id
+		JOIN site si ON si.site_id = o.site_id
+	
+		WHERE o.account_id = $1
+		AND s.is_live IS TRUE
+		ORDER BY
+			o.created_at DESC;`
+
+	err := s.pool.QueryRow(ctx, q, accountID).Scan(&site.SiteID,
+		&site.Postcode,
+		&site.UPRN,
+		&site.BuildingNameNumber,
+		&site.DependentThoroughfare,
+		&site.Thoroughfare,
+		&site.DoubleDependentLocality,
+		&site.DependentLocality,
+		&site.Locality,
+		&site.County,
+		&site.Town,
+		&site.Department,
+		&site.Organisation,
+		&site.PoBox,
+		&site.DeliveryPointSuffix,
+		&site.SubBuildingNameNumber,
+		&occupancyEligibility.OccupancyID,
+		&occupancyEligibility.Reference,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil, ErrNoOccupancyEligibleFound
+		}
+	}
+
+	return &site, &occupancyEligibility, nil
 }

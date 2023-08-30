@@ -38,6 +38,17 @@ func populateDB(ctx context.Context, pool *pgxpool.Pool) error {
 		INSERT INTO occupancy (occupancy_id, site_id, account_id, created_at)
 		VALUES ('occupancy-id', 'site-id', 'account-id', NOW());
 
+		-- SETUP FOR GETTING LB KEYS --
+		INSERT INTO occupancy (occupancy_id, site_id, account_id, created_at)
+		VALUES ('occupancy-id-#1', 'site-id-a', 'account-id-#1', NOW());
+
+		INSERT INTO occupancy_eligible (occupancy_id, reference)
+		VALUES ('occupancy-id-#1', 'ref##1');
+
+		INSERT INTO service (service_id, mpxn, occupancy_id, supply_type, account_id, start_date, end_date, is_live)
+		VALUES
+			('service-id-002', 'mpxn-ref#1', 'occupancy-id-#1', 'gas', 'account-id-#1', NOW(), NOW(), true);
+
 		INSERT INTO occupancy (occupancy_id, site_id, account_id, created_at)
 		VALUES 
 			('occupancy-id-A', 'site-id', 'account-id-sorted', '2023-01-01 00:00:00'),
