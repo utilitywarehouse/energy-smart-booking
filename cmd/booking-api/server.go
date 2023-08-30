@@ -29,7 +29,6 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
-	eligiblity_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	lowribeck_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 )
 
@@ -51,11 +50,6 @@ func init() {
 			&cli.StringFlag{
 				Name:     accountsAPIHost,
 				EnvVars:  []string{"ACCOUNTS_API_HOST"},
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     eligibilityAPIHost,
-				EnvVars:  []string{"ELIGIBILITY_API_HOST"},
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -133,7 +127,6 @@ func serverAction(c *cli.Context) error {
 
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
-	eligibilityGw := gateway.NewEligibilityGateway(mn, eligiblity_api.NewEligiblityAPIClient(eligibilityConn))
 	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
 
 	// PUBLISHERS //
@@ -143,12 +136,10 @@ func serverAction(c *cli.Context) error {
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
 	siteStore := store.NewSite(pool)
-	bookingReferenceStore := store.NewBookingReference(pool)
-	serviceStore := store.NewService(pool)
 	bookingStore := store.NewBooking(pool)
 
 	// DOMAIN //
-	bookingDomain := domain.NewBookingDomain(accountGw, eligibilityGw, lowriBeckGateway, occupancyStore, siteStore, serviceStore, bookingReferenceStore, bookingStore)
+	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore)
 
 	bookingAPI := api.New(bookingDomain, syncBookingPublisher)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
