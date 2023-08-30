@@ -36,9 +36,8 @@ var (
 	commandNameServer  = "server"
 	commandUsageServer = "a listen server handling booking requests"
 
-	accountsAPIHost    = "accounts-api-host"
-	eligibilityAPIHost = "eligibility-api-host"
-	lowribeckAPIHost   = "lowribeck-api-host"
+	accountsAPIHost  = "accounts-api-host"
+	lowribeckAPIHost = "lowribeck-api-host"
 )
 
 func init() {
@@ -92,13 +91,6 @@ func serverAction(c *cli.Context) error {
 	}
 	opsServer.Add("accounts-api", grpchealth.NewCheck(c.String(accountsAPIHost), "", "cannot query accounts"))
 	defer accountsConn.Close()
-
-	eligibilityConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(eligibilityAPIHost), c.String(app.GrpcLogLevel))
-	if err != nil {
-		return fmt.Errorf("error connecting to eligibility-api host [%s]: %w", c.String(eligibilityAPIHost), err)
-	}
-	opsServer.Add("eligibility-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect to eligibility-api"))
-	defer eligibilityConn.Close()
 
 	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
