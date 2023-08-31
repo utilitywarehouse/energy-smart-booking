@@ -194,6 +194,27 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
+		{
+			description: "should fail to get account details customer requesting not his own",
+			input: inputParams{
+				req: &bookingv1.GetCustomerContactDetailsRequest{
+					AccountId: "account-id-2",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "read",
+					Resource:   "uw.energy-smart.v1.booking-api",
+					ResourceID: "account-id-2",
+				}).Return(false, auth.ErrUnauthenticated)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -388,6 +409,27 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail to get account site address because customer is trying to access another customer account id",
+			input: inputParams{
+				req: &bookingv1.GetCustomerSiteAddressRequest{
+					AccountId: "account-id-2",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "read",
+					Resource:   "uw.energy-smart.v1.booking-api",
+					ResourceID: "account-id-2",
+				}).Return(false, auth.ErrUnauthenticated)
 
 			},
 			output: outputParams{
@@ -617,6 +659,27 @@ func Test_GetCustomerBookings(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail to get customer bookings because customer tries to access another customer resource",
+			input: inputParams{
+				req: &bookingv1.GetCustomerBookingsRequest{
+					AccountId: "account-id-2",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "read",
+					Resource:   "uw.energy-smart.v1.booking-api",
+					ResourceID: "account-id-2",
+				}).Return(false, auth.ErrUnauthenticated)
 
 			},
 			output: outputParams{

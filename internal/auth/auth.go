@@ -2,15 +2,9 @@ package auth
 
 import (
 	"context"
-<<<<<<< HEAD
+
 	"fmt"
 
-=======
-	"errors"
-
-	"github.com/sirupsen/logrus"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/identity"
->>>>>>> 9be08f1 (Hotfix remove eligibility (#112))
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/principal"
 )
