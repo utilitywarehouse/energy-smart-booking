@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/sirupsen/logrus"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/identity"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/principal"
 )
@@ -19,19 +18,13 @@ type pdpClient interface {
 	Authorize(ctx context.Context, principal *principal.Model, action string, resource *pdp.Resource) (pdp.AuthorizeResult, error)
 }
 
-type idClient interface {
-	WhoAmI(ctx context.Context, in *principal.Model) (identity.WhoAmIResult, error)
-}
-
 type Authorize struct {
 	pdpClient pdpClient
-	idClient  idClient
 }
 
-func New(pdpClient pdpClient, idClient idClient) *Authorize {
+func New(pdpClient pdpClient) *Authorize {
 	return &Authorize{
 		pdpClient: pdpClient,
-		idClient:  idClient,
 	}
 }
 
