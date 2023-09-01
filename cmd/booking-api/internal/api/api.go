@@ -483,9 +483,6 @@ func (b *BookingAPI) validateCredentials(ctx context.Context, action, requestAcc
 		ResourceID: requestAccountID,
 	})
 	if err != nil {
-		if errors.Is(err, auth.ErrUnauthenticated) {
-			return ErrUserUnauthorised
-		}
 		return err
 	}
 	if !authorised {
