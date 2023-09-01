@@ -68,7 +68,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -105,7 +105,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -142,7 +142,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
 				}).Return(false, nil)
 
@@ -163,7 +163,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
 				}).Return(false, oops)
 
@@ -184,7 +184,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 
@@ -256,7 +256,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -310,7 +310,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -364,7 +364,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
 				}).Return(false, nil)
 
@@ -385,7 +385,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 
@@ -457,7 +457,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -569,7 +569,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -593,7 +593,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(false, nil)
 
@@ -614,7 +614,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 
@@ -702,7 +702,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -824,7 +824,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -861,7 +861,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -926,7 +926,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -963,7 +963,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1014,7 +1014,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1079,7 +1079,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1130,7 +1130,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1167,7 +1167,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(false, nil)
 
@@ -1198,7 +1198,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 
@@ -1294,7 +1294,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1463,7 +1463,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1534,7 +1534,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1605,7 +1605,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1676,7 +1676,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1747,7 +1747,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1818,7 +1818,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1889,7 +1889,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1960,7 +1960,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2031,7 +2031,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2102,7 +2102,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2173,7 +2173,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(false, nil)
 			},
@@ -2216,7 +2216,7 @@ func Test_CreateBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 			},
@@ -2299,7 +2299,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2374,7 +2374,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2421,7 +2421,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2468,7 +2468,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2515,7 +2515,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2562,7 +2562,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2609,7 +2609,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2656,7 +2656,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2703,7 +2703,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2750,7 +2750,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -2797,7 +2797,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
 				}).Return(false, nil)
 
@@ -2829,7 +2829,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "update",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 

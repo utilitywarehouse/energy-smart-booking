@@ -61,7 +61,7 @@ func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth) *Bo
 
 func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (*bookingv1.GetCustomerContactDetailsResponse, error) { // nolint:revive
 
-	err := b.validateCredentials(ctx, auth.GetAction, req.AccountId)
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -95,7 +95,7 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 
 func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (*bookingv1.GetCustomerSiteAddressResponse, error) {
 
-	err := b.validateCredentials(ctx, auth.GetAction, req.AccountId)
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -141,7 +141,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 
 func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (*bookingv1.GetCustomerBookingsResponse, error) { // nolint:revive
 
-	err := b.validateCredentials(ctx, auth.GetAction, req.AccountId)
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -161,7 +161,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 
 func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (*bookingv1.GetAvailableSlotsResponse, error) { // nolint:revive
 
-	err := b.validateCredentials(ctx, auth.GetAction, req.AccountId)
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -254,7 +254,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 
 func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (*bookingv1.CreateBookingResponse, error) { // nolint:revive
 
-	err := b.validateCredentials(ctx, auth.CreateAction, req.AccountId)
+	err := b.validateCredentials(ctx, auth.CreateAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -365,7 +365,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 
 func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (*bookingv1.RescheduleBookingResponse, error) { // nolint:revive
 
-	err := b.validateCredentials(ctx, auth.UpdateAction, req.AccountId)
+	err := b.validateCredentials(ctx, auth.UpdateAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -475,17 +475,17 @@ func validateRequest(req accountIder) error {
 	return nil
 }
 
-func (b *BookingAPI) validateCredentials(ctx context.Context, action, requestAccountID string) error {
+func (b *BookingAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
 
 	authorised, err := b.auth.Authorize(ctx, &auth.PolicyParams{
 		Action:     action,
-		Resource:   auth.BookingResource,
+		Resource:   resource,
 		ResourceID: requestAccountID,
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"action":   action,
-			"resource": auth.BookingResource,
+			"resource": resource,
 		}).Error("Authorize error: ", err)
 		return err
 	}
