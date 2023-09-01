@@ -156,7 +156,11 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
 					ResourceID: "account-id-1",
+<<<<<<< HEAD
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 
 			},
 			output: outputParams{
@@ -223,7 +227,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.booking-api",
 					ResourceID: "account-id-2",
-				}).Return(false, auth.ErrUnauthenticated)
+				}).Return(false, auth.ErrUnauthorised)
 
 			},
 			output: outputParams{
@@ -415,6 +419,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
 					ResourceID: "account-id-1",
+<<<<<<< HEAD
 				}).Return(false, nil)
 
 			},
@@ -437,6 +442,9 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 
 			},
 			output: outputParams{
@@ -457,7 +465,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.booking-api",
 					ResourceID: "account-id-2",
-				}).Return(false, auth.ErrUnauthenticated)
+				}).Return(false, auth.ErrUnauthorised)
 
 			},
 			output: outputParams{
@@ -677,6 +685,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
 					ResourceID: "account-id-1",
+<<<<<<< HEAD
 				}).Return(false, nil)
 
 			},
@@ -699,6 +708,9 @@ func Test_GetCustomerBookings(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 
 			},
 			output: outputParams{
@@ -719,7 +731,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.booking-api",
 					ResourceID: "account-id-2",
-				}).Return(false, auth.ErrUnauthenticated)
+				}).Return(false, auth.ErrUnauthorised)
 
 			},
 			output: outputParams{
@@ -1308,7 +1320,11 @@ func Test_GetAvailableSlot(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
 					ResourceID: "account-id-1",
+<<<<<<< HEAD
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 
 			},
 			output: outputParams{
@@ -1343,7 +1359,11 @@ func Test_GetAvailableSlot(t *testing.T) {
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
 					ResourceID: "account-id-2",
+<<<<<<< HEAD
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 
 			},
 			output: outputParams{
@@ -2318,7 +2338,11 @@ func Test_CreateBooking(t *testing.T) {
 					Action:     "create",
 					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
+<<<<<<< HEAD
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 			},
 			output: outputParams{
 				res: nil,
@@ -2361,7 +2385,11 @@ func Test_CreateBooking(t *testing.T) {
 					Action:     "create",
 					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
+<<<<<<< HEAD
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 			},
 			output: outputParams{
 				res: nil,
@@ -2942,7 +2970,11 @@ func Test_RescheduleBooking(t *testing.T) {
 					Action:     "update",
 					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-1",
+<<<<<<< HEAD
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 
 			},
 			output: outputParams{
@@ -2974,7 +3006,11 @@ func Test_RescheduleBooking(t *testing.T) {
 					Action:     "update",
 					Resource:   "uw.energy-smart.v1.account.booking",
 					ResourceID: "account-id-2",
+<<<<<<< HEAD
 				}).Return(false, nil)
+=======
+				}).Return(false, auth.ErrUnauthorised)
+>>>>>>> 176322e (changes auth logic)
 
 			},
 			output: outputParams{
