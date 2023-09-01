@@ -2,16 +2,10 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/principal"
-)
-
-var (
-	ErrUnauthorised = errors.New("unauthorised")
 )
 
 type pdpClient interface {
@@ -52,7 +46,6 @@ func (a *Authorize) Authorize(ctx context.Context, params *PolicyParams) (bool, 
 
 	res, err := a.pdpClient.Authorize(ctx, pr, params.Action, r)
 	if err != nil {
-		logrus.Error("PDP Authorize error: ", err)
 		return false, fmt.Errorf("failed to authorize, %w", err)
 	}
 

@@ -67,7 +67,7 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 		case errors.Is(err, ErrUserUnauthorised):
 			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
 		default:
-			return nil, status.Errorf(codes.Internal, "failed to validate credentials, %s", err)
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
 		}
 	}
 
@@ -101,7 +101,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 		case errors.Is(err, ErrUserUnauthorised):
 			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
 		default:
-			return nil, status.Errorf(codes.Internal, "failed to validate credentials, %s", err)
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
 		}
 	}
 
@@ -145,9 +145,9 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Error(codes.Unauthenticated, fmt.Sprintf("user does not have access to this action, %s", err))
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
 		default:
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to validate credentials, %s", err))
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
 		}
 	}
 
@@ -165,9 +165,9 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Error(codes.Unauthenticated, fmt.Sprintf("user does not have access to this action, %s", err))
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
 		default:
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to validate credentials, %s", err))
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
 		}
 	}
 
@@ -258,9 +258,9 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Error(codes.Unauthenticated, fmt.Sprintf("user does not have access to this action, %s", err))
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
 		default:
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to validate credentials, %s", err))
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
 		}
 	}
 
@@ -369,9 +369,9 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Error(codes.Unauthenticated, fmt.Sprintf("user does not have access to this action, %s", err))
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
 		default:
-			return nil, status.Error(codes.Internal, fmt.Sprintf("failed to validate credentials, %s", err))
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
 		}
 	}
 
@@ -483,6 +483,10 @@ func (b *BookingAPI) validateCredentials(ctx context.Context, action, requestAcc
 		ResourceID: requestAccountID,
 	})
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"action":   action,
+			"resource": auth.BookingResource,
+		}).Error("Authorize error: ", err)
 		return err
 	}
 	if !authorised {
