@@ -69,10 +69,14 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -110,10 +114,14 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -151,10 +159,14 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -184,10 +196,14 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(false, oops)
 
@@ -232,7 +248,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking-api",
+					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 
@@ -305,10 +321,14 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -363,10 +383,14 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -421,10 +445,14 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -448,6 +476,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.account",
+<<<<<<< HEAD
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 =======
@@ -475,6 +504,8 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.booking-api",
+=======
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 
@@ -547,10 +578,14 @@ func Test_GetCustomerBookings(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -663,10 +698,14 @@ func Test_GetCustomerBookings(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -691,10 +730,14 @@ func Test_GetCustomerBookings(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -718,6 +761,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.account.booking",
+<<<<<<< HEAD
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 =======
@@ -745,6 +789,8 @@ func Test_GetCustomerBookings(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.booking-api",
+=======
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-2",
 				}).Return(false, nil)
 
@@ -833,10 +879,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -959,10 +1009,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1000,10 +1054,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1069,10 +1127,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1110,10 +1172,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1165,10 +1231,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1234,10 +1304,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1289,10 +1363,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -1330,10 +1408,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-1",
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1373,10 +1455,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 <<<<<<< HEAD
+<<<<<<< HEAD
 					Resource:   "uw.energy-smart.v1.account.booking",
 =======
 					Resource:   "uw.energy-smart.v1.booking-api",
 >>>>>>> 894a0bf (rename read action to get action)
+=======
+					Resource:   "uw.energy-smart.v1.account.booking",
+>>>>>>> 1d77172 (add new type of resource)
 					ResourceID: "account-id-2",
 <<<<<<< HEAD
 <<<<<<< HEAD

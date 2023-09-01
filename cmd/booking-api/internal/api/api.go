@@ -475,11 +475,11 @@ func validateRequest(req accountIder) error {
 	return nil
 }
 
-func (b *BookingAPI) validateCredentials(ctx context.Context, action, requestAccountID string) error {
+func (b *BookingAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
 
 	authorised, err := b.auth.Authorize(ctx, &auth.PolicyParams{
 		Action:     action,
-		Resource:   auth.BookingResource,
+		Resource:   resource,
 		ResourceID: requestAccountID,
 	})
 	if err != nil {
