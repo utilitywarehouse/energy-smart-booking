@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-
 	"fmt"
 
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
