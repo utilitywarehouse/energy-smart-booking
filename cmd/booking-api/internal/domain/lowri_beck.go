@@ -177,7 +177,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, occupancyEligibility.Reference, params.Slot, booking.Contact, lbVulnerabilities, booking.VulnerabilityDetails.Other)
 	if err != nil {
-		return RescheduleBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
+		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
 
 	if response.Success {

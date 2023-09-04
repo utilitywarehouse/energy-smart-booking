@@ -11,6 +11,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
+	tracecodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
@@ -62,14 +63,19 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
 	if err != nil {
 		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
+		span.SetStatus(tracecodes.Error, err.Error())
+		span.RecordError(err)
 
 		switch status.Convert(err).Code() {
 		case codes.Internal:
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternal)
+			span.SetAttributes(attribute.String("code", ErrInternal.Error()))
+			return AvailableSlotsResponse{}, ErrInternal
 		case codes.NotFound:
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrNotFound)
+			span.SetAttributes(attribute.String("code", ErrNotFound.Error()))
+			return AvailableSlotsResponse{}, ErrNotFound
 		case codes.OutOfRange:
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrOutOfRange)
+			span.SetAttributes(attribute.String("code", ErrOutOfRange.Error()))
+			return AvailableSlotsResponse{}, ErrOutOfRange
 		case codes.InvalidArgument:
 
 			details := status.Convert(err).Details()
@@ -82,13 +88,15 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 					switch x.GetParameters() {
 					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
 						lowribeckv1.Parameters_PARAMETERS_REFERENCE:
-						return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInternalBadParameters)
+						span.SetAttributes(attribute.String("code", ErrInternalBadParameters.Error()))
+						return AvailableSlotsResponse{}, ErrInternalBadParameters
 					}
 				}
 			}
-
-			return AvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", ErrInvalidArgument)
+			span.SetAttributes(attribute.String("code", ErrInvalidArgument.Error()))
+			return AvailableSlotsResponse{}, ErrInvalidArgument
 		}
+		span.SetAttributes(attribute.String("code", ErrUnhandledErrorCode.Error()))
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
 	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots))))
@@ -109,8 +117,12 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 }
 
 func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (CreateBookingResponse, error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "CreateBooking"),
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
+	defer span.End()
 
-	bookingResponse, err := g.client.CreateBooking(g.mai.ToCtx(ctx), &lowribeckv1.CreateBookingRequest{
+	req := &lowribeckv1.CreateBookingRequest{
 		Postcode:  postcode,
 		Reference: reference,
 		Slot: &lowribeckv1.BookingSlot{
@@ -132,11 +144,18 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 			LastName:  accountDetails.LastName,
 			Phone:     accountDetails.Mobile,
 		},
-	})
+	}
+
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", fmt.Sprintf("%v", req))))
+	bookingResponse, err := g.client.CreateBooking(g.mai.ToCtx(ctx), req)
 	if err != nil {
+		span.SetStatus(tracecodes.Error, err.Error())
+		span.RecordError(err)
+
 		switch status.Convert(err).Code() {
 		case codes.Internal:
-			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInternal)
+			span.SetAttributes(attribute.String("code", ErrInternal.Error()))
+			return CreateBookingResponse{Success: false}, ErrInternal
 		case codes.InvalidArgument:
 
 			details := status.Convert(err).Details()
@@ -151,36 +170,41 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
 						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
 						lowribeckv1.Parameters_PARAMETERS_SITE:
-
+						span.SetAttributes(attribute.String("code", ErrInternalBadParameters.Error()))
 						return CreateBookingResponse{
 							Success: false,
-						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInternalBadParameters)
+						}, ErrInternalBadParameters
 					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE:
-
+						span.SetAttributes(attribute.String("code", ErrInvalidAppointmentDate.Error()))
 						return CreateBookingResponse{
 							Success: false,
-						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInvalidAppointmentDate)
+						}, ErrInvalidAppointmentDate
 
 					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME:
-
+						span.SetAttributes(attribute.String("code", ErrInvalidAppointmentTime.Error()))
 						return CreateBookingResponse{
 							Success: false,
-						}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInvalidAppointmentTime)
+						}, ErrInvalidAppointmentTime
 					}
 				}
 			}
-			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrInvalidArgument)
+			span.SetAttributes(attribute.String("code", ErrInvalidArgument.Error()))
+			return CreateBookingResponse{Success: false}, ErrInvalidArgument
 		case codes.AlreadyExists:
-			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrAlreadyExists)
+			span.SetAttributes(attribute.String("code", ErrAlreadyExists.Error()))
+			return CreateBookingResponse{Success: false}, ErrAlreadyExists
 		case codes.OutOfRange:
-			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrOutOfRange)
+			span.SetAttributes(attribute.String("code", ErrOutOfRange.Error()))
+			return CreateBookingResponse{Success: false}, ErrOutOfRange
 		case codes.NotFound:
-			return CreateBookingResponse{Success: false}, fmt.Errorf("failed to call lowribeck create booking, %w", ErrNotFound)
+			span.SetAttributes(attribute.String("code", ErrNotFound.Error()))
+			return CreateBookingResponse{Success: false}, ErrNotFound
 		default:
+			span.SetAttributes(attribute.String("code", ErrUnhandledErrorCode.Error()))
 			return CreateBookingResponse{Success: false}, ErrUnhandledErrorCode
 		}
 	}
-
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", bookingResponse))))
 	return CreateBookingResponse{
 		Success: bookingResponse.Success,
 	}, nil
