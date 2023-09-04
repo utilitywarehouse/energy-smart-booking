@@ -158,6 +158,10 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 		case "Rearranging request sent outside agreed time parameter",
 			"Booking request sent outside agreed time parameter":
 			return ErrAppointmentOutOfRange
+		// EA03 - Postcode mismatch
+		case "Postcode and Reference ID mismatch", // error in spec
+			"Postcode mismatch": // error seen
+			return NewInvalidRequestError(InvalidPostcode)
 		// EA03 - Work Reference Invalid
 		case "Work Reference Invalid":
 			return NewInvalidRequestError(InvalidReference)
@@ -233,7 +237,8 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 		// R09 - Post Code is missing or invalid
 		// R09 - Postcode and Reference ID mismatch
 		case "Post Code is missing or invalid",
-			"Postcode and Reference ID mismatch":
+			"Postcode and Reference ID mismatch", // error in spec
+			"Postcode mismatch":                  // error seen
 			return NewInvalidRequestError(InvalidPostcode)
 		// B09 - No Jobs found for Reference ID
 		// R09 - No Jobs found for Reference ID

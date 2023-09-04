@@ -4,14 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
-func Test_BookingReferenceStore_Upsert(t *testing.T) {
+func Test_OccupancyEligibleStore_Upsert(t *testing.T) {
 	ctx := context.Background()
 
 	testContainer, err := setupTestContainer(ctx)
@@ -29,10 +27,10 @@ func Test_BookingReferenceStore_Upsert(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	bookingReferenceStore := store.NewBookingReference(db)
+	occupancyEligibleStore := store.NewOccupancyEligible(db)
 
 	type inputParams struct {
-		bookingReference models.BookingReference
+		occupancy models.OccupancyEligibility
 	}
 
 	type testSetup struct {
@@ -43,21 +41,11 @@ func Test_BookingReferenceStore_Upsert(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should upsert a booking reference with mpxn: mpxn-1",
+			description: "should upsert a occupancy eligible row with occupancy-id-1",
 			input: inputParams{
-				bookingReference: models.BookingReference{
-					Reference: "REF-01",
-					MPXN:      "mpxn-1",
-				},
-			},
-			output: nil,
-		},
-		{
-			description: "should not have a conflict after an insert with a collision on primary key (update on conflict)",
-			input: inputParams{
-				bookingReference: models.BookingReference{
-					Reference: "REF-02",
-					MPXN:      "mpxn-1",
+				occupancy: models.OccupancyEligibility{
+					OccupancyID: "occupancy-id-1",
+					Reference:   "reference-1",
 				},
 			},
 			output: nil,
@@ -65,23 +53,23 @@ func Test_BookingReferenceStore_Upsert(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-
 		t.Run(tc.description, func(t *testing.T) {
 
-			bookingReferenceStore.Begin()
+			occupancyEligibleStore.Begin()
 
-			bookingReferenceStore.Upsert(tc.input.bookingReference)
+			occupancyEligibleStore.Upsert(tc.input.occupancy)
 
-			err := bookingReferenceStore.Commit(ctx)
+			err := occupancyEligibleStore.Commit(ctx)
+
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
-
 		})
+
 	}
 }
 
-func Test_BookingReference_Remove(t *testing.T) {
+func Test_OccupancyEligibleStore_Delete(t *testing.T) {
 	ctx := context.Background()
 
 	testContainer, err := setupTestContainer(ctx)
@@ -99,15 +87,10 @@ func Test_BookingReference_Remove(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = populateDB(ctx, db)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bookingReferenceStore := store.NewBookingReference(db)
+	occupancyEligibleStore := store.NewOccupancyEligible(db)
 
 	type inputParams struct {
-		mpxn string
+		occupancy models.OccupancyEligibility
 	}
 
 	type testSetup struct {
@@ -118,30 +101,29 @@ func Test_BookingReference_Remove(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should remove booking reference for given mpxn",
+			description: "should mark the occupancy eligible as deleted for occupancy-id-1",
 			input: inputParams{
-				mpxn: "mpxn",
+				occupancy: models.OccupancyEligibility{
+					OccupancyID: "occupancy-id-1",
+				},
 			},
 			output: nil,
 		},
 	}
 
 	for _, tc := range testCases {
-
 		t.Run(tc.description, func(t *testing.T) {
-			bookingReferenceStore.Begin()
-			bookingReferenceStore.Remove(tc.input.mpxn)
-			err = bookingReferenceStore.Commit(ctx)
+
+			occupancyEligibleStore.Begin()
+
+			occupancyEligibleStore.Delete(tc.input.occupancy)
+
+			err := occupancyEligibleStore.Commit(ctx)
 
 			if err != nil {
-				if tc.output != nil {
-					if diff := cmp.Diff(err, tc.output, cmpopts.EquateErrors()); diff != "" {
-						t.Fatal(diff)
-					}
-				} else {
-					t.Fatal(err)
-				}
+				t.Fatalf("should not have errored, %s", err)
 			}
 		})
+
 	}
 }

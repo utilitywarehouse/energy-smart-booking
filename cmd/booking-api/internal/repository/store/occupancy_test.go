@@ -234,7 +234,7 @@ func Test_OccupancyStore_GetOccupancyByID(t *testing.T) {
 	}
 }
 
-func Test_OccupancyStore_GetOccupanciesByAccountID(t *testing.T) {
+func Test_OccupancyStore_GetSiteExternalReferenceByAccountID(t *testing.T) {
 	ctx := context.Background()
 
 	testContainer, err := setupTestContainer(ctx)
@@ -264,8 +264,9 @@ func Test_OccupancyStore_GetOccupanciesByAccountID(t *testing.T) {
 	}
 
 	type outputParams struct {
-		occupancies []models.Occupancy
-		err         error
+		site                 *models.Site
+		occupancyEligibility *models.OccupancyEligibility
+		err                  error
 	}
 
 	type testSetup struct {
@@ -276,30 +277,32 @@ func Test_OccupancyStore_GetOccupanciesByAccountID(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should get the occupancy by occupancy-id",
+			description: "should get the site and the external reference by account-id",
 			input: inputParams{
-				accountID: "account-id-sorted",
+				accountID: "account-id-#1",
 			},
 			output: outputParams{
-				occupancies: []models.Occupancy{
-					{
-						OccupancyID: "occupancy-id-C",
-						SiteID:      "site-id",
-						AccountID:   "account-id-sorted",
-						CreatedAt:   time.Date(2023, time.January, 3, 0, 0, 0, 0, time.UTC),
-					},
-					{
-						OccupancyID: "occupancy-id-B",
-						SiteID:      "site-id",
-						AccountID:   "account-id-sorted",
-						CreatedAt:   time.Date(2023, time.January, 2, 0, 0, 0, 0, time.UTC),
-					},
-					{
-						OccupancyID: "occupancy-id-A",
-						SiteID:      "site-id",
-						AccountID:   "account-id-sorted",
-						CreatedAt:   time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC),
-					},
+				site: &models.Site{
+					SiteID:                  "site-id-a",
+					Postcode:                "post-code-1",
+					UPRN:                    "uprn",
+					BuildingNameNumber:      "building-name-number",
+					DependentThoroughfare:   "dependent-thoroughfare",
+					Thoroughfare:            "thoroughfare",
+					DoubleDependentLocality: "double-dependent-locality",
+					DependentLocality:       "dependent-locality",
+					Locality:                "locality",
+					County:                  "county",
+					Town:                    "town",
+					Department:              "department",
+					Organisation:            "organisation",
+					PoBox:                   "po-box",
+					DeliveryPointSuffix:     "deliver-point-suffix",
+					SubBuildingNameNumber:   "sub-building-name-number",
+				},
+				occupancyEligibility: &models.OccupancyEligibility{
+					OccupancyID: "occupancy-id-#1",
+					Reference:   "ref##1",
 				},
 				err: nil,
 			},
@@ -309,7 +312,7 @@ func Test_OccupancyStore_GetOccupanciesByAccountID(t *testing.T) {
 	for _, tc := range testCases {
 
 		t.Run(tc.description, func(t *testing.T) {
-			occupancy, err := occupancyStore.GetLiveOccupanciesByAccountID(ctx, tc.input.accountID)
+			actualSite, actualOccupancyEligibility, err := occupancyStore.GetSiteExternalReferenceByAccountID(ctx, tc.input.accountID)
 
 			if err != nil {
 				if tc.output.err != nil {
@@ -321,7 +324,11 @@ func Test_OccupancyStore_GetOccupanciesByAccountID(t *testing.T) {
 				}
 			}
 
-			if diff := cmp.Diff(occupancy, tc.output.occupancies); diff != "" {
+			if diff := cmp.Diff(actualSite, tc.output.site); diff != "" {
+				t.Fatal(diff)
+			}
+
+			if diff := cmp.Diff(actualOccupancyEligibility, tc.output.occupancyEligibility); diff != "" {
 				t.Fatal(diff)
 			}
 		})

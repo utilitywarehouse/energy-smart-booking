@@ -10,6 +10,7 @@ import (
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/proto"
@@ -56,12 +57,12 @@ func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailabl
 	fromAsTime := time.Date(int(params.From.Year), time.Month(params.From.Month), int(params.From.Day), 0, 0, 0, 0, time.UTC)
 	toAsTime := time.Date(int(params.To.Year), time.Month(params.To.Month), int(params.To.Day), 0, 0, 0, 0, time.UTC)
 
-	site, bookingReference, _, err := d.findLowriBeckKeys(ctx, params.AccountID)
+	site, occupancyEligibility, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to find postcode and booking reference, %w", err)
 	}
 
-	slotsResponse, err := d.lowribeckGw.GetAvailableSlots(ctx, site.Postcode, bookingReference)
+	slotsResponse, err := d.lowribeckGw.GetAvailableSlots(ctx, site.Postcode, occupancyEligibility.Reference)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get available slots, %w", err)
 	}
@@ -94,12 +95,12 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.GetVulnerabilities())
 
-	site, bookingReference, occupancyID, err := d.findLowriBeckKeys(ctx, params.AccountID)
+	site, occupancyEligibility, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return CreateBookingResponse{}, err
 	}
 
-	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, bookingReference, params.Slot, params.ContactDetails, lbVulnerabilities, params.VulnerabilityDetails.Other)
+	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, occupancyEligibility.Reference, params.Slot, params.ContactDetails, lbVulnerabilities, params.VulnerabilityDetails.Other)
 	if err != nil {
 		return CreateBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
 	}
@@ -146,9 +147,9 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 				},
 				VulnerabilityDetails: params.VulnerabilityDetails,
 				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
-				ExternalReference:    bookingReference,
+				ExternalReference:    occupancyEligibility.Reference,
 			},
-			OccupancyId:   occupancyID,
+			OccupancyId:   occupancyEligibility.OccupancyID,
 			BookingSource: params.Source,
 		}
 	}
@@ -162,7 +163,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 	var event *bookingv1.BookingRescheduledEvent = nil
 
-	site, bookingReference, _, err := d.findLowriBeckKeys(ctx, params.AccountID)
+	site, occupancyEligibility, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return RescheduleBookingResponse{}, err
 	}
@@ -174,7 +175,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(booking.VulnerabilityDetails.Vulnerabilities)
 
-	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, bookingReference, params.Slot, booking.Contact, lbVulnerabilities, booking.VulnerabilityDetails.Other)
+	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, occupancyEligibility.Reference, params.Slot, booking.Contact, lbVulnerabilities, booking.VulnerabilityDetails.Other)
 	if err != nil {
 		return RescheduleBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
 	}
@@ -201,46 +202,17 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 }
 
 // this method takes in an accountID and returns the postcode and the booking reference
-func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (models.Site, string, string, error) {
+func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (models.Site, models.OccupancyEligibility, error) {
 
-	var targetOccupancy models.Occupancy = models.Occupancy{}
-
-	liveOccupancies, err := d.occupancyStore.GetLiveOccupanciesByAccountID(ctx, accountID)
+	site, occupancyEligible, err := d.occupancyStore.GetSiteExternalReferenceByAccountID(ctx, accountID)
 	if err != nil {
-		return models.Site{}, "", "", fmt.Errorf("failed to get live occupancies by accountID, %w", err)
-	}
-
-	if len(liveOccupancies) == 0 {
-		return models.Site{}, "", "", ErrNoOccupanciesFound
-	}
-
-	for _, occupancy := range liveOccupancies {
-		isEligible, err := d.eligibilityGw.GetEligibility(ctx, accountID, occupancy.OccupancyID)
-		if err != nil {
-			return models.Site{}, "", "", fmt.Errorf("failed to get eligibility for accountId: %s, occupancyId: %s, %w", accountID, occupancy.OccupancyID, err)
+		if errors.Is(err, store.ErrNoEligibleOccupancyFound) {
+			return models.Site{}, models.OccupancyEligibility{}, ErrNoEligibleOccupanciesFound
 		}
-
-		if isEligible {
-			targetOccupancy = occupancy
-			break
-		}
+		return models.Site{}, models.OccupancyEligibility{}, fmt.Errorf("failed to get live occupancies by accountID, %w", err)
 	}
 
-	if targetOccupancy.IsEmpty() {
-		return models.Site{}, "", "", ErrNoEligibleOccupanciesFound
-	}
-
-	site, err := d.siteStore.GetSiteBySiteID(ctx, targetOccupancy.SiteID)
-	if err != nil {
-		return models.Site{}, "", "", fmt.Errorf("failed to get site with site_id :%s, %w", targetOccupancy.SiteID, err)
-	}
-
-	reference, err := d.serviceStore.GetReferenceByOccupancyID(ctx, targetOccupancy.OccupancyID)
-	if err != nil {
-		return models.Site{}, "", "", nil
-	}
-
-	return *site, reference, targetOccupancy.OccupancyID, nil
+	return *site, *occupancyEligible, nil
 }
 
 func mapLowribeckVulnerabilities(vulnerabilities []bookingv1.Vulnerability) (lbVulnerabilities []lowribeckv1.Vulnerability) {

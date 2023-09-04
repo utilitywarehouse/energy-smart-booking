@@ -128,8 +128,6 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 func (c *Client) HealthCheck(ctx context.Context) error {
 
-	logrus.Debugf("requesting healthcheck")
-
 	requestUrl := c.baseURL + healthCheckURL
 
 	request, err := http.NewRequestWithContext(
@@ -148,7 +146,7 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 	resp, err := c.http.Do(request)
 	if err != nil {
 		if os.IsTimeout(err) {
-			logrus.Info("healtcheck request timeout occured")
+			logrus.Error("healtcheck request timeout occured")
 
 			return ErrTimeout
 		}
@@ -160,15 +158,16 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 	case http.StatusOK:
 		return nil
 	case http.StatusUnauthorized:
-		logrus.Info("health check got an unauthorized (401) status code, check the username and password being used")
+		logrus.Error("health check got an unauthorized (401) status code, check the username and password being used")
 
 		return ErrNotOKStatusCode
 	case http.StatusNotFound:
-		logrus.Infof("health check failed got a not found(404) status code, the request URL is: %s", requestUrl)
+		logrus.Errorf("health check failed got a not found(404) status code, the request URL is: %s", requestUrl)
 
 		return ErrNotOKStatusCode
+
 	default:
-		logrus.Infof("health check got status code: %d", resp.StatusCode)
+		logrus.Errorf("health check got status code: %d", resp.StatusCode)
 
 		return ErrNotOKStatusCode
 	}

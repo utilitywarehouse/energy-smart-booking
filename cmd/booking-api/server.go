@@ -18,19 +18,20 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
-	eligiblity_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	lowribeck_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 )
 
@@ -38,9 +39,8 @@ var (
 	commandNameServer  = "server"
 	commandUsageServer = "a listen server handling booking requests"
 
-	accountsAPIHost    = "accounts-api-host"
-	eligibilityAPIHost = "eligibility-api-host"
-	lowribeckAPIHost   = "lowribeck-api-host"
+	accountsAPIHost  = "accounts-api-host"
+	lowribeckAPIHost = "lowribeck-api-host"
 )
 
 func init() {
@@ -52,11 +52,6 @@ func init() {
 			&cli.StringFlag{
 				Name:     accountsAPIHost,
 				EnvVars:  []string{"ACCOUNTS_API_HOST"},
-				Required: true,
-			},
-			&cli.StringFlag{
-				Name:     eligibilityAPIHost,
-				EnvVars:  []string{"ELIGIBILITY_API_HOST"},
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -84,6 +79,11 @@ func serverAction(c *cli.Context) error {
 	}
 	defer mn.Close()
 
+	pdp, err := pdp.NewClient()
+	if err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
@@ -93,19 +93,14 @@ func serverAction(c *cli.Context) error {
 	}
 	opsServer.Add("pool", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
 
+	auth := auth.New(pdp)
+
 	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to accounts-api host [%s]: %w", c.String(accountsAPIHost), err)
 	}
 	opsServer.Add("accounts-api", grpchealth.NewCheck(c.String(accountsAPIHost), "", "cannot query accounts"))
 	defer accountsConn.Close()
-
-	eligibilityConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(eligibilityAPIHost), c.String(app.GrpcLogLevel))
-	if err != nil {
-		return fmt.Errorf("error connecting to eligibility-api host [%s]: %w", c.String(eligibilityAPIHost), err)
-	}
-	opsServer.Add("eligibility-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect to eligibility-api"))
-	defer eligibilityConn.Close()
 
 	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
@@ -144,7 +139,6 @@ func serverAction(c *cli.Context) error {
 
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
-	eligibilityGw := gateway.NewEligibilityGateway(mn, eligiblity_api.NewEligiblityAPIClient(eligibilityConn))
 	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
 
 	// PUBLISHERS //
@@ -154,14 +148,12 @@ func serverAction(c *cli.Context) error {
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
 	siteStore := store.NewSite(pool)
-	bookingReferenceStore := store.NewBookingReference(pool)
-	serviceStore := store.NewService(pool)
 	bookingStore := store.NewBooking(pool)
 
 	// DOMAIN //
-	bookingDomain := domain.NewBookingDomain(accountGw, eligibilityGw, lowriBeckGateway, occupancyStore, siteStore, serviceStore, bookingReferenceStore, bookingStore)
+	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore)
 
-	bookingAPI := api.New(bookingDomain, syncBookingPublisher)
+	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

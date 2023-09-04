@@ -85,8 +85,13 @@ Please refer to this(https://github.com/utilitywarehouse/energy-smart-booking/bl
 
 
 ### opt-out
+Handles opt-outs for smart meter installation. 
+The purpose of the service is to be used in-house (no customer facing exposure) to mark the 
+customers that don't wish to be campaigned about or go through a smart meter installment process. 
+The UI for this service can be found at https://energy-smart-booking-opt-out-ui.prod.aws.uw.systems/
+Events AccountBookingOptOutAdded/RemovedEvent are published every time we update the list of opt-outs,
+either by adding or removing an account from there. 
 
-TBC
 
 ### click-generator
 Click generator is a service used for testing smart booking journey when we use pre authenticated
@@ -102,3 +107,34 @@ Example of usage:
 POST https://smart-booking-click-api.dev.merit.uw.systems/generate?type=auth
 
 Body: { "account_number": "7821689" }
+
+### Eligibility
+Eligibility services are responsible in evaluating and emitting eligibility related
+events for the scope of smart meter booking journey.
+
+Services under eligibility:
+1. Evaluator
+    
+    Evaluator service is responsible for listening to different events that can impact
+    the eligibility of an occupancy to go through a smart booking journey and trigger the 
+    evaluation.
+    Each time an evaluation runs, it compares the new results with the previous ones stored
+    and publishes update events if changed.
+    Data sources diagram - https://miro.com/app/board/uXjVMKuEWPo=/
+    
+    More details on evaluation criteria can be found at https://wiki.uw.systems/posts/campaignability-eligibility-suppliability-evaluation-xov7il5y.
+2. GRPC API
+
+    Provides a gRPC API to query eligibility for a given account or a (account, occupancy)
+pair. 
+3. HTTP API
+    
+    Provides a http API to run full evaluation for all live occupancies which are not evaluated 
+or to re-run full evaluation.
+    
+    The http api is not exposed, as it's meant to be used as a tool to trigger eligibility when something
+didn't run as expected / evaluation is missing because of different reasons.
+
+4. BQ indexer
+    
+    Indexes eligibility related events in BigQuery tables.

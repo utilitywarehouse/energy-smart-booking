@@ -7,13 +7,13 @@ import (
 
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 )
 
 var (
 	ErrNoEligibleOccupanciesFound = errors.New("no eligible occupancies were found")
-	ErrNoOccupanciesFound         = errors.New("no occupancies were found")
 )
 
 func (d BookingDomain) GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error) {
@@ -28,36 +28,12 @@ func (d BookingDomain) GetCustomerContactDetails(ctx context.Context, accountID 
 
 func (d BookingDomain) GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error) {
 
-	var targetOccupancy models.Occupancy = models.Occupancy{}
-
-	occupancies, err := d.occupancyStore.GetLiveOccupanciesByAccountID(ctx, accountID)
+	site, _, err := d.occupancyStore.GetSiteExternalReferenceByAccountID(ctx, accountID)
 	if err != nil {
+		if errors.Is(err, store.ErrNoEligibleOccupancyFound) {
+			return models.AccountAddress{}, ErrNoEligibleOccupanciesFound
+		}
 		return models.AccountAddress{}, fmt.Errorf("failed to get occupancies by account id, %w", err)
-	}
-
-	if len(occupancies) == 0 {
-		return models.AccountAddress{}, ErrNoOccupanciesFound
-	}
-
-	for _, occupancy := range occupancies {
-		isEligible, err := d.eligibilityGw.GetEligibility(ctx, accountID, occupancy.OccupancyID)
-		if err != nil {
-			return models.AccountAddress{}, fmt.Errorf("failed to get eligibility for accountId: %s, occupancyId: %s, %w", accountID, occupancy.OccupancyID, err)
-		}
-
-		if isEligible {
-			targetOccupancy = occupancy
-			break
-		}
-	}
-
-	if targetOccupancy.IsEmpty() {
-		return models.AccountAddress{}, ErrNoEligibleOccupanciesFound
-	}
-
-	site, err := d.siteStore.GetSiteBySiteID(ctx, targetOccupancy.SiteID)
-	if err != nil {
-		return models.AccountAddress{}, fmt.Errorf("failed to get site with site_id :%s, %w", targetOccupancy.SiteID, err)
 	}
 
 	address := models.AccountAddress{
