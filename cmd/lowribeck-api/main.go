@@ -20,7 +20,9 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/go-operational/op"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 )
@@ -93,6 +95,13 @@ func runServer(c *cli.Context) error {
 		WithHash(gitHash).
 		WithDetails(appName, appDesc)
 
+	pdp, err := pdp.NewClient()
+	if err != nil {
+		return err
+	}
+
+	auth := auth.New(pdp)
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	httpClient := &http.Client{Timeout: 30 * time.Second}
@@ -111,7 +120,7 @@ func runServer(c *cli.Context) error {
 		defer listen.Close()
 
 		mapper := mapper.NewLowriBeckMapper(c.String(sendingSystem), c.String(receivingSystem))
-		lowribeckAPI := api.New(client, mapper)
+		lowribeckAPI := api.New(client, mapper, auth)
 		contracts.RegisterLowriBeckAPIServer(grpcServer, lowribeckAPI)
 
 		return grpcServer.Serve(listen)

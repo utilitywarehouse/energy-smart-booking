@@ -10,10 +10,19 @@ import (
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+var (
+	ErrUserUnauthorised = errors.New("user does not have required access")
+)
+
+type Auth interface {
+	Authorize(ctx context.Context, params *auth.PolicyParams) (bool, error)
+}
 
 type Client interface {
 	GetCalendarAvailability(context.Context, *lowribeck.GetCalendarAvailabilityRequest) (*lowribeck.GetCalendarAvailabilityResponse, error)
@@ -30,17 +39,30 @@ type Mapper interface {
 type LowriBeckAPI struct {
 	client Client
 	mapper Mapper
+	auth   Auth
 	contract.UnimplementedLowriBeckAPIServer
 }
 
-func New(c Client, m Mapper) *LowriBeckAPI {
+func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 	return &LowriBeckAPI{
 		client: c,
 		mapper: m,
+		auth:   a,
 	}
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
+
+	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, "lowribeck-api")
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	requestID := uuid.New().ID()
 	availabilityReq := l.mapper.AvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
@@ -71,6 +93,17 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 }
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
+
+	err := l.validateCredentials(ctx, auth.CreateAction, auth.LowribeckAPIResource, "lowribeck-api")
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequest(requestID, req)
 	if err != nil {
@@ -131,4 +164,25 @@ func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (
 		return nil, err
 	}
 	return invReqError.Err(), nil
+}
+
+func (b *LowriBeckAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
+
+	authorised, err := b.auth.Authorize(ctx, &auth.PolicyParams{
+		Action:     action,
+		Resource:   resource,
+		ResourceID: requestAccountID,
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"action":   action,
+			"resource": resource,
+		}).Error("Authorize error: ", err)
+		return err
+	}
+	if !authorised {
+		return ErrUserUnauthorised
+	}
+
+	return nil
 }
