@@ -32,6 +32,7 @@ type PolicyParams struct {
 const (
 	AccountResource        = "uw.energy-smart.v1.account"
 	AccountBookingResource = "uw.energy-smart.v1.account.booking"
+	LowribeckAPIResource   = "uw.energy-smart.v1.lowribeck-wrapper"
 
 	GetAction    = "get"
 	CreateAction = "create"
