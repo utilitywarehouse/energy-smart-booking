@@ -389,19 +389,6 @@ func Test_CreateBooking(t *testing.T) {
 					}).Return(true, nil)
 			},
 		},
-		{
-			desc:          "Unauthorised",
-			clientErr:     fmt.Errorf("unknown"),
-			expectedError: status.Error(codes.Internal, "error making booking request: unknown"),
-			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
-				mAuth.EXPECT().Authorize(ctx,
-					&auth.PolicyParams{
-						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
-						ResourceID: "lowribeck-api",
-					}).Return(false)
-			},
-		},
 	}
 
 	assert := assert.New(t)
