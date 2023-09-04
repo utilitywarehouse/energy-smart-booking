@@ -18,12 +18,14 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
@@ -76,6 +78,11 @@ func serverAction(c *cli.Context) error {
 	}
 	defer mn.Close()
 
+	pdp, err := pdp.NewClient()
+	if err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
@@ -84,6 +91,8 @@ func serverAction(c *cli.Context) error {
 		return err
 	}
 	opsServer.Add("pool", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
+
+	auth := auth.New(pdp)
 
 	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
@@ -133,7 +142,7 @@ func serverAction(c *cli.Context) error {
 	// DOMAIN //
 	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore)
 
-	bookingAPI := api.New(bookingDomain, syncBookingPublisher)
+	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

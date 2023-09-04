@@ -10,12 +10,17 @@ import (
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
+)
+
+var (
+	ErrUserUnauthorised = errors.New("user does not have required access")
 )
 
 type BookingDomain interface {
@@ -31,9 +36,14 @@ type BookingPublisher interface {
 	Sink(ctx context.Context, proto proto.Message, at time.Time) error
 }
 
+type Auth interface {
+	Authorize(ctx context.Context, params *auth.PolicyParams) (bool, error)
+}
+
 type BookingAPI struct {
 	bookingDomain BookingDomain
 	publisher     BookingPublisher
+	auth          Auth
 	bookingv1.UnimplementedBookingAPIServer
 }
 
@@ -41,18 +51,26 @@ type accountIder interface {
 	GetAccountId() string
 }
 
-func New(bookingDomain BookingDomain, publisher BookingPublisher) *BookingAPI {
+func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth) *BookingAPI {
 	return &BookingAPI{
 		bookingDomain: bookingDomain,
 		publisher:     publisher,
+		auth:          auth,
 	}
 }
 
-var (
-	ErrNotImplemented = status.Error(codes.Internal, "not implemented")
-)
-
 func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (*bookingv1.GetCustomerContactDetailsResponse, error) { // nolint:revive
+
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	if err := validateRequest(req); err != nil {
 		return nil, err
 	}
@@ -76,6 +94,17 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 }
 
 func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (*bookingv1.GetCustomerSiteAddressResponse, error) {
+
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	if err := validateRequest(req); err != nil {
 		return nil, err
 	}
@@ -112,6 +141,16 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 
 func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (*bookingv1.GetCustomerBookingsResponse, error) { // nolint:revive
 
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	bookings, err := b.bookingDomain.GetCustomerBookings(ctx, req.GetAccountId())
 	if err != nil {
 		return &bookingv1.GetCustomerBookingsResponse{Bookings: nil}, status.Errorf(codes.Internal, "failed to get customer bookings, %s", err)
@@ -121,6 +160,16 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 }
 
 func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (*bookingv1.GetAvailableSlotsResponse, error) { // nolint:revive
+
+	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
 
 	if err := validateRequest(req); err != nil {
 		return nil, err
@@ -204,6 +253,16 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 }
 
 func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (*bookingv1.CreateBookingResponse, error) { // nolint:revive
+
+	err := b.validateCredentials(ctx, auth.CreateAction, auth.AccountBookingResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
 
 	if err := validateRequest(req); err != nil {
 		return nil, err
@@ -306,6 +365,16 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 
 func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (*bookingv1.RescheduleBookingResponse, error) { // nolint:revive
 
+	err := b.validateCredentials(ctx, auth.UpdateAction, auth.AccountBookingResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	if err := validateRequest(req); err != nil {
 		return nil, err
 	}
@@ -401,6 +470,27 @@ func validateRequest(req accountIder) error {
 
 	if req.GetAccountId() == "" {
 		return status.Error(codes.InvalidArgument, "no account id provided")
+	}
+
+	return nil
+}
+
+func (b *BookingAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
+
+	authorised, err := b.auth.Authorize(ctx, &auth.PolicyParams{
+		Action:     action,
+		Resource:   resource,
+		ResourceID: requestAccountID,
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"action":   action,
+			"resource": resource,
+		}).Error("Authorize error: ", err)
+		return err
+	}
+	if !authorised {
+		return ErrUserUnauthorised
 	}
 
 	return nil

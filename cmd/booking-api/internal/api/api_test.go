@@ -20,6 +20,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api/mocks"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 )
@@ -35,8 +36,9 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerContactDetailsRequest
@@ -49,20 +51,26 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher)
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, auth *mocks.MockAuth)
 		input       inputParams
 		output      outputParams
 	}
 
 	testCases := []testSetup{
 		{
-			description: "should get the account details by account id",
+			description: "should get the account details by account id from a non-customer account",
 			input: inputParams{
 				req: &bookingv1.GetCustomerContactDetailsRequest{
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetCustomerContactDetails(ctx, "account-id-1").Return(models.Account{
 					AccountID: "account-id-1",
@@ -86,16 +94,118 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 				},
 			},
 		},
+		{
+			description: "should get the account details by account id from a customer account",
+			input: inputParams{
+				req: &bookingv1.GetCustomerContactDetailsRequest{
+					AccountId: "account-id-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				bkDomain.EXPECT().GetCustomerContactDetails(ctx, "account-id-1").Return(models.Account{
+					AccountID: "account-id-1",
+					Details: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Jon",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0555",
+					},
+				}, nil)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetCustomerContactDetailsResponse{
+					Title:     "Mr",
+					FirstName: "Jon",
+					LastName:  "Dough",
+					Phone:     "555-0555",
+					Email:     "jdough@example.com",
+				},
+			},
+		},
+		{
+			description: "should fail to get account details because unauthorised",
+			input: inputParams{
+				req: &bookingv1.GetCustomerContactDetailsRequest{
+					AccountId: "account-id-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-1",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail to get account details because some error occurred in auth checks",
+			input: inputParams{
+				req: &bookingv1.GetCustomerContactDetailsRequest{
+					AccountId: "account-id-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-1",
+				}).Return(false, oops)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Internal, "failed to validate credentials"),
+			},
+		},
+		{
+			description: "should fail to get account details customer requesting not his own",
+			input: inputParams{
+				req: &bookingv1.GetCustomerContactDetailsRequest{
+					AccountId: "account-id-2",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-2",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, bookingPublisher)
+			tc.setup(ctx, bookingDomain, bookingPublisher, mockAuth)
 
 			expected, err := myAPIHandler.GetCustomerContactDetails(ctx, tc.input.req)
-			if err != nil {
-				t.Fatal(err)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
 			}
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetCustomerContactDetailsResponse{}, bookingv1.BookingSlot{})); diff != "" {
@@ -114,8 +224,9 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerSiteAddressRequest
@@ -128,20 +239,26 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher)
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth)
 		input       inputParams
 		output      outputParams
 	}
 
 	testCases := []testSetup{
 		{
-			description: "should get the account details by account id",
+			description: "should get account site address by account id for a non-customer account",
 			input: inputParams{
 				req: &bookingv1.GetCustomerSiteAddressRequest{
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetAccountAddressByAccountID(ctx, "account-id-1").Return(models.AccountAddress{
 					UPRN: "uprn",
@@ -182,16 +299,114 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 				},
 			},
 		},
+		{
+			description: "should get account site address by account id for a customer account",
+			input: inputParams{
+				req: &bookingv1.GetCustomerSiteAddressRequest{
+					AccountId: "account-id-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				bkDomain.EXPECT().GetAccountAddressByAccountID(ctx, "account-id-1").Return(models.AccountAddress{
+					UPRN: "uprn",
+					PAF: models.PAF{
+						BuildingName:            "bn",
+						BuildingNumber:          "bnu",
+						Department:              "d",
+						DependentLocality:       "dl",
+						DependentThoroughfare:   "dt",
+						DoubleDependentLocality: "ddl",
+						Organisation:            "o",
+						PostTown:                "pt",
+						Postcode:                "pc",
+						SubBuilding:             "sb",
+						Thoroughfare:            "tf",
+					},
+				}, nil)
+
+			},
+			output: outputParams{
+				res: &bookingv1.GetCustomerSiteAddressResponse{
+					SiteAddress: &addressv1.Address{
+						Uprn: "uprn",
+						Paf: &addressv1.Address_PAF{
+							Organisation:            "o",
+							Department:              "d",
+							SubBuilding:             "sb",
+							BuildingName:            "bn",
+							BuildingNumber:          "bnu",
+							DependentThoroughfare:   "dt",
+							Thoroughfare:            "tf",
+							DoubleDependentLocality: "ddl",
+							DependentLocality:       "dl",
+							PostTown:                "pt",
+							Postcode:                "pc",
+						},
+					},
+				},
+			},
+		},
+		{
+			description: "should fail to get account site address because user is not authorised",
+			input: inputParams{
+				req: &bookingv1.GetCustomerSiteAddressRequest{
+					AccountId: "account-id-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-1",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail to get account site address because customer is trying to access another customer account id",
+			input: inputParams{
+				req: &bookingv1.GetCustomerSiteAddressRequest{
+					AccountId: "account-id-2",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account",
+					ResourceID: "account-id-2",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, bookingPublisher)
+			tc.setup(ctx, bookingDomain, bookingPublisher, mockAuth)
 
 			expected, err := myAPIHandler.GetCustomerSiteAddress(ctx, tc.input.req)
-			if err != nil {
-				t.Fatal(err)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
 			}
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, addressv1.Address{}, bookingv1.BookingSlot{}, bookingv1.GetCustomerSiteAddressResponse{}, addressv1.Address_PAF{})); diff != "" {
@@ -210,8 +425,9 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerBookingsRequest
@@ -224,20 +440,26 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher)
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth)
 		input       inputParams
 		output      outputParams
 	}
 
 	testCases := []testSetup{
 		{
-			description: "should get the customer bookings",
+			description: "should get the customer bookings on a non-customer requester",
 			input: inputParams{
 				req: &bookingv1.GetCustomerBookingsRequest{
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetCustomerBookings(ctx, "account-id-1").Return([]*bookingv1.Booking{
 					{
@@ -343,10 +565,15 @@ func Test_GetCustomerBookings(t *testing.T) {
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetCustomerBookings(ctx, "account-id-1").Return(nil, oops)
-
 			},
 			output: outputParams{
 				res: &bookingv1.GetCustomerBookingsResponse{
@@ -355,12 +582,54 @@ func Test_GetCustomerBookings(t *testing.T) {
 				err: status.Errorf(codes.Internal, "failed to get customer bookings, %s", oops),
 			},
 		},
+		{
+			description: "should fail to get customer bookings because requester is unauthorised",
+			input: inputParams{
+				req: &bookingv1.GetCustomerBookingsRequest{
+					AccountId: "account-id-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail to get customer bookings because customer tries to access another customer resource",
+			input: inputParams{
+				req: &bookingv1.GetCustomerBookingsRequest{
+					AccountId: "account-id-2",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-2",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, bookingPublisher)
+			tc.setup(ctx, bookingDomain, bookingPublisher, mockAuth)
 
 			expected, err := myAPIHandler.GetCustomerBookings(ctx, tc.input.req)
 
@@ -391,8 +660,9 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
 
 	type inputParams struct {
 		req *bookingv1.GetAvailableSlotsRequest
@@ -405,7 +675,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher)
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth)
 		input       inputParams
 		output      outputParams
 	}
@@ -428,7 +698,13 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -530,7 +806,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -545,6 +821,12 @@ func Test_GetAvailableSlot(t *testing.T) {
 						Day:   12,
 					},
 				}
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
 					Slots: []models.BookingSlot{},
@@ -575,7 +857,13 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -620,7 +908,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -635,6 +923,12 @@ func Test_GetAvailableSlot(t *testing.T) {
 						Day:   12,
 					},
 				}
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
 					Slots: []models.BookingSlot{},
@@ -665,7 +959,13 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -710,7 +1010,13 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -755,7 +1061,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -770,6 +1076,12 @@ func Test_GetAvailableSlot(t *testing.T) {
 						Day:   12,
 					},
 				}
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
 					Slots: []models.BookingSlot{},
@@ -800,7 +1112,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
 
 				params := domain.GetAvailableSlotsParams{
 					AccountID: "account-id-1",
@@ -816,6 +1128,12 @@ func Test_GetAvailableSlot(t *testing.T) {
 					},
 				}
 
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
 				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
 					Slots: []models.BookingSlot{},
 				}, oops)
@@ -828,12 +1146,74 @@ func Test_GetAvailableSlot(t *testing.T) {
 				err: status.Errorf(codes.Internal, "failed to get available slots, %s", oops),
 			},
 		},
+		{
+			description: "should fail because requester is unauthorised",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-1",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail because customer is trying to access another user's account id",
+			input: inputParams{
+				req: &bookingv1.GetAvailableSlotsRequest{
+					AccountId: "account-id-2",
+					From: &date.Date{
+						Year:  2012,
+						Month: 12,
+						Day:   21,
+					},
+					To: &date.Date{
+						Year:  2022,
+						Month: 02,
+						Day:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-2",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, bookingPublisher)
+			tc.setup(ctx, bookingDomain, bookingPublisher, mockAuth)
 
 			expected, err := myAPIHandler.GetAvailableSlots(ctx, tc.input.req)
 			if tc.output.err != nil {
@@ -859,8 +1239,9 @@ func Test_CreateBooking(t *testing.T) {
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
 
 	type inputParams struct {
 		req *bookingv1.CreateBookingRequest
@@ -873,7 +1254,7 @@ func Test_CreateBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher)
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth)
 		input       inputParams
 		output      outputParams
 	}
@@ -909,7 +1290,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1072,7 +1459,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1137,7 +1530,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1202,7 +1601,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1267,7 +1672,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1332,7 +1743,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1397,7 +1814,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1462,7 +1885,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1527,7 +1956,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1592,7 +2027,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1657,7 +2098,13 @@ func Test_CreateBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.CreateBookingParams{
 					AccountID: "account-id-1",
@@ -1692,12 +2139,98 @@ func Test_CreateBooking(t *testing.T) {
 				err: status.Errorf(codes.Internal, "failed to create booking, %s", oops.Error()),
 			},
 		},
+		{
+			description: "should fail to create booking because user is unauthorised",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(false, nil)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail to create booking because user is trying to access another user",
+			input: inputParams{
+				req: &bookingv1.CreateBookingRequest{
+					AccountId: "account-id-2",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-2",
+				}).Return(false, nil)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, bookingPublisher)
+			tc.setup(ctx, bookingDomain, bookingPublisher, mockAuth)
 
 			expected, err := myAPIHandler.CreateBooking(ctx, tc.input.req)
 			if tc.output.err != nil {
@@ -1723,8 +2256,9 @@ func Test_RescheduleBooking(t *testing.T) {
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
 
 	type inputParams struct {
 		req *bookingv1.RescheduleBookingRequest
@@ -1737,7 +2271,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher)
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth)
 		input       inputParams
 		output      outputParams
 	}
@@ -1761,7 +2295,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -1830,7 +2370,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -1871,7 +2417,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -1912,7 +2464,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -1953,7 +2511,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -1994,7 +2558,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -2035,7 +2605,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -2076,7 +2652,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -2117,7 +2699,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -2158,7 +2746,13 @@ func Test_RescheduleBooking(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
 
 				params := domain.RescheduleBookingParams{
 					AccountID: "account-id-1",
@@ -2181,12 +2775,76 @@ func Test_RescheduleBooking(t *testing.T) {
 				err: status.Errorf(codes.Internal, "failed to reschedule booking, %s", oops.Error()),
 			},
 		},
+		{
+			description: "should fail to do a reschedule because user is unauthorised",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-1",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-1",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+		{
+			description: "should fail to do a reschedule because customer is trying to access another customer therefore is unauthorised",
+			input: inputParams{
+				req: &bookingv1.RescheduleBookingRequest{
+					AccountId: "account-id-2",
+					BookingId: "booking-id-1",
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 1,
+							Day:   12,
+						},
+						StartTime: 10,
+						EndTime:   20,
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "update",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-id-2",
+				}).Return(false, nil)
+
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, bookingPublisher)
+			tc.setup(ctx, bookingDomain, bookingPublisher, mockAuth)
 
 			expected, err := myAPIHandler.RescheduleBooking(ctx, tc.input.req)
 			if tc.output.err != nil {
