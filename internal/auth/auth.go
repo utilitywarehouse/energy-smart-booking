@@ -34,6 +34,7 @@ const (
 	AccountResource        = "uw.energy-smart.v1.account"
 	AccountBookingResource = "uw.energy-smart.v1.account.booking"
 	LowribeckAPIResource   = "uw.energy-smart.v1.lowribeck-wrapper"
+	EligibilityResource    = "uw.energy-smart.v1.account.eligibility"
 
 	GetAction    = "get"
 	CreateAction = "create"
