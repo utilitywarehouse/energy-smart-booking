@@ -58,8 +58,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	)
 	defer span.End()
 
-	span.AddEvent("request", trace.WithAttributes(attribute.String("postcode", fmt.Sprintf("%v", req.GetPostcode()))))
-	span.AddEvent("request", trace.WithAttributes(attribute.String("reference", fmt.Sprintf("%v", req.GetReference()))))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
 
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
 	if err != nil {

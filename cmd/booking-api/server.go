@@ -7,13 +7,19 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5/stdlib"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
-	"github.com/utilitywarehouse/energy-pkg/grpc"
+
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
@@ -24,11 +30,17 @@ import (
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
+	"github.com/utilitywarehouse/uwos-go/v1/iam"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"github.com/uw-labs/substrate"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/reflection"
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
@@ -95,14 +107,14 @@ func serverAction(c *cli.Context) error {
 
 	auth := auth.New(pdp)
 
-	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
+	accountsConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to accounts-api host [%s]: %w", c.String(accountsAPIHost), err)
 	}
 	opsServer.Add("accounts-api", grpchealth.NewCheck(c.String(accountsAPIHost), "", "cannot query accounts"))
 	defer accountsConn.Close()
 
-	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
+	lowribeckConn, err := createConnection(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to lowribeck-api host [%s]: %w", c.String(lowribeckAPIHost), err)
 	}
@@ -181,4 +193,60 @@ func serverAction(c *cli.Context) error {
 	})
 
 	return g.Wait()
+}
+
+func createConnection(ctx context.Context, addr string, lvl string) (*grpc.ClientConn, error) {
+	logger := log.New()
+	logger.SetLevel(parseLogLevel(lvl))
+
+	grpc_logrus.ReplaceGrpcLogger(log.NewEntry(logger))
+
+	log.Infof("Connecting to %q", addr)
+	defer func() {
+		log.Infof("Connected to %q", addr)
+	}()
+	return grpc.DialContext(ctx,
+		addr,
+		grpc.WithBlock(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			PermitWithoutStream: true,
+		}),
+		grpc.WithChainUnaryInterceptor(
+			grpc_middleware.ChainUnaryClient(
+				grpc_prometheus.UnaryClientInterceptor,
+				otelgrpc.UnaryClientInterceptor(),
+				iam.UnaryClientInterceptor(),
+				grpc_retry.UnaryClientInterceptor(
+					[]grpc_retry.CallOption{
+						grpc_retry.WithBackoff(grpc_retry.BackoffExponentialWithJitter(100*time.Millisecond, 0.1)),
+						grpc_retry.WithMax(3),
+						grpc_retry.WithCodes(codes.Unknown, codes.DeadlineExceeded, codes.Unavailable),
+					}...,
+				),
+			),
+		),
+		grpc.WithStreamInterceptor(
+			grpc_middleware.ChainStreamClient(
+				grpc_prometheus.StreamClientInterceptor,
+				otelgrpc.StreamClientInterceptor(),
+				iam.StreamClientInterceptor(),
+				grpc_retry.StreamClientInterceptor(
+					[]grpc_retry.CallOption{
+						grpc_retry.WithBackoff(grpc_retry.BackoffExponentialWithJitter(100*time.Millisecond, 0.1)),
+						grpc_retry.WithMax(3),
+						grpc_retry.WithCodes(codes.Unknown, codes.DeadlineExceeded, codes.Unavailable),
+					}...,
+				),
+			),
+		),
+	)
+}
+
+func parseLogLevel(lvl string) log.Level {
+	l, err := log.ParseLevel(lvl)
+	if err != nil {
+		log.WithFields(log.Fields{"log_level": lvl}).WithError(err).Panic("invalid log level")
+	}
+	return l
 }
