@@ -11,8 +11,9 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	// "github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
+	tracecodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -82,11 +83,11 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("request: [%s]", string(body))
 
-	// span := trace.SpanFromContext(ctx)
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-	defer span.End()
+	span := trace.SpanFromContext(ctx)
+	// ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
+	// 	trace.WithSpanKind(trace.SpanKindServer),
+	// )
+	// defer span.End()
 
 	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
 
@@ -97,6 +98,8 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 		bytes.NewReader(body),
 	)
 	if err != nil {
+		span.SetStatus(tracecodes.Error, err.Error())
+		span.RecordError(err)
 		return nil, fmt.Errorf("unable to create new request: %w", err)
 	}
 
@@ -105,24 +108,30 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	resp, err := c.http.Do(request)
 	if err != nil {
+		span.SetStatus(tracecodes.Error, err.Error())
+		span.RecordError(err)
 		return nil, fmt.Errorf("unable to send http request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
+		span.SetStatus(tracecodes.Error, err.Error())
+		span.RecordError(err)
 		return nil, fmt.Errorf("unable to read body: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
-		logrus.Error(statusErr)
-		return nil, statusErr
 	}
 
 	logrus.Debugf("response: [%s]", string(bodyBytes))
 
 	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
+
+	if resp.StatusCode != http.StatusOK {
+		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
+		span.SetStatus(tracecodes.Error, err.Error())
+		span.RecordError(statusErr)
+		logrus.Error(statusErr)
+		return nil, statusErr
+	}
 
 	return bodyBytes, nil
 }
