@@ -39,14 +39,19 @@ func NewLinkProvider(client click.IssuerServiceClient, config *LinkProviderConfi
 	}, nil
 }
 
-func (p *LinkProvider) GenerateAuthenticated(ctx context.Context, accountNo string) (string, error) {
+func (p *LinkProvider) GenerateAuthenticated(ctx context.Context, accountNo string, queryParams string) (string, error) {
+	targetUrl := p.config.Location
+	if len(queryParams) > 0 {
+		targetUrl = fmt.Sprintf("%s?%s", targetUrl, queryParams)
+	}
+
 	clickLink, err := p.clickGRPC.IssueURL(ctx, &click.IssueURLRequest{
 		KeyId: p.config.ClickKeyID,
 		ValidFor: &types.Duration{
 			Seconds: int64(p.config.ExpirationTimeSeconds),
 		},
 		Target: &click.TargetSpec{
-			Web:    p.config.Location,
+			Web:    targetUrl,
 			Mobile: p.config.MobileLocation,
 		},
 		Auth: &click.AuthSpec{

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -24,7 +25,8 @@ const (
 )
 
 type GenerateLinkRequest struct {
-	AccountNumber string `json:"account_number"`
+	AccountNumber string     `json:"account_number"`
+	QueryParams   url.Values `json:"query_params"`
 }
 
 func (s *Handler) Register(ctx context.Context, router *mux.Router) {
@@ -68,7 +70,7 @@ func (s *Handler) generate(ctx context.Context) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		case "auth":
-			link, err = s.generator.GenerateAuthenticated(ctx, req.AccountNumber)
+			link, err = s.generator.GenerateAuthenticated(ctx, req.AccountNumber, req.QueryParams.Encode())
 		case "generic":
 			link, err = s.generator.GenerateGenericLink(ctx, req.AccountNumber)
 		}
