@@ -118,7 +118,7 @@ func runServer(c *cli.Context) error {
 	httpClient := &http.Client{Timeout: 30 * time.Second}
 
 	client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
-	opsServer.Add("lowribeck-api", lowribeckChecker(ctx, client.HealthCheck))
+	// opsServer.Add("lowribeck-api", lowribeckChecker(ctx, client.HealthCheck))
 
 	g.Go(func() error {
 		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
