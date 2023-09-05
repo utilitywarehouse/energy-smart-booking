@@ -53,7 +53,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		Reference: reference,
 	}
 
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "GetAvailableSLots"),
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "GetAvailableSlots"),
 		trace.WithSpanKind(trace.SpanKindClient),
 	)
 	defer span.End()
