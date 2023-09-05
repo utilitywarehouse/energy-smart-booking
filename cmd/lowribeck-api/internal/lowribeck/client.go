@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	tracecodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -83,15 +82,9 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("request: [%s]", string(body))
 
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
-		trace.WithSpanKind(trace.SpanKindClient),
-	)
-	defer span.End()
+	span := trace.SpanFromContext(ctx)
 
-	// span := trace.SpanFromContext(ctx)
-	span.SetAttributes(attribute.String("req", string(body)))
-
-	// span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
 
 	request, err := http.NewRequestWithContext(
 		ctx,
@@ -125,8 +118,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("response: [%s]", string(bodyBytes))
 
-	span.SetAttributes(attribute.String("resp", string(bodyBytes)))
-	// span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
