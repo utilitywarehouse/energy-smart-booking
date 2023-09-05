@@ -20,7 +20,9 @@ import (
 	grpcHelper "github.com/utilitywarehouse/energy-services/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -37,6 +39,13 @@ func runGRPCApi(c *cli.Context) error {
 		WithDetails(appName, appDesc)
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	pdp, err := pdp.NewClient()
+	if err != nil {
+		return err
+	}
+
+	auth := auth.New(pdp)
 
 	pg, err := store.Setup(ctx, c.String(postgresDSN))
 	if err != nil {
@@ -59,7 +68,7 @@ func runGRPCApi(c *cli.Context) error {
 		}
 		defer listen.Close()
 
-		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore, serviceStore)
+		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore, serviceStore, auth)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 
 		return grpcServer.Serve(listen)
