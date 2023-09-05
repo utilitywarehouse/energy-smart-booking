@@ -84,7 +84,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 	logrus.Debugf("request: [%s]", string(body))
 
 	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
-		trace.WithSpanKind(trace.SpanKindServer),
+		trace.WithSpanKind(trace.SpanKindInternal),
 	)
 	defer span.End()
 
