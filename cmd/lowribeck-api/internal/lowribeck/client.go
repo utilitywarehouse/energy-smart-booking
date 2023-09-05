@@ -126,7 +126,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
-		span.SetStatus(tracecodes.Error, err.Error())
+		span.SetStatus(tracecodes.Error, statusErr.Error())
 		span.RecordError(statusErr)
 		logrus.Error(statusErr)
 		return nil, statusErr
