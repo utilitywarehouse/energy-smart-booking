@@ -54,11 +54,12 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	}
 
 	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "GetAvailableSLots"),
-		trace.WithSpanKind(trace.SpanKindServer),
+		trace.WithSpanKind(trace.SpanKindClient),
 	)
 	defer span.End()
 
-	span.AddEvent("request", trace.WithAttributes(attribute.String("req", fmt.Sprintf("%v", req))))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("postcode", fmt.Sprintf("%v", req.GetPostcode()))))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("reference", fmt.Sprintf("%v", req.GetReference()))))
 
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
 	if err != nil {
@@ -99,7 +100,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		span.SetAttributes(attribute.String("code", ErrUnhandledErrorCode.Error()))
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
-	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots))))
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots.GetSlots()))))
 
 	slots := []models.BookingSlot{}
 
