@@ -11,7 +11,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
-	// "github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	tracecodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -83,11 +83,10 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("request: [%s]", string(body))
 
-	span := trace.SpanFromContext(ctx)
-	// ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
-	// 	trace.WithSpanKind(trace.SpanKindServer),
-	// )
-	// defer span.End()
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
+	defer span.End()
 
 	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
 
