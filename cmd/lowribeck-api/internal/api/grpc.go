@@ -54,10 +54,11 @@ func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
-	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.getCalendarAvailability",
-		trace.WithSpanKind(trace.SpanKindClient),
+	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.GetAvailableSlots",
+		trace.WithSpanKind(trace.SpanKindServer),
 	)
 	defer span.End()
+	// propgator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{})
 
 	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, "lowribeck-api")
 	if err != nil {

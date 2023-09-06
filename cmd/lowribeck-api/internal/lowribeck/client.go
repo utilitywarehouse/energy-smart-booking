@@ -75,6 +75,12 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 }
 
 func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string) ([]byte, error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
+		trace.WithSpanKind(trace.SpanKindClient),
+	)
+	defer span.End()
+	// propgator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{})
+
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %w", err)
@@ -82,7 +88,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("request: [%s]", string(body))
 
-	span := trace.SpanFromContext(ctx)
+	// span := trace.SpanFromContext(ctx)
 
 	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
 
