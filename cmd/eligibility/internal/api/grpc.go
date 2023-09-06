@@ -8,12 +8,21 @@ import (
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
+var (
+	ErrUserUnauthorised = errors.New("user does not have required access")
+)
+
 type EligibilityStore interface {
 	Get(ctx context.Context, occupancyID, accountID string) (store.Eligibility, error)
+}
+
+type Auth interface {
+	Authorize(ctx context.Context, params *auth.PolicyParams) (bool, error)
 }
 
 type SuppliabilityStore interface {
@@ -39,6 +48,7 @@ type EligibilityGRPCApi struct {
 	occupancyStore     OccupancyStore
 	accountStore       AccountStore
 	serviceStore       ServiceStore
+	auth               Auth
 }
 
 func NewEligibilityGRPCApi(
@@ -46,17 +56,30 @@ func NewEligibilityGRPCApi(
 	suppliabilityStore SuppliabilityStore,
 	occupancyStore OccupancyStore,
 	accountStore AccountStore,
-	serviceStore ServiceStore) *EligibilityGRPCApi {
+	serviceStore ServiceStore,
+	auth Auth) *EligibilityGRPCApi {
 	return &EligibilityGRPCApi{
 		eligibilityStore:   eligibilityStore,
 		suppliabilityStore: suppliabilityStore,
 		occupancyStore:     occupancyStore,
 		accountStore:       accountStore,
 		serviceStore:       serviceStore,
+		auth:               auth,
 	}
 }
 
 func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountEligibilityForSmartBookingRequest) (*smart_booking.GetAccountEligibilityForSmartBookingResponse, error) {
+
+	err := a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	account, err := a.accountStore.GetAccount(ctx, req.AccountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
@@ -151,6 +174,17 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 }
 
 func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (*smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, error) {
+
+	err := a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	account, err := a.accountStore.GetAccount(ctx, req.AccountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
 		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
@@ -208,4 +242,25 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		OccupancyId: req.OccupancyId,
 		Eligible:    eligible,
 	}, nil
+}
+
+func (a *EligibilityGRPCApi) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
+
+	authorised, err := a.auth.Authorize(ctx, &auth.PolicyParams{
+		Action:     action,
+		Resource:   resource,
+		ResourceID: requestAccountID,
+	})
+	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"action":   action,
+			"resource": resource,
+		}).Error("Authorize error: ", err)
+		return err
+	}
+	if !authorised {
+		return ErrUserUnauthorised
+	}
+
+	return nil
 }
