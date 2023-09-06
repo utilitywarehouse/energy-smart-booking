@@ -11,7 +11,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
-	tracecodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
@@ -63,8 +62,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
 	if err != nil {
 		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
-		span.SetStatus(tracecodes.Error, err.Error())
-		span.RecordError(err)
+		tracing.RecordSpanError(span, err)
 
 		switch status.Convert(err).Code() {
 		case codes.Internal:
@@ -149,8 +147,7 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 	span.AddEvent("request", trace.WithAttributes(attribute.String("req", fmt.Sprintf("%v", req))))
 	bookingResponse, err := g.client.CreateBooking(g.mai.ToCtx(ctx), req)
 	if err != nil {
-		span.SetStatus(tracecodes.Error, err.Error())
-		span.RecordError(err)
+		tracing.RecordSpanError(span, err)
 
 		switch status.Convert(err).Code() {
 		case codes.Internal:

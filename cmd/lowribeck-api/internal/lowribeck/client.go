@@ -11,8 +11,8 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
-	tracecodes "go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -93,8 +93,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		span.SetStatus(tracecodes.Error, err.Error())
-		span.RecordError(err)
+		tracing.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to create new request: %w", err)
 	}
 
@@ -103,16 +102,14 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	resp, err := c.http.Do(request)
 	if err != nil {
-		span.SetStatus(tracecodes.Error, err.Error())
-		span.RecordError(err)
+		tracing.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to send http request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		span.SetStatus(tracecodes.Error, err.Error())
-		span.RecordError(err)
+		tracing.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to read body: %w", err)
 	}
 
@@ -122,8 +119,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
-		span.SetStatus(tracecodes.Error, statusErr.Error())
-		span.RecordError(statusErr)
+		tracing.RecordSpanError(span, statusErr)
 		logrus.Error(statusErr)
 		return nil, statusErr
 	}
