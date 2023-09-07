@@ -55,12 +55,6 @@ func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
-	ctx = dist_tracing.FromContext(ctx)
-
-	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.GetAvailableSlots",
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
-	defer span.End()
 
 	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, "lowribeck-api")
 	if err != nil {
@@ -71,6 +65,12 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 			return nil, status.Error(codes.Internal, "failed to validate credentials")
 		}
 	}
+
+	ctx = dist_tracing.FromContext(ctx)
+	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.GetAvailableSlots",
+		trace.WithSpanKind(trace.SpanKindServer),
+	)
+	defer span.End()
 
 	requestID := uuid.New().ID()
 	availabilityReq := l.mapper.AvailabilityRequest(requestID, req)
