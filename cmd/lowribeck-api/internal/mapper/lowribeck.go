@@ -41,12 +41,12 @@ func (lb LowriBeck) AvailabilityRequest(id uint32, req *contract.GetAvailableSlo
 }
 
 func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
-	slots, err := mapAvailabilitySlots(resp.CalendarAvailabilityResult)
-	if err != nil {
+	if err := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage); err != nil {
 		return nil, err
 	}
 
-	if err := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage); err != nil {
+	slots, err := mapAvailabilitySlots(resp.CalendarAvailabilityResult)
+	if err != nil {
 		return nil, err
 	}
 

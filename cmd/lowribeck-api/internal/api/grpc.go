@@ -74,29 +74,34 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	availabilityReq := l.mapper.AvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {
-		logrus.Errorf("invalid available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
+		return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", err)
+	}
+
+	mappedResp, mappedErr := l.mapper.AvailableSlotsResponse(resp)
+	if mappedErr != nil {
+		logrus.Errorf("invalid available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
 		switch {
-		case errors.Is(err, mapper.ErrAppointmentNotFound):
-			return nil, status.Errorf(codes.NotFound, "error making get available slots request: %v", err)
+		case errors.Is(mappedErr, mapper.ErrAppointmentNotFound):
+			return nil, status.Errorf(codes.NotFound, "error making get available slots request: %v", mappedErr)
 
-		case errors.Is(err, mapper.ErrAppointmentOutOfRange):
-			return nil, status.Errorf(codes.OutOfRange, "error making get available slots request: %v", err)
+		case errors.Is(mappedErr, mapper.ErrAppointmentOutOfRange):
+			return nil, status.Errorf(codes.OutOfRange, "error making get available slots request: %v", mappedErr)
 
-		case errors.Is(err, mapper.ErrInvalidRequest):
-			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots request: %v", err)
+		case errors.Is(mappedErr, mapper.ErrInvalidRequest):
+			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots request: %v", mappedErr)
 		default:
-			if invErr, ok := err.(*mapper.InvalidRequestError); ok {
+			if invErr, ok := mappedErr.(*mapper.InvalidRequestError); ok {
 				invReqError, err := createInvalidRequestError("error making get available slots request: %v", invErr)
 				if err != nil {
 					logrus.Errorf("internal error for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
-					return nil, status.Errorf(codes.Internal, "error making get available slots request: %s", err.Error())
+					return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", err)
 				}
 				return nil, invReqError
 			}
 		}
-		return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", err)
+		return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", mappedErr)
 	}
-	return l.mapper.AvailableSlotsResponse(resp)
+	return mappedResp, nil
 }
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
@@ -123,33 +128,38 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	}
 	resp, err := l.client.CreateBooking(ctx, bookingReq)
 	if err != nil {
-		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
+		return nil, status.Errorf(codes.Internal, "error making booking request: %v", err)
+	}
+
+	mappedResp, mappedErr := l.mapper.BookingResponse(resp)
+	if mappedErr != nil {
+		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
 		switch {
-		case errors.Is(err, mapper.ErrAppointmentNotFound):
-			return nil, status.Errorf(codes.NotFound, "error making booking request: %v", err)
+		case errors.Is(mappedErr, mapper.ErrAppointmentNotFound):
+			return nil, status.Errorf(codes.NotFound, "error making booking request: %v", mappedErr)
 
-		case errors.Is(err, mapper.ErrAppointmentAlreadyExists):
-			return nil, status.Errorf(codes.AlreadyExists, "error making booking request: %v", err)
+		case errors.Is(mappedErr, mapper.ErrAppointmentAlreadyExists):
+			return nil, status.Errorf(codes.AlreadyExists, "error making booking request: %v", mappedErr)
 
-		case errors.Is(err, mapper.ErrAppointmentOutOfRange):
-			return nil, status.Errorf(codes.OutOfRange, "error making booking request: %v", err)
+		case errors.Is(mappedErr, mapper.ErrAppointmentOutOfRange):
+			return nil, status.Errorf(codes.OutOfRange, "error making booking request: %v", mappedErr)
 
-		case errors.Is(err, mapper.ErrInvalidRequest):
-			return nil, status.Errorf(codes.InvalidArgument, "error making booking request: %v", err)
+		case errors.Is(mappedErr, mapper.ErrInvalidRequest):
+			return nil, status.Errorf(codes.InvalidArgument, "error making booking request: %v", mappedErr)
 
 		default:
-			if invErr, ok := err.(*mapper.InvalidRequestError); ok {
+			if invErr, ok := mappedErr.(*mapper.InvalidRequestError); ok {
 				invReqError, err := createInvalidRequestError("error making booking request: %v", invErr)
 				if err != nil {
 					logrus.Errorf("internal error for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
-					return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
+					return nil, status.Errorf(codes.Internal, "error making booking request: %v", err)
 				}
 				return nil, invReqError
 			}
 		}
-		return nil, status.Errorf(codes.Internal, "error making booking request: %s", err.Error())
+		return nil, status.Errorf(codes.Internal, "error making booking request: %v", mappedErr)
 	}
-	return l.mapper.BookingResponse(resp)
+	return mappedResp, nil
 }
 
 func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (error, error) {
