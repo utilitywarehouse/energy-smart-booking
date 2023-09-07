@@ -25,7 +25,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-var oops = errors.New("oops")
+var errOops = errors.New("oops")
 
 func Test_GetAvailableSlots(t *testing.T) {
 	now := time.Now().UTC().Format("02/01/2006 15:04:05")
@@ -34,7 +34,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 		desc          string
 		req           *lowribeck.GetCalendarAvailabilityRequest
 		clientResp    *lowribeck.GetCalendarAvailabilityResponse
-		clientErr     error
+		mapperErr     error
 		expected      *contract.GetAvailableSlotsResponse
 		expectedError error
 		setup         func(context.Context, *mocks.MockAuth)
@@ -78,7 +78,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 		{
 			desc:          "Invalid postcode",
-			clientErr:     mapper.NewInvalidRequestError(mapper.InvalidPostcode),
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidPostcode),
 			expectedError: status.Error(codes.InvalidArgument, "error making get available slots request: invalid request [postcode]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -91,7 +91,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 		{
 			desc:          "Invalid reference",
-			clientErr:     mapper.NewInvalidRequestError(mapper.InvalidReference),
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidReference),
 			expectedError: status.Error(codes.InvalidArgument, "error making get available slots request: invalid request [reference]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -104,7 +104,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 		{
 			desc:          "Appointment not found",
-			clientErr:     mapper.ErrAppointmentNotFound,
+			mapperErr:     mapper.ErrAppointmentNotFound,
 			expectedError: status.Error(codes.NotFound, "error making get available slots request: no appointments found"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -117,7 +117,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 		{
 			desc:          "Appointment out of range",
-			clientErr:     mapper.ErrAppointmentOutOfRange,
+			mapperErr:     mapper.ErrAppointmentOutOfRange,
 			expectedError: status.Error(codes.OutOfRange, "error making get available slots request: appointment out of range"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -130,7 +130,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 		{
 			desc:          "Unknown bad parameter",
-			clientErr:     mapper.ErrInvalidRequest,
+			mapperErr:     mapper.ErrInvalidRequest,
 			expectedError: status.Error(codes.InvalidArgument, "error making get available slots request: invalid request"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -143,7 +143,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 		{
 			desc:          "Unknown error",
-			clientErr:     fmt.Errorf("unknown"),
+			mapperErr:     fmt.Errorf("unknown"),
 			expectedError: status.Error(codes.Internal, "error making get available slots request: unknown"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -171,10 +171,11 @@ func Test_GetAvailableSlots(t *testing.T) {
 		t.Run(tc.desc, func(t *testing.T) {
 			mapper.availabilityRequest = tc.req
 			mapper.availabilityResponse = tc.expected
+			mapper.availabilityError = tc.mapperErr
 
 			tc.setup(ctx, mAuth)
 
-			client.EXPECT().GetCalendarAvailability(ctx, tc.req).Return(tc.clientResp, tc.clientErr)
+			client.EXPECT().GetCalendarAvailability(ctx, tc.req).Return(tc.clientResp, nil)
 
 			result, err := myAPIHandler.GetAvailableSlots(ctx, &contract.GetAvailableSlotsRequest{
 				Postcode:  "postcode",
@@ -220,7 +221,7 @@ func Test_GetAvailableSlots_Unauthorised(t *testing.T) {
 						Action:     "get",
 						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
 						ResourceID: "lowribeck-api",
-					}).Return(false, oops)
+					}).Return(false, errOops)
 			},
 		},
 	}
@@ -258,7 +259,7 @@ func Test_CreateBooking(t *testing.T) {
 		desc          string
 		req           *lowribeck.CreateBookingRequest
 		clientResp    *lowribeck.CreateBookingResponse
-		clientErr     error
+		mapperErr     error
 		expected      *contract.CreateBookingResponse
 		expectedError error
 		setup         func(context.Context, *mocks.MockAuth)
@@ -287,7 +288,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Invalid postcode",
-			clientErr:     mapper.NewInvalidRequestError(mapper.InvalidPostcode),
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidPostcode),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking request: invalid request [postcode]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -300,7 +301,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Invalid reference",
-			clientErr:     mapper.NewInvalidRequestError(mapper.InvalidReference),
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidReference),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking request: invalid request [reference]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -313,7 +314,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Invalid site",
-			clientErr:     mapper.NewInvalidRequestError(mapper.InvalidSite),
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidSite),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking request: invalid request [site]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -326,7 +327,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Appointment not found",
-			clientErr:     mapper.ErrAppointmentNotFound,
+			mapperErr:     mapper.ErrAppointmentNotFound,
 			expectedError: status.Error(codes.NotFound, "error making booking request: no appointments found"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -339,7 +340,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Appointment out of range",
-			clientErr:     mapper.ErrAppointmentOutOfRange,
+			mapperErr:     mapper.ErrAppointmentOutOfRange,
 			expectedError: status.Error(codes.OutOfRange, "error making booking request: appointment out of range"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -352,7 +353,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Appointment already exists",
-			clientErr:     mapper.ErrAppointmentAlreadyExists,
+			mapperErr:     mapper.ErrAppointmentAlreadyExists,
 			expectedError: status.Error(codes.AlreadyExists, "error making booking request: appointment already exists"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -365,7 +366,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Unknown bad parameter",
-			clientErr:     mapper.ErrInvalidRequest,
+			mapperErr:     mapper.ErrInvalidRequest,
 			expectedError: status.Error(codes.InvalidArgument, "error making booking request: invalid request"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -378,7 +379,7 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Unknown error",
-			clientErr:     fmt.Errorf("unknown"),
+			mapperErr:     fmt.Errorf("unknown"),
 			expectedError: status.Error(codes.Internal, "error making booking request: unknown"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
@@ -405,11 +406,12 @@ func Test_CreateBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			mapper.bookingRequest = tc.req
-			mapper.booking = tc.expected
+			mapper.bookingResponse = tc.expected
+			mapper.bookingError = tc.mapperErr
 
 			tc.setup(ctx, mAuth)
 
-			client.EXPECT().CreateBooking(ctx, tc.req).Return(tc.clientResp, tc.clientErr)
+			client.EXPECT().CreateBooking(ctx, tc.req).Return(tc.clientResp, nil)
 
 			result, err := myAPIHandler.CreateBooking(ctx, &contract.CreateBookingRequest{
 				Postcode:  "postcode",
@@ -455,7 +457,7 @@ func Test_CreateBooking_Unauthorised(t *testing.T) {
 						Action:     "create",
 						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
 						ResourceID: "lowribeck-api",
-					}).Return(false, oops)
+					}).Return(false, errOops)
 			},
 		},
 	}
@@ -488,8 +490,10 @@ func Test_CreateBooking_Unauthorised(t *testing.T) {
 type fakeMapper struct {
 	availabilityRequest  *lowribeck.GetCalendarAvailabilityRequest
 	availabilityResponse *contract.GetAvailableSlotsResponse
+	availabilityError    error
 	bookingRequest       *lowribeck.CreateBookingRequest
-	booking              *contract.CreateBookingResponse
+	bookingResponse      *contract.CreateBookingResponse
+	bookingError         error
 }
 
 func (f *fakeMapper) AvailabilityRequest(_ uint32, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
@@ -497,11 +501,17 @@ func (f *fakeMapper) AvailabilityRequest(_ uint32, req *contract.GetAvailableSlo
 }
 
 func (f *fakeMapper) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
+	if f.availabilityError != nil {
+		return nil, f.availabilityError
+	}
 	return f.availabilityResponse, nil
 }
 func (f *fakeMapper) BookingRequest(_ uint32, resp *contract.CreateBookingRequest) (*lowribeck.CreateBookingRequest, error) {
 	return f.bookingRequest, nil
 }
 func (f *fakeMapper) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
-	return f.booking, nil
+	if f.bookingError != nil {
+		return nil, f.bookingError
+	}
+	return f.bookingResponse, nil
 }
