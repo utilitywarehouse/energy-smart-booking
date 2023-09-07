@@ -53,11 +53,11 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		Reference: reference,
 	}
 
+	ctx = dist_tracing.NewContext(ctx)
 	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "GetAvailableSlots"),
 		trace.WithSpanKind(trace.SpanKindClient),
 	)
 	defer span.End()
-	ctx = dist_tracing.NewContext(ctx, tracing.Tracer())
 
 	span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
 

@@ -7,18 +7,27 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type ctxKey struct{}
 
-func FromContext(ctx context.Context) trace.Tracer {
-	t, _ := ctx.Value(ctxKey{}).(trace.Tracer)
-	return t
+func FromContext(ctx context.Context) context.Context {
+	if ctx == nil {
+		return context.Background()
+	}
+	t, ok := ctx.Value(ctxKey{}).([]byte)
+	if !ok {
+		return context.Background()
+	}
+	return UnmarshalContext(ctx, t)
 }
 
-func NewContext(parent context.Context, t trace.Tracer) context.Context {
-	return context.WithValue(parent, ctxKey{}, t)
+func NewContext(parent context.Context) context.Context {
+	res := MarshalContext(parent)
+	if res == nil {
+		return context.Background()
+	}
+	return context.WithValue(parent, ctxKey{}, res)
 }
 
 // MarshalContext marshals a parent context

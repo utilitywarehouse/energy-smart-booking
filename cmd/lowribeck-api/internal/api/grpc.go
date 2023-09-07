@@ -55,9 +55,9 @@ func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
-	tracer := dist_tracing.FromContext(ctx)
+	ctx = dist_tracing.FromContext(ctx)
 
-	ctx, span := tracer.Start(ctx, "LowriBeck.GetAvailableSlots",
+	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.GetAvailableSlots",
 		trace.WithSpanKind(trace.SpanKindServer),
 	)
 	defer span.End()
