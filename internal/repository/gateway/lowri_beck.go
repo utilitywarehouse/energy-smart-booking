@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
-	dist_tracing "github.com/utilitywarehouse/energy-smart-booking/internal/tracing"
+
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -48,18 +48,15 @@ type CreateBookingResponse struct {
 }
 
 func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (AvailableSlotsResponse, error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "GetAvailableSlots"))
+	defer span.End()
+
 	req := &lowribeckv1.GetAvailableSlotsRequest{
 		Postcode:  postcode,
 		Reference: reference,
 	}
 
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "GetAvailableSlots"),
-		trace.WithSpanKind(trace.SpanKindClient),
-	)
-	defer span.End()
-	ctx = dist_tracing.NewContext(ctx)
-
-	span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
+	// span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
 
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
 	if err != nil {
@@ -99,7 +96,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		span.SetAttributes(attribute.String("code", ErrUnhandledErrorCode.Error()))
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
-	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots.GetSlots()))))
+	// span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots.GetSlots()))))
 
 	slots := []models.BookingSlot{}
 
@@ -117,9 +114,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 }
 
 func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (CreateBookingResponse, error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "CreateBooking"),
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "CreateBooking"))
 	defer span.End()
 
 	req := &lowribeckv1.CreateBookingRequest{

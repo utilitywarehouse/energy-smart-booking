@@ -11,7 +11,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
-	dist_tracing "github.com/utilitywarehouse/energy-smart-booking/internal/tracing"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/trace"
 
@@ -55,11 +54,7 @@ func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
-	ctx = dist_tracing.FromContext(ctx)
-	// span := trace.SpanFromContext(ctx)
-	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.GetAvailableSlots",
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
+	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.GetAvailableSlots")
 	defer span.End()
 
 	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, "lowribeck-api")
