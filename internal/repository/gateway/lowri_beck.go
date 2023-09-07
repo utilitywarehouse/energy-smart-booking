@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	dist_tracing "github.com/utilitywarehouse/energy-smart-booking/internal/tracing"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -56,6 +57,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		trace.WithSpanKind(trace.SpanKindClient),
 	)
 	defer span.End()
+	ctx = dist_tracing.NewContext(ctx, tracing.Tracer())
 
 	span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
 
