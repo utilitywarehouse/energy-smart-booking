@@ -79,7 +79,6 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 		trace.WithSpanKind(trace.SpanKindClient),
 	)
 	defer span.End()
-	// propgator := propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{})
 
 	body, err := json.Marshal(req)
 	if err != nil {

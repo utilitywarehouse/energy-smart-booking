@@ -17,7 +17,7 @@ func FromContext(ctx context.Context) context.Context {
 	}
 	t, ok := ctx.Value(ctxKey{}).([]byte)
 	if !ok {
-		return context.Background()
+		return ctx
 	}
 	return UnmarshalContext(ctx, t)
 }
