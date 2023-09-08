@@ -207,7 +207,8 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 // this method takes in an accountID and returns the postcode and the booking reference
 func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (_ models.Site, _ models.OccupancyEligibility, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.BookingDomain.GetSiteExternalReferenceByAccountID")
+	span := trace.SpanFromContext(ctx)
+	// ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.BookingDomain.GetSiteExternalReferenceByAccountID")
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
