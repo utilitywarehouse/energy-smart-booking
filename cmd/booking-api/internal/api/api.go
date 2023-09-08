@@ -14,6 +14,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -61,7 +62,7 @@ func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth) *Bo
 }
 
 func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) { // nolint:revive
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerContactDetails")
+	span := trace.SpanFromContext(ctx)
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
@@ -100,7 +101,7 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 }
 
 func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (_ *bookingv1.GetCustomerSiteAddressResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerSiteAddress")
+	span := trace.SpanFromContext(ctx)
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
@@ -151,7 +152,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 }
 
 func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) { // nolint:revive
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings")
+	span := trace.SpanFromContext(ctx)
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
@@ -176,7 +177,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 }
 
 func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) { // nolint:revive
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots")
+	span := trace.SpanFromContext(ctx)
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
@@ -274,7 +275,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 }
 
 func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (_ *bookingv1.CreateBookingResponse, err error) { // nolint:revive
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking")
+	span := trace.SpanFromContext(ctx)
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
@@ -390,7 +391,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 }
 
 func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) { // nolint:revive
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings")
+	span := trace.SpanFromContext(ctx)
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()

@@ -48,7 +48,7 @@ type CreateBookingResponse struct {
 }
 
 func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (_ AvailableSlotsResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.LowriBeckGateway.GetAvailableSlots")
+	span := trace.SpanFromContext(ctx)
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
