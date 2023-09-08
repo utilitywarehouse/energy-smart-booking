@@ -54,16 +54,12 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		span.End()
 	}()
 
-	req := &lowribeckv1.GetAvailableSlotsRequest{
+	span.AddEvent("request", trace.WithAttributes(attribute.String("postcode", postcode), attribute.String("reference", reference)))
+
+	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), &lowribeckv1.GetAvailableSlotsRequest{
 		Postcode:  postcode,
 		Reference: reference,
-	}
-
-	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
-
-	span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
-
-	availableSlots, err = g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
+	})
 	if err != nil {
 		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
 
@@ -94,7 +90,6 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		}
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
-	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots.GetSlots()))))
 
 	slots := []models.BookingSlot{}
 
@@ -105,6 +100,8 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 			EndTime:   int(elem.GetEndTime()),
 		})
 	}
+
+	span.AddEvent("response", trace.WithAttributes(attribute.String("slots", fmt.Sprintf("%v", slots))))
 
 	return AvailableSlotsResponse{
 		BookingSlots: slots,
