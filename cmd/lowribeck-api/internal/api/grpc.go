@@ -11,8 +11,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
-	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
-	"go.opentelemetry.io/otel/trace"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -54,8 +52,6 @@ func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 }
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
-	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.GetAvailableSlots")
-	defer span.End()
 
 	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, "lowribeck-api")
 	if err != nil {
@@ -102,10 +98,6 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 }
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
-	ctx, span := tracing.Tracer().Start(ctx, "LowriBeck.createBooking",
-		trace.WithSpanKind(trace.SpanKindClient),
-	)
-	defer span.End()
 
 	err := l.validateCredentials(ctx, auth.CreateAction, auth.LowribeckAPIResource, "lowribeck-api")
 	if err != nil {
