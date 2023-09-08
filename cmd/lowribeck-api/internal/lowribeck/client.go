@@ -12,6 +12,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -83,7 +85,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("request: [%s]", string(body))
 
-	// span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
 
 	request, err := http.NewRequestWithContext(
 		ctx,
@@ -114,7 +116,7 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 
 	logrus.Debugf("response: [%s]", string(bodyBytes))
 
-	// span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
