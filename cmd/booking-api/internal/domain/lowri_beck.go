@@ -12,6 +12,7 @@ import (
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/proto"
 )
@@ -53,7 +54,12 @@ type RescheduleBookingResponse struct {
 	Event proto.Message
 }
 
-func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailableSlotsParams) (GetAvailableSlotsResponse, error) {
+func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailableSlotsParams) (_ GetAvailableSlotsResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.BookingDomain.GetAvailableSlots")
+	defer func() {
+		tracing.RecordSpanError(span, err) // nolint: errcheck
+		span.End()
+	}()
 	fromAsTime := time.Date(int(params.From.Year), time.Month(params.From.Month), int(params.From.Day), 0, 0, 0, 0, time.UTC)
 	toAsTime := time.Date(int(params.To.Year), time.Month(params.To.Month), int(params.To.Day), 0, 0, 0, 0, time.UTC)
 
