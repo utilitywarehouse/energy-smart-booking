@@ -48,7 +48,7 @@ type CreateBookingResponse struct {
 }
 
 func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (AvailableSlotsResponse, error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "GetAvailableSlots"))
+	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots")
 	defer span.End()
 
 	req := &lowribeckv1.GetAvailableSlotsRequest{
@@ -56,7 +56,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		Reference: reference,
 	}
 
-	// span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
 
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
 	if err != nil {
@@ -96,7 +96,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		span.SetAttributes(attribute.String("code", ErrUnhandledErrorCode.Error()))
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
-	// span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots.GetSlots()))))
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots.GetSlots()))))
 
 	slots := []models.BookingSlot{}
 
@@ -114,7 +114,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 }
 
 func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (CreateBookingResponse, error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("BookingAPI.%s", "CreateBooking"))
+	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking")
 	defer span.End()
 
 	req := &lowribeckv1.CreateBookingRequest{
