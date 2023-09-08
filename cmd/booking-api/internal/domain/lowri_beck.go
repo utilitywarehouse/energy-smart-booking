@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -223,20 +222,9 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 		return models.Site{}, models.OccupancyEligibility{}, fmt.Errorf("failed to get live occupancies by accountID, %w", err)
 	}
 
-	siteAttr := createSpanAttribute(site, "site", span)
-	occupancyEligibleAttr := createSpanAttribute(occupancyEligible, "occupancyEligible", span)
-	span.AddEvent("response", trace.WithAttributes(siteAttr, occupancyEligibleAttr))
+	span.AddEvent("response", trace.WithAttributes(attribute.String("site", fmt.Sprintf("%v", &site)), attribute.String("occupancyEligible", fmt.Sprintf("%v", &occupancyEligible))))
 
 	return *site, *occupancyEligible, nil
-}
-
-func createSpanAttribute(v any, kind string, span trace.Span) attribute.KeyValue {
-	bytes, err := json.Marshal(v)
-	if err != nil {
-		tracing.RecordSpanError(span, err)
-		return attribute.KeyValue{}
-	}
-	return attribute.String(kind, string(bytes))
 }
 
 func mapLowribeckVulnerabilities(vulnerabilities []bookingv1.Vulnerability) (lbVulnerabilities []lowribeckv1.Vulnerability) {
