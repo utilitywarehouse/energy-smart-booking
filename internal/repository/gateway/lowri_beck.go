@@ -47,31 +47,32 @@ type CreateBookingResponse struct {
 	Success bool
 }
 
-func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (AvailableSlotsResponse, error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots")
-	defer span.End()
+func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (_ AvailableSlotsResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.LowriBeckGateway.GetAvailableSlots")
+	defer func() {
+		tracing.RecordSpanError(span, err) // nolint: errcheck
+		span.End()
+	}()
 
 	req := &lowribeckv1.GetAvailableSlotsRequest{
 		Postcode:  postcode,
 		Reference: reference,
 	}
 
+	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
+
 	span.AddEvent("request", trace.WithAttributes(attribute.String("request", fmt.Sprintf("%v", req))))
 
-	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
+	availableSlots, err = g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
 	if err != nil {
 		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
-		tracing.RecordSpanError(span, err)
 
 		switch status.Convert(err).Code() {
 		case codes.Internal:
-			span.SetAttributes(attribute.String("code", ErrInternal.Error()))
 			return AvailableSlotsResponse{}, ErrInternal
 		case codes.NotFound:
-			span.SetAttributes(attribute.String("code", ErrNotFound.Error()))
 			return AvailableSlotsResponse{}, ErrNotFound
 		case codes.OutOfRange:
-			span.SetAttributes(attribute.String("code", ErrOutOfRange.Error()))
 			return AvailableSlotsResponse{}, ErrOutOfRange
 		case codes.InvalidArgument:
 
@@ -85,15 +86,12 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 					switch x.GetParameters() {
 					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
 						lowribeckv1.Parameters_PARAMETERS_REFERENCE:
-						span.SetAttributes(attribute.String("code", ErrInternalBadParameters.Error()))
 						return AvailableSlotsResponse{}, ErrInternalBadParameters
 					}
 				}
 			}
-			span.SetAttributes(attribute.String("code", ErrInvalidArgument.Error()))
 			return AvailableSlotsResponse{}, ErrInvalidArgument
 		}
-		span.SetAttributes(attribute.String("code", ErrUnhandledErrorCode.Error()))
 		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
 	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", fmt.Sprintf("%v", availableSlots.GetSlots()))))
