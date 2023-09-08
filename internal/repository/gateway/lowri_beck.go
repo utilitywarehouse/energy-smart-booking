@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -48,7 +49,7 @@ type CreateBookingResponse struct {
 }
 
 func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (_ AvailableSlotsResponse, err error) {
-	span := trace.SpanFromContext(ctx)
+	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.LowriBeckGateway.GetAvailableSlots")
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
@@ -101,16 +102,20 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		})
 	}
 
-	span.AddEvent("response", trace.WithAttributes(attribute.String("slots", fmt.Sprintf("%v", slots))))
+	slotsAttr := createSpanAttribute(slots, "slots", span)
+	span.AddEvent("response", trace.WithAttributes(slotsAttr))
 
 	return AvailableSlotsResponse{
 		BookingSlots: slots,
 	}, nil
 }
 
-func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (CreateBookingResponse, error) {
+func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (_ CreateBookingResponse, err error) {
 	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking")
-	defer span.End()
+	defer func() {
+		tracing.RecordSpanError(span, err) // nolint: errcheck
+		span.End()
+	}()
 
 	req := &lowribeckv1.CreateBookingRequest{
 		Postcode:  postcode,
@@ -197,4 +202,13 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 	return CreateBookingResponse{
 		Success: bookingResponse.Success,
 	}, nil
+}
+
+func createSpanAttribute(v any, kind string, span trace.Span) attribute.KeyValue {
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		tracing.RecordSpanError(span, err)
+		return attribute.KeyValue{}
+	}
+	return attribute.String(kind, string(bytes))
 }

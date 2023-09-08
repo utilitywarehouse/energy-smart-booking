@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -207,7 +208,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 // this method takes in an accountID and returns the postcode and the booking reference
 func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (_ models.Site, _ models.OccupancyEligibility, err error) {
-	span := trace.SpanFromContext(ctx)
+	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.BookingDomain.GetSiteExternalReferenceByAccountID")
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
@@ -222,9 +223,20 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 		return models.Site{}, models.OccupancyEligibility{}, fmt.Errorf("failed to get live occupancies by accountID, %w", err)
 	}
 
-	span.AddEvent("response", trace.WithAttributes(attribute.String("site", fmt.Sprintf("%v", &site)), attribute.String("occupancyEligible", fmt.Sprintf("%v", &occupancyEligible))))
+	siteAttr := createSpanAttribute(site, "site", span)
+	occupancyEligibleAttr := createSpanAttribute(occupancyEligible, "occupancyEligible", span)
+	span.AddEvent("response", trace.WithAttributes(siteAttr, occupancyEligibleAttr))
 
 	return *site, *occupancyEligible, nil
+}
+
+func createSpanAttribute(v any, kind string, span trace.Span) attribute.KeyValue {
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		tracing.RecordSpanError(span, err)
+		return attribute.KeyValue{}
+	}
+	return attribute.String(kind, string(bytes))
 }
 
 func mapLowribeckVulnerabilities(vulnerabilities []bookingv1.Vulnerability) (lbVulnerabilities []lowribeckv1.Vulnerability) {
