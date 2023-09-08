@@ -83,8 +83,6 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 		return nil, fmt.Errorf("unable to marshal request: %w", err)
 	}
 
-	logrus.Debugf("request: [%s]", string(body))
-
 	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
 
 	request, err := http.NewRequestWithContext(
@@ -113,8 +111,6 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 		tracing.RecordSpanError(span, err)
 		return nil, fmt.Errorf("unable to read body: %w", err)
 	}
-
-	logrus.Debugf("response: [%s]", string(bodyBytes))
 
 	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
 
