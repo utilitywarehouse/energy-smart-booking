@@ -59,7 +59,7 @@ func dateIntoTime(d *date.Date) (*time.Time, error) {
 	return &t, nil
 }
 
-func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) error {
+func (h *BookingHandler) Handle(_ context.Context, message substrate.Message) error {
 	var env generated.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err

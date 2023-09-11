@@ -25,7 +25,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 )
 
-var oops = errors.New("oops...")
+var oops = errors.New("oops")
 
 func Test_GetCustomerContactDetails(t *testing.T) {
 	ctrl := gomock.NewController(t)

@@ -44,16 +44,16 @@ func (h *OccupancyEligibleHandler) Handle(_ context.Context, message substrate.M
 		return err
 	}
 
-	eventUuid := env.Uuid
+	eventUUID := env.Uuid
 	if env.Message == nil {
-		log.WithField("event-uuid", eventUuid).Info("skipping empty message", eventUuid)
+		log.WithField("event-uuid", eventUUID).Info("skipping empty message", eventUUID)
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}
 
 	payload, err := env.Message.UnmarshalNew()
 	if err != nil {
-		return fmt.Errorf("failed to unmarshall event in booking topic [%s|%s]: %w", eventUuid, env.Message.TypeUrl, err)
+		return fmt.Errorf("failed to unmarshall event in booking topic [%s|%s]: %w", eventUUID, env.Message.TypeUrl, err)
 	}
 	switch ev := payload.(type) {
 	case *smart_contracts.SmartBookingJourneyOccupancyAddedEvent:
