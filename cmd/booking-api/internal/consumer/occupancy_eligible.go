@@ -38,7 +38,7 @@ func (h *OccupancyEligibleHandler) PostHandle(ctx context.Context) error {
 	return h.store.Commit(ctx)
 }
 
-func (h *OccupancyEligibleHandler) Handle(ctx context.Context, message substrate.Message) error {
+func (h *OccupancyEligibleHandler) Handle(_ context.Context, message substrate.Message) error {
 	var env generated.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err

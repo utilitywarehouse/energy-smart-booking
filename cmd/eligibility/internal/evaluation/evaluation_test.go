@@ -1220,7 +1220,7 @@ func TestRunSuppliability(t *testing.T) {
 			},
 		},
 		{
-			description: "occupancy becoming suppliable for smart booking journey with booking ref but not all criterias evaluated",
+			description: "occupancy becoming suppliable for smart booking journey with booking ref but not all criteria evaluated",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
@@ -1818,7 +1818,7 @@ func TestRunCampaignability(t *testing.T) {
 			},
 		},
 		{
-			description: "occupancy becoming campaignable for smart booking journey with booking ref but not all criterias evaluated",
+			description: "occupancy becoming campaignable for smart booking journey with booking ref but not all criteria evaluated",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
@@ -2823,7 +2823,7 @@ func TestRunEligibility(t *testing.T) {
 			},
 		},
 		{
-			description: "occupancy becoming eligible for smart booking journey with booking ref but not all criterias evaluated",
+			description: "occupancy becoming eligible for smart booking journey with booking ref but not all criteria evaluated",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
