@@ -46,6 +46,11 @@ func New(c *http.Client, user, password, url string) *Client {
 	}
 }
 
+type LBRequest interface {
+	GetPostCode() string
+	GetReference() string
+}
+
 func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAvailabilityRequest) (*GetCalendarAvailabilityResponse, error) {
 	resp, err := c.DoRequest(ctx, req, availabilityURL)
 	if err != nil {
@@ -74,8 +79,12 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 	return &br, nil
 }
 
-func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string) (_ []byte, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint))
+func (c *Client) DoRequest(ctx context.Context, req LBRequest, endpoint string) (_ []byte, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
+		trace.WithAttributes(attribute.String("Postcode", req.GetPostCode())),
+		trace.WithAttributes(attribute.String("Reference", req.GetReference())),
+	)
+
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()
