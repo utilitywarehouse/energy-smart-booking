@@ -14,7 +14,6 @@ import (
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/grpc"
-	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
@@ -26,6 +25,7 @@ import (
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
@@ -117,7 +117,17 @@ func serverAction(c *cli.Context) error {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
+	closer, err := telemetry.Register(ctx,
+		telemetry.WithServiceName(appName),
+		telemetry.WithTeam("energy-smart"),
+		telemetry.WithServiceVersion(gitHash),
+	)
+	if err != nil {
+		log.Errorf("Telemetry cannot be registered: %v", err)
+	}
+	defer closer.Close()
+
+	grpcServer := grpc.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
 	reflection.Register(grpcServer)
 
 	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(app.GrpcPort)))
@@ -140,9 +150,9 @@ func serverAction(c *cli.Context) error {
 	bookingStore := store.NewBooking(pool)
 
 	// DOMAIN //
-	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore)
+	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore, true)
 
-	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth)
+	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth, true)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

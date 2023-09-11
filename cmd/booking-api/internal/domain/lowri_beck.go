@@ -12,6 +12,10 @@ import (
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/proto"
 )
@@ -177,7 +181,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, occupancyEligibility.Reference, params.Slot, booking.Contact, lbVulnerabilities, booking.VulnerabilityDetails.Other)
 	if err != nil {
-		return RescheduleBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
+		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
 
 	if response.Success {
@@ -202,7 +206,16 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 }
 
 // this method takes in an accountID and returns the postcode and the booking reference
-func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (models.Site, models.OccupancyEligibility, error) {
+func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (_ models.Site, _ models.OccupancyEligibility, err error) {
+	var span trace.Span
+	if d.useTracing {
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.BookingDomain.GetSiteExternalReferenceByAccountID")
+		defer func() {
+			tracing.RecordSpanError(span, err) // nolint: errcheck
+			span.End()
+		}()
+		span.AddEvent("request", trace.WithAttributes(attribute.String("accountID", accountID)))
+	}
 
 	site, occupancyEligible, err := d.occupancyStore.GetSiteExternalReferenceByAccountID(ctx, accountID)
 	if err != nil {
@@ -210,6 +223,12 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 			return models.Site{}, models.OccupancyEligibility{}, ErrNoEligibleOccupanciesFound
 		}
 		return models.Site{}, models.OccupancyEligibility{}, fmt.Errorf("failed to get live occupancies by accountID, %w", err)
+	}
+
+	if d.useTracing {
+		siteAttr := helpers.CreateSpanAttribute(site, "site", span)
+		occupancyEligibleAttr := helpers.CreateSpanAttribute(occupancyEligible, "occupancyEligible", span)
+		span.AddEvent("response", trace.WithAttributes(siteAttr, occupancyEligibleAttr))
 	}
 
 	return *site, *occupancyEligible, nil

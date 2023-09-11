@@ -84,7 +84,6 @@ func (c *Client) DoRequest(ctx context.Context, req LBRequest, endpoint string) 
 		trace.WithAttributes(attribute.String("postcode", req.GetPostCode())),
 		trace.WithAttributes(attribute.String("lowribeck.reference", req.GetReference())),
 	)
-
 	defer func() {
 		tracing.RecordSpanError(span, err) // nolint: errcheck
 		span.End()

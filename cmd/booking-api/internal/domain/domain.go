@@ -36,6 +36,7 @@ type BookingDomain struct {
 	occupancyStore OccupancyStore
 	siteStore      SiteStore
 	bookingStore   BookingStore
+	useTracing     bool
 }
 
 func NewBookingDomain(accounts AccountGateway,
@@ -43,6 +44,7 @@ func NewBookingDomain(accounts AccountGateway,
 	occupancyStore OccupancyStore,
 	siteStore SiteStore,
 	bookingStore BookingStore,
+	useTracing bool,
 ) BookingDomain {
 	return BookingDomain{
 		accounts,
@@ -50,5 +52,6 @@ func NewBookingDomain(accounts AccountGateway,
 		occupancyStore,
 		siteStore,
 		bookingStore,
+		useTracing,
 	}
 }
