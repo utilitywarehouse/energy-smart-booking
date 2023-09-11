@@ -1,6 +1,6 @@
 //go:build testing
 
-package test_common
+package testcommon
 
 import (
 	"context"
@@ -19,7 +19,7 @@ type MockSink struct {
 	Msgs []proto.Message
 }
 
-func (m *MockSink) Sink(ctx context.Context, payload proto.Message, occurredAt time.Time) error {
+func (m *MockSink) Sink(_ context.Context, payload proto.Message, _ time.Time) error {
 	m.Msgs = append(m.Msgs, payload)
 	return nil
 }

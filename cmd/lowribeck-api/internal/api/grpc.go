@@ -176,9 +176,9 @@ func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (
 	return invReqError.Err(), nil
 }
 
-func (b *LowriBeckAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
+func (l *LowriBeckAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
 
-	authorised, err := b.auth.Authorize(ctx, &auth.PolicyParams{
+	authorised, err := l.auth.Authorize(ctx, &auth.PolicyParams{
 		Action:     action,
 		Resource:   resource,
 		ResourceID: requestAccountID,

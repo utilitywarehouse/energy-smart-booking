@@ -496,20 +496,20 @@ type fakeMapper struct {
 	bookingError         error
 }
 
-func (f *fakeMapper) AvailabilityRequest(_ uint32, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
+func (f *fakeMapper) AvailabilityRequest(_ uint32, _ *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
 	return f.availabilityRequest
 }
 
-func (f *fakeMapper) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
+func (f *fakeMapper) AvailableSlotsResponse(_ *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
 	if f.availabilityError != nil {
 		return nil, f.availabilityError
 	}
 	return f.availabilityResponse, nil
 }
-func (f *fakeMapper) BookingRequest(_ uint32, resp *contract.CreateBookingRequest) (*lowribeck.CreateBookingRequest, error) {
+func (f *fakeMapper) BookingRequest(_ uint32, _ *contract.CreateBookingRequest) (*lowribeck.CreateBookingRequest, error) {
 	return f.bookingRequest, nil
 }
-func (f *fakeMapper) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
+func (f *fakeMapper) BookingResponse(_ *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
 	if f.bookingError != nil {
 		return nil, f.bookingError
 	}
