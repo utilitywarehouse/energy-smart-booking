@@ -11,6 +11,9 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -71,13 +74,19 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 	return &br, nil
 }
 
-func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string) ([]byte, error) {
+func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string) (_ []byte, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint))
+	defer func() {
+		tracing.RecordSpanError(span, err) // nolint: errcheck
+		span.End()
+	}()
+
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %w", err)
 	}
 
-	logrus.Debugf("request: [%s]", string(body))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
 
 	request, err := http.NewRequestWithContext(
 		ctx,
@@ -103,13 +112,13 @@ func (c *Client) DoRequest(ctx context.Context, req interface{}, endpoint string
 		return nil, fmt.Errorf("unable to read body: %w", err)
 	}
 
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
+
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
 		logrus.Error(statusErr)
 		return nil, statusErr
 	}
-
-	logrus.Debugf("response: [%s]", string(bodyBytes))
 
 	return bodyBytes, nil
 }
