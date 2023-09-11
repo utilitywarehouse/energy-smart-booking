@@ -72,7 +72,7 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 
 	mappedResp, mappedErr := l.mapper.AvailableSlotsResponse(resp)
 	if mappedErr != nil {
-		logrus.Errorf("invalid available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
+		logrus.Errorf("error making get available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
 		switch {
 		case errors.Is(mappedErr, mapper.ErrAppointmentNotFound):
 			return nil, status.Errorf(codes.NotFound, "error making get available slots request: %v", mappedErr)
