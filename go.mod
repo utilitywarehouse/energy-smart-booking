@@ -1,6 +1,8 @@
 module github.com/utilitywarehouse/energy-smart-booking
 
-go 1.20
+go 1.21
+
+toolchain go1.21.0
 
 require (
 	cloud.google.com/go/bigquery v1.52.0
@@ -29,24 +31,43 @@ require (
 	github.com/utilitywarehouse/go-ops-health-checks v0.0.0-20190620125157-116dc5b340a8
 	github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0
 	github.com/utilitywarehouse/uwos-go/v1/iam v1.20.2
+	github.com/utilitywarehouse/uwos-go/v1/telemetry v1.21.3
 	github.com/uw-labs/substrate v0.0.0-20220414133007-f8a269c291fb
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
 	golang.org/x/sync v0.3.0
 	google.golang.org/api v0.126.0
-	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130
-	google.golang.org/grpc v1.57.0
+	google.golang.org/genproto v0.0.0-20230711160842-782d3b101e98
+	google.golang.org/grpc v1.58.0
 	google.golang.org/protobuf v1.31.0
 )
 
 require (
-	cloud.google.com/go/compute v1.20.1 // indirect
-	cloud.google.com/go/iam v1.1.0 // indirect
+	cloud.google.com/go/compute v1.21.0 // indirect
+	cloud.google.com/go/iam v1.1.1 // indirect
+	dario.cat/mergo v1.0.0 // indirect
 	github.com/alvaroloes/enumer v1.1.2 // indirect
+	github.com/lmittmann/tint v1.0.1 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pascaldekloe/name v1.0.1 // indirect
 	github.com/utilitywarehouse/iam-contracts v0.0.0-20230802063806-798f6e78cde7 // indirect
+	github.com/utilitywarehouse/uwos-go/v1/io v1.5.1 // indirect
 	github.com/uw-labs/proximo v0.0.0-20220414061427-df1336fd551c // indirect
+	go.opentelemetry.io/contrib/instrumentation/runtime v0.43.0 // indirect
+	go.opentelemetry.io/contrib/propagators/autoprop v0.43.0 // indirect
+	go.opentelemetry.io/contrib/propagators/aws v1.18.0 // indirect
+	go.opentelemetry.io/contrib/propagators/b3 v1.18.0 // indirect
+	go.opentelemetry.io/contrib/propagators/jaeger v1.18.0 // indirect
+	go.opentelemetry.io/contrib/propagators/ot v1.18.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.17.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.17.0 // indirect
+	go.opentelemetry.io/otel/exporters/prometheus v0.40.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.17.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v0.40.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230726155614-23370e0ffb3e // indirect
 )
@@ -67,7 +88,7 @@ require (
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
 	github.com/cncf/udpa/go v0.0.0-20220112060539-c52dc94e7fbe // indirect
 	github.com/cncf/xds/go v0.0.0-20230607035331-e9ce68804cb4 // indirect
-	github.com/containerd/containerd v1.7.2 // indirect
+	github.com/containerd/containerd v1.7.3 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -78,7 +99,7 @@ require (
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
-	github.com/envoyproxy/go-control-plane v0.11.1-0.20230524094728-9239064ad72f // indirect
+	github.com/envoyproxy/go-control-plane v0.11.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.0.2 // indirect
 	github.com/franela/goreq v0.0.0-20171204163338-bcd34c9993f8 // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
@@ -101,7 +122,6 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
-	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
@@ -135,27 +155,27 @@ require (
 	github.com/prometheus/procfs v0.11.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/testcontainers/testcontainers-go v0.21.0
+	github.com/testcontainers/testcontainers-go v0.23.0
 	github.com/utilitywarehouse/energy-pkg/domain v1.22.5
 	github.com/utilitywarehouse/energy-pkg/errorcodes v1.0.3 // indirect
 	github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543
 	github.com/utilitywarehouse/protoc-gen-uwentity v1.5.0 // indirect
-	github.com/utilitywarehouse/uwos-go/v1/runtime v1.3.1 // indirect
+	github.com/utilitywarehouse/uwos-go/v1/runtime v1.4.0 // indirect
 	github.com/utilitywarehouse/uwos-go/v1/time v1.1.2 // indirect
 	github.com/uw-labs/sync v0.0.0-20220413223303-ecb5d1fd966e // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.42.0 // indirect
-	go.opentelemetry.io/otel v1.16.0 // indirect
-	go.opentelemetry.io/otel/metric v1.16.0 // indirect
-	go.opentelemetry.io/otel/trace v1.16.0 // indirect
+	go.opentelemetry.io/otel v1.17.0
+	go.opentelemetry.io/otel/metric v1.17.0 // indirect
+	go.opentelemetry.io/otel/trace v1.17.0
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/exp v0.0.0-20230725093048-515e97ebf090 // indirect
 	golang.org/x/mod v0.12.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
