@@ -82,7 +82,7 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 func (c *Client) DoRequest(ctx context.Context, req LBRequest, endpoint string) (_ []byte, err error) {
 	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
 		trace.WithAttributes(attribute.String("postcode", req.GetPostCode())),
-		trace.WithAttributes(attribute.String("lowribeck-reference", req.GetReference())),
+		trace.WithAttributes(attribute.String("lowribeck.reference", req.GetReference())),
 	)
 
 	defer func() {
