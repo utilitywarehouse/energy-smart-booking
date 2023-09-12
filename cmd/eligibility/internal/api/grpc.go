@@ -76,6 +76,10 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountEligibleForSmartBooking",
 		trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
 	)
+	defer func() {
+		tracing.RecordSpanError(span, err) // nolint: errcheck
+		span.End()
+	}()
 
 	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
 	if err != nil {
