@@ -41,16 +41,6 @@ func runGRPCApi(c *cli.Context) error {
 
 	g, ctx := errgroup.WithContext(ctx)
 
-	closer, err := telemetry.Register(ctx,
-		telemetry.WithServiceName(appName),
-		telemetry.WithTeam("energy-smart"),
-		telemetry.WithServiceVersion(gitHash),
-	)
-	if err != nil {
-		return fmt.Errorf("telemetry cannot be registered: %v", err)
-	}
-	defer closer.Close()
-
 	pdp, err := pdp.NewClient()
 	if err != nil {
 		return err
@@ -101,6 +91,16 @@ func runGRPCApi(c *cli.Context) error {
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 	grpcAddr := net.JoinHostPort("", c.String(grpcPort))
+
+	closer, err := telemetry.Register(ctx,
+		telemetry.WithServiceName(appName),
+		telemetry.WithTeam("energy-smart"),
+		telemetry.WithServiceVersion(gitHash),
+	)
+	if err != nil {
+		return fmt.Errorf("telemetry cannot be registered: %v", err)
+	}
+	defer closer.Close()
 
 	err = smart_booking.RegisterEligiblityAPIHandlerFromEndpoint(ctx, gwMux, grpcAddr, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 	if err != nil {
