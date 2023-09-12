@@ -23,6 +23,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -39,6 +40,16 @@ func runGRPCApi(c *cli.Context) error {
 		WithDetails(appName, appDesc)
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	closer, err := telemetry.Register(ctx,
+		telemetry.WithServiceName(appName),
+		telemetry.WithTeam("energy-smart"),
+		telemetry.WithServiceVersion(gitHash),
+	)
+	if err != nil {
+		return fmt.Errorf("telemetry cannot be registered: %v", err)
+	}
+	defer closer.Close()
 
 	pdp, err := pdp.NewClient()
 	if err != nil {
