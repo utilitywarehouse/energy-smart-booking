@@ -27,6 +27,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -61,8 +62,20 @@ func runGRPCApi(c *cli.Context) error {
 	accountStore := store.NewAccount(pg)
 	serviceStore := store.NewService(pg)
 
+	closer, err := telemetry.Register(ctx,
+		telemetry.WithServiceName(appName),
+		telemetry.WithTeam("energy-smart"),
+		telemetry.WithServiceVersion(gitHash),
+	)
+	if err != nil {
+		return fmt.Errorf("telemetry cannot be registered: %v", err)
+	}
+	defer closer.Close()
+
 	g.Go(func() error {
 		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(grpcLogLevel))
+		reflection.Register(grpcServer)
+
 		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(grpcPort)))
 		if err != nil {
 			return err
@@ -91,16 +104,6 @@ func runGRPCApi(c *cli.Context) error {
 		ReadHeaderTimeout: 3 * time.Second,
 	}
 	grpcAddr := net.JoinHostPort("", c.String(grpcPort))
-
-	closer, err := telemetry.Register(ctx,
-		telemetry.WithServiceName(appName),
-		telemetry.WithTeam("energy-smart"),
-		telemetry.WithServiceVersion(gitHash),
-	)
-	if err != nil {
-		return fmt.Errorf("telemetry cannot be registered: %v", err)
-	}
-	defer closer.Close()
 
 	err = smart_booking.RegisterEligiblityAPIHandlerFromEndpoint(ctx, gwMux, grpcAddr, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())})
 	if err != nil {
