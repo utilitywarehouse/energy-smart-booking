@@ -85,7 +85,7 @@ func (i *RescheduledBookingIndexer) PostHandle(ctx context.Context) error {
 	return nil
 }
 
-func (i *RescheduledBookingIndexer) Handle(ctx context.Context, message substrate.Message) error {
+func (i *RescheduledBookingIndexer) Handle(_ context.Context, message substrate.Message) error {
 	var env energy_contracts.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err

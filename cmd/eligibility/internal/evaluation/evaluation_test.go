@@ -10,17 +10,17 @@ import (
 	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 )
 
 func TestRunFull(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string
@@ -333,10 +333,10 @@ func TestRunSuppliability(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string
@@ -1220,7 +1220,7 @@ func TestRunSuppliability(t *testing.T) {
 			},
 		},
 		{
-			description: "occupancy becoming suppliable for smart booking journey with booking ref but not all criterias evaluated",
+			description: "occupancy becoming suppliable for smart booking journey with booking ref but not all criteria evaluated",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
@@ -1310,10 +1310,10 @@ func TestRunCampaignability(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string
@@ -1818,7 +1818,7 @@ func TestRunCampaignability(t *testing.T) {
 			},
 		},
 		{
-			description: "occupancy becoming campaignable for smart booking journey with booking ref but not all criterias evaluated",
+			description: "occupancy becoming campaignable for smart booking journey with booking ref but not all criteria evaluated",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
@@ -1908,10 +1908,10 @@ func TestRunEligibility(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string
@@ -2823,7 +2823,7 @@ func TestRunEligibility(t *testing.T) {
 			},
 		},
 		{
-			description: "occupancy becoming eligible for smart booking journey with booking ref but not all criterias evaluated",
+			description: "occupancy becoming eligible for smart booking journey with booking ref but not all criteria evaluated",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{

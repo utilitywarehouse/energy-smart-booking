@@ -11,7 +11,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 	"github.com/uw-labs/substrate-tools/message"
 	"google.golang.org/protobuf/proto"
@@ -50,12 +50,12 @@ func TestOptOutConsumer(t *testing.T) {
 	handler := Handle(s, accountRepo)
 
 	msgs := []substrate.Message{}
-	optOutEv1, err := test_common.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
+	optOutEv1, err := testcommon.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
 		AccountId: "accountId1",
 	})
 	assert.NoError(t, err)
 
-	optOutEv2, err := test_common.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
+	optOutEv2, err := testcommon.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
 		AccountId: "accountId2",
 		AddedBy:   "user",
 	})
@@ -68,7 +68,7 @@ func TestOptOutConsumer(t *testing.T) {
 	assert.NoError(t, err, "failed to list opt out accounts")
 	assert.Equal(t, 2, len(optOutAccounts))
 
-	optOutRemovedEv, err := test_common.MakeMessage(&smart.AccountBookingOptOutRemovedEvent{
+	optOutRemovedEv, err := testcommon.MakeMessage(&smart.AccountBookingOptOutRemovedEvent{
 		AccountId: "accountId1",
 	})
 

@@ -10,7 +10,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -41,7 +41,7 @@ func TestCampaignabilityConsumer(t *testing.T) {
 
 	handler := HandleCampaignability(s)
 
-	campaignabilityEv1, err := test_common.MakeMessage(&smart.CampaignableOccupancyAddedEvent{
+	campaignabilityEv1, err := testcommon.MakeMessage(&smart.CampaignableOccupancyAddedEvent{
 		OccupancyId: "occupancyID",
 		AccountId:   "accountID",
 	})
@@ -59,7 +59,7 @@ func TestCampaignabilityConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, eligibility, "campaignability mismatch")
 
-	campaignabilityEv2, err := test_common.MakeMessage(&smart.CampaignableOccupancyRemovedEvent{
+	campaignabilityEv2, err := testcommon.MakeMessage(&smart.CampaignableOccupancyRemovedEvent{
 		OccupancyId: "occupancyID",
 		AccountId:   "accountID",
 		Reasons: []smart.IneligibleReason{

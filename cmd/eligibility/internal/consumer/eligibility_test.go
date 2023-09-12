@@ -10,7 +10,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -41,7 +41,7 @@ func TestEligibilityConsumer(t *testing.T) {
 
 	handler := HandleEligibility(s)
 
-	eligibilityEv1, err := test_common.MakeMessage(&smart.EligibleOccupancyAddedEvent{
+	eligibilityEv1, err := testcommon.MakeMessage(&smart.EligibleOccupancyAddedEvent{
 		OccupancyId: "occupancyID",
 		AccountId:   "accountID",
 	})
@@ -59,7 +59,7 @@ func TestEligibilityConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, eligibility, "eligibility mismatch")
 
-	eligibilityEv2, err := test_common.MakeMessage(&smart.EligibleOccupancyRemovedEvent{
+	eligibilityEv2, err := testcommon.MakeMessage(&smart.EligibleOccupancyRemovedEvent{
 		OccupancyId: "occupancyID",
 		AccountId:   "accountID",
 		Reasons: []smart.IneligibleReason{

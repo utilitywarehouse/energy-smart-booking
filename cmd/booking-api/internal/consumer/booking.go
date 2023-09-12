@@ -12,7 +12,6 @@ import (
 	utilities "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/utils"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/uw-labs/substrate"
-	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -47,34 +46,22 @@ func (h *BookingHandler) PostHandle(ctx context.Context) error {
 	return h.bookingStore.Commit(ctx)
 }
 
-func dateIntoTime(d *date.Date) (*time.Time, error) {
-	t, err := time.ParseInLocation(
-		time.DateOnly,
-		fmt.Sprintf("%d-%02d-%02d", d.Year, d.Month, d.Day),
-		time.UTC,
-	)
-	if err != nil {
-		return nil, err
-	}
-	return &t, nil
-}
-
-func (h *BookingHandler) Handle(ctx context.Context, message substrate.Message) error {
+func (h *BookingHandler) Handle(_ context.Context, message substrate.Message) error {
 	var env generated.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err
 	}
 
-	eventUuid := env.Uuid
+	eventUUID := env.Uuid
 	if env.Message == nil {
-		log.WithField("event-uuid", eventUuid).Info("skipping empty message", eventUuid)
+		log.WithField("event-uuid", eventUUID).Info("skipping empty message", eventUUID)
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}
 
 	payload, err := env.Message.UnmarshalNew()
 	if err != nil {
-		return fmt.Errorf("failed to unmarshall event in booking topic [%s|%s]: %w", eventUuid, env.Message.TypeUrl, err)
+		return fmt.Errorf("failed to unmarshall event in booking topic [%s|%s]: %w", eventUUID, env.Message.TypeUrl, err)
 	}
 	switch ev := payload.(type) {
 	case *bookingv1.BookingCreatedEvent:

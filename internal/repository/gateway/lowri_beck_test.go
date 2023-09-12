@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	oops = errors.New("oops...")
+	errOops = errors.New("errOops")
 )
 
 func Test_GetAvailableSlots(t *testing.T) {
@@ -116,7 +116,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "get available slots receives an internal status error",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.Internal, "oops").Err()
+				errorStatus := status.New(codes.Internal, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -131,7 +131,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "get available slots receives a not found error",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.NotFound, "oops").Err()
+				errorStatus := status.New(codes.NotFound, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -146,7 +146,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "get available slots receives an invalid argument error",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.InvalidArgument, "oops").Err()
+				errorStatus := status.New(codes.InvalidArgument, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -161,7 +161,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "get available slots receives an unhandled error",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.Unauthenticated, "oops").Err()
+				errorStatus := status.New(codes.Unauthenticated, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -176,7 +176,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "get available slots receives an invalid argument status error with details - postcode",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
 					Parameters: lowribeckv1.Parameters_PARAMETERS_POSTCODE,
 				})
 
@@ -197,7 +197,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "get available slots receives an out of range error",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.OutOfRange, "oops").Err()
+				errorStatus := status.New(codes.OutOfRange, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -342,7 +342,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns internal error status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.Internal, "oops").Err()
+				errorStatus := status.New(codes.Internal, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -356,7 +356,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns invalid argument status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.InvalidArgument, "oops").Err()
+				errorStatus := status.New(codes.InvalidArgument, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -370,7 +370,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns already exists status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.AlreadyExists, "oops").Err()
+				errorStatus := status.New(codes.AlreadyExists, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -384,7 +384,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns out of range status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.OutOfRange, "oops").Err()
+				errorStatus := status.New(codes.OutOfRange, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -398,7 +398,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns not found status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.NotFound, "oops").Err()
+				errorStatus := status.New(codes.NotFound, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -412,7 +412,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns an unhandled status code",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus := status.New(codes.Unimplemented, "oops").Err()
+				errorStatus := status.New(codes.Unimplemented, "errOops").Err()
 
 				mai.EXPECT().ToCtx(ctx).Return(ctx)
 
@@ -426,7 +426,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns an invalid argument status code and with details",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
 					Parameters: lowribeckv1.Parameters_PARAMETERS_POSTCODE,
 				})
 
@@ -446,7 +446,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns an invalid argument status code and with details - date",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
 					Parameters: lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE,
 				})
 
@@ -466,7 +466,7 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			description: "Create booking returns an invalid argument status code and with details - time",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient, mai *mock_gateways.MockMachineAuthInjector) {
 
-				errorStatus, err := status.New(codes.InvalidArgument, "oops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
 					Parameters: lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME,
 				})
 

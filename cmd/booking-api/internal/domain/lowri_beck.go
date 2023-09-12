@@ -161,7 +161,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleBookingParams) (RescheduleBookingResponse, error) {
 
-	var event *bookingv1.BookingRescheduledEvent = nil
+	var event *bookingv1.BookingRescheduledEvent
 
 	site, occupancyEligibility, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {

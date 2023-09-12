@@ -9,7 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -40,7 +40,7 @@ func TestSiteConsumer(t *testing.T) {
 
 	handler := HandleSite(s, nil, nil, true)
 
-	siteEv1, err := test_common.MakeMessage(&platform.SiteDiscoveredEvent{
+	siteEv1, err := testcommon.MakeMessage(&platform.SiteDiscoveredEvent{
 		SiteId: "siteID",
 		Address: &platform.SiteAddress{
 			Postcode: "postCode",

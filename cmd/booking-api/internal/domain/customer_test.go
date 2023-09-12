@@ -142,7 +142,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should get the account addres based on the account id and the first eligible occupancy",
+			description: "should get the account address based on the account id and the first eligible occupancy",
 			input: inputParams{
 				accountID: "account-id-1",
 			},

@@ -40,29 +40,29 @@ func (h *ServiceStateHandler) PostHandle(ctx context.Context) error {
 	return h.store.Commit(ctx)
 }
 
-func (h *ServiceStateHandler) Handle(ctx context.Context, message substrate.Message) error {
+func (h *ServiceStateHandler) Handle(_ context.Context, message substrate.Message) error {
 	var env generated.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err
 	}
 
-	eventUuid := env.Uuid
+	eventUUID := env.Uuid
 	if env.Message == nil {
-		log.Infof("skipping empty message [%s]", eventUuid)
+		log.Infof("skipping empty message [%s]", eventUUID)
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}
 
 	payload, err := env.Message.UnmarshalNew()
 	if err != nil {
-		return fmt.Errorf("failed to unmarshall event in service state topic [%s|%s]: %w", eventUuid, env.Message.TypeUrl, err)
+		return fmt.Errorf("failed to unmarshall event in service state topic [%s|%s]: %w", eventUUID, env.Message.TypeUrl, err)
 	}
 
 	switch ev := payload.(type) {
 	case *energy_entities.EnergyServiceEvent:
 		svc, err := extractService(ev)
 		if err != nil {
-			log.Infof("skipping service event, missing gas and electricity. event uuid: %s, service id: %s", eventUuid, ev.GetServiceId())
+			log.Infof("skipping service event, missing gas and electricity. event uuid: %s, service id: %s", eventUUID, ev.GetServiceId())
 			return nil
 		}
 

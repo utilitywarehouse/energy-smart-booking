@@ -9,7 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -40,7 +40,7 @@ func TestOccupancyConsumer(t *testing.T) {
 
 	handler := HandleOccupancy(s, nil, true)
 
-	occEv1, err := test_common.MakeMessage(&platform.OccupancyStartedEvent{
+	occEv1, err := testcommon.MakeMessage(&platform.OccupancyStartedEvent{
 		OccupancyId:       "occupancyID",
 		SiteId:            "siteID",
 		CustomerAccountId: "customerAccID",
@@ -59,7 +59,7 @@ func TestOccupancyConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, occ, "occupancy mismatch")
 
-	occEv2, err := test_common.MakeMessage(&platform.OccupancySiteCorrectedEvent{
+	occEv2, err := testcommon.MakeMessage(&platform.OccupancySiteCorrectedEvent{
 		OccupancyId: "occupancyID",
 		SiteId:      "siteID1",
 	})

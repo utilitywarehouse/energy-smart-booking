@@ -393,7 +393,7 @@ func Test_CreateBooking(t *testing.T) {
 			},
 		},
 		{
-			description: "should return nil event because booking call was unsuccesful",
+			description: "should return nil event because booking call was unsuccessful",
 			input: inputParams{
 				params: domain.CreateBookingParams{
 					AccountID: "account-id-1",

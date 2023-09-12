@@ -10,7 +10,7 @@ import (
 
 const (
 	appName = "energy-smart-booking-click-generator"
-	appDesc = "Generats CTA links for smart booking eligible customer accounts"
+	appDesc = "Generates CTA links for smart booking eligible customer accounts"
 
 	// Click
 	clickAPIHost           = "click-api-host"

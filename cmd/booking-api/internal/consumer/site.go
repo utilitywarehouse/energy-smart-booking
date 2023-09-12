@@ -37,22 +37,22 @@ func (h *SiteHandler) PostHandle(ctx context.Context) error {
 	return h.store.Commit(ctx)
 }
 
-func (h *SiteHandler) Handle(ctx context.Context, message substrate.Message) error {
+func (h *SiteHandler) Handle(_ context.Context, message substrate.Message) error {
 	var env generated.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err
 	}
 
-	eventUuid := env.Uuid
+	eventUUID := env.Uuid
 	if env.Message == nil {
-		log.Infof("skipping empty message [%s]", eventUuid)
+		log.Infof("skipping empty message [%s]", eventUUID)
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}
 
 	payload, err := env.Message.UnmarshalNew()
 	if err != nil {
-		return fmt.Errorf("failed to unmarshall event in site topic [%s|%s]: %w", eventUuid, env.Message.TypeUrl, err)
+		return fmt.Errorf("failed to unmarshall event in site topic [%s|%s]: %w", eventUUID, env.Message.TypeUrl, err)
 	}
 
 	switch ev := payload.(type) {
@@ -60,7 +60,7 @@ func (h *SiteHandler) Handle(ctx context.Context, message substrate.Message) err
 		{
 			address := ev.GetAddress()
 			if address == nil {
-				log.Infof("skip event [%s] for site [%s]: empty address", eventUuid, ev.GetSiteId())
+				log.Infof("skip event [%s] for site [%s]: empty address", eventUUID, ev.GetSiteId())
 				return nil
 			}
 

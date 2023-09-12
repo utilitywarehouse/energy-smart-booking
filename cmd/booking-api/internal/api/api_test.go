@@ -25,7 +25,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 )
 
-var oops = errors.New("oops...")
+var errOops = errors.New("errOops")
 
 func Test_GetCustomerContactDetails(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -165,7 +165,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.account",
 					ResourceID: "account-id-1",
-				}).Return(false, oops)
+				}).Return(false, errOops)
 
 			},
 			output: outputParams{
@@ -573,13 +573,13 @@ func Test_GetCustomerBookings(t *testing.T) {
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
-				bkDomain.EXPECT().GetCustomerBookings(ctx, "account-id-1").Return(nil, oops)
+				bkDomain.EXPECT().GetCustomerBookings(ctx, "account-id-1").Return(nil, errOops)
 			},
 			output: outputParams{
 				res: &bookingv1.GetCustomerBookingsResponse{
 					Bookings: nil,
 				},
-				err: status.Errorf(codes.Internal, "failed to get customer bookings, %s", oops),
+				err: status.Errorf(codes.Internal, "failed to get customer bookings, %s", errOops),
 			},
 		},
 		{
@@ -1136,14 +1136,14 @@ func Test_GetAvailableSlot(t *testing.T) {
 
 				bkDomain.EXPECT().GetAvailableSlots(ctx, params).Return(domain.GetAvailableSlotsResponse{
 					Slots: []models.BookingSlot{},
-				}, oops)
+				}, errOops)
 
 			},
 			output: outputParams{
 				res: &bookingv1.GetAvailableSlotsResponse{
 					Slots: nil,
 				},
-				err: status.Errorf(codes.Internal, "failed to get available slots, %s", oops),
+				err: status.Errorf(codes.Internal, "failed to get available slots, %s", errOops),
 			},
 		},
 		{
@@ -2129,14 +2129,14 @@ func Test_CreateBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}
 
-				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, oops)
+				bkDomain.EXPECT().CreateBooking(ctx, params).Return(domain.CreateBookingResponse{}, errOops)
 
 			},
 			output: outputParams{
 				res: &bookingv1.CreateBookingResponse{
 					BookingId: "",
 				},
-				err: status.Errorf(codes.Internal, "failed to create booking, %s", oops.Error()),
+				err: status.Errorf(codes.Internal, "failed to create booking, %s", errOops.Error()),
 			},
 		},
 		{
@@ -2765,14 +2765,14 @@ func Test_RescheduleBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				}
 
-				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, oops)
+				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, errOops)
 
 			},
 			output: outputParams{
 				res: &bookingv1.RescheduleBookingResponse{
 					BookingId: "",
 				},
-				err: status.Errorf(codes.Internal, "failed to reschedule booking, %s", oops.Error()),
+				err: status.Errorf(codes.Internal, "failed to reschedule booking, %s", errOops.Error()),
 			},
 		},
 		{
