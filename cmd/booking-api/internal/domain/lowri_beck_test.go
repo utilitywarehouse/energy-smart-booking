@@ -35,7 +35,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
 
 	type inputParams struct {
 		params domain.GetAvailableSlotsParams
@@ -247,7 +247,7 @@ func Test_CreateBooking(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
 
 	var emptyMsg *bookingv1.BookingCreatedEvent
 
@@ -503,7 +503,7 @@ func Test_RescheduleBooking(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
 
 	type inputParams struct {
 		params domain.RescheduleBookingParams

@@ -38,7 +38,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerContactDetailsRequest
@@ -226,7 +226,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerSiteAddressRequest
@@ -427,7 +427,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerBookingsRequest
@@ -662,7 +662,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetAvailableSlotsRequest
@@ -1241,7 +1241,7 @@ func Test_CreateBooking(t *testing.T) {
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.CreateBookingRequest
@@ -2258,7 +2258,7 @@ func Test_RescheduleBooking(t *testing.T) {
 	bookingPublisher := mocks.NewMockBookingPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.RescheduleBookingRequest

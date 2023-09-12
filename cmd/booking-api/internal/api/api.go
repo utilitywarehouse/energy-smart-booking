@@ -13,6 +13,9 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -45,23 +48,35 @@ type BookingAPI struct {
 	publisher     BookingPublisher
 	auth          Auth
 	bookingv1.UnimplementedBookingAPIServer
+	useTracing bool
 }
 
 type accountIder interface {
 	GetAccountId() string
 }
 
-func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth) *BookingAPI {
+func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth, useTracing bool) *BookingAPI {
 	return &BookingAPI{
 		bookingDomain: bookingDomain,
 		publisher:     publisher,
 		auth:          auth,
+		useTracing:    useTracing,
 	}
 }
 
-func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (*bookingv1.GetCustomerContactDetailsResponse, error) { // nolint:revive
+func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) { // nolint:revive
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerContactDetails",
+			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err) // nolint: errcheck
+			span.End()
+		}()
+	}
 
-	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
+	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -93,9 +108,19 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 	}, nil
 }
 
-func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (*bookingv1.GetCustomerSiteAddressResponse, error) {
+func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (_ *bookingv1.GetCustomerSiteAddressResponse, err error) {
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerSiteAddress",
+			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err) // nolint: errcheck
+			span.End()
+		}()
+	}
 
-	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
+	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -139,9 +164,19 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 	}, nil
 }
 
-func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (*bookingv1.GetCustomerBookingsResponse, error) { // nolint:revive
+func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) { // nolint:revive
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings",
+			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err) // nolint: errcheck
+			span.End()
+		}()
+	}
 
-	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
+	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -159,9 +194,19 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 	return &bookingv1.GetCustomerBookingsResponse{Bookings: bookings}, nil
 }
 
-func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (*bookingv1.GetAvailableSlotsResponse, error) { // nolint:revive
+func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) { // nolint:revive
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
+			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err) // nolint: errcheck
+			span.End()
+		}()
+	}
 
-	err := b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
+	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -252,9 +297,19 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 	}, nil
 }
 
-func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (*bookingv1.CreateBookingResponse, error) { // nolint:revive
+func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (_ *bookingv1.CreateBookingResponse, err error) { // nolint:revive
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking",
+			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err) // nolint: errcheck
+			span.End()
+		}()
+	}
 
-	err := b.validateCredentials(ctx, auth.CreateAction, auth.AccountBookingResource, req.AccountId)
+	err = b.validateCredentials(ctx, auth.CreateAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -363,9 +418,17 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 	}, nil
 }
 
-func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (*bookingv1.RescheduleBookingResponse, error) { // nolint:revive
+func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) { // nolint:revive
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking")
+		defer func() {
+			tracing.RecordSpanError(span, err) // nolint: errcheck
+			span.End()
+		}()
+	}
 
-	err := b.validateCredentials(ctx, auth.UpdateAction, auth.AccountBookingResource, req.AccountId)
+	err = b.validateCredentials(ctx, auth.UpdateAction, auth.AccountBookingResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
