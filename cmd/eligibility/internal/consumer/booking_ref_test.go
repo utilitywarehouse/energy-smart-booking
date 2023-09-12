@@ -9,7 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -41,7 +41,7 @@ func TestBookingRefConsumer(t *testing.T) {
 
 	handler := HandleBookingRef(s, occ, nil, false)
 
-	ev1, err := test_common.MakeMessage(&smart.BookingMpxnReferenceCreatedEvent{
+	ev1, err := testcommon.MakeMessage(&smart.BookingMpxnReferenceCreatedEvent{
 		Mpxn:      "mpxn1",
 		Reference: "ref1",
 	})

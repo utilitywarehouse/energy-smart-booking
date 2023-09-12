@@ -9,7 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -40,7 +40,7 @@ func TestWanCoverageConsumer(t *testing.T) {
 
 	handler := HandleWanCoverage(s, nil, nil, true)
 
-	wanCoverageEv1, err := test_common.MakeMessage(&smart.WanCoverageAtPostcodeStartedEvent{
+	wanCoverageEv1, err := testcommon.MakeMessage(&smart.WanCoverageAtPostcodeStartedEvent{
 		Postcode: "postCode",
 	})
 	assert.NoError(err)
@@ -52,7 +52,7 @@ func TestWanCoverageConsumer(t *testing.T) {
 	assert.NoError(err, "failed to get wan coverage for post code")
 	assert.True(covered)
 
-	wanCoverageEv2, err := test_common.MakeMessage(&smart.WanCoverageAtPostcodeEndedEvent{
+	wanCoverageEv2, err := testcommon.MakeMessage(&smart.WanCoverageAtPostcodeEndedEvent{
 		Postcode: "postCode",
 	})
 	assert.NoError(err)

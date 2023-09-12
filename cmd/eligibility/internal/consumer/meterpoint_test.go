@@ -10,7 +10,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -41,7 +41,7 @@ func TestMeterpointConsumer(t *testing.T) {
 
 	handler := HandleMeterpoint(s, nil, nil, true)
 
-	meterpointEv1, err := test_common.MakeMessage(&platform.ElectricityMeterpointProfileClassChangedEvent{
+	meterpointEv1, err := testcommon.MakeMessage(&platform.ElectricityMeterpointProfileClassChangedEvent{
 		Mpan: "mpan1",
 		Pc:   platform.ProfileClass_PROFILE_CLASS_01,
 	})
@@ -62,7 +62,7 @@ func TestMeterpointConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, meterpoint, "meterpoint mismatch")
 
-	meterpointEv2, err := test_common.MakeMessage(&platform.ElectricityMeterPointSSCChangedEvent{
+	meterpointEv2, err := testcommon.MakeMessage(&platform.ElectricityMeterPointSSCChangedEvent{
 		Mpan: "mpan1",
 		Ssc:  "ssc",
 	})

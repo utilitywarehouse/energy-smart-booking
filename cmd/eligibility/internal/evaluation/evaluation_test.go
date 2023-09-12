@@ -10,17 +10,17 @@ import (
 	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 )
 
 func TestRunFull(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string
@@ -333,10 +333,10 @@ func TestRunSuppliability(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string
@@ -1310,10 +1310,10 @@ func TestRunCampaignability(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string
@@ -1908,10 +1908,10 @@ func TestRunEligibility(t *testing.T) {
 	ctx := context.Background()
 	assert := assert.New(t)
 
-	eMockSync := test_common.MockSink{}
-	sMockSync := test_common.MockSink{}
-	cMockSync := test_common.MockSink{}
-	bMockSync := test_common.MockSink{}
+	eMockSync := testcommon.MockSink{}
+	sMockSync := testcommon.MockSink{}
+	cMockSync := testcommon.MockSink{}
+	bMockSync := testcommon.MockSink{}
 
 	type testCase struct {
 		description string

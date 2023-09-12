@@ -11,7 +11,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -43,17 +43,17 @@ func TestElectricityMeterConsumer(t *testing.T) {
 
 	handler := HandleMeter(s, nil, nil, true)
 
-	meterEv1, err := test_common.MakeMessage(&platform.ElectricityMeterDiscoveredEvent{
+	meterEv1, err := testcommon.MakeMessage(&platform.ElectricityMeterDiscoveredEvent{
 		MeterId:           "meterID1",
 		MeterSerialNumber: "msn1",
 		MeterType:         platform.MeterTypeElec_METER_TYPE_ELEC_S2AD,
 		Mpan:              "mpan1",
 	})
 	assert.NoError(err)
-	meterEv2, err := test_common.MakeMessage(&platform.ElectricityMeterInstalledEvent{
+	meterEv2, err := testcommon.MakeMessage(&platform.ElectricityMeterInstalledEvent{
 		MeterId: "meterID1",
 	})
-	meterEv3, err := test_common.MakeMessage(&platform.ElectricityMeterTypeCorrectedEvent{
+	meterEv3, err := testcommon.MakeMessage(&platform.ElectricityMeterTypeCorrectedEvent{
 		MeterId:   "meterID1",
 		MeterType: platform.MeterTypeElec_METER_TYPE_ELEC_S2ADE,
 	})
@@ -75,7 +75,7 @@ func TestElectricityMeterConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, meter, "meter mismatch")
 
-	meterEv4, err := test_common.MakeMessage(&platform.ElectricityMeterUninstalledEvent{
+	meterEv4, err := testcommon.MakeMessage(&platform.ElectricityMeterUninstalledEvent{
 		MeterId: "meterID1",
 	})
 	assert.NoError(err)
@@ -86,7 +86,7 @@ func TestElectricityMeterConsumer(t *testing.T) {
 	_, err = s.Get(ctx, "mpan1")
 	assert.ErrorIs(err, store.ErrMeterNotFound)
 
-	meterEv5, err := test_common.MakeMessage(&platform.ElectricityMeterErroneouslyUninstalledEvent{
+	meterEv5, err := testcommon.MakeMessage(&platform.ElectricityMeterErroneouslyUninstalledEvent{
 		MeterId: "meterID1",
 	})
 	assert.NoError(err)
@@ -128,7 +128,7 @@ func TestGasMeterConsumer(t *testing.T) {
 	handler := HandleMeter(s, nil, nil, true)
 
 	var capacity float32 = 11.55
-	meterEv1, err := test_common.MakeMessage(&platform.GasMeterDiscoveredEvent{
+	meterEv1, err := testcommon.MakeMessage(&platform.GasMeterDiscoveredEvent{
 		MeterId:           "meterID1",
 		MeterSerialNumber: "msn1",
 		MeterType:         platform.MeterTypeGas_METER_TYPE_GAS_PREPAYMENT,
@@ -136,10 +136,10 @@ func TestGasMeterConsumer(t *testing.T) {
 		Capacity:          &capacity,
 	})
 	assert.NoError(err)
-	meterEv2, err := test_common.MakeMessage(&platform.GasMeterInstalledEvent{
+	meterEv2, err := testcommon.MakeMessage(&platform.GasMeterInstalledEvent{
 		MeterId: "meterID1",
 	})
-	meterEv3, err := test_common.MakeMessage(&platform.GasMeterTypeCorrectedEvent{
+	meterEv3, err := testcommon.MakeMessage(&platform.GasMeterTypeCorrectedEvent{
 		MeterId:   "meterID1",
 		MeterType: platform.MeterTypeGas_METER_TYPE_GAS_SMETS2,
 	})
@@ -161,7 +161,7 @@ func TestGasMeterConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, meter, "meter mismatch")
 
-	meterEv4, err := test_common.MakeMessage(&platform.GasMeterUninstalledEvent{
+	meterEv4, err := testcommon.MakeMessage(&platform.GasMeterUninstalledEvent{
 		MeterId: "meterID1",
 	})
 	assert.NoError(err)
@@ -172,7 +172,7 @@ func TestGasMeterConsumer(t *testing.T) {
 	_, err = s.Get(ctx, "mprn1")
 	assert.ErrorIs(err, store.ErrMeterNotFound)
 
-	meterEv5, err := test_common.MakeMessage(&platform.GasMeterErroneouslyUninstalledEvent{
+	meterEv5, err := testcommon.MakeMessage(&platform.GasMeterErroneouslyUninstalledEvent{
 		MeterId: "meterID1",
 	})
 	assert.NoError(err)
@@ -184,7 +184,7 @@ func TestGasMeterConsumer(t *testing.T) {
 	assert.NoError(err, "failed to get meter")
 	assert.Equal(expected, meter, "meter mismatch")
 
-	meterEv6, err := test_common.MakeMessage(&platform.GasMeterCapacityChangedEvent{
+	meterEv6, err := testcommon.MakeMessage(&platform.GasMeterCapacityChangedEvent{
 		MeterId:  "meterID1",
 		Capacity: 45.6,
 	})

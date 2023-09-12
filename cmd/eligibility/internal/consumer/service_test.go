@@ -11,7 +11,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -44,7 +44,7 @@ func TestServiceConsumer(t *testing.T) {
 
 	handler := HandleService(s, occupancyStore, nil, true)
 
-	serviceEv1, err := test_common.MakeMessage(&energy_entities.EnergyServiceEvent{
+	serviceEv1, err := testcommon.MakeMessage(&energy_entities.EnergyServiceEvent{
 		Service: &energy_entities.Service{
 			Service: &energy_entities.Service_Gas{
 				Gas: &energy_entities.GasService{
@@ -78,7 +78,7 @@ func TestServiceConsumer(t *testing.T) {
 	assert.Equal(expected, service, "service mismatch")
 
 	startedDate := time.Date(2022, time.Month(12), 7, 0, 0, 0, 0, time.UTC)
-	serviceEv2, err := test_common.MakeMessage(&energy_entities.EnergyServiceEvent{
+	serviceEv2, err := testcommon.MakeMessage(&energy_entities.EnergyServiceEvent{
 		Service: &energy_entities.Service{
 			Service: &energy_entities.Service_Gas{
 				Gas: &energy_entities.GasService{

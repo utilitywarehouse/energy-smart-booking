@@ -11,7 +11,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -43,7 +43,7 @@ func TestAltHanConsumerElectricity(t *testing.T) {
 
 	handler := HandleAltHan(s, nil, nil, true)
 
-	altHanEv1, err := test_common.MakeMessage(&smart.ElectricityAltHanMeterpointDiscoveredEvent{
+	altHanEv1, err := testcommon.MakeMessage(&smart.ElectricityAltHanMeterpointDiscoveredEvent{
 		Mpan: "mpan1",
 	})
 	assert.NoError(err)
@@ -62,7 +62,7 @@ func TestAltHanConsumerElectricity(t *testing.T) {
 	}
 	assert.Equal(expected, meterpoint, "meterpoint mismatch")
 
-	altHanEv2, err := test_common.MakeMessage(&smart.ElectricityAltHanMeterpointRemovedEvent{
+	altHanEv2, err := testcommon.MakeMessage(&smart.ElectricityAltHanMeterpointRemovedEvent{
 		Mpan: "mpan1",
 	})
 	assert.NoError(err)
@@ -104,7 +104,7 @@ func TestAltHanConsumerGas(t *testing.T) {
 
 	handler := HandleAltHan(s, nil, nil, true)
 
-	altHanEv1, err := test_common.MakeMessage(&smart.GasAltHanMeterpointRemovedEvent{
+	altHanEv1, err := testcommon.MakeMessage(&smart.GasAltHanMeterpointRemovedEvent{
 		Mprn: "mprn1",
 	})
 	assert.NoError(err)
@@ -121,7 +121,7 @@ func TestAltHanConsumerGas(t *testing.T) {
 	}
 	assert.Equal(expected, meterpoint, "meterpoint mismatch")
 
-	altHanEv2, err := test_common.MakeMessage(&smart.GasAltHanMeterpointDiscoveredEvent{
+	altHanEv2, err := testcommon.MakeMessage(&smart.GasAltHanMeterpointDiscoveredEvent{
 		Mprn: "mprn1",
 	})
 	assert.NoError(err)

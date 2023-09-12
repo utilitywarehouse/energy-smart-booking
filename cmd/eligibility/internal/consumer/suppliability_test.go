@@ -10,7 +10,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -41,7 +41,7 @@ func TestSuppliabilityConsumer(t *testing.T) {
 
 	handler := HandleSuppliability(s)
 
-	suppEv1, err := test_common.MakeMessage(&smart.SuppliableOccupancyAddedEvent{
+	suppEv1, err := testcommon.MakeMessage(&smart.SuppliableOccupancyAddedEvent{
 		OccupancyId: "occupancyID",
 		AccountId:   "accountID",
 	})
@@ -59,7 +59,7 @@ func TestSuppliabilityConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, suppliability, "suppliability mismatch")
 
-	suppEv2, err := test_common.MakeMessage(&smart.SuppliableOccupancyRemovedEvent{
+	suppEv2, err := testcommon.MakeMessage(&smart.SuppliableOccupancyRemovedEvent{
 		OccupancyId: "occupancyID",
 		AccountId:   "accountID",
 		Reasons: []smart.IneligibleReason{

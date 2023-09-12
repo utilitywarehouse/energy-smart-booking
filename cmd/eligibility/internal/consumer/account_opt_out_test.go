@@ -9,7 +9,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/test_common"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
@@ -40,7 +40,7 @@ func TestAccountOptOutConsumer(t *testing.T) {
 
 	handler := HandleAccountOptOut(s, nil, nil, true)
 
-	ev1, err := test_common.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
+	ev1, err := testcommon.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
 		AccountId: "accountID",
 	})
 	assert.NoError(err)
@@ -57,7 +57,7 @@ func TestAccountOptOutConsumer(t *testing.T) {
 	}
 	assert.Equal(expected, account, "mismatch")
 
-	ev2, err := test_common.MakeMessage(&smart.AccountBookingOptOutRemovedEvent{
+	ev2, err := testcommon.MakeMessage(&smart.AccountBookingOptOutRemovedEvent{
 		AccountId: "accountID",
 	})
 	assert.NoError(err)
