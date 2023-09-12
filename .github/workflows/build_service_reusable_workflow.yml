@@ -37,6 +37,8 @@ jobs:
 
       - run: make lint SOURCE_FILES=$SOURCE_FILES
 
+      - run: make lint_internal
+
       - run: make test SOURCE_FILES=$SOURCE_FILES
 
       - name: Docker Build
