@@ -140,7 +140,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 					logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
 					return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
 				}
-				hasBookingRef := true
+				hasBookingRef := len(serviceBookingRef) > 0
 				for _, s := range serviceBookingRef {
 					if s.BookingRef == "" {
 						hasBookingRef = false
