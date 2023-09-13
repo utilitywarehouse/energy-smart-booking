@@ -147,11 +147,6 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 			}
 
 			eligible = len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
-			span.AddEvent("get-eligibility", trace.WithAttributes(
-				attribute.String("eligibility-reasons", fmt.Sprintf("%v", eligibility.Reasons)),
-				attribute.String("suppliability-reasons", fmt.Sprintf("%v", suppliability.Reasons)),
-				attribute.Bool("eligible", eligible)))
-
 			if eligible {
 				// check it has booking references assigned
 				serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, occupancyID)
@@ -159,6 +154,9 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 					logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
 					return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
 				}
+				serviceBookingRefAttr := helpers.CreateSpanAttribute(serviceBookingRef, "get-live-services", span)
+				span.AddEvent("service-booking-references", trace.WithAttributes(serviceBookingRefAttr))
+
 				hasBookingRef := len(serviceBookingRef) > 0
 				for _, s := range serviceBookingRef {
 					if s.BookingRef == "" {
@@ -177,6 +175,9 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 				reasons = append(reasons, suppliability.Reasons...)
 			}
 		}
+		span.AddEvent("get-eligibility", trace.WithAttributes(
+			attribute.String("reasons", fmt.Sprintf("%v", reasons)),
+			attribute.Bool("eligible", eligible)))
 	}
 
 	protoReasons, err := reasons.MapToProto()
@@ -249,11 +250,6 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	}
 
 	eligible := len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
-	span.AddEvent("get-eligibility", trace.WithAttributes(
-		attribute.String("eligibility-reasons", fmt.Sprintf("%v", eligibility.Reasons)),
-		attribute.String("suppliability-reasons", fmt.Sprintf("%v", suppliability.Reasons)),
-		attribute.Bool("eligible", eligible)))
-
 	if eligible {
 		// check it has booking references assigned
 		serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, req.OccupancyId)
@@ -271,6 +267,11 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 			}
 		}
 	}
+
+	span.AddEvent("get-eligibility", trace.WithAttributes(
+		attribute.String("eligibility-reasons", fmt.Sprintf("%v", eligibility.Reasons)),
+		attribute.String("suppliability-reasons", fmt.Sprintf("%v", suppliability.Reasons)),
+		attribute.Bool("eligible", eligible)))
 
 	return &smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse{
 		AccountId:   req.AccountId,
