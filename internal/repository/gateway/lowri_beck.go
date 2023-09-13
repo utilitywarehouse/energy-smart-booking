@@ -54,7 +54,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	)
 
 	defer func() {
-		tracing.RecordSpanError(span, err) // nolint: errcheck
+		tracing.RecordSpanError(span, err)
 		span.End()
 	}()
 
@@ -119,7 +119,7 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 		trace.WithAttributes(attribute.String("lowribeck.reference", reference)),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err) // nolint: errcheck
+		tracing.RecordSpanError(span, err)
 		span.End()
 	}()
 
