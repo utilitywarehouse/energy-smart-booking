@@ -71,7 +71,7 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err) // nolint: errcheck
+			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
 	}
@@ -115,7 +115,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err) // nolint: errcheck
+			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
 	}
@@ -171,7 +171,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err) // nolint: errcheck
+			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
 	}
@@ -201,7 +201,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err) // nolint: errcheck
+			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
 	}
@@ -304,7 +304,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err) // nolint: errcheck
+			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
 	}
@@ -423,7 +423,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking")
 		defer func() {
-			tracing.RecordSpanError(span, err) // nolint: errcheck
+			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
 	}
