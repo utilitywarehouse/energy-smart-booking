@@ -78,7 +78,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err) // nolint: errcheck
+		tracing.RecordSpanError(span, err)
 		span.End()
 	}()
 
@@ -203,7 +203,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		trace.WithAttributes(attribute.String("occupancy-id", req.GetOccupancyId())),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err) // nolint: errcheck
+		tracing.RecordSpanError(span, err)
 		span.End()
 	}()
 
