@@ -110,33 +110,6 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	return mappedResp, nil
 }
 
-func getStatusFromError(formatMessage string, err error) error {
-	switch {
-	case errors.Is(err, mapper.ErrAppointmentNotFound):
-		metrics.AppointmentNotFoundCounter.Inc()
-		return status.Errorf(codes.NotFound, formatMessage, err)
-
-	case errors.Is(err, mapper.ErrAppointmentAlreadyExists):
-		metrics.AppointmentAlreadyExistsCounter.Inc()
-		return status.Errorf(codes.AlreadyExists, formatMessage, err)
-
-	case errors.Is(err, mapper.ErrAppointmentOutOfRange):
-		metrics.AppointmentOutOfRangeCounter.Inc()
-		return status.Errorf(codes.OutOfRange, formatMessage, err)
-
-	default:
-		if invErr, ok := err.(*mapper.InvalidRequestError); ok {
-			invReqError, err := createInvalidRequestError(formatMessage, invErr)
-			if err != nil {
-				return status.Errorf(codes.Internal, formatMessage, err)
-			}
-			return invReqError
-		}
-	}
-	metrics.UnknownErrorCounter.Inc()
-	return status.Errorf(codes.Internal, formatMessage, err)
-}
-
 func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (error, error) {
 	var param contract.Parameters
 	switch invErr.GetParameter() {
@@ -166,6 +139,33 @@ func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (
 		return nil, err
 	}
 	return invReqError.Err(), nil
+}
+
+func getStatusFromError(formatMessage string, err error) error {
+	switch {
+	case errors.Is(err, mapper.ErrAppointmentNotFound):
+		metrics.AppointmentNotFoundCounter.Inc()
+		return status.Errorf(codes.NotFound, formatMessage, err)
+
+	case errors.Is(err, mapper.ErrAppointmentAlreadyExists):
+		metrics.AppointmentAlreadyExistsCounter.Inc()
+		return status.Errorf(codes.AlreadyExists, formatMessage, err)
+
+	case errors.Is(err, mapper.ErrAppointmentOutOfRange):
+		metrics.AppointmentOutOfRangeCounter.Inc()
+		return status.Errorf(codes.OutOfRange, formatMessage, err)
+
+	default:
+		if invErr, ok := err.(*mapper.InvalidRequestError); ok {
+			invReqError, err := createInvalidRequestError(formatMessage, invErr)
+			if err != nil {
+				return status.Errorf(codes.Internal, formatMessage, err)
+			}
+			return invReqError
+		}
+	}
+	metrics.UnknownErrorCounter.Inc()
+	return status.Errorf(codes.Internal, formatMessage, err)
 }
 
 func (l *LowriBeckAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
