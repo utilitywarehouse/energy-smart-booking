@@ -3,12 +3,17 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/sirupsen/logrus"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -68,9 +73,16 @@ func NewEligibilityGRPCApi(
 	}
 }
 
-func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountEligibilityForSmartBookingRequest) (*smart_booking.GetAccountEligibilityForSmartBookingResponse, error) {
+func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountEligibilityForSmartBookingRequest) (_ *smart_booking.GetAccountEligibilityForSmartBookingResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountEligibleForSmartBooking",
+		trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+	)
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
 
-	err := a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
+	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -85,6 +97,8 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountId)
 	}
+
+	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt-out", account.OptOut), attribute.String("psr-codes", fmt.Sprintf("%v", account.PSRCodes))))
 
 	// an account which has opted out of smart booking should not be considered eligible to go through the journey
 	if account.OptOut {
@@ -104,6 +118,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		logrus.Debugf("failed to get live occupancies for account ID %s: %s", req.GetAccountId(), err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 	}
+	span.AddEvent("get-occupancy", trace.WithAttributes(attribute.String("ids", fmt.Sprintf("%v", occupancyIDs))))
 
 	// if there are no live occupancies for given account
 	// customer is not eligible to go through smart booking journey
@@ -132,7 +147,6 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 			}
 
 			eligible = len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
-
 			if eligible {
 				// check it has booking references assigned
 				serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, occupancyID)
@@ -140,6 +154,9 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 					logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
 					return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
 				}
+				serviceBookingRefAttr := helpers.CreateSpanAttribute(serviceBookingRef, "get-live-services", span)
+				span.AddEvent("service-booking-references", trace.WithAttributes(serviceBookingRefAttr))
+
 				hasBookingRef := len(serviceBookingRef) > 0
 				for _, s := range serviceBookingRef {
 					if s.BookingRef == "" {
@@ -148,6 +165,9 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 					}
 				}
 				if hasBookingRef {
+					span.AddEvent("get-eligibility", trace.WithAttributes(
+						attribute.String("reasons", fmt.Sprintf("%v", reasons)),
+						attribute.Bool("eligible", eligible)))
 					return &smart_booking.GetAccountEligibilityForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
 				}
 			}
@@ -159,6 +179,10 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 			}
 		}
 	}
+
+	span.AddEvent("get-eligibility", trace.WithAttributes(
+		attribute.String("reasons", fmt.Sprintf("%v", reasons)),
+		attribute.Bool("eligible", eligible)))
 
 	protoReasons, err := reasons.MapToProto()
 	if err != nil {
@@ -173,9 +197,17 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 	}, nil
 }
 
-func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (*smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, error) {
+func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (_ *smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountOccupancyEligibleForSmartBooking",
+		trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+		trace.WithAttributes(attribute.String("occupancy-id", req.GetOccupancyId())),
+	)
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
 
-	err := a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
+	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -190,6 +222,8 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountId)
 	}
+
+	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt-out", account.OptOut), attribute.String("psr-codes", fmt.Sprintf("%v", account.PSRCodes))))
 
 	// an account which has opted out of smart booking should not be considered eligible to go through the journey
 	if account.OptOut {
@@ -220,7 +254,6 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	}
 
 	eligible := len(eligibility.Reasons) == 0 && len(suppliability.Reasons) == 0
-
 	if eligible {
 		// check it has booking references assigned
 		serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, req.OccupancyId)
@@ -228,6 +261,8 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 			logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
 			return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
 		}
+		serviceBookingRefAttr := helpers.CreateSpanAttribute(serviceBookingRef, "get-live-services", span)
+		span.AddEvent("service-booking-references", trace.WithAttributes(serviceBookingRefAttr))
 
 		for _, s := range serviceBookingRef {
 			if s.BookingRef == "" {
@@ -236,6 +271,11 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 			}
 		}
 	}
+
+	span.AddEvent("get-eligibility", trace.WithAttributes(
+		attribute.String("eligibility-reasons", fmt.Sprintf("%v", eligibility.Reasons)),
+		attribute.String("suppliability-reasons", fmt.Sprintf("%v", suppliability.Reasons)),
+		attribute.Bool("eligible", eligible)))
 
 	return &smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse{
 		AccountId:   req.AccountId,
