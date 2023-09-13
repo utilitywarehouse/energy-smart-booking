@@ -8,8 +8,9 @@ import (
 var LBErrorsCount = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "errors returned from Lowri Beck API",
 	Help: "the count of each type of error",
-}, []string{"type"})
+}, []string{"type", "endpoint"})
 
+// LBErrorsCount type
 const (
 	AppointmentNotFound      = "appointment_not_found"
 	AppointmentAlreadyExists = "appointment_already_exists"
@@ -21,4 +22,10 @@ const (
 	InvalidAppointmentDate   = "invalid_appointment_date"
 	InvalidAppointmentTime   = "invalid_appointment_time"
 	InvalidUnknownParameter  = "invalid_unknown_parameter"
+)
+
+// LBErrorsCount endpoint
+const (
+	GetAvailableSlots = "get_available_slots"
+	CreateBooking     = "create_booking"
 )

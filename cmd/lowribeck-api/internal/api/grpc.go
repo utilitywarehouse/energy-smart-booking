@@ -74,7 +74,7 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	mappedResp, mappedErr := l.mapper.AvailableSlotsResponse(resp)
 	if mappedErr != nil {
 		logrus.Errorf("error making get available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
-		return nil, getStatusFromError("error making get available slots request: %v", mappedErr)
+		return nil, getStatusFromError("error making get available slots request: %v", metrics.GetAvailableSlots, mappedErr)
 	}
 	return mappedResp, nil
 }
@@ -105,31 +105,31 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	mappedResp, mappedErr := l.mapper.BookingResponse(resp)
 	if mappedErr != nil {
 		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
-		return nil, getStatusFromError("error making booking request: %v", mappedErr)
+		return nil, getStatusFromError("error making booking request: %v", metrics.CreateBooking, mappedErr)
 	}
 	return mappedResp, nil
 }
 
-func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (error, error) {
+func createInvalidRequestError(msg, endpoint string, invErr *mapper.InvalidRequestError) (error, error) {
 	var param contract.Parameters
 	switch invErr.GetParameter() {
 	case mapper.InvalidPostcode:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidPostcode).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidPostcode, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_POSTCODE
 	case mapper.InvalidReference:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidReference).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidReference, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_REFERENCE
 	case mapper.InvalidSite:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidSite).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidSite, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_SITE
 	case mapper.InvalidAppointmentDate:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidAppointmentDate).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidAppointmentDate, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_APPOINTMENT_DATE
 	case mapper.InvalidAppointmentTime:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidAppointmentTime).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidAppointmentTime, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_APPOINTMENT_TIME
 	default:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidUnknownParameter).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidUnknownParameter, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_UNKNOWN
 	}
 	invReqError, err := status.New(codes.InvalidArgument, fmt.Sprintf(msg, invErr)).WithDetails(&contract.InvalidParameterResponse{
@@ -141,30 +141,30 @@ func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (
 	return invReqError.Err(), nil
 }
 
-func getStatusFromError(formatMessage string, err error) error {
+func getStatusFromError(formatMessage, endpoint string, err error) error {
 	switch {
 	case errors.Is(err, mapper.ErrAppointmentNotFound):
-		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentNotFound).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentNotFound, endpoint).Inc()
 		return status.Errorf(codes.NotFound, formatMessage, err)
 
 	case errors.Is(err, mapper.ErrAppointmentAlreadyExists):
-		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentAlreadyExists).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentAlreadyExists, endpoint).Inc()
 		return status.Errorf(codes.AlreadyExists, formatMessage, err)
 
 	case errors.Is(err, mapper.ErrAppointmentOutOfRange):
-		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentOutOfRange).Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentOutOfRange, endpoint).Inc()
 		return status.Errorf(codes.OutOfRange, formatMessage, err)
 
 	default:
 		if invErr, ok := err.(*mapper.InvalidRequestError); ok {
-			invReqError, err := createInvalidRequestError(formatMessage, invErr)
+			invReqError, err := createInvalidRequestError(formatMessage, endpoint, invErr)
 			if err != nil {
 				return status.Errorf(codes.Internal, formatMessage, err)
 			}
 			return invReqError
 		}
 	}
-	metrics.LBErrorsCount.WithLabelValues(metrics.Unknown).Inc()
+	metrics.LBErrorsCount.WithLabelValues(metrics.Unknown, endpoint).Inc()
 	return status.Errorf(codes.Internal, formatMessage, err)
 }
 
