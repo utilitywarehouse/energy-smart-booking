@@ -114,22 +114,22 @@ func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (
 	var param contract.Parameters
 	switch invErr.GetParameter() {
 	case mapper.InvalidPostcode:
-		metrics.InvalidPostcodeCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidPostcode).Inc()
 		param = contract.Parameters_PARAMETERS_POSTCODE
 	case mapper.InvalidReference:
-		metrics.InvalidReferenceCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidReference).Inc()
 		param = contract.Parameters_PARAMETERS_REFERENCE
 	case mapper.InvalidSite:
-		metrics.InvalidSiteCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidSite).Inc()
 		param = contract.Parameters_PARAMETERS_SITE
 	case mapper.InvalidAppointmentDate:
-		metrics.InvalidAppointmentDateCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidAppointmentDate).Inc()
 		param = contract.Parameters_PARAMETERS_APPOINTMENT_DATE
 	case mapper.InvalidAppointmentTime:
-		metrics.InvalidAppointmentTimeCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidAppointmentTime).Inc()
 		param = contract.Parameters_PARAMETERS_APPOINTMENT_TIME
 	default:
-		metrics.InvalidUnknownParameterCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidUnknownParameter).Inc()
 		param = contract.Parameters_PARAMETERS_UNKNOWN
 	}
 	invReqError, err := status.New(codes.InvalidArgument, fmt.Sprintf(msg, invErr)).WithDetails(&contract.InvalidParameterResponse{
@@ -144,15 +144,15 @@ func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (
 func getStatusFromError(formatMessage string, err error) error {
 	switch {
 	case errors.Is(err, mapper.ErrAppointmentNotFound):
-		metrics.AppointmentNotFoundCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentNotFound).Inc()
 		return status.Errorf(codes.NotFound, formatMessage, err)
 
 	case errors.Is(err, mapper.ErrAppointmentAlreadyExists):
-		metrics.AppointmentAlreadyExistsCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentAlreadyExists).Inc()
 		return status.Errorf(codes.AlreadyExists, formatMessage, err)
 
 	case errors.Is(err, mapper.ErrAppointmentOutOfRange):
-		metrics.AppointmentOutOfRangeCounter.Inc()
+		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentOutOfRange).Inc()
 		return status.Errorf(codes.OutOfRange, formatMessage, err)
 
 	default:
@@ -164,7 +164,7 @@ func getStatusFromError(formatMessage string, err error) error {
 			return invReqError
 		}
 	}
-	metrics.UnknownErrorCounter.Inc()
+	metrics.LBErrorsCount.WithLabelValues(metrics.Unknown).Inc()
 	return status.Errorf(codes.Internal, formatMessage, err)
 }
 
