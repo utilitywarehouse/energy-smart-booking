@@ -130,8 +130,8 @@ func Test_GetAvailableSlots(t *testing.T) {
 		},
 		{
 			desc:          "Unknown bad parameter",
-			mapperErr:     mapper.ErrInvalidRequest,
-			expectedError: status.Error(codes.InvalidArgument, "error making get available slots request: invalid request"),
+			mapperErr:     mapper.NewInvalidRequestError("something else"),
+			expectedError: status.Error(codes.InvalidArgument, "error making get available slots request: invalid request [something else]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
@@ -366,8 +366,8 @@ func Test_CreateBooking(t *testing.T) {
 		},
 		{
 			desc:          "Unknown bad parameter",
-			mapperErr:     mapper.ErrInvalidRequest,
-			expectedError: status.Error(codes.InvalidArgument, "error making booking request: invalid request"),
+			mapperErr:     mapper.NewInvalidRequestError("something else"),
+			expectedError: status.Error(codes.InvalidArgument, "error making booking request: invalid request [something else]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{

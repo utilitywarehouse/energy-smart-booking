@@ -10,6 +10,7 @@ import (
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 
 	"google.golang.org/grpc/codes"
@@ -73,26 +74,7 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	mappedResp, mappedErr := l.mapper.AvailableSlotsResponse(resp)
 	if mappedErr != nil {
 		logrus.Errorf("error making get available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
-		switch {
-		case errors.Is(mappedErr, mapper.ErrAppointmentNotFound):
-			return nil, status.Errorf(codes.NotFound, "error making get available slots request: %v", mappedErr)
-
-		case errors.Is(mappedErr, mapper.ErrAppointmentOutOfRange):
-			return nil, status.Errorf(codes.OutOfRange, "error making get available slots request: %v", mappedErr)
-
-		case errors.Is(mappedErr, mapper.ErrInvalidRequest):
-			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots request: %v", mappedErr)
-		default:
-			if invErr, ok := mappedErr.(*mapper.InvalidRequestError); ok {
-				invReqError, err := createInvalidRequestError("error making get available slots request: %v", invErr)
-				if err != nil {
-					logrus.Errorf("internal error for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
-					return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", err)
-				}
-				return nil, invReqError
-			}
-		}
-		return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", mappedErr)
+		return nil, getStatusFromError("error making get available slots request: %v", mappedErr)
 	}
 	return mappedResp, nil
 }
@@ -123,48 +105,58 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	mappedResp, mappedErr := l.mapper.BookingResponse(resp)
 	if mappedErr != nil {
 		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
-		switch {
-		case errors.Is(mappedErr, mapper.ErrAppointmentNotFound):
-			return nil, status.Errorf(codes.NotFound, "error making booking request: %v", mappedErr)
-
-		case errors.Is(mappedErr, mapper.ErrAppointmentAlreadyExists):
-			return nil, status.Errorf(codes.AlreadyExists, "error making booking request: %v", mappedErr)
-
-		case errors.Is(mappedErr, mapper.ErrAppointmentOutOfRange):
-			return nil, status.Errorf(codes.OutOfRange, "error making booking request: %v", mappedErr)
-
-		case errors.Is(mappedErr, mapper.ErrInvalidRequest):
-			return nil, status.Errorf(codes.InvalidArgument, "error making booking request: %v", mappedErr)
-
-		default:
-			if invErr, ok := mappedErr.(*mapper.InvalidRequestError); ok {
-				invReqError, err := createInvalidRequestError("error making booking request: %v", invErr)
-				if err != nil {
-					logrus.Errorf("internal error for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
-					return nil, status.Errorf(codes.Internal, "error making booking request: %v", err)
-				}
-				return nil, invReqError
-			}
-		}
-		return nil, status.Errorf(codes.Internal, "error making booking request: %v", mappedErr)
+		return nil, getStatusFromError("error making booking request: %v", mappedErr)
 	}
 	return mappedResp, nil
+}
+
+func getStatusFromError(formatMessage string, err error) error {
+	switch {
+	case errors.Is(err, mapper.ErrAppointmentNotFound):
+		metrics.AppointmentNotFoundCounter.Inc()
+		return status.Errorf(codes.NotFound, formatMessage, err)
+
+	case errors.Is(err, mapper.ErrAppointmentAlreadyExists):
+		metrics.AppointmentAlreadyExistsCounter.Inc()
+		return status.Errorf(codes.AlreadyExists, formatMessage, err)
+
+	case errors.Is(err, mapper.ErrAppointmentOutOfRange):
+		metrics.AppointmentOutOfRangeCounter.Inc()
+		return status.Errorf(codes.OutOfRange, formatMessage, err)
+
+	default:
+		if invErr, ok := err.(*mapper.InvalidRequestError); ok {
+			invReqError, err := createInvalidRequestError(formatMessage, invErr)
+			if err != nil {
+				return status.Errorf(codes.Internal, formatMessage, err)
+			}
+			return invReqError
+		}
+	}
+	metrics.UnknownErrorCounter.Inc()
+	return status.Errorf(codes.Internal, formatMessage, err)
 }
 
 func createInvalidRequestError(msg string, invErr *mapper.InvalidRequestError) (error, error) {
 	var param contract.Parameters
 	switch invErr.GetParameter() {
 	case mapper.InvalidPostcode:
+		metrics.InvalidPostcodeCounter.Inc()
 		param = contract.Parameters_PARAMETERS_POSTCODE
 	case mapper.InvalidReference:
+		metrics.InvalidReferenceCounter.Inc()
 		param = contract.Parameters_PARAMETERS_REFERENCE
 	case mapper.InvalidSite:
+		metrics.InvalidSiteCounter.Inc()
 		param = contract.Parameters_PARAMETERS_SITE
 	case mapper.InvalidAppointmentDate:
+		metrics.InvalidAppointmentDateCounter.Inc()
 		param = contract.Parameters_PARAMETERS_APPOINTMENT_DATE
 	case mapper.InvalidAppointmentTime:
+		metrics.InvalidAppointmentTimeCounter.Inc()
 		param = contract.Parameters_PARAMETERS_APPOINTMENT_TIME
 	default:
+		metrics.InvalidUnknownParameterCounter.Inc()
 		param = contract.Parameters_PARAMETERS_UNKNOWN
 	}
 	invReqError, err := status.New(codes.InvalidArgument, fmt.Sprintf(msg, invErr)).WithDetails(&contract.InvalidParameterResponse{
