@@ -6,7 +6,7 @@ import (
 )
 
 var LBErrorsCount = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "errors returned from Lowri Beck API",
+	Name: "lb_errors_total",
 	Help: "the count of each type of error",
 }, []string{"type", "endpoint"})
 
