@@ -64,7 +64,7 @@ func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth, use
 	}
 }
 
-func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) { // nolint:revive
+func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerContactDetails",
@@ -164,7 +164,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 	}, nil
 }
 
-func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) { // nolint:revive
+func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings",
@@ -194,7 +194,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 	return &bookingv1.GetCustomerBookingsResponse{Bookings: bookings}, nil
 }
 
-func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) { // nolint:revive
+func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
@@ -297,7 +297,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 	}, nil
 }
 
-func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (_ *bookingv1.CreateBookingResponse, err error) { // nolint:revive
+func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (_ *bookingv1.CreateBookingResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking",
@@ -418,7 +418,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 	}, nil
 }
 
-func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) { // nolint:revive
+func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking")
