@@ -13,6 +13,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -195,11 +196,12 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 }
 
 func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) {
+	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
+		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
@@ -290,6 +292,11 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 		}
 
 		bookingSlots[index] = &bookingSlot
+	}
+
+	if b.useTracing {
+		bookingSlotsAttr := helpers.CreateSpanAttribute(bookingSlots, "bookingSlots", span)
+		span.AddEvent("response", trace.WithAttributes(bookingSlotsAttr))
 	}
 
 	return &bookingv1.GetAvailableSlotsResponse{
