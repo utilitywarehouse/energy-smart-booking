@@ -68,7 +68,7 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerContactDetails",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -112,7 +112,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerSiteAddress",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -168,7 +168,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -198,7 +198,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -301,7 +301,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
