@@ -6,7 +6,6 @@ import (
 )
 
 var (
-	ErrInvalidRequest           = errors.New("invalid request")
 	ErrAppointmentNotFound      = errors.New("no appointments found")
 	ErrAppointmentOutOfRange    = errors.New("appointment out of range")
 	ErrAppointmentAlreadyExists = errors.New("appointment already exists")
@@ -28,7 +27,7 @@ type InvalidRequestError struct {
 }
 
 func (m *InvalidRequestError) Error() string {
-	return fmt.Errorf("%w [%s]", ErrInvalidRequest, m.Parameter).Error()
+	return fmt.Errorf("invalid request [%s]", m.Parameter).Error()
 }
 
 func (m *InvalidRequestError) GetParameter() InvalidType {
