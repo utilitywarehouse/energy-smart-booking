@@ -17,21 +17,21 @@ const (
 	energyPlatformKafkaVersion = "energy-platform-kafka-version"
 
 	// Kafka topics
-	eligibilityTopic     = "eligibility-events-topic" //nolint:gosec
-	campaignabilityTopic = "campaignability-events-topic"
-	suppliabilityTopic   = "suppliability-events-topic"
-
-	altHanTopic                    = "alt-han-events-topic"
-	optOutTopic                    = "opt-out-events-topic"
-	accountPsrTopic                = "account-psr-events-topic"
-	bookingRefTopic                = "booking-reference-events-topic"
-	meterTopic                     = "meter-events-topic"
-	meterpointTopic                = "meterpoint-events-topic"
-	occupancyTopic                 = "occupancy-events-topic"
-	serviceStateTopic              = "service-state-events-topic"
-	siteTopic                      = "site-events-topic"
-	wanCoverageTopic               = "wan-coverage-events-topic"
+	eligibilityTopic               = "eligibility-events-topic" //nolint:gosec
+	campaignabilityTopic           = "campaignability-events-topic"
+	suppliabilityTopic             = "suppliability-events-topic"
 	bookingJourneyEligibilityTopic = "booking-journey-eligibility-topic"
+
+	altHanTopic       = "alt-han-events-topic"
+	optOutTopic       = "opt-out-events-topic"
+	accountPsrTopic   = "account-psr-events-topic"
+	bookingRefTopic   = "booking-reference-events-topic"
+	meterTopic        = "meter-events-topic"
+	meterpointTopic   = "meterpoint-events-topic"
+	occupancyTopic    = "occupancy-events-topic"
+	serviceStateTopic = "service-state-events-topic"
+	siteTopic         = "site-events-topic"
+	wanCoverageTopic  = "wan-coverage-events-topic"
 
 	batchSize    = "batch-size"
 	postgresDSN  = "postgres-dsn"
@@ -45,12 +45,13 @@ const (
 	httpPort = "http-port"
 
 	// BigQuery
-	bigQueryProjectID            = "big-query-project-id"
-	bigQueryDatasetID            = "big-query-dataset-id"
-	bigQueryCredentialsFile      = "big-query-credentials-file" //nolint:gosec
-	bigQueryCampaignabilityTable = "big-query-campaignability-table"
-	bigQuerySuppliabilityTable   = "big-query-suppliability-table"
-	bigQueryEligibilityTable     = "big-query-eligibility-table"
+	bigQueryProjectID                         = "big-query-project-id"
+	bigQueryDatasetID                         = "big-query-dataset-id"
+	bigQueryCredentialsFile                   = "big-query-credentials-file" //nolint:gosec
+	bigQueryCampaignabilityTable              = "big-query-campaignability-table"
+	bigQuerySuppliabilityTable                = "big-query-suppliability-table"
+	bigQueryEligibilityTable                  = "big-query-eligibility-table"
+	bigQueryBookingJourneyEligibilityRefTable = "big-query-booking-journey-eligibility-ref-table"
 )
 
 var gitHash string // populated at compile time
@@ -285,6 +286,11 @@ func main() {
 						Required: true,
 					},
 					&cli.StringFlag{
+						Name:     bookingJourneyEligibilityTopic,
+						EnvVars:  []string{"BOOKING_JOURNEY_ELIGIBILITY_EVENTS_TOPIC"},
+						Required: true,
+					},
+					&cli.StringFlag{
 						Name:     bigQueryProjectID,
 						EnvVars:  []string{"BIG_QUERY_PROJECT_ID"},
 						Required: true,
@@ -312,6 +318,11 @@ func main() {
 					&cli.StringFlag{
 						Name:     bigQueryEligibilityTable,
 						EnvVars:  []string{"BIG_QUERY_ELIGIBILITY_TABLE"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     bigQueryBookingJourneyEligibilityRefTable,
+						EnvVars:  []string{"BIG_QUERY_BOOKING_JOURNEY_REF_TABLE"},
 						Required: true,
 					},
 					&cli.IntFlag{

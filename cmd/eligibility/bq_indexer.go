@@ -56,6 +56,13 @@ func runBigQueryIndexer(c *cli.Context) error {
 	defer campaignabilitySource.Close()
 	opsServer.Add("campaignability-events-source", substratehealth.NewCheck(campaignabilitySource, "unable to consume campaignability events"))
 
+	bookingJourneySource, err := app.GetKafkaSource(c, c.String(app.KafkaConsumerGroup), c.String(bookingJourneyEligibilityTopic))
+	if err != nil {
+		return fmt.Errorf("unable to connect to booking journey eligibility events kafka source: %w", err)
+	}
+	defer bookingJourneySource.Close()
+	opsServer.Add("booking-journey-eligibility-events-source", substratehealth.NewCheck(bookingJourneySource, "unable to consume booking journey eligibility events"))
+
 	bqClient, err := bigquery.NewClient(ctx, c.String(bigQueryProjectID), option.WithCredentialsFile(c.String(bigQueryCredentialsFile)))
 	if err != nil {
 		return fmt.Errorf("unable to create bigquery client: %w", err)
@@ -64,6 +71,7 @@ func runBigQueryIndexer(c *cli.Context) error {
 	eligibilityIndexer := bq.NewEligibilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryEligibilityTable))
 	suppliabilityIndexer := bq.NewSuppliabilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQuerySuppliabilityTable))
 	campaignabilityIndexer := bq.NewCampaignabilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryCampaignabilityTable))
+	bookingJourneyEligibilityIndexer := bq.NewBookingJourneyEligibilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryBookingJourneyEligibilityRefTable))
 
 	g.Go(func() error {
 		defer log.Info("eligibility consumer finished")
@@ -76,6 +84,10 @@ func runBigQueryIndexer(c *cli.Context) error {
 	g.Go(func() error {
 		defer log.Info("campaignability consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, campaignabilitySource, campaignabilityIndexer)
+	})
+	g.Go(func() error {
+		defer log.Info("booking journey eligibility consumer finished")
+		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, bookingJourneySource, bookingJourneyEligibilityIndexer)
 	})
 
 	sigChan := make(chan os.Signal, 1)
