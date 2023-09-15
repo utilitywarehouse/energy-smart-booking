@@ -37,6 +37,7 @@ const (
 	receivingSystem = "receiving-system"
 	authUser        = "auth-user"
 	authPassword    = "auth-password"
+	useHeathcheck   = "use-healthcheck"
 )
 
 var gitHash string // populated at compile time
@@ -73,6 +74,10 @@ func main() {
 						Name:     authPassword,
 						EnvVars:  []string{"AUTH_PASSWORD"},
 						Required: true,
+					},
+					&cli.BoolFlag{
+						Name:    useHeathcheck,
+						EnvVars: []string{"USE_HEALTHCHECK"},
 					},
 				),
 				Before: app.Before,
@@ -115,9 +120,11 @@ func runServer(c *cli.Context) error {
 	defer closer.Close()
 
 	httpClient := &http.Client{Timeout: 30 * time.Second}
-
 	client := lowribeck.New(httpClient, c.String(authUser), c.String(authPassword), c.String(baseURL))
-	opsServer.Add("lowribeck-api", lowribeckChecker(ctx, client.HealthCheck))
+
+	if c.Bool(useHeathcheck) {
+		opsServer.Add("lowribeck-api", lowribeckChecker(ctx, client.HealthCheck))
+	}
 
 	grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(app.GrpcLogLevel))
 	reflection.Register(grpcServer)
