@@ -25,6 +25,21 @@ type BookingJourneyEligibilityIndexer struct {
 	client  *bigquery.Client
 	dataset string
 	table   string
+	buffer  []BookingJourneyEligibilityRef
+}
+
+func (i *BookingJourneyEligibilityIndexer) PreHandle(_ context.Context) error {
+	i.buffer = []BookingJourneyEligibilityRef{}
+	return nil
+}
+
+func (i *BookingJourneyEligibilityIndexer) PostHandle(ctx context.Context) error {
+	err := i.client.Dataset(i.dataset).Table(i.table).Inserter().Put(ctx, i.buffer)
+	if err != nil {
+		return fmt.Errorf("failed to put %d rows in booking_journey_reference table, %w", len(i.buffer), err)
+	}
+
+	return nil
 }
 
 func NewBookingJourneyEligibilityIndexer(client *bigquery.Client, dataset, table string) *BookingJourneyEligibilityIndexer {
@@ -61,17 +76,15 @@ func (i *BookingJourneyEligibilityIndexer) Handle(ctx context.Context, message s
 			Eligible:    true,
 			UpdatedAt:   env.OccurredAt.AsTime(),
 		}
-		err = i.client.Dataset(i.dataset).Table(i.table).Inserter().Put(ctx, update)
+		i.buffer = append(i.buffer, update)
+
 	case *smart.SmartBookingJourneyOccupancyRemovedEvent:
 		update := BookingJourneyEligibilityRef{
 			OccupancyID: x.GetOccupancyId(),
 			Eligible:    false,
 			UpdatedAt:   env.OccurredAt.AsTime(),
 		}
-		err = i.client.Dataset(i.dataset).Table(i.table).Inserter().Put(ctx, update)
-	}
-	if err != nil {
-		return fmt.Errorf("failed to index booking journey eligibility event %s: %w", env.Uuid, err)
+		i.buffer = append(i.buffer, update)
 	}
 
 	return nil
