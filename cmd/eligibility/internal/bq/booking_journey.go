@@ -50,7 +50,7 @@ func NewBookingJourneyEligibilityIndexer(client *bigquery.Client, dataset, table
 	}
 }
 
-func (i *BookingJourneyEligibilityIndexer) Handle(ctx context.Context, message substrate.Message) error {
+func (i *BookingJourneyEligibilityIndexer) Handle(_ context.Context, message substrate.Message) error {
 	var env energy_contracts.Envelope
 	if err := proto.Unmarshal(message.Data(), &env); err != nil {
 		return err
