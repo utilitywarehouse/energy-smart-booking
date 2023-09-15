@@ -223,7 +223,7 @@ func (e *Evaluator) publishSmartBookingJourneyEligibilityIfNeeded(ctx context.Co
 		return nil
 	}
 
-	hasBookingRef := true
+	hasBookingRef := len(serviceBookingRef) > 0
 	for _, s := range serviceBookingRef {
 		if s.BookingRef == "" {
 			hasBookingRef = false
