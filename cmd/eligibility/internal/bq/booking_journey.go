@@ -16,7 +16,7 @@ import (
 
 type BookingJourneyEligibilityRef struct {
 	OccupancyID string    `bigquery:"occupancy_id"`
-	BookingRef  string    `bigquery:"booking_reference"`
+	BookingRef  string    `bigquery:"reference"`
 	Eligible    bool      `bigquery:"eligible"`
 	UpdatedAt   time.Time `bigquery:"updated_at"`
 }
