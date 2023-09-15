@@ -163,7 +163,7 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 	case http.StatusOK:
 		return nil
 	case http.StatusUnauthorized:
-		logrus.Error("health check got an unauthorized (401) status code, check the username and password being used") //nolint: misspell
+		logrus.Error("health check got an unauthorised (401) status code, check the username and password being used")
 
 		return ErrNotOKStatusCode
 	case http.StatusNotFound:

@@ -75,7 +75,7 @@ func NewEligibilityGRPCApi(
 
 func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountEligibilityForSmartBookingRequest) (_ *smart_booking.GetAccountEligibilityForSmartBookingResponse, err error) {
 	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountEligibleForSmartBooking",
-		trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+		trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 	)
 	defer func() {
 		tracing.RecordSpanError(span, err)
@@ -98,7 +98,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountId)
 	}
 
-	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt-out", account.OptOut), attribute.String("psr-codes", fmt.Sprintf("%v", account.PSRCodes))))
+	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt.out", account.OptOut), attribute.String("psr.codes", fmt.Sprintf("%v", account.PSRCodes))))
 
 	// an account which has opted out of smart booking should not be considered eligible to go through the journey
 	if account.OptOut {
@@ -199,8 +199,8 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (_ *smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, err error) {
 	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountOccupancyEligibleForSmartBooking",
-		trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
-		trace.WithAttributes(attribute.String("occupancy-id", req.GetOccupancyId())),
+		trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
+		trace.WithAttributes(attribute.String("occupancy.id", req.GetOccupancyId())),
 	)
 	defer func() {
 		tracing.RecordSpanError(span, err)
@@ -223,7 +223,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountId)
 	}
 
-	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt-out", account.OptOut), attribute.String("psr-codes", fmt.Sprintf("%v", account.PSRCodes))))
+	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt.out", account.OptOut), attribute.String("psr.codes", fmt.Sprintf("%v", account.PSRCodes))))
 
 	// an account which has opted out of smart booking should not be considered eligible to go through the journey
 	if account.OptOut {
@@ -273,8 +273,8 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	}
 
 	span.AddEvent("get-eligibility", trace.WithAttributes(
-		attribute.String("eligibility-reasons", fmt.Sprintf("%v", eligibility.Reasons)),
-		attribute.String("suppliability-reasons", fmt.Sprintf("%v", suppliability.Reasons)),
+		attribute.String("eligibility.reasons", fmt.Sprintf("%v", eligibility.Reasons)),
+		attribute.String("suppliability.reasons", fmt.Sprintf("%v", suppliability.Reasons)),
 		attribute.Bool("eligible", eligible)))
 
 	return &smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse{

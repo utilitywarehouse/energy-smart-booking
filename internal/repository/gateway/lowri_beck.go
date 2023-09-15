@@ -58,8 +58,6 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		span.End()
 	}()
 
-	span.AddEvent("request", trace.WithAttributes(attribute.String("postcode", postcode), attribute.String("reference", reference)))
-
 	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), &lowribeckv1.GetAvailableSlotsRequest{
 		Postcode:  postcode,
 		Reference: reference,

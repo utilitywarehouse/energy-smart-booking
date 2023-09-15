@@ -13,6 +13,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -64,11 +65,11 @@ func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth, use
 	}
 }
 
-func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) { // nolint:revive
+func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerContactDetails",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -112,7 +113,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerSiteAddress",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -164,11 +165,11 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 	}, nil
 }
 
-func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) { // nolint:revive
+func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -194,12 +195,13 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 	return &bookingv1.GetCustomerBookingsResponse{Bookings: bookings}, nil
 }
 
-func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) { // nolint:revive
+func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) {
+	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
+		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
@@ -292,16 +294,21 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 		bookingSlots[index] = &bookingSlot
 	}
 
+	if b.useTracing {
+		bookingSlotsAttr := helpers.CreateSpanAttribute(bookingSlots, "bookingSlots", span)
+		span.AddEvent("response", trace.WithAttributes(bookingSlotsAttr))
+	}
+
 	return &bookingv1.GetAvailableSlotsResponse{
 		Slots: bookingSlots,
 	}, nil
 }
 
-func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (_ *bookingv1.CreateBookingResponse, err error) { // nolint:revive
+func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (_ *bookingv1.CreateBookingResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking",
-			trace.WithAttributes(attribute.String("account-id", req.GetAccountId())),
+			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
@@ -418,7 +425,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 	}, nil
 }
 
-func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) { // nolint:revive
+func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking")

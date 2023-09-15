@@ -214,7 +214,7 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
-		span.AddEvent("request", trace.WithAttributes(attribute.String("accountID", accountID)))
+		span.AddEvent("request", trace.WithAttributes(attribute.String("account.id", accountID)))
 	}
 
 	site, occupancyEligible, err := d.occupancyStore.GetSiteExternalReferenceByAccountID(ctx, accountID)
