@@ -3,6 +3,7 @@ package evaluation
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
@@ -2930,8 +2931,14 @@ func (s *mockStore) GetLiveServicesWithBookingRef(_ context.Context, occupancyID
 	services := s.servicesByOccupancy[occupancyID]
 	refs := make([]store.ServiceBookingRef, len(services))
 
+	timestamp := time.Now()
+
 	for i, sv := range services {
-		refs[i] = store.ServiceBookingRef{ServiceID: sv.ID, BookingRef: sv.BookingReference}
+		if sv.BookingReference == "" {
+			refs[i] = store.ServiceBookingRef{ServiceID: sv.ID, BookingRef: "removed", DeletedAt: &timestamp}
+		} else {
+			refs[i] = store.ServiceBookingRef{ServiceID: sv.ID, BookingRef: sv.BookingReference}
+		}
 	}
 
 	return refs, nil
