@@ -165,9 +165,11 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 		// EA03 - Work Reference Invalid
 		case "Work Reference Invalid":
 			return NewInvalidRequestError(InvalidReference)
+		case "Insufficient notice to rearrange this appointment.":
+			return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 		}
 	}
-	return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
+	return fmt.Errorf("%w [%s]", ErrUnknownError, responseMessage)
 }
 
 func mapBookingResponseCodes(responseCode, responseMessage string) error {
@@ -249,7 +251,7 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 	case "R11":
 		return ErrAppointmentOutOfRange
 	}
-	return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
+	return fmt.Errorf("%w [%s]", ErrUnknownError, responseMessage)
 }
 
 func mapBookingSlot(slot *contract.BookingSlot) (string, string, error) {
