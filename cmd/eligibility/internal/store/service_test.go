@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
@@ -87,13 +88,19 @@ func TestGetServicesWithBookingRef(t *testing.T) {
 	assert := assert.New(t)
 
 	s := NewService(connect(ctx))
+	tmstp := time.Date(2023, time.January, 12, 10, 0, 0, 0, time.UTC)
 
 	_, err := s.pool.Exec(ctx, `
 		INSERT INTO services(id, mpxn, occupancy_id, supply_type, is_live)
 		VALUES 
 		    ('service_id_1', 'mpxn_1', 'occupancy_id_1', 'gas', true),
 		    ('service_id_2', 'mpxn_2', 'occupancy_id_1', 'elec', true);
-		INSERT INTO booking_references(mpxn, reference) VALUES('mpxn_1', 'ref');`)
+		INSERT INTO booking_references(mpxn, reference) VALUES
+		    ('mpxn_1', 'ref');`)
+	assert.NoError(err)
+
+	_, err = s.pool.Exec(ctx, `
+		INSERT INTO booking_references(mpxn, reference, deleted_at) VALUES ('mpxn_2', 'ref2', $1);`, tmstp)
 	assert.NoError(err)
 
 	serviceBookingRef, err := s.GetLiveServicesWithBookingRef(ctx, "occupancy_id_1")
@@ -102,10 +109,12 @@ func TestGetServicesWithBookingRef(t *testing.T) {
 		{
 			ServiceID:  "service_id_1",
 			BookingRef: "ref",
+			DeletedAt:  nil,
 		},
 		{
 			ServiceID:  "service_id_2",
-			BookingRef: "",
+			BookingRef: "ref2",
+			DeletedAt:  &tmstp,
 		},
 	}
 	assert.Equal(expected, serviceBookingRef)
