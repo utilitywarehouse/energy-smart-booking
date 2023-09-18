@@ -155,6 +155,10 @@ func getStatusFromError(formatMessage, endpoint string, err error) error {
 		metrics.LBErrorsCount.WithLabelValues(metrics.AppointmentOutOfRange, endpoint).Inc()
 		return status.Errorf(codes.OutOfRange, formatMessage, err)
 
+	case errors.Is(err, mapper.ErrInternalError):
+		metrics.LBErrorsCount.WithLabelValues(metrics.Internal, endpoint).Inc()
+		return status.Errorf(codes.Internal, formatMessage, err)
+
 	default:
 		if invErr, ok := err.(*mapper.InvalidRequestError); ok {
 			invReqError, err := createInvalidRequestError(formatMessage, endpoint, invErr)

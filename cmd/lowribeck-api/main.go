@@ -19,6 +19,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/go-operational/op"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
@@ -173,12 +174,13 @@ func lowribeckChecker(ctx context.Context, healthCheckFn func(context.Context) e
 	return func(cr *op.CheckResponse) {
 		err := healthCheckFn(ctx)
 		if err != nil {
+			metrics.LBAPIRunning.Set(0.0)
 			log.Debugf("health check got error: %s", err)
 			cr.Unhealthy("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
 
 			return
 		}
-
+		metrics.LBAPIRunning.Set(1.0)
 		cr.Healthy("LowriBeck connection is healthy")
 	}
 }

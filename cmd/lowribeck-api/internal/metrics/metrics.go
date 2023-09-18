@@ -15,6 +15,7 @@ const (
 	AppointmentNotFound      = "appointment_not_found"
 	AppointmentAlreadyExists = "appointment_already_exists"
 	AppointmentOutOfRange    = "appointment_out_of_range"
+	Internal                 = "internal"
 	Unknown                  = "unknown"
 	InvalidPostcode          = "invalid_postcode"
 	InvalidReference         = "invalid_reference"
@@ -29,3 +30,8 @@ const (
 	GetAvailableSlots = "get_available_slots"
 	CreateBooking     = "create_booking"
 )
+
+var LBAPIRunning = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "lb_api_running",
+	Help: "yes or no (1,0) the LB API is currently running",
+})

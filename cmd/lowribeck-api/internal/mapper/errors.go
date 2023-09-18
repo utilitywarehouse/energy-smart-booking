@@ -10,6 +10,7 @@ var (
 	ErrAppointmentOutOfRange    = errors.New("appointment out of range")
 	ErrAppointmentAlreadyExists = errors.New("appointment already exists")
 	ErrInternalError            = errors.New("internal server error")
+	ErrUnknownError             = errors.New("unknown error")
 )
 
 type InvalidType string
