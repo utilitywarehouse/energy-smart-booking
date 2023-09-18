@@ -88,7 +88,7 @@ func TestGetServicesWithBookingRef(t *testing.T) {
 	assert := assert.New(t)
 
 	s := NewService(connect(ctx))
-	tmstp := time.Now().UTC()
+	tmstp := time.Date(2023, time.January, 12, 10, 0, 0, 0, time.UTC)
 
 	_, err := s.pool.Exec(ctx, `
 		INSERT INTO services(id, mpxn, occupancy_id, supply_type, is_live)
