@@ -166,7 +166,7 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 		case "Work Reference Invalid":
 			return NewInvalidRequestError(InvalidReference)
 		case "Insufficient notice to rearrange this appointment.":
-			return ErrInternalError
+			return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 		}
 	}
 	return fmt.Errorf("%w [%s]", ErrUnknownError, responseMessage)

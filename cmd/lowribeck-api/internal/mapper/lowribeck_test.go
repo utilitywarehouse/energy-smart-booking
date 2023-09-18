@@ -137,9 +137,9 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 			desc: "Failed - invalid request response 3",
 			lb: &lowribeck.GetCalendarAvailabilityResponse{
 				ResponseCode:    "EA03",
-				ResponseMessage: "Not available as site is complete",
+				ResponseMessage: "Insufficient notice to rearrange this appointment.",
 			},
-			expectedError: fmt.Errorf("internal server error [Not available as site is complete]"),
+			expectedError: fmt.Errorf("internal server error [Insufficient notice to rearrange this appointment.]"),
 		},
 		{
 			desc: "Failed - generic response",
@@ -148,7 +148,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 				ResponseCode:    "EC04",
 				ResponseMessage: "Generic LB error for failed to process request",
 			},
-			expectedError: fmt.Errorf("internal server error [Generic LB error for failed to process request]"),
+			expectedError: fmt.Errorf("unknown error [Generic LB error for failed to process request]"),
 		},
 	}
 
