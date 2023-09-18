@@ -159,7 +159,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 				hasBookingRef := len(serviceBookingRef) > 0
 				for _, s := range serviceBookingRef {
-					if s.BookingRef == "" {
+					if s.BookingRef == "" || s.DeletedAt != nil {
 						hasBookingRef = false
 						break
 					}
@@ -265,7 +265,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		span.AddEvent("service-booking-references", trace.WithAttributes(serviceBookingRefAttr))
 
 		for _, s := range serviceBookingRef {
-			if s.BookingRef == "" {
+			if s.BookingRef == "" || s.DeletedAt != nil {
 				eligible = false
 				break
 			}

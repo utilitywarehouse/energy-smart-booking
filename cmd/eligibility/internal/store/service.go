@@ -33,6 +33,7 @@ type Service struct {
 type ServiceBookingRef struct {
 	ServiceID  string
 	BookingRef string
+	DeletedAt  *time.Time
 }
 
 func NewService(pool *pgxpool.Pool) *ServiceStore {
@@ -144,13 +145,12 @@ func (s *ServiceStore) LoadLiveServicesByOccupancyID(ctx context.Context, occupa
 
 func (s *ServiceStore) GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]ServiceBookingRef, error) {
 	q := `
-	SELECT s.id, b.reference
+	SELECT s.id, b.reference, b.deleted_at
 	FROM services s 
 	LEFT JOIN booking_references b
 	ON s.mpxn = b.mpxn
 	WHERE s.occupancy_id = $1
-	AND s.is_live is true 
-	AND b.deleted_at IS NULL;`
+	AND s.is_live is true;`
 
 	rows, err := s.pool.Query(ctx, q, occupancyID)
 	if err != nil {
@@ -164,14 +164,19 @@ func (s *ServiceStore) GetLiveServicesWithBookingRef(ctx context.Context, occupa
 		var (
 			serviceBookingRef ServiceBookingRef
 			bookingRef        sql.NullString
+			deletedAt         sql.NullTime
 		)
 		if err = rows.Scan(
 			&serviceBookingRef.ServiceID,
-			&bookingRef); err != nil {
+			&bookingRef,
+			&deletedAt); err != nil {
 			return nil, err
 		}
 		if bookingRef.Valid {
 			serviceBookingRef.BookingRef = bookingRef.String
+		}
+		if deletedAt.Valid {
+			serviceBookingRef.DeletedAt = &deletedAt.Time
 		}
 		refs = append(refs, serviceBookingRef)
 	}
