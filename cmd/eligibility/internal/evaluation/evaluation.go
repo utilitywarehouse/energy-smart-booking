@@ -218,11 +218,6 @@ func (e *Evaluator) publishSmartBookingJourneyEligibilityIfNeeded(ctx context.Co
 		return fmt.Errorf("failed to check booking ref for services of occupancy ID %s: %w", occupancy.ID, err)
 	}
 
-	// no need to publish if there are no live services
-	if len(serviceBookingRef) == 0 {
-		return nil
-	}
-
 	hasBookingRef := len(serviceBookingRef) > 0
 	for _, s := range serviceBookingRef {
 		if s.BookingRef == "" || s.DeletedAt != nil {
