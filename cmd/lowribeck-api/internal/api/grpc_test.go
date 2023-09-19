@@ -480,6 +480,44 @@ func Test_CreateBooking(t *testing.T) {
 	}
 }
 
+func Test_CreateBooking_ClientError(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	errorMessage := "received status code [500] (expected 200): Internal error has occurred, could not complete appointmentManagement CreateBooking request. The error has been logged."
+
+	mAuth.EXPECT().Authorize(ctx,
+		&auth.PolicyParams{
+			Action:     "create",
+			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			ResourceID: "lowribeck-api",
+		}).Return(true, nil)
+
+	req := &lowribeck.CreateBookingRequest{
+		PostCode:    "postcode",
+		ReferenceID: "reference",
+		CreatedDate: time.Now().UTC().Format("02/01/2006 15:04:05"),
+	}
+	mapper.bookingRequest = req
+
+	client.EXPECT().CreateBooking(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+
+	_, err := myAPIHandler.CreateBooking(ctx, &contract.CreateBookingRequest{
+		Postcode:  "postcode",
+		Reference: "reference",
+	})
+
+	assert.EqualError(err, "rpc error: code = Internal desc = error making booking request: "+errorMessage)
+}
+
 func Test_CreateBooking_Unauthorised(t *testing.T) {
 
 	testCases := []struct {
