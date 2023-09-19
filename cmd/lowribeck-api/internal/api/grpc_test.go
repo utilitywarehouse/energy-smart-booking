@@ -429,9 +429,22 @@ func Test_CreateBooking(t *testing.T) {
 			},
 		},
 		{
+			desc:          "Internal error",
+			mapperErr:     fmt.Errorf("%w [%s]", mapper.ErrInternalError, "Insufficient notice to rearrange this appointment."),
+			expectedError: status.Error(codes.Internal, "error making booking request: internal server error [Insufficient notice to rearrange this appointment.]"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
+			},
+		},
+		{
 			desc:          "Unknown error",
-			mapperErr:     fmt.Errorf("unknown"),
-			expectedError: status.Error(codes.Internal, "error making booking request: unknown"),
+			mapperErr:     mapper.ErrUnknownError,
+			expectedError: status.Error(codes.Internal, "error making booking request: unknown error"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
