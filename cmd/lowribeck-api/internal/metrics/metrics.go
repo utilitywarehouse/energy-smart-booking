@@ -16,6 +16,7 @@ const (
 	AppointmentAlreadyExists = "appointment_already_exists"
 	AppointmentOutOfRange    = "appointment_out_of_range"
 	Internal                 = "internal"
+	LBStatus                 = "lb_status"
 	Unknown                  = "unknown"
 	InvalidPostcode          = "invalid_postcode"
 	InvalidReference         = "invalid_reference"

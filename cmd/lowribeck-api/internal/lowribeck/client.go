@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/metrics"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -125,6 +126,7 @@ func (c *Client) DoRequest(ctx context.Context, req LBRequest, endpoint string) 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
 		logrus.Error(statusErr)
+		metrics.LBErrorsCount.WithLabelValues(metrics.LBStatus, endpoint).Inc()
 		return nil, statusErr
 	}
 
