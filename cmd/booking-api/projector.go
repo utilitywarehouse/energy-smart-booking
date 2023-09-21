@@ -56,10 +56,6 @@ func init() {
 				EnvVars: []string{"PLATFORM_KAFKA_CONSUMER_GROUP"},
 			},
 			&cli.StringFlag{
-				Name:    flagBookingRefTopic,
-				EnvVars: []string{"BOOKING_REFERENCE_TOPIC"},
-			},
-			&cli.StringFlag{
 				Name:    flagOccupancyEligibleTopic,
 				EnvVars: []string{"OCCUPANCY_ELIGIBLE_TOPIC"},
 			},
@@ -190,11 +186,6 @@ func projectorAction(c *cli.Context) error {
 			FlagTopic: app.ServiceStateTopic,
 			BatchSize: batchSize,
 			Handler:   consumer.HandleServiceState(store.NewService(pool)),
-		},
-		{
-			FlagTopic: flagBookingRefTopic,
-			BatchSize: batchSize,
-			Handler:   consumer.HandleBookingReference(store.NewBookingReference(pool)),
 		},
 		{
 			FlagTopic: flagBookingTopic,

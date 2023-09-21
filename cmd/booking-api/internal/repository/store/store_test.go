@@ -63,13 +63,6 @@ func populateDB(ctx context.Context, pool *pgxpool.Pool) error {
 		VALUES
 			('service-id-001G', 'mpxn-ref#1', 'occupancy-id-ref-test', 'gas', 'account-id', NOW(), NOW(), true),
 			('service-id-001E', 'mpxn-ref#2', 'occupancy-id-ref-test', 'electricity', 'account-id', NOW(), NOW(), true);
-
-		INSERT INTO booking_reference (mpxn, reference)
-		VALUES ('mpxn', 'reference');
-
-		INSERT INTO booking_reference (mpxn, reference)
-		VALUES ('mpxn-ref#1', 'ref#1'),
-			('mpxn-ref#2', 'ref#2');
 	`,
 	)
 
