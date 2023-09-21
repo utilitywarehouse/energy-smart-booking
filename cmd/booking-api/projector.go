@@ -32,8 +32,6 @@ var (
 	flagPlatformKafkaVersion       = "platform-kafka-version"
 	flagPlatformKafkaConsumerGroup = "platform-kafka-consumer-group"
 
-	flagBookingRefTopic = "booking-reference-topic"
-
 	flagOccupancyEligibleTopic = "occupancy-eligible-topic"
 )
 
@@ -142,7 +140,6 @@ func projectorAction(c *cli.Context) error {
 				FlagVersion:       app.KafkaVersion,
 				FlagConsumerGroup: app.KafkaConsumerGroup,
 				FlagsTopic: []string{
-					flagBookingRefTopic,
 					flagBookingTopic,
 					flagOccupancyEligibleTopic,
 				},
