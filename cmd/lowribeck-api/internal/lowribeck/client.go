@@ -116,6 +116,8 @@ func (c *Client) DoRequest(ctx context.Context, req LBRequest, endpoint string) 
 	}
 	defer resp.Body.Close()
 
+	metrics.LBResponseCount.WithLabelValues(resp.Status, endpoint).Inc()
+
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read body: %w", err)
@@ -160,6 +162,8 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 		return fmt.Errorf("unable to do healtcheck http request: %w", err)
 	}
 	defer resp.Body.Close()
+
+	metrics.LBResponseCount.WithLabelValues(resp.Status, healthCheckURL).Inc()
 
 	switch resp.StatusCode {
 	case http.StatusOK:

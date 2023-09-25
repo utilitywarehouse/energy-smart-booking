@@ -36,3 +36,8 @@ var LBAPIRunning = promauto.NewGauge(prometheus.GaugeOpts{
 	Name: "lb_api_running",
 	Help: "yes or no (1,0) the LB API is currently running",
 })
+
+var LBResponseCount = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "lb_responses_total",
+	Help: "the status code returned from each LB request",
+}, []string{"code", "endpoint"})
