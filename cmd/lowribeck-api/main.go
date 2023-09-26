@@ -176,11 +176,8 @@ func lowribeckChecker(ctx context.Context, healthCheckFn func(context.Context) e
 		if err != nil {
 			metrics.LBAPIRunning.Set(0.0)
 			log.Debugf("health check got error: %s", err)
-			cr.Unhealthy("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider", "booking management and booking slots compromised")
-
 			return
 		}
 		metrics.LBAPIRunning.Set(1.0)
-		cr.Healthy("LowriBeck connection is healthy")
 	}
 }
