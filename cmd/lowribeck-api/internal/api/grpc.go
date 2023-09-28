@@ -68,12 +68,13 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	availabilityReq := l.mapper.AvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {
+		logrus.Errorf("error making get available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
 		return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.AvailableSlotsResponse(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error making get available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
+		logrus.Errorf("error mapping get available slots response(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
 		return nil, getStatusFromError("error making get available slots request: %v", metrics.GetAvailableSlots, mappedErr)
 	}
 	return mappedResp, nil
@@ -99,12 +100,13 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	}
 	resp, err := l.client.CreateBooking(ctx, bookingReq)
 	if err != nil {
+		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
 		return nil, status.Errorf(codes.Internal, "error making booking request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.BookingResponse(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
+		logrus.Errorf("error mapping booking response(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
 		return nil, getStatusFromError("error making booking request: %v", metrics.CreateBooking, mappedErr)
 	}
 	return mappedResp, nil
