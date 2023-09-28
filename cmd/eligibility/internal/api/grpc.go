@@ -73,7 +73,7 @@ func NewEligibilityGRPCApi(
 	}
 }
 
-func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountEligibilityForSmartBookingRequest) (_ *smart_booking.GetAccountEligibilityForSmartBookingResponse, err error) {
+func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountEligibleForSmartBookingRequest) (_ *smart_booking.GetAccountEligibleForSmartBookingResponse, err error) {
 	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountEligibleForSmartBooking",
 		trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 	)
@@ -102,7 +102,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 	// an account which has opted out of smart booking should not be considered eligible to go through the journey
 	if account.OptOut {
-		return &smart_booking.GetAccountEligibilityForSmartBookingResponse{
+		return &smart_booking.GetAccountEligibleForSmartBookingResponse{
 			AccountId: req.AccountId,
 			Eligible:  false,
 		}, nil
@@ -168,7 +168,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 					span.AddEvent("get-eligibility", trace.WithAttributes(
 						attribute.String("reasons", fmt.Sprintf("%v", reasons)),
 						attribute.Bool("eligible", eligible)))
-					return &smart_booking.GetAccountEligibilityForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
+					return &smart_booking.GetAccountEligibleForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
 				}
 			}
 
@@ -190,14 +190,14 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 	}
 
-	return &smart_booking.GetAccountEligibilityForSmartBookingResponse{
+	return &smart_booking.GetAccountEligibleForSmartBookingResponse{
 		AccountId:         req.AccountId,
 		Eligible:          false,
 		IneligibleReasons: protoReasons,
 	}, nil
 }
 
-func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibilityForSmartBookingRequest) (_ *smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse, err error) {
+func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibleForSmartBookingRequest) (_ *smart_booking.GetAccountOccupancyEligibleForSmartBookingResponse, err error) {
 	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountOccupancyEligibleForSmartBooking",
 		trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		trace.WithAttributes(attribute.String("occupancy.id", req.GetOccupancyId())),
@@ -227,7 +227,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 
 	// an account which has opted out of smart booking should not be considered eligible to go through the journey
 	if account.OptOut {
-		return &smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse{
+		return &smart_booking.GetAccountOccupancyEligibleForSmartBookingResponse{
 			AccountId:   req.AccountId,
 			OccupancyId: req.OccupancyId,
 			Eligible:    false,
@@ -277,7 +277,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		attribute.String("suppliability.reasons", fmt.Sprintf("%v", suppliability.Reasons)),
 		attribute.Bool("eligible", eligible)))
 
-	return &smart_booking.GetAccountOccupancyEligibilityForSmartBookingResponse{
+	return &smart_booking.GetAccountOccupancyEligibleForSmartBookingResponse{
 		AccountId:   req.AccountId,
 		OccupancyId: req.OccupancyId,
 		Eligible:    eligible,

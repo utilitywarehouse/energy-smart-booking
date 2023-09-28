@@ -746,8 +746,8 @@ github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b h1
 github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b/go.mod h1:ibrXoopS3Y9/lTl/Z5vAxPdrAjIRSJgp8B6hZMcgGVM=
 github.com/utilitywarehouse/energy-contracts v1.40.5/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
 github.com/utilitywarehouse/energy-contracts v1.40.6/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
-github.com/utilitywarehouse/energy-contracts v1.89.0 h1:kkralxU6RSU426I2fa0UMO9Kf3qDTd0hBnJuWws+2rI=
-github.com/utilitywarehouse/energy-contracts v1.89.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.97.0 h1:CfphYCfNCPEpeNWAr/YeVqVQQG7HuO9P6zEJ7VSWM9o=
+github.com/utilitywarehouse/energy-contracts v1.97.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32 h1:AQf3esEkg/rPxiO97HniPIA7c+bSNz+U0v2NueFZkN0=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32/go.mod h1:2Hlz8GeCkNq5V/VXHL/SuEPieOtGpvrADHc84ukqqe8=
 github.com/utilitywarehouse/energy-pkg/domain v1.17.1/go.mod h1:kQ151K87dOXjiyHgKQ0lAf/tY7xMlXd+s0KsMlFyE34=
@@ -767,8 +767,8 @@ github.com/utilitywarehouse/energy-pkg/postgres v0.3.5 h1:fBO7f9bKFpKrRkZVRnJsrf
 github.com/utilitywarehouse/energy-pkg/postgres v0.3.5/go.mod h1:2+pigd0VcosSO5oIHVH3A66RyFZY5/e8kwp5pzDHT74=
 github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3 h1:fhz60+/P4uqYAeAsh+2cUTcTETgKC9cf3AKmaRU+d2Y=
 github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3/go.mod h1:AxnZUCs4zxWluliX1hKCtwfh2LhXI43dwuKywwYoCOQ=
-github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16 h1:USDAvGertU4+NxBr0EQwMIHoMG74qzA1SgsKhjI6orI=
-github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.0.16/go.mod h1:bw2x7AyJ01Ip7NqlMhVvtcwIQbt3S2zv+ZoijfsYCC0=
+github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.1.3 h1:6YrAqB9Sb9pAZ/2leiSNSHAK/K45kj+1tZespKnFcZM=
+github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.1.3/go.mod h1:mHG2jQXnCZ1W3zLiCuM5ZPkjz/vbsAiqMBHonl5mNEs=
 github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543 h1:9FhFDvYCbsKhHO4mLJbmb3dFroInvausfvYu8yZJpJE=
 github.com/utilitywarehouse/go-operational v0.0.0-20190722153447-b0f3f6284543/go.mod h1:FY7ihaXC85xcuUAR65IDK3jGuDMJGeu/rGvDN3SGO2w=
 github.com/utilitywarehouse/go-ops-health-checks v0.0.0-20190620125157-116dc5b340a8 h1:ijDt1b+z/RFlW7WQtSmWNzc7rahgagCo30fLjv+BC9U=

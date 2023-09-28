@@ -8,7 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
-	"github.com/utilitywarehouse/energy-contracts/pkg/generated/smart"
+	smart "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
 	"github.com/utilitywarehouse/energy-pkg/substratemessage"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
