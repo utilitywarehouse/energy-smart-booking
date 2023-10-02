@@ -167,7 +167,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 				if hasBookingRef {
 					span.AddEvent("get-eligibility", trace.WithAttributes(
 						attribute.String("reasons", fmt.Sprintf("%v", reasons)),
-						attribute.Bool("eligible", eligible)))
+						attribute.Bool("eligible", true)))
 					return &smart_booking.GetAccountEligibleForSmartBookingResponse{AccountId: req.AccountId, Eligible: true}, nil
 				}
 			}
@@ -182,7 +182,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 	span.AddEvent("get-eligibility", trace.WithAttributes(
 		attribute.String("reasons", fmt.Sprintf("%v", reasons)),
-		attribute.Bool("eligible", eligible)))
+		attribute.Bool("eligible", false)))
 
 	protoReasons, err := reasons.MapToProto()
 	if err != nil {
