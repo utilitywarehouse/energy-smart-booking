@@ -18,8 +18,8 @@ var (
 	ErrAccountNotFound = errors.New("account was not found")
 )
 
-var AccountAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
-	Name: "account_api_response_total",
+var accountAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "booking_api_account_response_total",
 	Help: "The number of account api error responses made by status code",
 }, []string{"status"})
 
@@ -40,7 +40,7 @@ func (c AccountGateway) GetAccountByAccountID(ctx context.Context, accountID str
 	})
 	if err != nil {
 		code := status.Convert(err).Code()
-		AccountAPIResponses.WithLabelValues(code.String()).Inc()
+		accountAPIResponses.WithLabelValues(code.String()).Inc()
 		switch code {
 		case codes.NotFound:
 			return models.Account{}, fmt.Errorf("%w, %w", ErrAccountNotFound, err)
