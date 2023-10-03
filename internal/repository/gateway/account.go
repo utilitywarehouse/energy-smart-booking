@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/grpc/codes"
@@ -15,6 +17,11 @@ var (
 	ErrEmptyAddress    = errors.New("account address is empty")
 	ErrAccountNotFound = errors.New("account was not found")
 )
+
+var AccountAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "account_api_response_total",
+	Help: "The number of account api error responses made by status code",
+}, []string{"status"})
 
 type AccountGateway struct {
 	mai    MachineAuthInjector
@@ -32,7 +39,9 @@ func (c AccountGateway) GetAccountByAccountID(ctx context.Context, accountID str
 		AccountId: accountID,
 	})
 	if err != nil {
-		switch status.Convert(err).Code() {
+		code := status.Convert(err).Code()
+		AccountAPIResponses.WithLabelValues(code.String()).Inc()
+		switch code {
 		case codes.NotFound:
 			return models.Account{}, fmt.Errorf("%w, %w", ErrAccountNotFound, err)
 		default:
