@@ -19,7 +19,7 @@ func Test_GetCalendarAvailability_PointOfSale(t *testing.T) {
 			t.Errorf("Expected to request '/appointmentManagement/getCalendarAvailability', got: %s", r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"Mpan": "mpan-1", "Mprn": "mprn-1", "ElecJobTypeCode": "210", "GasJobTypeCode": "410", "CalendarAvailabilityResult": [{"AppointmentDate": "12/12/2012", "AppointmentTime": "12:00-14:00"}] }`))
+		w.Write([]byte(`{"ResponseCode": "B01", "Mpan": "mpan-1", "Mprn": "mprn-1", "ElecJobTypeCode": "210", "GasJobTypeCode": "410", "CalendarAvailabilityResult": [{"AppointmentDate": "12/12/2012", "AppointmentTime": "12:00-14:00"}] }`))
 	}))
 	defer server.Close()
 
@@ -38,6 +38,7 @@ func Test_GetCalendarAvailability_PointOfSale(t *testing.T) {
 				AppointmentTime: "12:00-14:00",
 			},
 		},
+		ResponseCode: "B01",
 	}
 
 	resp, err := client.GetCalendarAvailabilityPointOfSale(context.Background(), &lowribeck.GetCalendarAvailabilityRequest{
@@ -66,7 +67,7 @@ func Test_GetCalendarAvailability(t *testing.T) {
 			t.Errorf("Expected to request '/appointmentManagement/getCalendarAvailability', got: %s", r.URL.Path)
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"CalendarAvailabilityResult": [{"AppointmentDate": "12/12/2012", "AppointmentTime": "12:00-14:00"}] }`))
+		w.Write([]byte(`{"ResponseCode": "B01", "CalendarAvailabilityResult": [{"AppointmentDate": "12/12/2012", "AppointmentTime": "12:00-14:00"}] }`))
 	}))
 	defer server.Close()
 
@@ -81,6 +82,7 @@ func Test_GetCalendarAvailability(t *testing.T) {
 				AppointmentTime: "12:00-14:00",
 			},
 		},
+		ResponseCode: "B01",
 	}
 
 	resp, err := client.GetCalendarAvailability(context.Background(), &lowribeck.GetCalendarAvailabilityRequest{
