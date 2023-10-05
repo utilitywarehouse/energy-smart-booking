@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
+	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
@@ -153,7 +154,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 	}
 
 	assert := assert.New(t)
-	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem")
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "", "", "", "")
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -236,7 +237,7 @@ func TestMapBookingRequest(t *testing.T) {
 	}
 
 	assert := assert.New(t)
-	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem")
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "", "", "", "")
 
 	for i, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -338,7 +339,7 @@ func TestMapBookingResponse(t *testing.T) {
 	}
 
 	assert := assert.New(t)
-	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem")
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "", "", "", "")
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -352,4 +353,371 @@ func TestMapBookingResponse(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
+
+	type inputParams struct {
+		id  uint32
+		req *contract.GetAvailableSlotsPointOfSaleRequest
+	}
+
+	testCases := []struct {
+		desc          string
+		input         inputParams
+		expected      *lowribeck.GetCalendarAvailabilityRequest
+		expectedError error
+	}{
+		{
+			desc: "Success - Electricity Credit - No MPRN",
+			input: inputParams{
+				id: 1,
+				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  nil,
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         nil,
+				},
+			},
+			expected: &lowribeck.GetCalendarAvailabilityRequest{
+				RequestID:       "1",
+				SendingSystem:   "sendingSystem",
+				ReceivingSystem: "receivingSystem",
+				PostCode:        "ZE 11",
+				Mpan:            "mpan-1",
+				Mprn:            "",
+				ElecJobTypeCode: "crElec",
+				GasJobTypeCode:  "",
+				CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+		{
+			desc: "Success - Electricity Prepayment - No MPRN",
+			input: inputParams{
+				id: 1,
+				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  nil,
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+					GasTariffType:         nil,
+				},
+			},
+			expected: &lowribeck.GetCalendarAvailabilityRequest{
+				RequestID:       "1",
+				SendingSystem:   "sendingSystem",
+				ReceivingSystem: "receivingSystem",
+				PostCode:        "ZE 11",
+				Mpan:            "mpan-1",
+				Mprn:            "",
+				ElecJobTypeCode: "ppmElec",
+				GasJobTypeCode:  "",
+				CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+		{
+			desc: "Success - Electricity Credit - Credit Gas",
+			input: inputParams{
+				id: 1,
+				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  strToPtr("mprn-1"),
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+				},
+			},
+			expected: &lowribeck.GetCalendarAvailabilityRequest{
+				RequestID:       "1",
+				SendingSystem:   "sendingSystem",
+				ReceivingSystem: "receivingSystem",
+				PostCode:        "ZE 11",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "crElec",
+				GasJobTypeCode:  "crGas",
+				CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+		{
+			desc: "Success - Electricity Credit - Credit Gas",
+			input: inputParams{
+				id: 1,
+				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  strToPtr("mprn-1"),
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT),
+				},
+			},
+			expected: &lowribeck.GetCalendarAvailabilityRequest{
+				RequestID:       "1",
+				SendingSystem:   "sendingSystem",
+				ReceivingSystem: "receivingSystem",
+				PostCode:        "ZE 11",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "crElec",
+				GasJobTypeCode:  "ppmGas",
+				CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "crElec", "ppmElec", "crGas", "ppmGas")
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			res := lbMapper.AvailabilityRequestPointOfSale(tc.input.id, tc.input.req)
+			diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported(), cmpopts.EquateApproxTime(time.Second))
+			assert.Empty(diff, tc.desc)
+		})
+	}
+}
+
+func TestMapBookingPointOfSaleResponse(t *testing.T) {
+
+	type inputParams struct {
+		id  uint32
+		req *contract.CreateBookingPointOfSaleRequest
+	}
+
+	testCases := []struct {
+		desc          string
+		input         inputParams
+		expected      *lowribeck.CreateBookingRequest
+		expectedError error
+	}{
+		{
+			desc: "Success - Electricity Credit - No MPRN",
+			input: inputParams{
+				id: 1,
+				req: &contract.CreateBookingPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  nil,
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         nil,
+					Slot: &contract.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 12,
+							Day:   13,
+						},
+						StartTime: 10,
+						EndTime:   12,
+					},
+					VulnerabilityDetails: &contract.VulnerabilityDetails{
+						Vulnerabilities: []contract.Vulnerability{
+							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Other Vuln",
+					},
+					ContactDetails: &contract.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "2002-2001",
+					},
+				},
+			},
+			expected: &lowribeck.CreateBookingRequest{
+				RequestID:            "1",
+				SendingSystem:        "sendingSystem",
+				ReceivingSystem:      "receivingSystem",
+				AppointmentDate:      "13/12/2020",
+				AppointmentTime:      "10:00-12:00",
+				PostCode:             "ZE 11",
+				Mpan:                 "mpan-1",
+				Mprn:                 "",
+				ElecJobTypeCode:      "crElec",
+				GasJobTypeCode:       "",
+				Vulnerabilities:      "6",
+				VulnerabilitiesOther: "Other Vuln",
+				SiteContactName:      "Mr John Doe",
+				SiteContactNumber:    "2002-2001",
+				CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+		{
+			desc: "Success - Electricity Prepayment - No MPRN",
+			input: inputParams{
+				id: 1,
+				req: &contract.CreateBookingPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  nil,
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+					GasTariffType:         nil,
+					Slot: &contract.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 12,
+							Day:   13,
+						},
+						StartTime: 10,
+						EndTime:   12,
+					},
+					VulnerabilityDetails: &contract.VulnerabilityDetails{
+						Vulnerabilities: []contract.Vulnerability{
+							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Other Vuln",
+					},
+					ContactDetails: &contract.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "2002-2001",
+					},
+				},
+			},
+			expected: &lowribeck.CreateBookingRequest{
+				RequestID:            "1",
+				SendingSystem:        "sendingSystem",
+				ReceivingSystem:      "receivingSystem",
+				AppointmentDate:      "13/12/2020",
+				AppointmentTime:      "10:00-12:00",
+				PostCode:             "ZE 11",
+				Mpan:                 "mpan-1",
+				Mprn:                 "",
+				ElecJobTypeCode:      "ppmElec",
+				GasJobTypeCode:       "",
+				Vulnerabilities:      "6",
+				VulnerabilitiesOther: "Other Vuln",
+				SiteContactName:      "Mr John Doe",
+				SiteContactNumber:    "2002-2001",
+				CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+		{
+			desc: "Success - Electricity Credit - Gas Credit",
+			input: inputParams{
+				id: 1,
+				req: &contract.CreateBookingPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  strToPtr("mprn-1"),
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+					Slot: &contract.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 12,
+							Day:   13,
+						},
+						StartTime: 10,
+						EndTime:   12,
+					},
+					VulnerabilityDetails: &contract.VulnerabilityDetails{
+						Vulnerabilities: []contract.Vulnerability{
+							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Other Vuln",
+					},
+					ContactDetails: &contract.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "2002-2001",
+					},
+				},
+			},
+			expected: &lowribeck.CreateBookingRequest{
+				RequestID:            "1",
+				SendingSystem:        "sendingSystem",
+				ReceivingSystem:      "receivingSystem",
+				AppointmentDate:      "13/12/2020",
+				AppointmentTime:      "10:00-12:00",
+				PostCode:             "ZE 11",
+				Mpan:                 "mpan-1",
+				Mprn:                 "mprn-1",
+				ElecJobTypeCode:      "crElec",
+				GasJobTypeCode:       "crGas",
+				Vulnerabilities:      "6",
+				VulnerabilitiesOther: "Other Vuln",
+				SiteContactName:      "Mr John Doe",
+				SiteContactNumber:    "2002-2001",
+				CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+		{
+			desc: "Success - Electricity Credit - Prepayment Credit",
+			input: inputParams{
+				id: 1,
+				req: &contract.CreateBookingPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  strToPtr("mprn-1"),
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT),
+					Slot: &contract.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 12,
+							Day:   13,
+						},
+						StartTime: 10,
+						EndTime:   12,
+					},
+					VulnerabilityDetails: &contract.VulnerabilityDetails{
+						Vulnerabilities: []contract.Vulnerability{
+							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Other Vuln",
+					},
+					ContactDetails: &contract.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "2002-2001",
+					},
+				},
+			},
+			expected: &lowribeck.CreateBookingRequest{
+				RequestID:            "1",
+				SendingSystem:        "sendingSystem",
+				ReceivingSystem:      "receivingSystem",
+				AppointmentDate:      "13/12/2020",
+				AppointmentTime:      "10:00-12:00",
+				PostCode:             "ZE 11",
+				Mpan:                 "mpan-1",
+				Mprn:                 "mprn-1",
+				ElecJobTypeCode:      "crElec",
+				GasJobTypeCode:       "ppmGas",
+				Vulnerabilities:      "6",
+				VulnerabilitiesOther: "Other Vuln",
+				SiteContactName:      "Mr John Doe",
+				SiteContactNumber:    "2002-2001",
+				CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "crElec", "ppmElec", "crGas", "ppmGas")
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			res, err := lbMapper.BookingRequestPointOfSale(tc.input.id, tc.input.req)
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported(), cmpopts.EquateApproxTime(time.Second))
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
+		})
+	}
+}
+
+func strToPtr(s string) *string {
+	return &s
+}
+
+func tariffTypeToPtr(t bookingv1.TariffType) *bookingv1.TariffType {
+	return &t
 }

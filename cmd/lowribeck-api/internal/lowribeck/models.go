@@ -14,14 +14,8 @@ type GetCalendarAvailabilityRequest struct {
 	PostCode        string `json:"PostCode,omitempty"`
 	Mpan            string `json:"Mpan,omitempty"`
 	Mprn            string `json:"Mprn,omitempty"`
-}
-
-func (gca GetCalendarAvailabilityRequest) GetPostCode() string {
-	return gca.PostCode
-}
-
-func (gca GetCalendarAvailabilityRequest) GetReference() string {
-	return gca.ReferenceID
+	ElecJobTypeCode string `json:"ElecJobTypeCode,omitempty"`
+	GasJobTypeCode  string `json:"GasJobTypeCode,omitempty"`
 }
 
 type GetCalendarAvailabilityResponse struct {
@@ -71,14 +65,6 @@ type CreateBookingRequest struct {
 	PpmidGUID            string `json:"PpmidGuid,omitempty"`
 	CadGUID              string `json:"CadGuid,omitempty"`
 	HcalcsGUID           string `json:"HcalcsGuid,omitempty"`
-}
-
-func (gba CreateBookingRequest) GetPostCode() string {
-	return gba.PostCode
-}
-
-func (gba CreateBookingRequest) GetReference() string {
-	return gba.ReferenceID
 }
 
 type CreateBookingResponse struct {

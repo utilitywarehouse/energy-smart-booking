@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
+	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api/mocks"
@@ -589,6 +590,507 @@ func Test_CreateBooking_Unauthorised(t *testing.T) {
 	}
 }
 
+func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
+	now := time.Now().UTC().Format("02/01/2006 15:04:05")
+
+	testCases := []struct {
+		desc          string
+		req           *lowribeck.GetCalendarAvailabilityRequest
+		clientResp    *lowribeck.GetCalendarAvailabilityResponse
+		mapperErr     error
+		expected      *contract.GetAvailableSlotsPointOfSaleResponse
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth, *mocks.MockClient)
+	}{
+		{
+			desc: "Valid",
+			req: &lowribeck.GetCalendarAvailabilityRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "elec-job-type-code",
+				GasJobTypeCode:  "gas-job-type-code",
+				CreatedDate:     now,
+			},
+			clientResp: &lowribeck.GetCalendarAvailabilityResponse{
+				CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
+					{
+						AppointmentDate: "01/12/2023",
+						AppointmentTime: "10:00-12:00",
+					},
+				},
+			},
+			expected: &contract.GetAvailableSlotsPointOfSaleResponse{
+				Slots: []*contract.BookingSlot{
+					{
+						Date: &date.Date{
+							Year:  2023,
+							Month: 10,
+							Day:   1,
+						},
+						StartTime: 10,
+						EndTime:   12,
+					},
+				},
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
+				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, &lowribeck.GetCalendarAvailabilityRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "elec-job-type-code",
+					GasJobTypeCode:  "gas-job-type-code",
+					CreatedDate:     now,
+				}).Return(&lowribeck.GetCalendarAvailabilityResponse{
+					CalendarAvailabilityResult: []lowribeck.AvailabilitySlot{
+						{
+							AppointmentDate: "01/12/2023",
+							AppointmentTime: "10:00-12:00",
+						},
+					},
+				}, nil)
+			},
+		},
+		{
+			desc:          "Invalid postcode",
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidPostcode),
+			expectedError: status.Error(codes.InvalidArgument, "error making get available slots point of sale request: invalid request [postcode]"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
+				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+			},
+		},
+		{
+			desc:          "Appointment not found",
+			mapperErr:     mapper.ErrAppointmentNotFound,
+			expectedError: status.Error(codes.NotFound, "error making get available slots point of sale request: no appointments found"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
+				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+			},
+		},
+		{
+			desc:          "Appointment out of range",
+			mapperErr:     mapper.ErrAppointmentOutOfRange,
+			expectedError: status.Error(codes.OutOfRange, "error making get available slots point of sale request: appointment out of range"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
+				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+			},
+		},
+		{
+			desc:          "Unknown bad parameter",
+			mapperErr:     mapper.NewInvalidRequestError("something else"),
+			expectedError: status.Error(codes.InvalidArgument, "error making get available slots point of sale request: invalid request [something else]"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
+				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			mapperErr:     fmt.Errorf("%w [%s]", mapper.ErrInternalError, "Insufficient notice to rearrange this appointment."),
+			expectedError: status.Error(codes.Internal, "error making get available slots point of sale request: internal server error [Insufficient notice to rearrange this appointment.]"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
+				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+			},
+		},
+		{
+			desc:          "Unknown error",
+			mapperErr:     mapper.ErrUnknownError,
+			expectedError: status.Error(codes.Internal, "error making get available slots point of sale request: unknown error"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
+				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	mClient := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(mClient, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			mapper.availabilityRequest = tc.req
+			mapper.availabilityPointOfSaleResponse = tc.expected
+			mapper.availabilityError = tc.mapperErr
+
+			tc.setup(ctx, mAuth, mClient)
+
+			result, err := myAPIHandler.GetAvailableSlotsPointOfSale(ctx, &contract.GetAvailableSlotsPointOfSaleRequest{
+				Postcode:              "postcode",
+				Mpan:                  "mpan-1",
+				Mprn:                  strToPtr("mprn-1"),
+				ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+			})
+
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, result, protocmp.Transform(), cmpopts.IgnoreUnexported())
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
+		})
+	}
+}
+
+func Test_CreateBooking_PointOfSale(t *testing.T) {
+	now := time.Now().UTC().Format("02/01/2006 15:04:05")
+
+	testCases := []struct {
+		desc          string
+		req           *lowribeck.CreateBookingRequest
+		mapperErr     error
+		expected      *contract.CreateBookingPointOfSaleResponse
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth, *mocks.MockClient)
+	}{
+		{
+			desc: "Valid",
+			expected: &contract.CreateBookingPointOfSaleResponse{
+				Success: true,
+			},
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "B01",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Invalid postcode",
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidPostcode),
+			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [postcode]"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Invalid mpan",
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidMPAN),
+			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [mpan]"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Invalid mprn",
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidMPRN),
+			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [mprn]"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Invalid job type code",
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidJobTypeCode),
+			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [job type code]"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Invalid site",
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidSite),
+			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [site]"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Appointment not found",
+			mapperErr:     mapper.ErrAppointmentNotFound,
+			expectedError: status.Error(codes.NotFound, "error making booking point of sale request: no appointments found"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Appointment out of range",
+			mapperErr:     mapper.ErrAppointmentOutOfRange,
+			expectedError: status.Error(codes.OutOfRange, "error making booking point of sale request: appointment out of range"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Appointment already exists",
+			mapperErr:     mapper.ErrAppointmentAlreadyExists,
+			expectedError: status.Error(codes.AlreadyExists, "error making booking point of sale request: appointment already exists"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Unknown bad parameter",
+			mapperErr:     mapper.NewInvalidRequestError("something else"),
+			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [something else]"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			mapperErr:     fmt.Errorf("%w [%s]", mapper.ErrInternalError, "Insufficient notice to rearrange this appointment."),
+			expectedError: status.Error(codes.Internal, "error making booking point of sale request: internal server error [Insufficient notice to rearrange this appointment.]"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Unknown error",
+			mapperErr:     mapper.ErrUnknownError,
+			expectedError: status.Error(codes.Internal, "error making booking point of sale request: unknown error"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	mClient := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(mClient, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			mapper.bookingRequest = tc.req
+			mapper.bookingPointOfSaleResponse = tc.expected
+			mapper.bookingError = tc.mapperErr
+
+			tc.setup(ctx, mAuth, mClient)
+
+			result, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
+				Postcode:              "postcode",
+				Mpan:                  "mpan-1",
+				Mprn:                  strToPtr("mprn-1"),
+				ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+			})
+
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, result, protocmp.Transform(), cmpopts.IgnoreUnexported())
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
+		})
+	}
+}
+
 type fakeMapper struct {
 	availabilityRequest  *lowribeck.GetCalendarAvailabilityRequest
 	availabilityResponse *contract.GetAvailableSlotsResponse
@@ -596,6 +1098,9 @@ type fakeMapper struct {
 	bookingRequest       *lowribeck.CreateBookingRequest
 	bookingResponse      *contract.CreateBookingResponse
 	bookingError         error
+
+	availabilityPointOfSaleResponse *contract.GetAvailableSlotsPointOfSaleResponse
+	bookingPointOfSaleResponse      *contract.CreateBookingPointOfSaleResponse
 }
 
 func (f *fakeMapper) AvailabilityRequest(_ uint32, _ *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
@@ -616,4 +1121,34 @@ func (f *fakeMapper) BookingResponse(_ *lowribeck.CreateBookingResponse) (*contr
 		return nil, f.bookingError
 	}
 	return f.bookingResponse, nil
+}
+
+func (f *fakeMapper) AvailabilityRequestPointOfSale(_ uint32, _ *contract.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest {
+	return f.availabilityRequest
+}
+
+func (f *fakeMapper) BookingRequestPointOfSale(_ uint32, _ *contract.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error) {
+	return f.bookingRequest, nil
+}
+
+func (f *fakeMapper) AvailableSlotsPointOfSaleResponse(_ *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsPointOfSaleResponse, error) {
+	if f.availabilityError != nil {
+		return nil, f.availabilityError
+	}
+	return f.availabilityPointOfSaleResponse, nil
+}
+
+func (f *fakeMapper) BookingResponsePointOfSale(_ *lowribeck.CreateBookingResponse) (*contract.CreateBookingPointOfSaleResponse, error) {
+	if f.bookingError != nil {
+		return nil, f.bookingError
+	}
+	return f.bookingPointOfSaleResponse, nil
+}
+
+func strToPtr(s string) *string {
+	return &s
+}
+
+func tariffTypeToPtr(t bookingv1.TariffType) *bookingv1.TariffType {
+	return &t
 }
