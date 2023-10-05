@@ -166,25 +166,6 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *contract.CreateBoo
 	return request, nil
 }
 
-func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType bookingv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string) {
-
-	switch elecTariffType {
-	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
-		elecJobTypeCode = lb.CreditElectricityJobType
-	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
-		elecJobTypeCode = lb.PrepaymentElectricityJobType
-	}
-
-	switch gasTariffType {
-	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
-		gasJobTypeCode = lb.CreditGasJobType
-	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
-		gasJobTypeCode = lb.PrepaymentGasJobType
-	}
-
-	return elecJobTypeCode, gasJobTypeCode
-}
-
 func (lb LowriBeck) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
 	err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
 	if err != nil {
@@ -428,4 +409,23 @@ func mapContactName(contact *contract.ContactDetails) string {
 	contactName := strings.TrimSpace(contact.GetTitle() + " " + contact.GetFirstName())
 	return strings.TrimSpace(contactName + " " + contact.GetLastName())
 
+}
+
+func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType bookingv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string) {
+
+	switch elecTariffType {
+	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
+		elecJobTypeCode = lb.CreditElectricityJobType
+	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
+		elecJobTypeCode = lb.PrepaymentElectricityJobType
+	}
+
+	switch gasTariffType {
+	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
+		gasJobTypeCode = lb.CreditGasJobType
+	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
+		gasJobTypeCode = lb.PrepaymentGasJobType
+	}
+
+	return elecJobTypeCode, gasJobTypeCode
 }
