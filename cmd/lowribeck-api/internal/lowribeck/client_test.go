@@ -23,8 +23,6 @@ func Test_GetCalendarAvailability_PointOfSale(t *testing.T) {
 	}))
 	defer server.Close()
 
-	server.Client()
-
 	client := lowribeck.New(server.Client(), "", "", server.URL+"/")
 
 	assert := assert.New(t)
@@ -72,8 +70,6 @@ func Test_GetCalendarAvailability(t *testing.T) {
 	}))
 	defer server.Close()
 
-	server.Client()
-
 	client := lowribeck.New(server.Client(), "", "", server.URL+"/")
 
 	assert := assert.New(t)
@@ -114,8 +110,6 @@ func Test_CreateBooking(t *testing.T) {
 	}))
 	defer server.Close()
 
-	server.Client()
-
 	client := lowribeck.New(server.Client(), "", "", server.URL+"/")
 
 	assert := assert.New(t)
@@ -150,8 +144,6 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 		w.Write([]byte(`{"ResponseCode": "B01"}`))
 	}))
 	defer server.Close()
-
-	server.Client()
 
 	client := lowribeck.New(server.Client(), "", "", server.URL+"/")
 
