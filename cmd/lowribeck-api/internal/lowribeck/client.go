@@ -96,7 +96,7 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 
 	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(payload))))
 
-	responseBody, err := c.doRequest(ctx, payload, availabilityURL)
+	responseBody, err := c.doRequest(ctx, payload, bookingURL)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func (c *Client) CreateBookingPointOfSale(ctx context.Context, req *CreateBookin
 
 	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(payload))))
 
-	responseBody, err := c.doRequest(ctx, payload, availabilityURL)
+	responseBody, err := c.doRequest(ctx, payload, bookingURL)
 	if err != nil {
 		return nil, err
 	}

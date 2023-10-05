@@ -43,7 +43,7 @@ const (
 	// LowriBeck job type codes
 	electricityJobTypeCodeCredit     = "electricity-job-type-code-credit"
 	electricityJobTypeCodePrepayment = "electricity-job-type-code-prepayment"
-	gasJobTypeCodeCredit             = "gas-job-type-code-credit"
+	gasJobTypeCodeCredit             = "gas-job-type-code-credit" //nolint: gosec
 	gasJobTypeCodePrepayment         = "gas-job-type-code-prepayment"
 )
 
