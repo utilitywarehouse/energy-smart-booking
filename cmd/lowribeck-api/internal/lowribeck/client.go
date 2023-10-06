@@ -47,61 +47,146 @@ func New(c *http.Client, user, password, url string) *Client {
 	}
 }
 
-type LBRequest interface {
-	GetPostCode() string
-	GetReference() string
-}
-
-func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAvailabilityRequest) (*GetCalendarAvailabilityResponse, error) {
-	resp, err := c.DoRequest(ctx, req, availabilityURL)
-	if err != nil {
-		return nil, err
-	}
-
-	var ar GetCalendarAvailabilityResponse
-	if err = json.Unmarshal(resp, &ar); err != nil {
-		return nil, fmt.Errorf("unable to unmarshal body: %w", err)
-	}
-
-	return &ar, nil
-}
-
-func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (*CreateBookingResponse, error) {
-	resp, err := c.DoRequest(ctx, req, bookingURL)
-	if err != nil {
-		return nil, err
-	}
-
-	var br CreateBookingResponse
-	if err = json.Unmarshal(resp, &br); err != nil {
-		return nil, fmt.Errorf("unable to unmarshal body: %w", err)
-	}
-
-	return &br, nil
-}
-
-func (c *Client) DoRequest(ctx context.Context, req LBRequest, endpoint string) (_ []byte, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", endpoint),
-		trace.WithAttributes(attribute.String("postcode", req.GetPostCode())),
-		trace.WithAttributes(attribute.String("lowribeck.reference", req.GetReference())),
+func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAvailabilityRequest) (_ *GetCalendarAvailabilityResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", availabilityURL),
+		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
+		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
 	)
 	defer func() {
 		tracing.RecordSpanError(span, err)
 		span.End()
 	}()
 
-	body, err := json.Marshal(req)
+	payload, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal request: %w", err)
 	}
 
-	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(body))))
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(payload))))
+
+	responseBody, err := c.doRequest(ctx, payload, availabilityURL)
+	if err != nil {
+		return nil, err
+	}
+
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(responseBody))))
+
+	var ar GetCalendarAvailabilityResponse
+	if err = json.Unmarshal(responseBody, &ar); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal get calendar availability body: %w", err)
+	}
+
+	return &ar, nil
+}
+
+func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (_ *CreateBookingResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", bookingURL),
+		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
+		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
+	)
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
+
+	payload, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal request: %w", err)
+	}
+
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(payload))))
+
+	responseBody, err := c.doRequest(ctx, payload, bookingURL)
+	if err != nil {
+		return nil, err
+	}
+
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(responseBody))))
+
+	var br CreateBookingResponse
+	if err = json.Unmarshal(responseBody, &br); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal create booking response body: %w", err)
+	}
+
+	return &br, nil
+}
+
+func (c *Client) GetCalendarAvailabilityPointOfSale(ctx context.Context, req *GetCalendarAvailabilityRequest) (_ *GetCalendarAvailabilityResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", availabilityURL),
+		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
+		trace.WithAttributes(attribute.String("mpan", req.Mpan)),
+		trace.WithAttributes(attribute.String("mprn", req.Mprn)),
+		trace.WithAttributes(attribute.String("lowribeck.elecJobTypeCode", req.ElecJobTypeCode)),
+		trace.WithAttributes(attribute.String("lowribeck.gasJobTypeCode", req.GasJobTypeCode)),
+	)
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
+
+	payload, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal request: %w", err)
+	}
+
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(payload))))
+
+	responseBody, err := c.doRequest(ctx, payload, availabilityURL)
+	if err != nil {
+		return nil, err
+	}
+
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(responseBody))))
+
+	var ar GetCalendarAvailabilityResponse
+	if err = json.Unmarshal(responseBody, &ar); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal get calendar availability body: %w", err)
+	}
+
+	return &ar, nil
+}
+
+func (c *Client) CreateBookingPointOfSale(ctx context.Context, req *CreateBookingRequest) (_ *CreateBookingResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", bookingURL),
+		trace.WithAttributes(attribute.String("mpan", req.Mpan)),
+		trace.WithAttributes(attribute.String("mprn", req.Mprn)),
+		trace.WithAttributes(attribute.String("lowribeck.elecJobTypeCode", req.ElecJobTypeCode)),
+		trace.WithAttributes(attribute.String("lowribeck.gasJobTypeCode", req.GasJobTypeCode)),
+	)
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
+
+	payload, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal request: %w", err)
+	}
+
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(payload))))
+
+	responseBody, err := c.doRequest(ctx, payload, bookingURL)
+	if err != nil {
+		return nil, err
+	}
+
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(responseBody))))
+
+	var br CreateBookingResponse
+	if err = json.Unmarshal(responseBody, &br); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal create booking response body: %w", err)
+	}
+
+	return &br, nil
+}
+
+func (c *Client) doRequest(ctx context.Context, payload []byte, endpoint string) (_ []byte, err error) {
 
 	request, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
 		c.baseURL+endpoint,
-		bytes.NewReader(body),
+		bytes.NewReader(payload),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create new request: %w", err)
@@ -122,8 +207,6 @@ func (c *Client) DoRequest(ctx context.Context, req LBRequest, endpoint string) 
 	if err != nil {
 		return nil, fmt.Errorf("unable to read body: %w", err)
 	}
-
-	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(bodyBytes))))
 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
