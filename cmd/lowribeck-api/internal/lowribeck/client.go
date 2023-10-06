@@ -116,8 +116,8 @@ func (c *Client) GetCalendarAvailabilityPointOfSale(ctx context.Context, req *Ge
 		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
 		trace.WithAttributes(attribute.String("mpan", req.Mpan)),
 		trace.WithAttributes(attribute.String("mprn", req.Mprn)),
-		trace.WithAttributes(attribute.String("lowribeck.elecJobTypeCode", req.ElecJobTypeCode)),
-		trace.WithAttributes(attribute.String("lowribeck.gasJobTypeCode", req.GasJobTypeCode)),
+		trace.WithAttributes(attribute.String("lowribeck.elec_job_type_code", req.ElecJobTypeCode)),
+		trace.WithAttributes(attribute.String("lowribeck.gas_job_type_code", req.GasJobTypeCode)),
 	)
 	defer func() {
 		tracing.RecordSpanError(span, err)
