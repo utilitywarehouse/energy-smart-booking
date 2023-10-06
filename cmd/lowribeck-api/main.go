@@ -98,7 +98,7 @@ func main() {
 					},
 					&cli.StringFlag{
 						Name:     gasJobTypeCodeCredit,
-						EnvVars:  []string{"GAS_JOB_TYPE_CODE_GAS"},
+						EnvVars:  []string{"GAS_JOB_TYPE_CODE_CREDIT"},
 						Required: true,
 					},
 					&cli.StringFlag{
