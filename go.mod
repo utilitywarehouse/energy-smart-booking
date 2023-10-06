@@ -26,7 +26,7 @@ require (
 	github.com/utilitywarehouse/energy-pkg/ops v0.0.6
 	github.com/utilitywarehouse/energy-pkg/postgres v0.3.5
 	github.com/utilitywarehouse/energy-pkg/substratemessage v1.0.3
-	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.1.3
+	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.2.3
 	github.com/utilitywarehouse/go-ops-health-checks v0.0.0-20190620125157-116dc5b340a8
 	github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0
 	github.com/utilitywarehouse/uwos-go/v1/iam v1.20.2
