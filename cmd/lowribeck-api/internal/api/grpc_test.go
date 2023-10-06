@@ -13,8 +13,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
-	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api/mocks"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
@@ -723,9 +723,9 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			result, err := myAPIHandler.GetAvailableSlotsPointOfSale(ctx, &contract.GetAvailableSlotsPointOfSaleRequest{
 				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
-				Mprn:                  strToPtr("mprn-1"),
-				ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-				GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+				Mprn:                  "mprn-1",
+				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 			})
 
 			if tc.expectedError == nil {
@@ -1075,9 +1075,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			result, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
 				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
-				Mprn:                  strToPtr("mprn-1"),
-				ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-				GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+				Mprn:                  "mprn-1",
+				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 			})
 
 			if tc.expectedError == nil {
@@ -1143,12 +1143,4 @@ func (f *fakeMapper) BookingResponsePointOfSale(_ *lowribeck.CreateBookingRespon
 		return nil, f.bookingError
 	}
 	return f.bookingPointOfSaleResponse, nil
-}
-
-func strToPtr(s string) *string {
-	return &s
-}
-
-func tariffTypeToPtr(t bookingv1.TariffType) *bookingv1.TariffType {
-	return &t
 }
