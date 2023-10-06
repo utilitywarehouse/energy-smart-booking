@@ -21,6 +21,9 @@ const (
 	InvalidSite            InvalidType = "site"
 	InvalidAppointmentDate InvalidType = "appointment date"
 	InvalidAppointmentTime InvalidType = "appointment time"
+	InvalidMPAN            InvalidType = "mpan"
+	InvalidMPRN            InvalidType = "mprn"
+	InvalidJobTypeCode     InvalidType = "job type code"
 )
 
 type InvalidRequestError struct {

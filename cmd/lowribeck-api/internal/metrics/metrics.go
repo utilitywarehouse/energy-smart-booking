@@ -24,6 +24,9 @@ const (
 	InvalidAppointmentDate   = "invalid_appointment_date"
 	InvalidAppointmentTime   = "invalid_appointment_time"
 	InvalidUnknownParameter  = "invalid_unknown_parameter"
+	InvalidMPAN              = "invalid_mpan"
+	InvalidMPRN              = "invalid_mprn"
+	InvalidJobTypeCode       = "invalid_job_type_code"
 )
 
 // LBErrorsCount endpoint

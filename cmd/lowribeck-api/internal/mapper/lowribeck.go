@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"google.golang.org/genproto/googleapis/type/date"
@@ -19,12 +20,22 @@ const (
 type LowriBeck struct {
 	sendingSystem   string
 	receivingSystem string
+
+	CreditElectricityJobType     string
+	PrepaymentElectricityJobType string
+	CreditGasJobType             string
+	PrepaymentGasJobType         string
 }
 
-func NewLowriBeckMapper(sendingSystem, receivingSystem string) *LowriBeck {
+func NewLowriBeckMapper(sendingSystem, receivingSystem, creditElecJob, prepaymentElecJob, creditGasJob, prepaymentGasJob string) *LowriBeck {
 	return &LowriBeck{
 		sendingSystem:   sendingSystem,
 		receivingSystem: receivingSystem,
+
+		CreditElectricityJobType:     creditElecJob,
+		PrepaymentElectricityJobType: prepaymentElecJob,
+		CreditGasJobType:             creditGasJob,
+		PrepaymentGasJobType:         prepaymentGasJob,
 	}
 }
 
@@ -40,6 +51,32 @@ func (lb LowriBeck) AvailabilityRequest(id uint32, req *contract.GetAvailableSlo
 	}
 }
 
+func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *contract.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest {
+
+	elecJobTypeCode, gasJobTypeCode := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+
+	request := &lowribeck.GetCalendarAvailabilityRequest{
+		PostCode:        req.GetPostcode(),
+		Mpan:            req.GetMpan(),
+		ElecJobTypeCode: elecJobTypeCode,
+		SendingSystem:   lb.sendingSystem,
+		ReceivingSystem: lb.receivingSystem,
+		CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
+		// An ID sent to LB which they return in the response and can be used for debugging issues with them
+		RequestID: fmt.Sprintf("%d", id),
+	}
+
+	if req.GetMprn() != "" {
+		request.Mprn = req.GetMprn()
+	}
+
+	if req.GetGasTariffType() != bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+		request.GasJobTypeCode = gasJobTypeCode
+	}
+
+	return request
+}
+
 func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
 	if err := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage); err != nil {
 		return nil, err
@@ -51,6 +88,21 @@ func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabili
 	}
 
 	return &contract.GetAvailableSlotsResponse{
+		Slots: slots,
+	}, nil
+}
+
+func (lb LowriBeck) AvailableSlotsPointOfSaleResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsPointOfSaleResponse, error) {
+	if err := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage); err != nil {
+		return nil, err
+	}
+
+	slots, err := mapAvailabilitySlots(resp.CalendarAvailabilityResult)
+	if err != nil {
+		return nil, err
+	}
+
+	return &contract.GetAvailableSlotsPointOfSaleResponse{
 		Slots: slots,
 	}, nil
 }
@@ -78,12 +130,58 @@ func (lb LowriBeck) BookingRequest(id uint32, req *contract.CreateBookingRequest
 	}, nil
 }
 
+func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *contract.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error) {
+	appDate, appTime, err := mapBookingSlot(req.GetSlot())
+	if err != nil {
+		return nil, err
+	}
+
+	elecJobTypeCode, gasJobTypeCode := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+
+	request := &lowribeck.CreateBookingRequest{
+		PostCode:             req.GetPostcode(),
+		Mpan:                 req.GetMpan(),
+		ElecJobTypeCode:      elecJobTypeCode,
+		AppointmentDate:      appDate,
+		AppointmentTime:      appTime,
+		Vulnerabilities:      mapVulnerabilities(req.GetVulnerabilityDetails()),
+		VulnerabilitiesOther: req.GetVulnerabilityDetails().GetOther(),
+		SiteContactName:      mapContactName(req.GetContactDetails()),
+		SiteContactNumber:    req.GetContactDetails().GetPhone(),
+		SendingSystem:        lb.sendingSystem,
+		ReceivingSystem:      lb.receivingSystem,
+		CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+		// An ID sent to LB which they return in the response and can be used for debugging issues with them
+		RequestID: fmt.Sprintf("%d", id),
+	}
+
+	if req.GetMprn() != "" {
+		request.Mprn = req.GetMprn()
+	}
+
+	if req.GetGasTariffType() != bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+		request.GasJobTypeCode = gasJobTypeCode
+	}
+
+	return request, nil
+}
+
 func (lb LowriBeck) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
 	err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
 	if err != nil {
 		return nil, err
 	}
 	return &contract.CreateBookingResponse{
+		Success: true,
+	}, nil
+}
+
+func (lb LowriBeck) BookingResponsePointOfSale(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingPointOfSaleResponse, error) {
+	err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
+	if err != nil {
+		return nil, err
+	}
+	return &contract.CreateBookingPointOfSaleResponse{
 		Success: true,
 	}, nil
 }
@@ -182,17 +280,20 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 	// R02 - Appointment not available
 	case "B02", "R02":
 		return ErrAppointmentNotFound
-	// B03 - Invalid Elec Job Type Code
-	// B03 - Invalid Gas Job Type Code
-	// B04 - Invalid MPAN
+		// B03 - Invalid Elec Job Type Code
+		// B03 - Invalid Gas Job Type Code
+		// R03 - Invalid Elec Job Type Code
+		// R03 - Invalid Gas Job Type Code
+	case "B03", "R03":
+		return NewInvalidRequestError(InvalidJobTypeCode)
+		// B04 - Invalid MPAN
+		// R04 - Invalid MPAN
+	case "B04", "R04":
+		return NewInvalidRequestError(InvalidMPAN)
 	// B05 - Invalid MPRN
-	// R03 - Invalid Elec Job Type Code
-	// R03 - Invalid Gas Job Type Code
-	// R04 - Invalid MPAN
 	// R05 - Invalid MPRN
-	// We never send these fields
-	case "B03", "B04", "B05", "R03", "R04", "R05":
-		return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
+	case "B05", "R05":
+		return NewInvalidRequestError(InvalidMPRN)
 	// B06 - Invalid Appt Date
 	// B06 – Invalid Date Format
 	// R06 - Invalid Appt Date
@@ -308,4 +409,23 @@ func mapContactName(contact *contract.ContactDetails) string {
 	contactName := strings.TrimSpace(contact.GetTitle() + " " + contact.GetFirstName())
 	return strings.TrimSpace(contactName + " " + contact.GetLastName())
 
+}
+
+func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType bookingv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string) {
+
+	switch elecTariffType {
+	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
+		elecJobTypeCode = lb.CreditElectricityJobType
+	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
+		elecJobTypeCode = lb.PrepaymentElectricityJobType
+	}
+
+	switch gasTariffType {
+	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
+		gasJobTypeCode = lb.CreditGasJobType
+	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
+		gasJobTypeCode = lb.PrepaymentGasJobType
+	}
+
+	return elecJobTypeCode, gasJobTypeCode
 }

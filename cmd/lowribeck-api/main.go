@@ -39,6 +39,12 @@ const (
 	authUser        = "auth-user"
 	authPassword    = "auth-password"
 	useHeathcheck   = "use-healthcheck"
+
+	// LowriBeck job type codes
+	electricityJobTypeCodeCredit     = "electricity-job-type-code-credit"
+	electricityJobTypeCodePrepayment = "electricity-job-type-code-prepayment"
+	gasJobTypeCodeCredit             = "gas-job-type-code-credit" //nolint: gosec
+	gasJobTypeCodePrepayment         = "gas-job-type-code-prepayment"
 )
 
 var gitHash string // populated at compile time
@@ -79,6 +85,26 @@ func main() {
 					&cli.BoolFlag{
 						Name:    useHeathcheck,
 						EnvVars: []string{"USE_HEALTHCHECK"},
+					},
+					&cli.StringFlag{
+						Name:     electricityJobTypeCodeCredit,
+						EnvVars:  []string{"ELECTRICITY_JOB_TYPE_CODE_CREDIT"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     electricityJobTypeCodePrepayment,
+						EnvVars:  []string{"ELECTRICITY_JOB_TYPE_CODE_PREPAYMENT"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     gasJobTypeCodeCredit,
+						EnvVars:  []string{"GAS_JOB_TYPE_CODE_GAS"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     gasJobTypeCodePrepayment,
+						EnvVars:  []string{"GAS_JOB_TYPE_CODE_PREPAYMENT"},
+						Required: true,
 					},
 				),
 				Before: app.Before,
@@ -136,7 +162,13 @@ func runServer(c *cli.Context) error {
 	}
 	defer listen.Close()
 
-	mapper := mapper.NewLowriBeckMapper(c.String(sendingSystem), c.String(receivingSystem))
+	mapper := mapper.NewLowriBeckMapper(c.String(sendingSystem),
+		c.String(receivingSystem),
+		c.String(electricityJobTypeCodeCredit),
+		c.String(electricityJobTypeCodePrepayment),
+		c.String(gasJobTypeCodeCredit),
+		c.String(gasJobTypeCodePrepayment))
+
 	lowribeckAPI := api.New(client, mapper, auth)
 	contracts.RegisterLowriBeckAPIServer(grpcServer, lowribeckAPI)
 
