@@ -66,8 +66,8 @@ func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth, use
 }
 
 func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) {
+	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerContactDetails",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
@@ -100,18 +100,25 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get customer contact details, %s", err))
 	}
 
-	return &bookingv1.GetCustomerContactDetailsResponse{
+	contactDetails := &bookingv1.GetCustomerContactDetailsResponse{
 		Title:     account.Details.Title,
 		FirstName: account.Details.FirstName,
 		LastName:  account.Details.LastName,
 		Phone:     account.Details.Mobile,
 		Email:     account.Details.Email,
-	}, nil
+	}
+
+	if b.useTracing {
+		contactAttr := helpers.CreateSpanAttribute(contactDetails, "contact", span)
+		span.AddEvent("response", trace.WithAttributes(contactAttr))
+	}
+
+	return contactDetails, nil
 }
 
 func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (_ *bookingv1.GetCustomerSiteAddressResponse, err error) {
+	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerSiteAddress",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
@@ -145,29 +152,36 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 		}
 	}
 
-	return &bookingv1.GetCustomerSiteAddressResponse{
-		SiteAddress: &addressv1.Address{
-			Uprn: accountAddress.UPRN,
-			Paf: &addressv1.Address_PAF{
-				Organisation:            accountAddress.PAF.Organisation,
-				Department:              accountAddress.PAF.Department,
-				SubBuilding:             accountAddress.PAF.SubBuilding,
-				BuildingName:            accountAddress.PAF.BuildingName,
-				BuildingNumber:          accountAddress.PAF.BuildingNumber,
-				DependentThoroughfare:   accountAddress.PAF.DependentThoroughfare,
-				Thoroughfare:            accountAddress.PAF.Thoroughfare,
-				DoubleDependentLocality: accountAddress.PAF.DoubleDependentLocality,
-				DependentLocality:       accountAddress.PAF.DependentLocality,
-				PostTown:                accountAddress.PAF.PostTown,
-				Postcode:                accountAddress.PAF.Postcode,
-			},
+	siteAddress := &addressv1.Address{
+		Uprn: accountAddress.UPRN,
+		Paf: &addressv1.Address_PAF{
+			Organisation:            accountAddress.PAF.Organisation,
+			Department:              accountAddress.PAF.Department,
+			SubBuilding:             accountAddress.PAF.SubBuilding,
+			BuildingName:            accountAddress.PAF.BuildingName,
+			BuildingNumber:          accountAddress.PAF.BuildingNumber,
+			DependentThoroughfare:   accountAddress.PAF.DependentThoroughfare,
+			Thoroughfare:            accountAddress.PAF.Thoroughfare,
+			DoubleDependentLocality: accountAddress.PAF.DoubleDependentLocality,
+			DependentLocality:       accountAddress.PAF.DependentLocality,
+			PostTown:                accountAddress.PAF.PostTown,
+			Postcode:                accountAddress.PAF.Postcode,
 		},
+	}
+
+	if b.useTracing {
+		addressAttr := helpers.CreateSpanAttribute(siteAddress, "address", span)
+		span.AddEvent("response", trace.WithAttributes(addressAttr))
+	}
+
+	return &bookingv1.GetCustomerSiteAddressResponse{
+		SiteAddress: siteAddress,
 	}, nil
 }
 
 func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) {
+	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
@@ -190,6 +204,11 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 	bookings, err := b.bookingDomain.GetCustomerBookings(ctx, req.GetAccountId())
 	if err != nil {
 		return &bookingv1.GetCustomerBookingsResponse{Bookings: nil}, status.Errorf(codes.Internal, "failed to get customer bookings, %s", err)
+	}
+
+	if b.useTracing {
+		bookingAttr := helpers.CreateSpanAttribute(bookings, "bookings", span)
+		span.AddEvent("response", trace.WithAttributes(bookingAttr))
 	}
 
 	return &bookingv1.GetCustomerBookingsResponse{Bookings: bookings}, nil
