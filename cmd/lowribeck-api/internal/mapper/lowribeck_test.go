@@ -8,7 +8,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
-	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
@@ -22,7 +21,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		lb            *lowribeck.GetCalendarAvailabilityResponse
-		expected      *contract.GetAvailableSlotsResponse
+		expected      *lowribeckv1.GetAvailableSlotsResponse
 		expectedError error
 	}{
 		{
@@ -39,8 +38,8 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 					},
 				},
 			},
-			expected: &contract.GetAvailableSlotsResponse{
-				Slots: []*contract.BookingSlot{
+			expected: &lowribeckv1.GetAvailableSlotsResponse{
+				Slots: []*lowribeckv1.BookingSlot{
 					{
 						Date: &date.Date{
 							Day:   1,
@@ -173,16 +172,16 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 func TestMapBookingRequest(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		lb            *contract.CreateBookingRequest
+		lb            *lowribeckv1.CreateBookingRequest
 		expected      *lowribeck.CreateBookingRequest
 		expectedError error
 	}{
 		{
 			desc: "Valid",
-			lb: &contract.CreateBookingRequest{
+			lb: &lowribeckv1.CreateBookingRequest{
 				Postcode:  "postcode",
 				Reference: "reference",
-				Slot: &contract.BookingSlot{
+				Slot: &lowribeckv1.BookingSlot{
 					Date: &date.Date{
 						Day:   1,
 						Month: 12,
@@ -191,14 +190,14 @@ func TestMapBookingRequest(t *testing.T) {
 					StartTime: 10,
 					EndTime:   12,
 				},
-				VulnerabilityDetails: &contract.VulnerabilityDetails{
-					Vulnerabilities: []contract.Vulnerability{
-						contract.Vulnerability_VULNERABILITY_HEARING,
-						contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+				VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+					Vulnerabilities: []lowribeckv1.Vulnerability{
+						lowribeckv1.Vulnerability_VULNERABILITY_HEARING,
+						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 					},
 					Other: "other",
 				},
-				ContactDetails: &contract.ContactDetails{
+				ContactDetails: &lowribeckv1.ContactDetails{
 					FirstName: "Home",
 					LastName:  "Alone",
 					Phone:     "tel",
@@ -221,13 +220,13 @@ func TestMapBookingRequest(t *testing.T) {
 		},
 		{
 			desc:          "Empty appointment slot",
-			lb:            &contract.CreateBookingRequest{},
+			lb:            &lowribeckv1.CreateBookingRequest{},
 			expectedError: fmt.Errorf("invalid booking slot"),
 		},
 		{
 			desc: "Empty appointment date",
-			lb: &contract.CreateBookingRequest{
-				Slot: &contract.BookingSlot{
+			lb: &lowribeckv1.CreateBookingRequest{
+				Slot: &lowribeckv1.BookingSlot{
 					StartTime: 10,
 					EndTime:   12,
 				},
@@ -257,7 +256,7 @@ func TestMapBookingResponse(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		lb            *lowribeck.CreateBookingResponse
-		expected      *contract.CreateBookingResponse
+		expected      *lowribeckv1.CreateBookingResponse
 		expectedError error
 	}{
 		{
@@ -266,7 +265,7 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseCode:    "B01",
 				ResponseMessage: "Booking Confirmed",
 			},
-			expected: &contract.CreateBookingResponse{
+			expected: &lowribeckv1.CreateBookingResponse{
 				Success: true,
 			},
 		},
@@ -276,7 +275,7 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseCode:    "B02",
 				ResponseMessage: "Appointment not available",
 			},
-			expected: &contract.CreateBookingResponse{
+			expected: &lowribeckv1.CreateBookingResponse{
 				Success: false,
 			},
 			expectedError: fmt.Errorf("no appointments found"),
@@ -287,7 +286,7 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseCode:    "B07",
 				ResponseMessage: "Invalid Appt Time",
 			},
-			expected: &contract.CreateBookingResponse{
+			expected: &lowribeckv1.CreateBookingResponse{
 				Success: false,
 			},
 			expectedError: fmt.Errorf("invalid request [appointment time]"),
@@ -298,7 +297,7 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseCode:    "B08",
 				ResponseMessage: "Duplicate Elec job exists",
 			},
-			expected: &contract.CreateBookingResponse{
+			expected: &lowribeckv1.CreateBookingResponse{
 				Success: false,
 			},
 			expectedError: fmt.Errorf("appointment already exists"),
@@ -309,7 +308,7 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseCode:    "B09",
 				ResponseMessage: "No available slots for requested postcode",
 			},
-			expected: &contract.CreateBookingResponse{
+			expected: &lowribeckv1.CreateBookingResponse{
 				Success: false,
 			},
 			expectedError: fmt.Errorf("no appointments found"),
@@ -320,7 +319,7 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseCode:    "B09",
 				ResponseMessage: "Site status not suitable for request",
 			},
-			expected: &contract.CreateBookingResponse{
+			expected: &lowribeckv1.CreateBookingResponse{
 				Success: false,
 			},
 			expectedError: fmt.Errorf("invalid request [site]"),
@@ -331,7 +330,7 @@ func TestMapBookingResponse(t *testing.T) {
 				ResponseCode:    "B09",
 				ResponseMessage: "Post Code is missing or invalid",
 			},
-			expected: &contract.CreateBookingResponse{
+			expected: &lowribeckv1.CreateBookingResponse{
 				Success: false,
 			},
 			expectedError: fmt.Errorf("invalid request [postcode]"),
@@ -359,7 +358,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 
 	type inputParams struct {
 		id  uint32
-		req *contract.GetAvailableSlotsPointOfSaleRequest
+		req *lowribeckv1.GetAvailableSlotsPointOfSaleRequest
 	}
 
 	testCases := []struct {
@@ -372,7 +371,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Credit - No MPRN",
 			input: inputParams{
 				id: 1,
-				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+				req: &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "",
@@ -396,7 +395,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Prepayment - No MPRN",
 			input: inputParams{
 				id: 1,
-				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+				req: &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "",
@@ -420,7 +419,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Credit - Credit Gas",
 			input: inputParams{
 				id: 1,
-				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+				req: &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -444,7 +443,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Credit - Credit Gas",
 			input: inputParams{
 				id: 1,
-				req: &contract.GetAvailableSlotsPointOfSaleRequest{
+				req: &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -482,7 +481,7 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 
 	type inputParams struct {
 		id  uint32
-		req *contract.CreateBookingPointOfSaleRequest
+		req *lowribeckv1.CreateBookingPointOfSaleRequest
 	}
 
 	testCases := []struct {
@@ -495,13 +494,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Credit - No MPRN",
 			input: inputParams{
 				id: 1,
-				req: &contract.CreateBookingPointOfSaleRequest{
+				req: &lowribeckv1.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "",
 					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         contract.TariffType_TARIFF_TYPE_UNKNOWN,
-					Slot: &contract.BookingSlot{
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					Slot: &lowribeckv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
 							Month: 12,
@@ -510,13 +509,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 						StartTime: 10,
 						EndTime:   12,
 					},
-					VulnerabilityDetails: &contract.VulnerabilityDetails{
-						Vulnerabilities: []contract.Vulnerability{
-							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+						Vulnerabilities: []lowribeckv1.Vulnerability{
+							lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 						},
 						Other: "Other Vuln",
 					},
-					ContactDetails: &contract.ContactDetails{
+					ContactDetails: &lowribeckv1.ContactDetails{
 						Title:     "Mr",
 						FirstName: "John",
 						LastName:  "Doe",
@@ -546,13 +545,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Prepayment - No MPRN",
 			input: inputParams{
 				id: 1,
-				req: &contract.CreateBookingPointOfSaleRequest{
+				req: &lowribeckv1.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "",
 					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-					GasTariffType:         contract.TariffType_TARIFF_TYPE_UNKNOWN,
-					Slot: &contract.BookingSlot{
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					Slot: &lowribeckv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
 							Month: 12,
@@ -561,13 +560,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 						StartTime: 10,
 						EndTime:   12,
 					},
-					VulnerabilityDetails: &contract.VulnerabilityDetails{
-						Vulnerabilities: []contract.Vulnerability{
-							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+						Vulnerabilities: []lowribeckv1.Vulnerability{
+							lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 						},
 						Other: "Other Vuln",
 					},
-					ContactDetails: &contract.ContactDetails{
+					ContactDetails: &lowribeckv1.ContactDetails{
 						Title:     "Mr",
 						FirstName: "John",
 						LastName:  "Doe",
@@ -597,13 +596,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Credit - Gas Credit",
 			input: inputParams{
 				id: 1,
-				req: &contract.CreateBookingPointOfSaleRequest{
+				req: &lowribeckv1.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
 					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-					Slot: &contract.BookingSlot{
+					Slot: &lowribeckv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
 							Month: 12,
@@ -612,13 +611,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 						StartTime: 10,
 						EndTime:   12,
 					},
-					VulnerabilityDetails: &contract.VulnerabilityDetails{
-						Vulnerabilities: []contract.Vulnerability{
-							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+						Vulnerabilities: []lowribeckv1.Vulnerability{
+							lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 						},
 						Other: "Other Vuln",
 					},
-					ContactDetails: &contract.ContactDetails{
+					ContactDetails: &lowribeckv1.ContactDetails{
 						Title:     "Mr",
 						FirstName: "John",
 						LastName:  "Doe",
@@ -648,13 +647,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 			desc: "Success - Electricity Credit - Prepayment Credit",
 			input: inputParams{
 				id: 1,
-				req: &contract.CreateBookingPointOfSaleRequest{
+				req: &lowribeckv1.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
 					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-					Slot: &contract.BookingSlot{
+					Slot: &lowribeckv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
 							Month: 12,
@@ -663,13 +662,13 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 						StartTime: 10,
 						EndTime:   12,
 					},
-					VulnerabilityDetails: &contract.VulnerabilityDetails{
-						Vulnerabilities: []contract.Vulnerability{
-							contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+						Vulnerabilities: []lowribeckv1.Vulnerability{
+							lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 						},
 						Other: "Other Vuln",
 					},
-					ContactDetails: &contract.ContactDetails{
+					ContactDetails: &lowribeckv1.ContactDetails{
 						Title:     "Mr",
 						FirstName: "John",
 						LastName:  "Doe",
