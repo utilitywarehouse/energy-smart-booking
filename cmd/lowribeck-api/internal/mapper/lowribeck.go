@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"google.golang.org/genproto/googleapis/type/date"
 )
@@ -70,7 +70,7 @@ func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *contract.GetA
 		request.Mprn = req.GetMprn()
 	}
 
-	if req.GetGasTariffType() != bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+	if req.GetGasTariffType() != lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN {
 		request.GasJobTypeCode = gasJobTypeCode
 	}
 
@@ -159,7 +159,7 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *contract.CreateBoo
 		request.Mprn = req.GetMprn()
 	}
 
-	if req.GetGasTariffType() != bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+	if req.GetGasTariffType() != lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN {
 		request.GasJobTypeCode = gasJobTypeCode
 	}
 
@@ -411,19 +411,19 @@ func mapContactName(contact *contract.ContactDetails) string {
 
 }
 
-func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType bookingv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string) {
+func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType lowribeckv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string) {
 
 	switch elecTariffType {
-	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
+	case lowribeckv1.TariffType_TARIFF_TYPE_CREDIT:
 		elecJobTypeCode = lb.CreditElectricityJobType
-	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
+	case lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT:
 		elecJobTypeCode = lb.PrepaymentElectricityJobType
 	}
 
 	switch gasTariffType {
-	case bookingv1.TariffType_TARIFF_TYPE_CREDIT:
+	case lowribeckv1.TariffType_TARIFF_TYPE_CREDIT:
 		gasJobTypeCode = lb.CreditGasJobType
-	case bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT:
+	case lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT:
 		gasJobTypeCode = lb.PrepaymentGasJobType
 	}
 

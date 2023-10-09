@@ -8,8 +8,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
-	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
 	"google.golang.org/genproto/googleapis/type/date"
@@ -375,9 +375,9 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 				req: &contract.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  nil,
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         nil,
+					Mprn:                  "",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
 				},
 			},
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
@@ -399,9 +399,9 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 				req: &contract.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  nil,
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-					GasTariffType:         nil,
+					Mprn:                  "",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
 				},
 			},
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
@@ -423,9 +423,9 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 				req: &contract.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  strToPtr("mprn-1"),
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 				},
 			},
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
@@ -447,9 +447,9 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 				req: &contract.GetAvailableSlotsPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  strToPtr("mprn-1"),
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT),
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 				},
 			},
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
@@ -498,9 +498,9 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 				req: &contract.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  nil,
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         nil,
+					Mprn:                  "",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         contract.TariffType_TARIFF_TYPE_UNKNOWN,
 					Slot: &contract.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -549,9 +549,9 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 				req: &contract.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  nil,
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-					GasTariffType:         nil,
+					Mprn:                  "",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+					GasTariffType:         contract.TariffType_TARIFF_TYPE_UNKNOWN,
 					Slot: &contract.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -600,9 +600,9 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 				req: &contract.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  strToPtr("mprn-1"),
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_CREDIT),
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					Slot: &contract.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -651,9 +651,9 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 				req: &contract.CreateBookingPointOfSaleRequest{
 					Postcode:              "ZE 11",
 					Mpan:                  "mpan-1",
-					Mprn:                  strToPtr("mprn-1"),
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         tariffTypeToPtr(bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT),
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 					Slot: &contract.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -712,12 +712,4 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 			}
 		})
 	}
-}
-
-func strToPtr(s string) *string {
-	return &s
-}
-
-func tariffTypeToPtr(t bookingv1.TariffType) *bookingv1.TariffType {
-	return &t
 }
