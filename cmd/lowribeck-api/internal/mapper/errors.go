@@ -16,14 +16,15 @@ var (
 type InvalidType string
 
 const (
-	InvalidPostcode        InvalidType = "postcode"
-	InvalidReference       InvalidType = "reference"
-	InvalidSite            InvalidType = "site"
-	InvalidAppointmentDate InvalidType = "appointment date"
-	InvalidAppointmentTime InvalidType = "appointment time"
-	InvalidMPAN            InvalidType = "mpan"
-	InvalidMPRN            InvalidType = "mprn"
-	InvalidJobTypeCode     InvalidType = "job type code"
+	InvalidPostcode               InvalidType = "postcode"
+	InvalidReference              InvalidType = "reference"
+	InvalidSite                   InvalidType = "site"
+	InvalidAppointmentDate        InvalidType = "appointment date"
+	InvalidAppointmentTime        InvalidType = "appointment time"
+	InvalidMPAN                   InvalidType = "mpan"
+	InvalidMPRN                   InvalidType = "mprn"
+	InvalidElectricityJobTypeCode InvalidType = "electricity job type code"
+	InvalidGasJobTypeCode         InvalidType = "gas job type code"
 )
 
 type InvalidRequestError struct {

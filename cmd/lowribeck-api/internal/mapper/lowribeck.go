@@ -182,7 +182,8 @@ func (lb LowriBeck) BookingResponsePointOfSale(resp *lowribeck.CreateBookingResp
 		return nil, err
 	}
 	return &contract.CreateBookingPointOfSaleResponse{
-		Success: true,
+		Success:   true,
+		Reference: resp.ReferenceID,
 	}, nil
 }
 
@@ -285,7 +286,12 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 		// R03 - Invalid Elec Job Type Code
 		// R03 - Invalid Gas Job Type Code
 	case "B03", "R03":
-		return NewInvalidRequestError(InvalidJobTypeCode)
+		switch responseMessage {
+		case "Invalid Elec Job Type Code":
+			return NewInvalidRequestError(InvalidElectricityJobTypeCode)
+		case "Invalid Gas Job Type Code":
+			return NewInvalidRequestError(InvalidGasJobTypeCode)
+		}
 		// B04 - Invalid MPAN
 		// R04 - Invalid MPAN
 	case "B04", "R04":

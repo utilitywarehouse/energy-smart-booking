@@ -187,9 +187,12 @@ func createInvalidRequestError(msg, endpoint string, invErr *mapper.InvalidReque
 	case mapper.InvalidMPRN:
 		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidMPRN, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_MPRN
-	case mapper.InvalidJobTypeCode:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidJobTypeCode, endpoint).Inc()
-		param = contract.Parameters_PARAMETERS_JOB_TYPE_CODE
+	case mapper.InvalidElectricityJobTypeCode:
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidElectricityJobTypeCode, endpoint).Inc()
+		param = contract.Parameters_PARAMETERS_ELECTRICITY_TARIFF
+	case mapper.InvalidGasJobTypeCode:
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidGasJobTypeCode, endpoint).Inc()
+		param = contract.Parameters_PARAMETERS_GAS_TARIFF
 	default:
 		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidUnknownParameter, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_UNKNOWN
