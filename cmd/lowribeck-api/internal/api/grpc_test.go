@@ -1173,8 +1173,8 @@ func (f *fakeMapper) BookingResponse(_ *lowribeck.CreateBookingResponse) (*contr
 	return f.bookingResponse, nil
 }
 
-func (f *fakeMapper) AvailabilityRequestPointOfSale(_ uint32, _ *contract.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest {
-	return f.availabilityRequest
+func (f *fakeMapper) AvailabilityRequestPointOfSale(_ uint32, _ *contract.GetAvailableSlotsPointOfSaleRequest) (*lowribeck.GetCalendarAvailabilityRequest, error) {
+	return f.availabilityRequest, nil
 }
 
 func (f *fakeMapper) BookingRequestPointOfSale(_ uint32, _ *contract.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error) {

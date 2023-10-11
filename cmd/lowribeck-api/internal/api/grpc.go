@@ -41,7 +41,7 @@ type Mapper interface {
 	BookingResponse(*lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error)
 
 	//Point Of Sale Methods
-	AvailabilityRequestPointOfSale(uint32, *contract.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest
+	AvailabilityRequestPointOfSale(uint32, *contract.GetAvailableSlotsPointOfSaleRequest) (*lowribeck.GetCalendarAvailabilityRequest, error)
 	BookingRequestPointOfSale(uint32, *contract.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error)
 	AvailableSlotsPointOfSaleResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsPointOfSaleResponse, error)
 	BookingResponsePointOfSale(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingPointOfSaleResponse, error)
@@ -125,7 +125,14 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *contract.GetAvailableSlotsPointOfSaleRequest) (*contract.GetAvailableSlotsPointOfSaleResponse, error) {
 
 	requestID := uuid.New().ID()
-	availableSlotsRequest := l.mapper.AvailabilityRequestPointOfSale(requestID, req)
+	availableSlotsRequest, err := l.mapper.AvailabilityRequestPointOfSale(requestID, req)
+	if err != nil {
+		if errors.Is(err, mapper.ErrInvalidElectricityJobTypeCode) ||
+			errors.Is(err, mapper.ErrInvalidGasJobTypeCode) {
+			logrus.Errorf("received invalid tariff type. tariff types received for electricity and gas: [%s / %s]", req.ElectricityTariffType, req.GasTariffType)
+			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots point of sale: %v", err)
+		}
+	}
 
 	resp, err := l.client.GetCalendarAvailabilityPointOfSale(ctx, availableSlotsRequest)
 	if err != nil {
@@ -146,6 +153,11 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequestPointOfSale(requestID, req)
 	if err != nil {
+		if errors.Is(err, mapper.ErrInvalidElectricityJobTypeCode) ||
+			errors.Is(err, mapper.ErrInvalidGasJobTypeCode) {
+			logrus.Errorf("received invalid tariff type. tariff types received for electricity and gas: [%s / %s]", req.ElectricityTariffType, req.GasTariffType)
+			return nil, status.Errorf(codes.InvalidArgument, "error mapping point of sale booking request: %v", err)
+		}
 		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
 		return nil, status.Errorf(codes.InvalidArgument, "error mapping point of sale booking request: %v", err)
 	}

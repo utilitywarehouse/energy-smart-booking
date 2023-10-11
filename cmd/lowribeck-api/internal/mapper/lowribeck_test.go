@@ -379,6 +379,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
 				},
 			},
+			expectedError: nil,
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
 				RequestID:       "1",
 				SendingSystem:   "sendingSystem",
@@ -403,6 +404,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
 				},
 			},
+			expectedError: nil,
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
 				RequestID:       "1",
 				SendingSystem:   "sendingSystem",
@@ -427,6 +429,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 				},
 			},
+			expectedError: nil,
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
 				RequestID:       "1",
 				SendingSystem:   "sendingSystem",
@@ -451,6 +454,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 				},
 			},
+			expectedError: nil,
 			expected: &lowribeck.GetCalendarAvailabilityRequest{
 				RequestID:       "1",
 				SendingSystem:   "sendingSystem",
@@ -463,6 +467,21 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 				CreatedDate:     time.Now().UTC().Format(requestTimeFormat),
 			},
 		},
+		{
+			desc: "should error because invalid tariff type was sent",
+			input: inputParams{
+				id: 1,
+				req: &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
+					Postcode:              "ZE 11",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+				},
+			},
+			expectedError: mapper.ErrInvalidElectricityTariffType,
+			expected:      nil,
+		},
 	}
 
 	assert := assert.New(t)
@@ -470,9 +489,14 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			res := lbMapper.AvailabilityRequestPointOfSale(tc.input.id, tc.input.req)
-			diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported(), cmpopts.EquateApproxTime(time.Second))
-			assert.Empty(diff, tc.desc)
+			res, err := lbMapper.AvailabilityRequestPointOfSale(tc.input.id, tc.input.req)
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported(), cmpopts.EquateApproxTime(time.Second))
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
 		})
 	}
 }

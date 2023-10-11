@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -8,6 +9,11 @@ import (
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"google.golang.org/genproto/googleapis/type/date"
+)
+
+var (
+	ErrInvalidElectricityTariffType = errors.New("invalid electricity tariff type")
+	ErrInvalidGasTariffType         = errors.New("invalid gas tariff type")
 )
 
 const (
@@ -50,9 +56,12 @@ func (lb LowriBeck) AvailabilityRequest(id uint32, req *lowribeckv1.GetAvailable
 	}
 }
 
-func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *lowribeckv1.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest {
+func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *lowribeckv1.GetAvailableSlotsPointOfSaleRequest) (*lowribeck.GetCalendarAvailabilityRequest, error) {
 
-	elecJobTypeCode, gasJobTypeCode := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	elecJobTypeCode, gasJobTypeCode, err := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	if err != nil {
+		return nil, err
+	}
 
 	request := &lowribeck.GetCalendarAvailabilityRequest{
 		PostCode:        req.GetPostcode(),
@@ -73,7 +82,7 @@ func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *lowribeckv1.G
 		request.GasJobTypeCode = gasJobTypeCode
 	}
 
-	return request
+	return request, nil
 }
 
 func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*lowribeckv1.GetAvailableSlotsResponse, error) {
@@ -135,7 +144,10 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *lowribeckv1.Create
 		return nil, err
 	}
 
-	elecJobTypeCode, gasJobTypeCode := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	elecJobTypeCode, gasJobTypeCode, err := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	if err != nil {
+		return nil, err
+	}
 
 	request := &lowribeck.CreateBookingRequest{
 		PostCode:             req.GetPostcode(),
@@ -419,13 +431,15 @@ func mapContactName(contact *lowribeckv1.ContactDetails) string {
 
 }
 
-func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType lowribeckv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string) {
+func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType lowribeckv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string, err error) {
 
 	switch elecTariffType {
 	case lowribeckv1.TariffType_TARIFF_TYPE_CREDIT:
 		elecJobTypeCode = lb.CreditElectricityJobType
 	case lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT:
 		elecJobTypeCode = lb.PrepaymentElectricityJobType
+	default:
+		return "", "", ErrInvalidElectricityTariffType
 	}
 
 	switch gasTariffType {
@@ -433,7 +447,11 @@ func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType lowribe
 		gasJobTypeCode = lb.CreditGasJobType
 	case lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT:
 		gasJobTypeCode = lb.PrepaymentGasJobType
+	case lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN:
+		gasJobTypeCode = ""
+	default:
+		return "", "", ErrInvalidGasTariffType
 	}
 
-	return elecJobTypeCode, gasJobTypeCode
+	return elecJobTypeCode, gasJobTypeCode, nil
 }
