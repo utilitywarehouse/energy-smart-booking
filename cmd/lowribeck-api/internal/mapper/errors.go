@@ -25,6 +25,7 @@ const (
 	InvalidMPRN                   InvalidType = "mprn"
 	InvalidElectricityJobTypeCode InvalidType = "electricity job type code"
 	InvalidGasJobTypeCode         InvalidType = "gas job type code"
+	InvalidJobTypeCode            InvalidType = "invalid job type code"
 )
 
 type InvalidRequestError struct {
