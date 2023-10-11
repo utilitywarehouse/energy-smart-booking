@@ -535,6 +535,7 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 	}, nil
 }
 
+// TODO - Publish booking event https://linear.app/utilitywarehouse/issue/SMT-329/publish-point-of-sale-booking-event
 func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv1.CreateBookingPointOfSaleRequest) (_ *bookingv1.CreateBookingPointOfSaleResponse, err error) {
 	if err := validatePOSRequest(req); err != nil {
 		return nil, err
