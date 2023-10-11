@@ -265,7 +265,7 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 			return NewInvalidRequestError(InvalidReference)
 		// EA03 - Invalid Job/Sub Job Code
 		case "Invalid Job/Sub Job Code":
-			return NewInvalidRequestError(InvalidJobTypeCode)
+			return ErrInvalidJobTypeCode
 		case "Insufficient notice to rearrange this appointment.":
 			return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 		}
@@ -290,9 +290,9 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 	case "B03", "R03":
 		switch responseMessage {
 		case "Invalid Elec Job Type Code":
-			return NewInvalidRequestError(InvalidElectricityJobTypeCode)
+			return ErrInvalidElectricityJobTypeCode
 		case "Invalid Gas Job Type Code":
-			return NewInvalidRequestError(InvalidGasJobTypeCode)
+			return ErrInvalidGasJobTypeCode
 		}
 		// B04 - Invalid MPAN
 		// R04 - Invalid MPAN

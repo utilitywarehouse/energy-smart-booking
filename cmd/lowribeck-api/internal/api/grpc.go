@@ -187,12 +187,6 @@ func createInvalidRequestError(msg, endpoint string, invErr *mapper.InvalidReque
 	case mapper.InvalidMPRN:
 		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidMPRN, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_MPRN
-	case mapper.InvalidElectricityJobTypeCode:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidElectricityJobTypeCode, endpoint).Inc()
-		param = contract.Parameters_PARAMETERS_ELECTRICITY_TARIFF
-	case mapper.InvalidGasJobTypeCode:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidGasJobTypeCode, endpoint).Inc()
-		param = contract.Parameters_PARAMETERS_GAS_TARIFF
 	default:
 		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidUnknownParameter, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_UNKNOWN
@@ -222,6 +216,12 @@ func getStatusFromError(formatMessage, endpoint string, err error) error {
 
 	case errors.Is(err, mapper.ErrInternalError):
 		metrics.LBErrorsCount.WithLabelValues(metrics.Internal, endpoint).Inc()
+		return status.Errorf(codes.Internal, formatMessage, err)
+
+	case errors.Is(err, mapper.ErrInvalidJobTypeCode),
+		errors.Is(err, mapper.ErrInvalidElectricityJobTypeCode),
+		errors.Is(err, mapper.ErrInvalidGasJobTypeCode):
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidJobTypeCode, endpoint).Inc()
 		return status.Errorf(codes.Internal, formatMessage, err)
 
 	default:
