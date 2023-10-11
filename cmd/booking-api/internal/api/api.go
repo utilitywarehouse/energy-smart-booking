@@ -485,6 +485,7 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
+	// We must have an MPAN, MPRN's are optional
 	if mpan == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "no mpan provided")
 	}
@@ -586,6 +587,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
+	// We must have an MPAN, MPRN's are optional
 	if mpan == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "no mpan provided")
 	}
@@ -618,11 +620,6 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		return &bookingv1.CreateBookingPointOfSaleResponse{
 			BookingId: "",
 		}, mapError("failed to create booking, %s", err)
-	}
-
-	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
-	if err != nil {
-		logrus.Errorf("failed to sink create booking event: %+v", createBookingResponse.Event)
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{

@@ -94,8 +94,10 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 				}
 			}
 			return AvailableSlotsResponse{}, ErrInvalidArgument
+
+		default:
+			return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 		}
-		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
 
 	slots := []models.BookingSlot{}
@@ -254,8 +256,10 @@ func (g LowriBeckGateway) GetAvailableSlotsPointOfSale(ctx context.Context, post
 				}
 			}
 			return AvailableSlotsResponse{}, ErrInvalidArgument
+
+		default:
+			return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 		}
-		return AvailableSlotsResponse{}, ErrUnhandledErrorCode
 	}
 
 	slots := []models.BookingSlot{}
