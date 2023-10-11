@@ -477,7 +477,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 	}
 }
 
-func TestMapBookingPointOfSaleResponse(t *testing.T) {
+func TestMapBookingPointOfSaleRequest(t *testing.T) {
 
 	type inputParams struct {
 		id  uint32
@@ -702,6 +702,63 @@ func TestMapBookingPointOfSaleResponse(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
 			res, err := lbMapper.BookingRequestPointOfSale(tc.input.id, tc.input.req)
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported(), cmpopts.EquateApproxTime(time.Second))
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
+		})
+	}
+}
+
+func Test_MapBookingPointOfSaleResponse(t *testing.T) {
+
+	type inputParams struct {
+		req *lowribeck.CreateBookingResponse
+	}
+
+	testCases := []struct {
+		desc          string
+		input         inputParams
+		expected      *lowribeckv1.CreateBookingPointOfSaleResponse
+		expectedError error
+	}{
+		{
+			desc: "Success - Has Reference ID",
+			input: inputParams{
+				req: &lowribeck.CreateBookingResponse{
+					ReferenceID:  "reference-id-1",
+					ResponseCode: "B01",
+				},
+			},
+			expected: &lowribeckv1.CreateBookingPointOfSaleResponse{
+				Success:   true,
+				Reference: "reference-id-1",
+			},
+		},
+		{
+			desc: "Success - Has Reference ID",
+			input: inputParams{
+				req: &lowribeck.CreateBookingResponse{
+					ReferenceID:  "reference-id-1",
+					ResponseCode: "R01",
+				},
+			},
+			expected: &lowribeckv1.CreateBookingPointOfSaleResponse{
+				Success:   true,
+				Reference: "reference-id-1",
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "crElec", "ppmElec", "crGas", "ppmGas")
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			res, err := lbMapper.BookingResponsePointOfSale(tc.input.req)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
 				diff := cmp.Diff(tc.expected, res, protocmp.Transform(), cmpopts.IgnoreUnexported(), cmpopts.EquateApproxTime(time.Second))
