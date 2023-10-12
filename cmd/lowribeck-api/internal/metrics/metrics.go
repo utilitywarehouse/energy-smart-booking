@@ -28,6 +28,7 @@ const (
 	InvalidMPRN                   = "invalid_mprn"
 	InvalidElectricityJobTypeCode = "invalid_electricity_job_type_code"
 	InvalidGasJobTypeCode         = "invalid_gas_job_type_code"
+	InvalidJobTypeCode            = "invalid_job_type_code"
 )
 
 // LBErrorsCount endpoint

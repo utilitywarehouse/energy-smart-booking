@@ -853,8 +853,8 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 		},
 		{
 			desc:          "Invalid electricity job type code",
-			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidElectricityJobTypeCode),
-			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [electricity job type code]"),
+			mapperErr:     mapper.ErrInvalidElectricityJobTypeCode,
+			expectedError: status.Error(codes.Internal, "error making booking point of sale request: invalid electricity job type code"),
 			req: &lowribeck.CreateBookingRequest{
 				PostCode:        "postcode",
 				Mpan:            "mpan-1",
@@ -878,8 +878,33 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 		},
 		{
 			desc:          "Invalid gas job type code",
-			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidGasJobTypeCode),
-			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [gas job type code]"),
+			mapperErr:     mapper.ErrInvalidGasJobTypeCode,
+			expectedError: status.Error(codes.Internal, "error making booking point of sale request: invalid gas job type code"),
+			req: &lowribeck.CreateBookingRequest{
+				PostCode:        "postcode",
+				Mpan:            "mpan-1",
+				Mprn:            "mprn-1",
+				ElecJobTypeCode: "credit",
+				GasJobTypeCode:  "credit",
+				CreatedDate:     now,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
+					PostCode:        "postcode",
+					Mpan:            "mpan-1",
+					Mprn:            "mprn-1",
+					ElecJobTypeCode: "credit",
+					GasJobTypeCode:  "credit",
+					CreatedDate:     now,
+				}).Return(&lowribeck.CreateBookingResponse{
+					ResponseCode: "",
+				}, nil)
+			},
+		},
+		{
+			desc:          "Invalid (unspecified)job type code",
+			mapperErr:     mapper.ErrInvalidJobTypeCode,
+			expectedError: status.Error(codes.Internal, "error making booking point of sale request: invalid job type code"),
 			req: &lowribeck.CreateBookingRequest{
 				PostCode:        "postcode",
 				Mpan:            "mpan-1",
@@ -1148,8 +1173,8 @@ func (f *fakeMapper) BookingResponse(_ *lowribeck.CreateBookingResponse) (*contr
 	return f.bookingResponse, nil
 }
 
-func (f *fakeMapper) AvailabilityRequestPointOfSale(_ uint32, _ *contract.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest {
-	return f.availabilityRequest
+func (f *fakeMapper) AvailabilityRequestPointOfSale(_ uint32, _ *contract.GetAvailableSlotsPointOfSaleRequest) (*lowribeck.GetCalendarAvailabilityRequest, error) {
+	return f.availabilityRequest, nil
 }
 
 func (f *fakeMapper) BookingRequestPointOfSale(_ uint32, _ *contract.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error) {

@@ -1,14 +1,19 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
-	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"google.golang.org/genproto/googleapis/type/date"
+)
+
+var (
+	ErrInvalidElectricityTariffType = errors.New("invalid electricity tariff type")
+	ErrInvalidGasTariffType         = errors.New("invalid gas tariff type")
 )
 
 const (
@@ -39,7 +44,7 @@ func NewLowriBeckMapper(sendingSystem, receivingSystem, creditElecJob, prepaymen
 	}
 }
 
-func (lb LowriBeck) AvailabilityRequest(id uint32, req *contract.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
+func (lb LowriBeck) AvailabilityRequest(id uint32, req *lowribeckv1.GetAvailableSlotsRequest) *lowribeck.GetCalendarAvailabilityRequest {
 	return &lowribeck.GetCalendarAvailabilityRequest{
 		PostCode:        req.GetPostcode(),
 		ReferenceID:     req.GetReference(),
@@ -51,9 +56,12 @@ func (lb LowriBeck) AvailabilityRequest(id uint32, req *contract.GetAvailableSlo
 	}
 }
 
-func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *contract.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest {
+func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *lowribeckv1.GetAvailableSlotsPointOfSaleRequest) (*lowribeck.GetCalendarAvailabilityRequest, error) {
 
-	elecJobTypeCode, gasJobTypeCode := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	elecJobTypeCode, gasJobTypeCode, err := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	if err != nil {
+		return nil, err
+	}
 
 	request := &lowribeck.GetCalendarAvailabilityRequest{
 		PostCode:        req.GetPostcode(),
@@ -74,10 +82,10 @@ func (lb LowriBeck) AvailabilityRequestPointOfSale(id uint32, req *contract.GetA
 		request.GasJobTypeCode = gasJobTypeCode
 	}
 
-	return request
+	return request, nil
 }
 
-func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error) {
+func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*lowribeckv1.GetAvailableSlotsResponse, error) {
 	if err := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage); err != nil {
 		return nil, err
 	}
@@ -87,12 +95,12 @@ func (lb LowriBeck) AvailableSlotsResponse(resp *lowribeck.GetCalendarAvailabili
 		return nil, err
 	}
 
-	return &contract.GetAvailableSlotsResponse{
+	return &lowribeckv1.GetAvailableSlotsResponse{
 		Slots: slots,
 	}, nil
 }
 
-func (lb LowriBeck) AvailableSlotsPointOfSaleResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsPointOfSaleResponse, error) {
+func (lb LowriBeck) AvailableSlotsPointOfSaleResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*lowribeckv1.GetAvailableSlotsPointOfSaleResponse, error) {
 	if err := mapAvailabilityErrorCodes(resp.ResponseCode, resp.ResponseMessage); err != nil {
 		return nil, err
 	}
@@ -102,12 +110,12 @@ func (lb LowriBeck) AvailableSlotsPointOfSaleResponse(resp *lowribeck.GetCalenda
 		return nil, err
 	}
 
-	return &contract.GetAvailableSlotsPointOfSaleResponse{
+	return &lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
 		Slots: slots,
 	}, nil
 }
 
-func (lb LowriBeck) BookingRequest(id uint32, req *contract.CreateBookingRequest) (*lowribeck.CreateBookingRequest, error) {
+func (lb LowriBeck) BookingRequest(id uint32, req *lowribeckv1.CreateBookingRequest) (*lowribeck.CreateBookingRequest, error) {
 	appDate, appTime, err := mapBookingSlot(req.GetSlot())
 	if err != nil {
 		return nil, err
@@ -130,13 +138,16 @@ func (lb LowriBeck) BookingRequest(id uint32, req *contract.CreateBookingRequest
 	}, nil
 }
 
-func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *contract.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error) {
+func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *lowribeckv1.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error) {
 	appDate, appTime, err := mapBookingSlot(req.GetSlot())
 	if err != nil {
 		return nil, err
 	}
 
-	elecJobTypeCode, gasJobTypeCode := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	elecJobTypeCode, gasJobTypeCode, err := lb.mapTariffTypeToJobType(req.GetElectricityTariffType(), req.GetGasTariffType())
+	if err != nil {
+		return nil, err
+	}
 
 	request := &lowribeck.CreateBookingRequest{
 		PostCode:             req.GetPostcode(),
@@ -166,32 +177,32 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *contract.CreateBoo
 	return request, nil
 }
 
-func (lb LowriBeck) BookingResponse(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error) {
+func (lb LowriBeck) BookingResponse(resp *lowribeck.CreateBookingResponse) (*lowribeckv1.CreateBookingResponse, error) {
 	err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
 	if err != nil {
 		return nil, err
 	}
-	return &contract.CreateBookingResponse{
+	return &lowribeckv1.CreateBookingResponse{
 		Success: true,
 	}, nil
 }
 
-func (lb LowriBeck) BookingResponsePointOfSale(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingPointOfSaleResponse, error) {
+func (lb LowriBeck) BookingResponsePointOfSale(resp *lowribeck.CreateBookingResponse) (*lowribeckv1.CreateBookingPointOfSaleResponse, error) {
 	err := mapBookingResponseCodes(resp.ResponseCode, resp.ResponseMessage)
 	if err != nil {
 		return nil, err
 	}
-	return &contract.CreateBookingPointOfSaleResponse{
+	return &lowribeckv1.CreateBookingPointOfSaleResponse{
 		Success:   true,
 		Reference: resp.ReferenceID,
 	}, nil
 }
 
-func mapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*contract.BookingSlot, error) {
+func mapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*lowribeckv1.BookingSlot, error) {
 	var err error
-	slots := make([]*contract.BookingSlot, len(availabilityResults))
+	slots := make([]*lowribeckv1.BookingSlot, len(availabilityResults))
 	for i, res := range availabilityResults {
-		slot := &contract.BookingSlot{}
+		slot := &lowribeckv1.BookingSlot{}
 		slot.Date, err = mapAvailabilityAppointmentDate(res.AppointmentDate)
 		if err != nil {
 			return nil, fmt.Errorf("error converting appointment date: %v", err)
@@ -264,6 +275,9 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 		// EA03 - Work Reference Invalid
 		case "Work Reference Invalid":
 			return NewInvalidRequestError(InvalidReference)
+		// EA03 - Invalid Job/Sub Job Code
+		case "Invalid Job/Sub Job Code":
+			return ErrInvalidJobTypeCode
 		case "Insufficient notice to rearrange this appointment.":
 			return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
 		}
@@ -288,9 +302,9 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 	case "B03", "R03":
 		switch responseMessage {
 		case "Invalid Elec Job Type Code":
-			return NewInvalidRequestError(InvalidElectricityJobTypeCode)
+			return ErrInvalidElectricityJobTypeCode
 		case "Invalid Gas Job Type Code":
-			return NewInvalidRequestError(InvalidGasJobTypeCode)
+			return ErrInvalidGasJobTypeCode
 		}
 		// B04 - Invalid MPAN
 		// R04 - Invalid MPAN
@@ -361,7 +375,7 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 	return fmt.Errorf("%w [%s]", ErrUnknownError, responseMessage)
 }
 
-func mapBookingSlot(slot *contract.BookingSlot) (string, string, error) {
+func mapBookingSlot(slot *lowribeckv1.BookingSlot) (string, string, error) {
 	if slot == nil {
 		return "", "", fmt.Errorf("invalid booking slot")
 	}
@@ -375,34 +389,34 @@ func mapBookingSlot(slot *contract.BookingSlot) (string, string, error) {
 	return appDate, appTime, nil
 }
 
-func mapVulnerabilities(vulnerabilities *contract.VulnerabilityDetails) string {
+func mapVulnerabilities(vulnerabilities *lowribeckv1.VulnerabilityDetails) string {
 	vulnCodes := make([]string, len(vulnerabilities.GetVulnerabilities()))
 	for i, vul := range vulnerabilities.GetVulnerabilities() {
 		switch vul {
 		// 01 - Hearing Impaired
-		case contract.Vulnerability_VULNERABILITY_HEARING:
+		case lowribeckv1.Vulnerability_VULNERABILITY_HEARING:
 			vulnCodes[i] = "1"
 		// 02 - Visually Impaired
-		case contract.Vulnerability_VULNERABILITY_SIGHT:
+		case lowribeckv1.Vulnerability_VULNERABILITY_SIGHT:
 			vulnCodes[i] = "2"
 		// 03 - Elderly
-		case contract.Vulnerability_VULNERABILITY_PENSIONABLE_AGE:
+		case lowribeckv1.Vulnerability_VULNERABILITY_PENSIONABLE_AGE:
 			vulnCodes[i] = "3"
 		// 04 - Disabled
-		case contract.Vulnerability_VULNERABILITY_LEARNING_DIFFICULTIES:
+		case lowribeckv1.Vulnerability_VULNERABILITY_LEARNING_DIFFICULTIES:
 			vulnCodes[i] = "4"
 		// 06 - Foreign Language Speaker
-		case contract.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY:
+		case lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY:
 			vulnCodes[i] = "6"
 		// 07 - Restricted Movement
-		case contract.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT:
+		case lowribeckv1.Vulnerability_VULNERABILITY_PHYSICAL_OR_RESTRICTED_MOVEMENT:
 			vulnCodes[i] = "7"
 		// 08 - Serious Illness
-		case contract.Vulnerability_VULNERABILITY_ILLNESS:
+		case lowribeckv1.Vulnerability_VULNERABILITY_ILLNESS:
 			vulnCodes[i] = "8"
 		// 09 - Other
-		case contract.Vulnerability_VULNERABILITY_OTHER,
-			contract.Vulnerability_VULNERABILITY_UNKNOWN:
+		case lowribeckv1.Vulnerability_VULNERABILITY_OTHER,
+			lowribeckv1.Vulnerability_VULNERABILITY_UNKNOWN:
 			vulnCodes[i] = "9"
 		}
 		// Unused LB codes
@@ -411,19 +425,21 @@ func mapVulnerabilities(vulnerabilities *contract.VulnerabilityDetails) string {
 	return strings.Join(vulnCodes, ",")
 }
 
-func mapContactName(contact *contract.ContactDetails) string {
+func mapContactName(contact *lowribeckv1.ContactDetails) string {
 	contactName := strings.TrimSpace(contact.GetTitle() + " " + contact.GetFirstName())
 	return strings.TrimSpace(contactName + " " + contact.GetLastName())
 
 }
 
-func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType lowribeckv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string) {
+func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType lowribeckv1.TariffType) (elecJobTypeCode string, gasJobTypeCode string, err error) {
 
 	switch elecTariffType {
 	case lowribeckv1.TariffType_TARIFF_TYPE_CREDIT:
 		elecJobTypeCode = lb.CreditElectricityJobType
 	case lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT:
 		elecJobTypeCode = lb.PrepaymentElectricityJobType
+	default:
+		return "", "", ErrInvalidElectricityTariffType
 	}
 
 	switch gasTariffType {
@@ -431,7 +447,11 @@ func (lb LowriBeck) mapTariffTypeToJobType(elecTariffType, gasTariffType lowribe
 		gasJobTypeCode = lb.CreditGasJobType
 	case lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT:
 		gasJobTypeCode = lb.PrepaymentGasJobType
+	case lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN:
+		gasJobTypeCode = ""
+	default:
+		return "", "", ErrInvalidGasTariffType
 	}
 
-	return elecJobTypeCode, gasJobTypeCode
+	return elecJobTypeCode, gasJobTypeCode, nil
 }

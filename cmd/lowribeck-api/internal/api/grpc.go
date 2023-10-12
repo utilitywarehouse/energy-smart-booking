@@ -41,7 +41,7 @@ type Mapper interface {
 	BookingResponse(*lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error)
 
 	//Point Of Sale Methods
-	AvailabilityRequestPointOfSale(uint32, *contract.GetAvailableSlotsPointOfSaleRequest) *lowribeck.GetCalendarAvailabilityRequest
+	AvailabilityRequestPointOfSale(uint32, *contract.GetAvailableSlotsPointOfSaleRequest) (*lowribeck.GetCalendarAvailabilityRequest, error)
 	BookingRequestPointOfSale(uint32, *contract.CreateBookingPointOfSaleRequest) (*lowribeck.CreateBookingRequest, error)
 	AvailableSlotsPointOfSaleResponse(resp *lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsPointOfSaleResponse, error)
 	BookingResponsePointOfSale(resp *lowribeck.CreateBookingResponse) (*contract.CreateBookingPointOfSaleResponse, error)
@@ -125,7 +125,14 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *contract.GetAvailableSlotsPointOfSaleRequest) (*contract.GetAvailableSlotsPointOfSaleResponse, error) {
 
 	requestID := uuid.New().ID()
-	availableSlotsRequest := l.mapper.AvailabilityRequestPointOfSale(requestID, req)
+	availableSlotsRequest, err := l.mapper.AvailabilityRequestPointOfSale(requestID, req)
+	if err != nil {
+		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
+			errors.Is(err, mapper.ErrInvalidGasTariffType) {
+			logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+			return nil, status.Errorf(codes.Internal, "error making get available slots point of sale: %v", err)
+		}
+	}
 
 	resp, err := l.client.GetCalendarAvailabilityPointOfSale(ctx, availableSlotsRequest)
 	if err != nil {
@@ -147,6 +154,10 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	bookingReq, err := l.mapper.BookingRequestPointOfSale(requestID, req)
 	if err != nil {
 		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
+			errors.Is(err, mapper.ErrInvalidGasTariffType) {
+			return nil, status.Errorf(codes.Internal, "error mapping point of sale booking request: %v", err)
+		}
 		return nil, status.Errorf(codes.InvalidArgument, "error mapping point of sale booking request: %v", err)
 	}
 	resp, err := l.client.CreateBookingPointOfSale(ctx, bookingReq)
@@ -187,12 +198,6 @@ func createInvalidRequestError(msg, endpoint string, invErr *mapper.InvalidReque
 	case mapper.InvalidMPRN:
 		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidMPRN, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_MPRN
-	case mapper.InvalidElectricityJobTypeCode:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidElectricityJobTypeCode, endpoint).Inc()
-		param = contract.Parameters_PARAMETERS_ELECTRICITY_TARIFF
-	case mapper.InvalidGasJobTypeCode:
-		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidGasJobTypeCode, endpoint).Inc()
-		param = contract.Parameters_PARAMETERS_GAS_TARIFF
 	default:
 		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidUnknownParameter, endpoint).Inc()
 		param = contract.Parameters_PARAMETERS_UNKNOWN
@@ -222,6 +227,12 @@ func getStatusFromError(formatMessage, endpoint string, err error) error {
 
 	case errors.Is(err, mapper.ErrInternalError):
 		metrics.LBErrorsCount.WithLabelValues(metrics.Internal, endpoint).Inc()
+		return status.Errorf(codes.Internal, formatMessage, err)
+
+	case errors.Is(err, mapper.ErrInvalidJobTypeCode),
+		errors.Is(err, mapper.ErrInvalidElectricityJobTypeCode),
+		errors.Is(err, mapper.ErrInvalidGasJobTypeCode):
+		metrics.LBErrorsCount.WithLabelValues(metrics.InvalidJobTypeCode, endpoint).Inc()
 		return status.Errorf(codes.Internal, formatMessage, err)
 
 	default:
