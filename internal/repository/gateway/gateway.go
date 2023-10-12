@@ -19,4 +19,6 @@ type AccountClient interface {
 type LowriBeckClient interface {
 	GetAvailableSlots(ctx context.Context, in *lowribeckv1.GetAvailableSlotsRequest, opts ...grpc.CallOption) (*lowribeckv1.GetAvailableSlotsResponse, error)
 	CreateBooking(ctx context.Context, in *lowribeckv1.CreateBookingRequest, opts ...grpc.CallOption) (*lowribeckv1.CreateBookingResponse, error)
+	GetAvailableSlotsPointOfSale(ctx context.Context, in *lowribeckv1.GetAvailableSlotsPointOfSaleRequest, opts ...grpc.CallOption) (*lowribeckv1.GetAvailableSlotsPointOfSaleResponse, error)
+	CreateBookingPointOfSale(ctx context.Context, in *lowribeckv1.CreateBookingPointOfSaleRequest, opts ...grpc.CallOption) (*lowribeckv1.CreateBookingPointOfSaleResponse, error)
 }

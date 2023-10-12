@@ -734,3 +734,386 @@ func Test_RescheduleBooking(t *testing.T) {
 		})
 	}
 }
+
+// Point Of Sale Journey
+func Test_GetPOSAvailableSlots(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	accGw := mocks.NewMockAccountGateway(ctrl)
+	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	bookingSt := mocks.NewMockBookingStore(ctrl)
+
+	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, false)
+
+	type inputParams struct {
+		params domain.GetPOSAvailableSlotsParams
+	}
+
+	type outputParams struct {
+		output domain.GetAvailableSlotsResponse
+		err    error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway)
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should get the available slots between From and To",
+			input: inputParams{
+				params: domain.GetPOSAvailableSlotsParams{
+					Postcode:          "E2 1ZZ",
+					Mpan:              "mpan-1",
+					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					From: &date.Date{
+						Year:  2023,
+						Month: 12,
+						Day:   1,
+					},
+					To: &date.Date{
+						Year:  2023,
+						Month: 12,
+						Day:   30,
+					},
+				},
+			},
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+
+				lbGw.EXPECT().GetAvailableSlotsPointOfSale(ctx,
+					"E2 1ZZ",
+					"mpan-1",
+					"",
+					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+				).Return(gateway.AvailableSlotsResponse{
+					BookingSlots: []models.BookingSlot{
+						{
+							Date:      mustDate(t, "2023-12-05"),
+							StartTime: 9,
+							EndTime:   12,
+						},
+						{
+							Date:      mustDate(t, "2023-11-05"),
+							StartTime: 17,
+							EndTime:   19,
+						},
+						{
+							Date:      mustDate(t, "2023-12-10"),
+							StartTime: 11,
+							EndTime:   15,
+						},
+					},
+				}, nil)
+
+			},
+			output: outputParams{
+				output: domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{
+						{
+							Date:      mustDate(t, "2023-12-05"),
+							StartTime: 9,
+							EndTime:   12,
+						},
+						{
+							Date:      mustDate(t, "2023-12-10"),
+							StartTime: 11,
+							EndTime:   15,
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should return an error because no dates available for provided date",
+			input: inputParams{
+				params: domain.GetPOSAvailableSlotsParams{
+					Postcode:          "E2 1ZZ",
+					Mpan:              "mpan-1",
+					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					From: &date.Date{
+						Year:  2020,
+						Month: 12,
+						Day:   1,
+					},
+					To: &date.Date{
+						Year:  2020,
+						Month: 12,
+						Day:   30,
+					},
+				},
+			},
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+
+				lbGw.EXPECT().GetAvailableSlotsPointOfSale(ctx,
+					"E2 1ZZ",
+					"mpan-1",
+					"",
+					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+				).Return(gateway.AvailableSlotsResponse{
+					BookingSlots: []models.BookingSlot{
+						{
+							Date:      mustDate(t, "2023-12-05"),
+							StartTime: 9,
+							EndTime:   12,
+						},
+						{
+							Date:      mustDate(t, "2023-11-05"),
+							StartTime: 17,
+							EndTime:   19,
+						},
+						{
+							Date:      mustDate(t, "2023-12-10"),
+							StartTime: 11,
+							EndTime:   15,
+						},
+					},
+				}, nil)
+
+			},
+			output: outputParams{
+				output: domain.GetAvailableSlotsResponse{
+					Slots: []models.BookingSlot{},
+				},
+				err: domain.ErrNoAvailableSlotsForProvidedDates,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, lbGw)
+
+			actual, err := myDomain.GetAvailableSlotsPointOfSale(ctx, tc.input.params)
+
+			if tc.output.err != nil {
+				if !errors.Is(err, tc.output.err) {
+					t.Fatalf("expected: %s, actual: %s", err, tc.output.err)
+				}
+			}
+
+			if diff := cmp.Diff(actual, tc.output.output, cmpopts.IgnoreUnexported(date.Date{})); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func Test_CreatePOSBooking(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	accGw := mocks.NewMockAccountGateway(ctrl)
+	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	bookingSt := mocks.NewMockBookingStore(ctrl)
+
+	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, false)
+
+	var emptyMsg *bookingv1.BookingCreatedEvent
+
+	type inputParams struct {
+		params domain.CreatePOSBookingParams
+	}
+
+	type outputParams struct {
+		event domain.CreateBookingResponse
+		err   error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway)
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should create booking",
+			input: inputParams{
+				params: domain.CreatePOSBookingParams{
+					AccountID:         "account-id-1",
+					Postcode:          "E2 1ZZ",
+					Mpan:              "mpan-1",
+					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					},
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+
+				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
+					"E2 1ZZ",
+					"mpan-1",
+					"",
+					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					}, models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					}, []lowribeckv1.Vulnerability{
+						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
+					Success:     true,
+					ReferenceID: "test-ref",
+				}, nil)
+
+			},
+			output: outputParams{
+				event: domain.CreateBookingResponse{
+					Event: &bookingv1.BookingCreatedEvent{
+						BookingId:     "my-uuid",
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+						Details: &bookingv1.Booking{
+							Id:        "my-uuid",
+							AccountId: "account-id-1",
+							ContactDetails: &bookingv1.ContactDetails{
+								Title:     "Mr",
+								FirstName: "John",
+								LastName:  "Dough",
+								Phone:     "555-0145",
+								Email:     "jdough@example.com",
+							},
+							Slot: &bookingv1.BookingSlot{
+								Date: &date.Date{
+									Year:  2023,
+									Month: 8,
+									Day:   27,
+								},
+								StartTime: 9,
+								EndTime:   15,
+							},
+							VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+								Vulnerabilities: []bookingv1.Vulnerability{
+									bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+								},
+								Other: "",
+							},
+							Status:            bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+							ExternalReference: "test-ref",
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should return nil event because booking call was unsuccessful",
+			input: inputParams{
+				params: domain.CreatePOSBookingParams{
+					AccountID:         "account-id-1",
+					Postcode:          "E2 1ZZ",
+					Mpan:              "mpan-1",
+					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					},
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "",
+					},
+				},
+			},
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+
+				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
+					"E2 1ZZ",
+					"mpan-1",
+					"",
+					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					}, models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					}, []lowribeckv1.Vulnerability{
+						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
+					Success:     false,
+					ReferenceID: "test-ref",
+				}, nil)
+
+			},
+			output: outputParams{
+				event: domain.CreateBookingResponse{
+					Event: emptyMsg,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, lbGw)
+
+			actual, err := myDomain.CreateBookingPointOfSale(ctx, tc.input.params)
+
+			if tc.output.err != nil {
+				if !errors.Is(err, tc.output.err) {
+					t.Fatalf("expected: %s, actual: %s", err, tc.output.err)
+				}
+			}
+
+			if diff := cmp.Diff(actual, tc.output.event, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.BookingCreatedEvent{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
+				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{}), cmpopts.IgnoreFields(bookingv1.BookingCreatedEvent{}, "BookingId"), cmpopts.IgnoreFields(bookingv1.Booking{}, "Id")); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}

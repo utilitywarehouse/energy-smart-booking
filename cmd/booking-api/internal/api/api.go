@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/utilitywarehouse/account-platform/pkg/id"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	energy "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
@@ -34,6 +36,10 @@ type BookingDomain interface {
 	CreateBooking(ctx context.Context, params domain.CreateBookingParams) (domain.CreateBookingResponse, error)
 	GetAvailableSlots(ctx context.Context, params domain.GetAvailableSlotsParams) (domain.GetAvailableSlotsResponse, error)
 	RescheduleBooking(ctx context.Context, params domain.RescheduleBookingParams) (domain.RescheduleBookingResponse, error)
+
+	// POS Journey
+	CreateBookingPointOfSale(ctx context.Context, params domain.CreatePOSBookingParams) (domain.CreateBookingResponse, error)
+	GetAvailableSlotsPointOfSale(ctx context.Context, params domain.GetPOSAvailableSlotsParams) (domain.GetAvailableSlotsResponse, error)
 }
 
 type BookingPublisher interface {
@@ -54,6 +60,10 @@ type BookingAPI struct {
 
 type accountIder interface {
 	GetAccountId() string
+}
+
+type accountNumberer interface {
+	GetAccountNumber() string
 }
 
 func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth, useTracing bool) *BookingAPI {
@@ -257,43 +267,9 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 
 	availableSlotsResponse, err := b.bookingDomain.GetAvailableSlots(ctx, params)
 	if err != nil {
-		switch {
-
-		case errors.Is(err, gateway.ErrInvalidArgument):
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
-
-		case errors.Is(err, gateway.ErrInternalBadParameters):
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
-
-		case errors.Is(err, gateway.ErrInternal):
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
-
-		case errors.Is(err, gateway.ErrNotFound):
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.NotFound, "failed to get available slots, %s", err)
-
-		case errors.Is(err, gateway.ErrOutOfRange):
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.OutOfRange, "failed to get available slots, %s", err)
-
-		case errors.Is(err, domain.ErrNoAvailableSlotsForProvidedDates):
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.OutOfRange, "failed to get available slots, %s", err)
-
-		default:
-			return &bookingv1.GetAvailableSlotsResponse{
-				Slots: nil,
-			}, status.Errorf(codes.Internal, "failed to get available slots, %s", err)
-		}
+		return &bookingv1.GetAvailableSlotsResponse{
+			Slots: nil,
+		}, mapError("failed to get available slots, %s", err)
 	}
 
 	bookingSlots := make([]*bookingv1.BookingSlot, len(availableSlotsResponse.Slots))
@@ -385,53 +361,9 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 
 	createBookingResponse, err := b.bookingDomain.CreateBooking(ctx, params)
 	if err != nil {
-		switch {
-		case errors.Is(err, gateway.ErrInvalidArgument):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInternalBadParameters):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInternal):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
-
-		case errors.Is(err, gateway.ErrNotFound):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.NotFound, "failed to create booking, %s", err)
-
-		case errors.Is(err, gateway.ErrOutOfRange):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.OutOfRange, "failed to create booking, %s", err)
-
-		case errors.Is(err, gateway.ErrAlreadyExists):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.AlreadyExists, "failed to create booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInvalidAppointmentDate):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.InvalidArgument, "failed to create booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInvalidAppointmentTime):
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.InvalidArgument, "failed to create booking, %s", err)
-
-		default:
-			return &bookingv1.CreateBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to create booking, %s", err)
-
-		}
+		return &bookingv1.CreateBookingResponse{
+			BookingId: "",
+		}, mapError("failed to create booking, %s", err)
 	}
 
 	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
@@ -493,53 +425,9 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 
 	rescheduleBookingResponse, err := b.bookingDomain.RescheduleBooking(ctx, params)
 	if err != nil {
-		switch {
-
-		case errors.Is(err, gateway.ErrInvalidArgument):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInternalBadParameters):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInternal):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
-
-		case errors.Is(err, gateway.ErrNotFound):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.NotFound, "failed to reschedule booking, %s", err)
-
-		case errors.Is(err, gateway.ErrOutOfRange):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.OutOfRange, "failed to reschedule booking, %s", err)
-
-		case errors.Is(err, gateway.ErrAlreadyExists):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.AlreadyExists, "failed to reschedule booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInvalidAppointmentDate):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", err)
-
-		case errors.Is(err, gateway.ErrInvalidAppointmentTime):
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.InvalidArgument, "failed to reschedule booking, %s", err)
-
-		default:
-			return &bookingv1.RescheduleBookingResponse{
-				BookingId: "",
-			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", err)
-		}
+		return &bookingv1.RescheduleBookingResponse{
+			BookingId: "",
+		}, mapError("failed to reschedule booking, %s", err)
 	}
 
 	err = b.publisher.Sink(ctx, rescheduleBookingResponse.Event, time.Now())
@@ -550,6 +438,206 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 	return &bookingv1.RescheduleBookingResponse{
 		BookingId: rescheduleBookingResponse.Event.(*bookingv1.BookingRescheduledEvent).BookingId,
 	}, nil
+}
+
+func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *bookingv1.GetAvailableSlotsPointOfSaleRequest) (_ *bookingv1.GetAvailableSlotsPointOfSaleResponse, err error) {
+	if err := validatePOSRequest(req); err != nil {
+		return nil, err
+	}
+	accountID := id.NewAccountID(req.GetAccountNumber())
+
+	var span trace.Span
+	if b.useTracing {
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
+			trace.WithAttributes(attribute.String("account.id", accountID)),
+		)
+		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
+		defer func() {
+			tracing.RecordSpanError(span, err)
+			span.End()
+		}()
+	}
+
+	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, accountID)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	if req.Meterpoints == nil {
+		return nil, status.Error(codes.InvalidArgument, "no meterpoints provided")
+	}
+
+	if req.From == nil {
+		return nil, status.Error(codes.InvalidArgument, "no date From provided")
+	}
+
+	if req.To == nil {
+		return nil, status.Error(codes.InvalidArgument, "no date To provided")
+	}
+
+	mpan, mprn, err := getSupplyMeters(req.GetMeterpoints())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	// We must have an MPAN, MPRN's are optional
+	if mpan == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "no mpan provided")
+	}
+
+	params := domain.GetPOSAvailableSlotsParams{
+		AccountID:         accountID,
+		Postcode:          req.GetPostCode(),
+		Mpan:              mpan.GetMpxn(),
+		TariffElectricity: mpan.GetTariffType(),
+		Mprn:              mprn.GetMpxn(),
+		TariffGas:         mprn.GetTariffType(),
+		From:              req.From,
+		To:                req.To,
+	}
+
+	availableSlotsResponse, err := b.bookingDomain.GetAvailableSlotsPointOfSale(ctx, params)
+	if err != nil {
+		return &bookingv1.GetAvailableSlotsPointOfSaleResponse{
+			Slots: nil,
+		}, mapError("failed to get available slots, %s", err)
+	}
+
+	bookingSlots := make([]*bookingv1.BookingSlot, len(availableSlotsResponse.Slots))
+
+	for index, slot := range availableSlotsResponse.Slots {
+
+		bookingSlot := bookingv1.BookingSlot{
+			Date: &date.Date{
+				Year:  int32(slot.Date.Year()),
+				Month: int32(slot.Date.Month()),
+				Day:   int32(slot.Date.Day()),
+			},
+			StartTime: int32(slot.StartTime),
+			EndTime:   int32(slot.EndTime),
+		}
+
+		bookingSlots[index] = &bookingSlot
+	}
+
+	if b.useTracing {
+		bookingSlotsAttr := helpers.CreateSpanAttribute(bookingSlots, "bookingSlots", span)
+		span.AddEvent("response", trace.WithAttributes(bookingSlotsAttr))
+	}
+
+	return &bookingv1.GetAvailableSlotsPointOfSaleResponse{
+		Slots: bookingSlots,
+	}, nil
+}
+
+// TODO - Publish booking event https://linear.app/utilitywarehouse/issue/SMT-329/publish-point-of-sale-booking-event
+func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv1.CreateBookingPointOfSaleRequest) (_ *bookingv1.CreateBookingPointOfSaleResponse, err error) {
+	if err := validatePOSRequest(req); err != nil {
+		return nil, err
+	}
+	accountID := id.NewAccountID(req.GetAccountNumber())
+
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreatePOSBooking",
+			trace.WithAttributes(attribute.String("account.id", accountID)),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err)
+			span.End()
+		}()
+	}
+
+	err = b.validateCredentials(ctx, auth.CreateAction, auth.AccountBookingResource, accountID)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	if req.Meterpoints == nil {
+		return nil, status.Error(codes.InvalidArgument, "no meterpoints provided")
+	}
+
+	if req.ContactDetails == nil {
+		return nil, status.Error(codes.InvalidArgument, "no contact details provided")
+	}
+
+	if req.Platform == bookingv1.Platform_PLATFORM_UNKNOWN {
+		return nil, status.Error(codes.InvalidArgument, "unknown platform provided")
+	}
+
+	if req.Slot == nil {
+		return nil, status.Error(codes.InvalidArgument, "no slot provided")
+	}
+
+	if req.VulnerabilityDetails == nil {
+		return nil, status.Error(codes.InvalidArgument, "no vulnerability details provided")
+	}
+
+	mpan, mprn, err := getSupplyMeters(req.GetMeterpoints())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	// We must have an MPAN, MPRN's are optional
+	if mpan == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "no mpan provided")
+	}
+
+	params := domain.CreatePOSBookingParams{
+		AccountID:         accountID,
+		Postcode:          req.GetPostCode(),
+		Mpan:              mpan.GetMpxn(),
+		TariffElectricity: mpan.GetTariffType(),
+		Mprn:              mprn.GetMpxn(),
+		TariffGas:         mprn.GetTariffType(),
+		ContactDetails: models.AccountDetails{
+			Title:     req.GetContactDetails().Title,
+			FirstName: req.GetContactDetails().FirstName,
+			LastName:  req.GetContactDetails().LastName,
+			Email:     req.GetContactDetails().Email,
+			Mobile:    req.GetContactDetails().Phone,
+		},
+		Slot: models.BookingSlot{
+			Date:      time.Date(int(req.Slot.Date.Year), time.Month(req.Slot.Date.Month), int(req.Slot.Date.Day), 0, 0, 0, 0, time.UTC),
+			StartTime: int(req.Slot.StartTime),
+			EndTime:   int(req.Slot.EndTime),
+		},
+		VulnerabilityDetails: req.VulnerabilityDetails,
+		Source:               models.PlatformSourceToBookingSource(req.Platform),
+	}
+
+	createBookingResponse, err := b.bookingDomain.CreateBookingPointOfSale(ctx, params)
+	if err != nil {
+		return &bookingv1.CreateBookingPointOfSaleResponse{
+			BookingId: "",
+		}, mapError("failed to create booking, %s", err)
+	}
+
+	return &bookingv1.CreateBookingPointOfSaleResponse{
+		BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
+	}, nil
+}
+
+func validatePOSRequest(req accountNumberer) error {
+	if req == nil {
+		return status.Error(codes.InvalidArgument, "no request provided")
+	}
+
+	if req.GetAccountNumber() == "" {
+		return status.Error(codes.InvalidArgument, "no account number provided")
+	}
+
+	return nil
 }
 
 func validateRequest(req accountIder) error {
@@ -583,4 +671,55 @@ func (b *BookingAPI) validateCredentials(ctx context.Context, action, resource, 
 	}
 
 	return nil
+}
+
+func mapError(message string, err error) error {
+	switch {
+	case errors.Is(err, gateway.ErrInvalidArgument):
+		return status.Errorf(codes.Internal, message, err)
+
+	case errors.Is(err, gateway.ErrInternalBadParameters):
+		return status.Errorf(codes.Internal, message, err)
+
+	case errors.Is(err, gateway.ErrInternal):
+		return status.Errorf(codes.Internal, message, err)
+
+	case errors.Is(err, gateway.ErrNotFound):
+		return status.Errorf(codes.NotFound, message, err)
+
+	case errors.Is(err, gateway.ErrOutOfRange):
+		return status.Errorf(codes.OutOfRange, message, err)
+
+	case errors.Is(err, domain.ErrNoAvailableSlotsForProvidedDates):
+		return status.Errorf(codes.OutOfRange, message, err)
+
+	case errors.Is(err, gateway.ErrAlreadyExists):
+		return status.Errorf(codes.AlreadyExists, message, err)
+
+	case errors.Is(err, gateway.ErrInvalidAppointmentDate):
+		return status.Errorf(codes.InvalidArgument, message, err)
+
+	case errors.Is(err, gateway.ErrInvalidAppointmentTime):
+		return status.Errorf(codes.InvalidArgument, message, err)
+
+	default:
+		return status.Errorf(codes.Internal, message, err)
+	}
+}
+
+func getSupplyMeters(meterpoints []*bookingv1.Meterpoint) (*bookingv1.Meterpoint, *bookingv1.Meterpoint, error) {
+	var mpan, mprn *bookingv1.Meterpoint
+	for i, meterpoint := range meterpoints {
+		mpxn, err := energy.NewMeterPointNumber(meterpoint.GetMpxn())
+		if err != nil {
+			return nil, nil, fmt.Errorf("invalid meterpoint number (%s): %v", meterpoint.GetMpxn(), err)
+		}
+		// We want the first electricity MPAN
+		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan == nil {
+			mpan = meterpoints[i]
+		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
+			mpan = meterpoints[i]
+		}
+	}
+	return mpan, mprn, nil
 }

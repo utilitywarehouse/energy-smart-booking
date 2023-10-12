@@ -2,7 +2,6 @@ package gateway_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
@@ -16,10 +15,6 @@ import (
 	"google.golang.org/genproto/googleapis/type/date"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-)
-
-var (
-	errOops = errors.New("errOops")
 )
 
 func Test_GetAvailableSlots(t *testing.T) {
@@ -477,6 +472,482 @@ func Test_GetCreateBooking_HasErrors(t *testing.T) {
 			}, []lowribeckv1.Vulnerability{
 				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 			}, "Bad Knee")
+
+			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
+				t.Fatal(diff)
+			}
+
+			if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
+				t.Fatalf("expected: %+v, actual: %+v", expected, actual)
+			}
+		})
+	}
+}
+
+// Point Of Sale Journey
+func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
+	mai := fakeMachineAuthInjector{}
+	mai.ctx = ctx
+
+	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+
+	lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
+		Postcode:              "E2 1ZZ",
+		Mpan:                  "mpan-1",
+		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+	}).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
+		Slots: []*lowribeckv1.BookingSlot{
+			{
+				Date: &date.Date{
+					Year:  2000,
+					Month: 5,
+					Day:   5,
+				},
+				StartTime: 10,
+				EndTime:   15,
+			},
+			{
+				Date: &date.Date{
+					Year:  2001,
+					Month: 5,
+					Day:   5,
+				},
+				StartTime: 14,
+				EndTime:   19,
+			},
+		},
+	}, nil)
+
+	actual := gateway.AvailableSlotsResponse{
+		BookingSlots: []models.BookingSlot{
+			{
+				Date:      mustDate(t, "2000-05-05"),
+				StartTime: 10,
+				EndTime:   15,
+			},
+			{
+				Date:      mustDate(t, "2001-05-05"),
+				StartTime: 14,
+				EndTime:   19,
+			},
+		},
+	}
+
+	expected, err := myGw.GetAvailableSlotsPointOfSale(ctx, "E2 1ZZ", "mpan-1", "", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
+		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
+	}
+}
+
+func Test_GetAvailableSlotsPointOfSale_HasError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	defer ctrl.Finish()
+
+	ctx := context.Background()
+
+	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
+	mai := fakeMachineAuthInjector{}
+	mai.ctx = ctx
+
+	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+
+	availableSlotsRequest := &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
+		Postcode:              "E2 1ZZ",
+		Mpan:                  "mpan-1",
+		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+	}
+
+	type testCases struct {
+		description string
+		setup       func(lbC *mock_gateways.MockLowriBeckClient)
+		outputErr   error
+	}
+
+	tcs := []testCases{
+		{
+			description: "get available slots receives an internal status error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.Internal, "errOops").Err()
+
+				lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
+			},
+			outputErr: gateway.ErrInternal,
+		},
+		{
+			description: "get available slots receives a not found error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.NotFound, "errOops").Err()
+
+				lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
+			},
+			outputErr: gateway.ErrNotFound,
+		},
+		{
+			description: "get available slots receives an invalid argument error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.InvalidArgument, "errOops").Err()
+
+				lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
+			},
+			outputErr: gateway.ErrInvalidArgument,
+		},
+		{
+			description: "get available slots receives an unhandled error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.Unauthenticated, "errOops").Err()
+
+				lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
+			},
+			outputErr: gateway.ErrUnhandledErrorCode,
+		},
+		{
+			description: "get available slots receives an invalid argument status error with details - postcode",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus.Err())
+
+			},
+			outputErr: gateway.ErrInternalBadParameters,
+		},
+		{
+			description: "get available slots receives an out of range error",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.OutOfRange, "errOops").Err()
+
+				lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
+					Slots: []*lowribeckv1.BookingSlot{},
+				}, errorStatus)
+
+			},
+			outputErr: gateway.ErrOutOfRange,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(lbC)
+
+			_, err := myGw.GetAvailableSlotsPointOfSale(ctx, "E2 1ZZ", "mpan-1", "", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN)
+
+			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+
+}
+
+func Test_CreateBookingPointOfSale(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	defer ctrl.Finish()
+
+	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
+
+	ctx := context.Background()
+	mai := fakeMachineAuthInjector{}
+	mai.ctx = ctx
+
+	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+
+	postcode, mpan, tariffType := "E2 1ZZ", "mpan-1", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT
+
+	lbC.EXPECT().CreateBookingPointOfSale(ctx, &lowribeckv1.CreateBookingPointOfSaleRequest{
+		Postcode:              postcode,
+		Mpan:                  mpan,
+		ElectricityTariffType: tariffType,
+		Slot: &lowribeckv1.BookingSlot{
+			Date: &date.Date{
+				Year:  2020,
+				Month: 12,
+				Day:   20,
+			},
+			StartTime: 15,
+			EndTime:   19,
+		},
+		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+			Vulnerabilities: []lowribeckv1.Vulnerability{
+				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+			},
+			Other: "Bad Knee",
+		},
+		ContactDetails: &lowribeckv1.ContactDetails{
+			Title:     "Mr",
+			FirstName: "John",
+			LastName:  "Doe",
+			Phone:     "555-0777",
+		},
+	}).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+		Success:   true,
+		Reference: "test-ref",
+	}, nil)
+
+	actual := gateway.CreateBookingPointOfSaleResponse{
+		Success:     true,
+		ReferenceID: "test-ref",
+	}
+
+	expected, err := myGw.CreateBookingPointOfSale(ctx, postcode, mpan, "", tariffType, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+		models.BookingSlot{
+			Date:      mustDate(t, "2020-12-20"),
+			StartTime: 15,
+			EndTime:   19,
+		}, models.AccountDetails{
+			Title:     "Mr",
+			FirstName: "John",
+			LastName:  "Doe",
+			Email:     "jdoe@example.com",
+			Mobile:    "555-0777",
+		}, []lowribeckv1.Vulnerability{
+			lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+		}, "Bad Knee")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported(date.Date{})) {
+		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
+	}
+}
+
+func Test_CreateBookingPointOfSale_HasErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	lbC := mock_gateways.NewMockLowriBeckClient(ctrl)
+	mai := fakeMachineAuthInjector{}
+	mai.ctx = ctx
+
+	myGw := gateway.NewLowriBeckGateway(mai, lbC)
+
+	type testCases struct {
+		description string
+		setup       func(lbC *mock_gateways.MockLowriBeckClient)
+		outputErr   error
+	}
+
+	lbcreatebookingRequest := &lowribeckv1.CreateBookingPointOfSaleRequest{
+		Postcode:              "E2 1ZZ",
+		Mpan:                  "mpan-1",
+		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+		Slot: &lowribeckv1.BookingSlot{
+			Date: &date.Date{
+				Year:  2020,
+				Month: 12,
+				Day:   20,
+			},
+			StartTime: 15,
+			EndTime:   19,
+		},
+		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
+			Vulnerabilities: []lowribeckv1.Vulnerability{
+				lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+			},
+			Other: "Bad Knee",
+		},
+		ContactDetails: &lowribeckv1.ContactDetails{
+			Title:     "Mr",
+			FirstName: "John",
+			LastName:  "Doe",
+			Phone:     "555-0777",
+		},
+	}
+
+	tcs := []testCases{
+		{
+			description: "Create booking returns internal error status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.Internal, "errOops").Err()
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: gateway.ErrInternal,
+		},
+		{
+			description: "Create booking returns invalid argument status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.InvalidArgument, "errOops").Err()
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: gateway.ErrInvalidArgument,
+		},
+		{
+			description: "Create booking returns already exists status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.AlreadyExists, "errOops").Err()
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: gateway.ErrAlreadyExists,
+		},
+		{
+			description: "Create booking returns out of range status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.OutOfRange, "errOops").Err()
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: gateway.ErrOutOfRange,
+		},
+		{
+			description: "Create booking returns not found status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.NotFound, "errOops").Err()
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: gateway.ErrNotFound,
+		},
+		{
+			description: "Create booking returns an unhandled status code",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus := status.New(codes.Unimplemented, "errOops").Err()
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus)
+			},
+			outputErr: gateway.ErrUnhandledErrorCode,
+		},
+		{
+			description: "Create booking returns an invalid argument status code and with details",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus.Err())
+			},
+			outputErr: gateway.ErrInternalBadParameters,
+		},
+		{
+			description: "Create booking returns an invalid argument status code and with details - date",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus.Err())
+			},
+			outputErr: gateway.ErrInvalidAppointmentDate,
+		},
+		{
+			description: "Create booking returns an invalid argument status code and with details - time",
+			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
+
+				errorStatus, err := status.New(codes.InvalidArgument, "errOops").WithDetails(&lowribeckv1.InvalidParameterResponse{
+					Parameters: lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME,
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				lbC.EXPECT().CreateBookingPointOfSale(ctx, lbcreatebookingRequest).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
+					Success: false,
+				}, errorStatus.Err())
+			},
+			outputErr: gateway.ErrInvalidAppointmentTime,
+		},
+	}
+
+	actual := gateway.CreateBookingPointOfSaleResponse{
+		Success:     false,
+		ReferenceID: "",
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.description, func(t *testing.T) {
+			tc.setup(lbC)
+
+			expected, err := myGw.CreateBookingPointOfSale(ctx, "E2 1ZZ", "mpan-1", "", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+				models.BookingSlot{
+					Date:      mustDate(t, "2020-12-20"),
+					StartTime: 15,
+					EndTime:   19,
+				}, models.AccountDetails{
+					Title:     "Mr",
+					FirstName: "John",
+					LastName:  "Doe",
+					Email:     "jdoe@example.com",
+					Mobile:    "555-0777",
+				}, []lowribeckv1.Vulnerability{
+					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+				}, "Bad Knee")
 
 			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
 				t.Fatal(diff)

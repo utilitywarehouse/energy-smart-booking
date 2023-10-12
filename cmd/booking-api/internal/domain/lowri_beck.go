@@ -45,6 +45,42 @@ type RescheduleBookingParams struct {
 	Slot      models.BookingSlot
 }
 
+type GetPOSAvailableSlotsParams struct {
+	AccountID         string
+	Postcode          string
+	Mpan              string
+	Mprn              string
+	TariffElectricity bookingv1.TariffType
+	TariffGas         bookingv1.TariffType
+	From              *date.Date
+	To                *date.Date
+}
+
+type CreatePOSBookingParams struct {
+	AccountID            string
+	Postcode             string
+	Mpan                 string
+	Mprn                 string
+	TariffElectricity    bookingv1.TariffType
+	TariffGas            bookingv1.TariffType
+	ContactDetails       models.AccountDetails
+	Slot                 models.BookingSlot
+	Source               bookingv1.BookingSource
+	VulnerabilityDetails *bookingv1.VulnerabilityDetails
+}
+
+type ReschedulePOSBookingParams struct {
+	AccountID         string
+	Postcode          string
+	Mpan              string
+	Mprn              string
+	TariffElectricity bookingv1.TariffType
+	TariffGas         bookingv1.TariffType
+	BookingID         string
+	Source            bookingv1.BookingSource
+	Slot              models.BookingSlot
+}
+
 type GetAvailableSlotsResponse struct {
 	Slots []models.BookingSlot
 }
@@ -201,6 +237,103 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 	}
 
 	return RescheduleBookingResponse{
+		Event: event,
+	}, nil
+}
+
+func (d BookingDomain) GetAvailableSlotsPointOfSale(ctx context.Context, params GetPOSAvailableSlotsParams) (GetAvailableSlotsResponse, error) {
+	fromAsTime := time.Date(int(params.From.Year), time.Month(params.From.Month), int(params.From.Day), 0, 0, 0, 0, time.UTC)
+	toAsTime := time.Date(int(params.To.Year), time.Month(params.To.Month), int(params.To.Day), 0, 0, 0, 0, time.UTC)
+
+	slotsResponse, err := d.lowribeckGw.GetAvailableSlotsPointOfSale(
+		ctx,
+		params.Postcode,
+		params.Mpan,
+		params.Mprn,
+		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
+		models.BookingTariffTypeToLowribeckTariffType(params.TariffGas),
+	)
+	if err != nil {
+		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get POS available slots, %w", err)
+	}
+
+	targetedSlots := []models.BookingSlot{}
+
+	for _, elem := range slotsResponse.BookingSlots {
+		currentSlotTime := time.Date(elem.Date.Year(), elem.Date.Month(), elem.Date.Day(), 0, 0, 0, 0, time.UTC)
+
+		if currentSlotTime.After(fromAsTime) && currentSlotTime.Before(toAsTime) {
+			targetedSlots = append(targetedSlots, elem)
+		}
+	}
+
+	if len(targetedSlots) == 0 {
+		return GetAvailableSlotsResponse{
+			Slots: targetedSlots,
+		}, ErrNoAvailableSlotsForProvidedDates
+	}
+
+	return GetAvailableSlotsResponse{
+		Slots: targetedSlots,
+	}, nil
+
+}
+
+func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params CreatePOSBookingParams) (CreateBookingResponse, error) {
+
+	var event *bookingv1.BookingCreatedEvent
+
+	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.GetVulnerabilities())
+
+	response, err := d.lowribeckGw.CreateBookingPointOfSale(
+		ctx,
+		params.Postcode,
+		params.Mpan,
+		params.Mprn,
+		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
+		models.BookingTariffTypeToLowribeckTariffType(params.TariffGas),
+		params.Slot,
+		params.ContactDetails,
+		lbVulnerabilities,
+		params.VulnerabilityDetails.Other,
+	)
+	if err != nil {
+		return CreateBookingResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
+	}
+
+	if response.Success {
+		bookingID := uuid.New().String()
+
+		event = &bookingv1.BookingCreatedEvent{
+			BookingId: bookingID,
+			Details: &bookingv1.Booking{
+				Id:        bookingID,
+				AccountId: params.AccountID,
+				ContactDetails: &bookingv1.ContactDetails{
+					Title:     params.ContactDetails.Title,
+					FirstName: params.ContactDetails.FirstName,
+					LastName:  params.ContactDetails.LastName,
+					Phone:     params.ContactDetails.Mobile,
+					Email:     params.ContactDetails.Email,
+				},
+				Slot: &bookingv1.BookingSlot{
+					Date: &date.Date{
+						Year:  int32(params.Slot.Date.Year()),
+						Month: int32(params.Slot.Date.Month()),
+						Day:   int32(params.Slot.Date.Day()),
+					},
+					StartTime: int32(params.Slot.StartTime),
+					EndTime:   int32(params.Slot.EndTime),
+				},
+				VulnerabilityDetails: params.VulnerabilityDetails,
+				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+				ExternalReference:    response.ReferenceID,
+			},
+			BookingSource: params.Source,
+		}
+	}
+
+	return CreateBookingResponse{
 		Event: event,
 	}, nil
 }
