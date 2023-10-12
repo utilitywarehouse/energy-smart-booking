@@ -129,8 +129,8 @@ func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *co
 	if err != nil {
 		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
 			errors.Is(err, mapper.ErrInvalidGasTariffType) {
-			logrus.Errorf("received invalid tariff type. tariff types received for electricity and gas: [%s / %s]", req.ElectricityTariffType, req.GasTariffType)
-			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots point of sale: %v", err)
+			logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+			return nil, status.Errorf(codes.Internal, "error making get available slots point of sale: %v", err)
 		}
 	}
 
@@ -155,8 +155,8 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	if err != nil {
 		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
 			errors.Is(err, mapper.ErrInvalidGasTariffType) {
-			logrus.Errorf("received invalid tariff type. tariff types received for electricity and gas: [%s / %s]", req.ElectricityTariffType, req.GasTariffType)
-			return nil, status.Errorf(codes.InvalidArgument, "error mapping point of sale booking request: %v", err)
+			logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+			return nil, status.Errorf(codes.Internal, "error mapping point of sale booking request: %v", err)
 		}
 		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
 		return nil, status.Errorf(codes.InvalidArgument, "error mapping point of sale booking request: %v", err)
