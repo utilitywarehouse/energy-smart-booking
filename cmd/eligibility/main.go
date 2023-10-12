@@ -40,8 +40,8 @@ const (
 	// gRPC
 	grpcPort     = "grpc-port"
 	grpcLogLevel = "grpc-log-level"
-	xoserveHost  = "xoserve-host"
-	ecoesHost    = "ecoes-host"
+	/*xoserveHost  = "xoserve-host"
+	ecoesHost    = "ecoes-host"*/
 
 	// http
 	httpPort = "http-port"
@@ -91,18 +91,18 @@ func main() {
 						EnvVars: []string{"HTTP_PORT"},
 						Value:   8091,
 					},
-					&cli.IntFlag{
+					/*&cli.StringFlag{
 						Name:     xoserveHost,
 						Usage:    "The xoserve host endpoint address",
 						EnvVars:  []string{"XOSERVE_HOST"},
 						Required: true,
 					},
-					&cli.IntFlag{
+					&cli.StringFlag{
 						Name:     ecoesHost,
 						Usage:    "The ecoes host endpoint address",
 						EnvVars:  []string{"ECOES_HOST"},
 						Required: true,
-					},
+					},*/
 				),
 				Before: app.Before,
 				Action: runGRPCApi,
