@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	xoservev1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/xoserve/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	mock_gateways "github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway/mocks"
 )
@@ -37,7 +38,7 @@ func Test_GetMPRNTechnicalDetails(t *testing.T) {
 		},
 	}, nil)
 
-	actual := &gateway.GasMeterTechnicalDetails{
+	actual := &models.GasMeterTechnicalDetails{
 		MeterType: platform.MeterTypeGas_METER_TYPE_GAS_COIN,
 		Capacity:  float32(6),
 	}

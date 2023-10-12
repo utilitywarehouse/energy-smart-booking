@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	xoservev1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/xoserve/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/grpc"
 )
 
@@ -21,12 +21,7 @@ func NewXOServeGateway(client XOServeClient) *XOServeGateway {
 	return &XOServeGateway{client}
 }
 
-type GasMeterTechnicalDetails struct {
-	MeterType platform.MeterTypeGas
-	Capacity  float32
-}
-
-func (gw *XOServeGateway) GetMPRNTechnicalDetails(ctx context.Context, mprn string) (*GasMeterTechnicalDetails, error) {
+func (gw *XOServeGateway) GetMPRNTechnicalDetails(ctx context.Context, mprn string) (*models.GasMeterTechnicalDetails, error) {
 	technicalDetails, err := gw.client.GetSwitchDataByMPRN(ctx, &xoservev1.SearchByMPRNRequest{
 		Mprn: mprn,
 	})
@@ -34,7 +29,7 @@ func (gw *XOServeGateway) GetMPRNTechnicalDetails(ctx context.Context, mprn stri
 		return nil, fmt.Errorf("failed to get switch data by mprn: %s, %w", mprn, err)
 	}
 
-	return &GasMeterTechnicalDetails{
+	return &models.GasMeterTechnicalDetails{
 		MeterType: technicalDetails.GetMeter().GetMeterType(),
 		Capacity:  technicalDetails.GetMeter().GetMeterCapacity(),
 	}, nil

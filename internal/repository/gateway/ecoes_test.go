@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	mock_gateways "github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway/mocks"
 	"google.golang.org/genproto/googleapis/type/date"
@@ -63,8 +64,8 @@ func Test_GetMPANTechnicalDetails(t *testing.T) {
 		},
 	}, nil)
 
-	actual := &gateway.ElectricityMeterTechnicalDetails{
-		Meters: []gateway.ElectricityMeter{
+	actual := &models.ElectricityMeterTechnicalDetails{
+		Meters: []models.ElectricityMeter{
 			{
 				MeterType:   platform.MeterTypeElec_METER_TYPE_ELEC_CHECK,
 				InstalledAt: time.Date(2020, 1, 3, 0, 0, 0, 0, time.UTC),
@@ -121,7 +122,7 @@ func Test_GetRelatedMPANs(t *testing.T) {
 	}, nil)
 
 	actual := &gateway.ElectricityMeterRelatedMPAN{
-		Relations: []gateway.MPANRelation{
+		Relations: []models.MPANRelation{
 			{
 				Primary:   "mpan-1",
 				Secondary: "mpan-2",
