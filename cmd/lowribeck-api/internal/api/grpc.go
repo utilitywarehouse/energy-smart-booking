@@ -127,8 +127,8 @@ func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *co
 	requestID := uuid.New().ID()
 	availableSlotsRequest, err := l.mapper.AvailabilityRequestPointOfSale(requestID, req)
 	if err != nil {
-		if errors.Is(err, mapper.ErrInvalidElectricityJobTypeCode) ||
-			errors.Is(err, mapper.ErrInvalidGasJobTypeCode) {
+		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
+			errors.Is(err, mapper.ErrInvalidGasTariffType) {
 			logrus.Errorf("received invalid tariff type. tariff types received for electricity and gas: [%s / %s]", req.ElectricityTariffType, req.GasTariffType)
 			return nil, status.Errorf(codes.InvalidArgument, "error making get available slots point of sale: %v", err)
 		}
@@ -153,8 +153,8 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequestPointOfSale(requestID, req)
 	if err != nil {
-		if errors.Is(err, mapper.ErrInvalidElectricityJobTypeCode) ||
-			errors.Is(err, mapper.ErrInvalidGasJobTypeCode) {
+		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
+			errors.Is(err, mapper.ErrInvalidGasTariffType) {
 			logrus.Errorf("received invalid tariff type. tariff types received for electricity and gas: [%s / %s]", req.ElectricityTariffType, req.GasTariffType)
 			return nil, status.Errorf(codes.InvalidArgument, "error mapping point of sale booking request: %v", err)
 		}
