@@ -153,12 +153,11 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequestPointOfSale(requestID, req)
 	if err != nil {
+		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
 		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
 			errors.Is(err, mapper.ErrInvalidGasTariffType) {
-			logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
 			return nil, status.Errorf(codes.Internal, "error mapping point of sale booking request: %v", err)
 		}
-		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
 		return nil, status.Errorf(codes.InvalidArgument, "error mapping point of sale booking request: %v", err)
 	}
 	resp, err := l.client.CreateBookingPointOfSale(ctx, bookingReq)
