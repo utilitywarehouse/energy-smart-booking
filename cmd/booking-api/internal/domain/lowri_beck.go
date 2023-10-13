@@ -362,7 +362,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 
 			return CreateBookingResponse{
 				Event: event,
-			}, ErrMissingOccupancyInBooking // we don't return an error but we don't return an event either
+			}, ErrMissingOccupancyInBooking
 		}
 		return CreateBookingResponse{}, fmt.Errorf("failed to get occupancy by id: %s, %w", params.AccountID, err)
 	}
