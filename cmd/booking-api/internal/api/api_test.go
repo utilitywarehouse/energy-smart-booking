@@ -3725,7 +3725,22 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
+					SiteAddress: &addressv1.Address{
+						Uprn: "uprn-1",
+						Paf: &addressv1.Address_PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
 					Meterpoints: []*bookingv1.Meterpoint{
 						{
 							Mpxn:       "123456",
@@ -3767,8 +3782,23 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.CreatePOSBookingParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
+					AccountID: accountID,
+					SiteAddress: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							Department:              "department-1",
+							DependentLocality:       "dl-1",
+							DependentThoroughfare:   "dt-1",
+							DoubleDependentLocality: "ddl-1",
+							Organisation:            "org",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+							SubBuilding:             "sub-1",
+							Thoroughfare:            "tf-1",
+						},
+					},
 					Mpan:              "123456",
 					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
@@ -3913,6 +3943,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
+<<<<<<< HEAD
 					Mpan:              "123456",
 					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
@@ -4057,6 +4088,8 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
+=======
+>>>>>>> 0bca98e (adds booking type to booking event, changes request parameters for create booking point of sale)
 					Mpan:              "123456",
 					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
