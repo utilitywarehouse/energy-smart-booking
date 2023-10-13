@@ -388,6 +388,7 @@ func Test_CreateBooking(t *testing.T) {
 							},
 							Status:            bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 							ExternalReference: "booking-reference-1",
+							BookingType:       bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
 						},
 					},
 				},
