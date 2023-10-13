@@ -121,7 +121,7 @@ func Test_GetRelatedMPANs(t *testing.T) {
 		},
 	}, nil)
 
-	actual := &gateway.ElectricityMeterRelatedMPAN{
+	actual := &models.ElectricityMeterRelatedMPAN{
 		Relations: []models.MPANRelation{
 			{
 				Primary:   "mpan-1",

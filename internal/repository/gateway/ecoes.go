@@ -24,10 +24,6 @@ func NewEcoesGateway(client EcoesClient) *EcoesGateway {
 	return &EcoesGateway{client}
 }
 
-type ElectricityMeterRelatedMPAN struct {
-	Relations []models.MPANRelation
-}
-
 func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error) {
 
 	technicalDetails, err := gw.client.GetTechnicalDetailsByMPAN(ctx, &ecoesv1.SearchByMPANRequest{
@@ -57,7 +53,7 @@ func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string
 	}, nil
 }
 
-func (gw *EcoesGateway) GetRelatedMPAN(ctx context.Context, mpan string) (*ElectricityMeterRelatedMPAN, error) {
+func (gw *EcoesGateway) GetRelatedMPAN(ctx context.Context, mpan string) (*models.ElectricityMeterRelatedMPAN, error) {
 
 	relatedMPAN, err := gw.client.GetRelatedMPANs(ctx, &ecoesv1.SearchByMPANRequest{
 		Mpan: mpan,
@@ -75,7 +71,7 @@ func (gw *EcoesGateway) GetRelatedMPAN(ctx context.Context, mpan string) (*Elect
 		})
 	}
 
-	return &ElectricityMeterRelatedMPAN{
+	return &models.ElectricityMeterRelatedMPAN{
 		Relations: relations,
 	}, nil
 }

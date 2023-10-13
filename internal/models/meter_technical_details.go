@@ -22,6 +22,10 @@ type ElectricityMeterTechnicalDetails struct {
 	Meters                          []ElectricityMeter
 }
 
+type ElectricityMeterRelatedMPAN struct {
+	Relations []MPANRelation
+}
+
 type MPANRelation struct {
 	Primary   string
 	Secondary string
