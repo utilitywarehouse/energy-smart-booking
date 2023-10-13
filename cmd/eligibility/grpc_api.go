@@ -56,6 +56,22 @@ func runGRPCApi(c *cli.Context) error {
 	defer pg.Close()
 	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 
+	/*ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(ecoesHost), c.String(grpcLogLevel))
+	if err != nil {
+		logrus.WithError(err).Panic("could not connect to ecoes gRPC integration")
+	}
+	defer ecoesConn.Close()
+	ecoesClient := ecoesv1.NewEcoesAPIClient(ecoesConn)
+	opsServer.Add("ecoes-api", grpchealth.NewCheck(c.String(ecoesHost), "", "cannot find mpans address"))
+
+	xoserveConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(xoserveHost), c.String(grpcLogLevel))
+	if err != nil {
+		logrus.WithError(err).Panic("could not connect to xoserve gRPC integration")
+	}
+	defer xoserveConn.Close()
+	xoserveClient := xoservev1.NewXoserveAPIClient(xoserveConn)
+	opsServer.Add("xoserve-api", grpchealth.NewCheck(c.String(xoserveHost), "", "cannot find mprns address"))*/
+
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)
 	occupancyStore := store.NewOccupancy(pg)
