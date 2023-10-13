@@ -334,7 +334,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		BookingSource: params.Source,
 	}
 
-	occupancy, err := d.occupancyStore.GetOccupancyByID(ctx, params.AccountID)
+	occupancy, err := d.occupancyStore.GetOccupancyByAccountID(ctx, params.AccountID)
 	if err != nil {
 		if errors.Is(err, store.ErrOccupancyNotFound) {
 			err := d.partialBookingStore.Upsert(ctx, bookingID, event)

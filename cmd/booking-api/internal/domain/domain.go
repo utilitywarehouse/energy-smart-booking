@@ -15,7 +15,7 @@ type AccountGateway interface {
 
 type OccupancyStore interface {
 	GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error)
-	GetOccupancyByID(context.Context, string) (*models.Occupancy, error)
+	GetOccupancyByAccountID(context.Context, string) (*models.Occupancy, error)
 }
 
 type SiteStore interface {
