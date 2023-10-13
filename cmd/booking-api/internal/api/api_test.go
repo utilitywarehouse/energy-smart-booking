@@ -3554,8 +3554,9 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
+	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, nil, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.CreateBookingPointOfSaleRequest
@@ -3568,14 +3569,14 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher)
 		input       inputParams
 		output      outputParams
 	}
 
 	testCases := []testSetup{
 		{
-			description: "should get the account details by account id",
+			description: "should create a booking for the Point of Sale journey and sink an event because occupancy id exists",
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
@@ -3611,7 +3612,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -3679,6 +3680,122 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 					},
 				}, nil)
+
+				mPublisher.EXPECT().Sink(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			},
+			output: outputParams{
+				res: &bookingv1.CreateBookingPointOfSaleResponse{
+					BookingId: "booking-id-1",
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should create a booking for the Point of Sale journey and does not sink an event because occupancy id does not exist",
+			input: inputParams{
+				req: &bookingv1.CreateBookingPointOfSaleRequest{
+					AccountNumber: "account-number-1",
+					PostCode:      "E2 1ZZ",
+					Meterpoints: []*bookingv1.Meterpoint{
+						{
+							Mpxn:       "123456",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+					},
+					Slot: &bookingv1.BookingSlot{
+						Date: &date.Date{
+							Year:  2020,
+							Month: 10,
+							Day:   10,
+						},
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Phone:     "555-0555",
+						Email:     "jd@example.com",
+					},
+					Platform: bookingv1.Platform_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
+
+				accountID := id.NewAccountID("account-number-1")
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: accountID,
+				}).Return(true, nil)
+
+				params := domain.CreatePOSBookingParams{
+					AccountID:         accountID,
+					Postcode:          "E2 1ZZ",
+					Mpan:              "123456",
+					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "Joe",
+						LastName:  "Dough",
+						Mobile:    "555-0555",
+						Email:     "jd@example.com",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2020, time.October, 10, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   18,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "Bad Knee",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				}
+
+				bkDomain.EXPECT().CreateBookingPointOfSale(ctx, params).Return(domain.CreateBookingResponse{
+					Event: &bookingv1.BookingCreatedEvent{
+						BookingId: "booking-id-1",
+						Details: &bookingv1.Booking{
+							Id:        "booking-id-1",
+							AccountId: params.AccountID,
+							ContactDetails: &bookingv1.ContactDetails{
+								Title:     "Mr",
+								FirstName: "Joe",
+								LastName:  "Dough",
+								Phone:     "555-0555",
+								Email:     "jd@example.com",
+							},
+							Slot: &bookingv1.BookingSlot{
+								Date: &date.Date{
+									Year:  int32(2020),
+									Month: int32(10),
+									Day:   int32(10),
+								},
+								StartTime: int32(10),
+								EndTime:   int32(10),
+							},
+							VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+								Vulnerabilities: []bookingv1.Vulnerability{
+									bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+								},
+								Other: "Bad Knee",
+							},
+							Status: bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+						},
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					},
+				}, domain.ErrMissingOccupancyInBooking)
+
 			},
 			output: outputParams{
 				res: &bookingv1.CreateBookingPointOfSaleResponse{
@@ -3724,7 +3841,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -3806,7 +3923,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -3888,7 +4005,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -3970,7 +4087,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4052,7 +4169,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4134,7 +4251,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4216,7 +4333,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4298,7 +4415,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4380,7 +4497,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4462,7 +4579,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4544,7 +4661,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4595,7 +4712,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockBookingPublisher) {
 
 				accountID := id.NewAccountID("account-number-2")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4614,7 +4731,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, mockAuth)
+			tc.setup(ctx, bookingDomain, mockAuth, mockPublisher)
 
 			expected, err := myAPIHandler.CreateBookingPointOfSale(ctx, tc.input.req)
 			if tc.output.err != nil {

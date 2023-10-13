@@ -22,6 +22,7 @@ import (
 
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
+	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
 )
 
 type GetAvailableSlotsParams struct {
@@ -281,6 +282,7 @@ func (d BookingDomain) GetAvailableSlotsPointOfSale(ctx context.Context, params 
 
 func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params CreatePOSBookingParams) (CreateBookingResponse, error) {
 
+	bookingID := uuid.New().String()
 	var event *bookingv1.BookingCreatedEvent
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.GetVulnerabilities())
@@ -300,38 +302,54 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 	if err != nil {
 		return CreateBookingResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
 	}
-
-	if response.Success {
-		bookingID := uuid.New().String()
-
-		event = &bookingv1.BookingCreatedEvent{
-			BookingId: bookingID,
-			Details: &bookingv1.Booking{
-				Id:        bookingID,
-				AccountId: params.AccountID,
-				ContactDetails: &bookingv1.ContactDetails{
-					Title:     params.ContactDetails.Title,
-					FirstName: params.ContactDetails.FirstName,
-					LastName:  params.ContactDetails.LastName,
-					Phone:     params.ContactDetails.Mobile,
-					Email:     params.ContactDetails.Email,
-				},
-				Slot: &bookingv1.BookingSlot{
-					Date: &date.Date{
-						Year:  int32(params.Slot.Date.Year()),
-						Month: int32(params.Slot.Date.Month()),
-						Day:   int32(params.Slot.Date.Day()),
-					},
-					StartTime: int32(params.Slot.StartTime),
-					EndTime:   int32(params.Slot.EndTime),
-				},
-				VulnerabilityDetails: params.VulnerabilityDetails,
-				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
-				ExternalReference:    response.ReferenceID,
-			},
-			BookingSource: params.Source,
-		}
+	if !response.Success {
+		return CreateBookingResponse{}, fmt.Errorf("create booking point of sale did not return success, %w", err)
 	}
+
+	event = &bookingv1.BookingCreatedEvent{
+		BookingId: bookingID,
+		Details: &bookingv1.Booking{
+			Id:        bookingID,
+			AccountId: params.AccountID,
+			ContactDetails: &bookingv1.ContactDetails{
+				Title:     params.ContactDetails.Title,
+				FirstName: params.ContactDetails.FirstName,
+				LastName:  params.ContactDetails.LastName,
+				Phone:     params.ContactDetails.Mobile,
+				Email:     params.ContactDetails.Email,
+			},
+			Slot: &bookingv1.BookingSlot{
+				Date: &date.Date{
+					Year:  int32(params.Slot.Date.Year()),
+					Month: int32(params.Slot.Date.Month()),
+					Day:   int32(params.Slot.Date.Day()),
+				},
+				StartTime: int32(params.Slot.StartTime),
+				EndTime:   int32(params.Slot.EndTime),
+			},
+			VulnerabilityDetails: params.VulnerabilityDetails,
+			Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+			ExternalReference:    response.ReferenceID,
+		},
+		BookingSource: params.Source,
+	}
+
+	occupancy, err := d.occupancyStore.GetOccupancyByID(ctx, params.AccountID)
+	if err != nil {
+		if errors.Is(err, store.ErrOccupancyNotFound) {
+			err := d.partialBookingStore.Upsert(ctx, bookingID, event)
+			if err != nil {
+				return CreateBookingResponse{}, fmt.Errorf("failed to insert partial booking store, %w", err)
+			}
+
+			return CreateBookingResponse{
+				Event: event,
+			}, ErrMissingOccupancyInBooking // we don't return an error but we don't return an event either
+		}
+		return CreateBookingResponse{}, fmt.Errorf("failed to get occupancy by id: %s, %w", params.AccountID, err)
+	}
+
+	event.OccupancyId = occupancy.OccupancyID
 
 	return CreateBookingResponse{
 		Event: event,

@@ -34,8 +34,9 @@ func Test_GetAvailableSlots(t *testing.T) {
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
 
 	type inputParams struct {
 		params domain.GetAvailableSlotsParams
@@ -246,8 +247,9 @@ func Test_CreateBooking(t *testing.T) {
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
 
 	var emptyMsg *bookingv1.BookingCreatedEvent
 
@@ -502,8 +504,9 @@ func Test_RescheduleBooking(t *testing.T) {
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
 
 	type inputParams struct {
 		params domain.RescheduleBookingParams
@@ -747,7 +750,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, nil, false)
 
 	type inputParams struct {
 		params domain.GetPOSAvailableSlotsParams
@@ -920,7 +923,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, nil, false)
 
 	var emptyMsg *bookingv1.BookingCreatedEvent
 

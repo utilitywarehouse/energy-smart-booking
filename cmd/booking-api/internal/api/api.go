@@ -535,7 +535,6 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 	}, nil
 }
 
-// TODO - Publish booking event https://linear.app/utilitywarehouse/issue/SMT-329/publish-point-of-sale-booking-event
 func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv1.CreateBookingPointOfSaleRequest) (_ *bookingv1.CreateBookingPointOfSaleResponse, err error) {
 	if err := validatePOSRequest(req); err != nil {
 		return nil, err
@@ -618,9 +617,22 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 
 	createBookingResponse, err := b.bookingDomain.CreateBookingPointOfSale(ctx, params)
 	if err != nil {
-		return &bookingv1.CreateBookingPointOfSaleResponse{
-			BookingId: "",
-		}, mapError("failed to create booking, %s", err)
+		switch err {
+		case domain.ErrMissingOccupancyInBooking:
+			logrus.Warnf("occupancy for the account_id: %s was not found! saving the partial booking created event in the database with booking_id: %s", createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).Details.AccountId, createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId)
+			return &bookingv1.CreateBookingPointOfSaleResponse{
+				BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
+			}, nil
+		default:
+			return &bookingv1.CreateBookingPointOfSaleResponse{
+				BookingId: "",
+			}, mapError("failed to create booking, %s", err)
+		}
+	}
+
+	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
+	if err != nil {
+		logrus.Errorf("failed to sink create booking event: %+v", createBookingResponse.Event)
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{
