@@ -39,4 +39,5 @@ type Booking struct {
 	Slot                 BookingSlot
 	VulnerabilityDetails VulnerabilityDetails
 	BookingReference     string
+	BookingType          bookingv1.BookingType
 }

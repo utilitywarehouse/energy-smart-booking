@@ -59,7 +59,7 @@ type GetPOSAvailableSlotsParams struct {
 
 type CreatePOSBookingParams struct {
 	AccountID            string
-	Postcode             string
+	SiteAddress          models.AccountAddress
 	Mpan                 string
 	Mprn                 string
 	TariffElectricity    bookingv1.TariffType
@@ -189,6 +189,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 				VulnerabilityDetails: params.VulnerabilityDetails,
 				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 				ExternalReference:    occupancyEligibility.Reference,
+				BookingType:          bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
 			},
 			OccupancyId:   occupancyEligibility.OccupancyID,
 			BookingSource: params.Source,
@@ -289,7 +290,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 
 	response, err := d.lowribeckGw.CreateBookingPointOfSale(
 		ctx,
-		params.Postcode,
+		params.SiteAddress.PAF.Postcode,
 		params.Mpan,
 		params.Mprn,
 		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
@@ -327,9 +328,26 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 				StartTime: int32(params.Slot.StartTime),
 				EndTime:   int32(params.Slot.EndTime),
 			},
+			SiteAddress: &addressv1.Address{
+				Uprn: params.SiteAddress.UPRN,
+				Paf: &addressv1.Address_PAF{
+					Organisation:            params.SiteAddress.PAF.Organisation,
+					Department:              params.SiteAddress.PAF.Department,
+					SubBuilding:             params.SiteAddress.PAF.SubBuilding,
+					BuildingName:            params.SiteAddress.PAF.BuildingName,
+					BuildingNumber:          params.SiteAddress.PAF.BuildingNumber,
+					DependentThoroughfare:   params.SiteAddress.PAF.DependentThoroughfare,
+					Thoroughfare:            params.SiteAddress.PAF.Thoroughfare,
+					DoubleDependentLocality: params.SiteAddress.PAF.DoubleDependentLocality,
+					DependentLocality:       params.SiteAddress.PAF.DependentLocality,
+					PostTown:                params.SiteAddress.PAF.PostTown,
+					Postcode:                params.SiteAddress.PAF.Postcode,
+				},
+			},
 			VulnerabilityDetails: params.VulnerabilityDetails,
-			Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+			Status:               bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 			ExternalReference:    response.ReferenceID,
+			BookingType:          bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
 		},
 		BookingSource: params.Source,
 	}

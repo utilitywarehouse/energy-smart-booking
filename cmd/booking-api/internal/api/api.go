@@ -562,6 +562,10 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		}
 	}
 
+	if req.SiteAddress == nil {
+		return nil, status.Error(codes.InvalidArgument, "no site address provided")
+	}
+
 	if req.Meterpoints == nil {
 		return nil, status.Error(codes.InvalidArgument, "no meterpoints provided")
 	}
@@ -593,8 +597,23 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	}
 
 	params := domain.CreatePOSBookingParams{
-		AccountID:         accountID,
-		Postcode:          req.GetPostCode(),
+		AccountID: accountID,
+		SiteAddress: models.AccountAddress{
+			UPRN: req.SiteAddress.Uprn,
+			PAF: models.PAF{
+				BuildingName:            req.SiteAddress.Paf.BuildingName,
+				BuildingNumber:          req.SiteAddress.Paf.BuildingNumber,
+				Department:              req.SiteAddress.Paf.Department,
+				DependentLocality:       req.SiteAddress.Paf.DependentLocality,
+				DependentThoroughfare:   req.SiteAddress.Paf.DependentThoroughfare,
+				DoubleDependentLocality: req.SiteAddress.Paf.DoubleDependentLocality,
+				Organisation:            req.SiteAddress.Paf.Organisation,
+				PostTown:                req.SiteAddress.Paf.PostTown,
+				Postcode:                req.SiteAddress.Paf.Postcode,
+				SubBuilding:             req.SiteAddress.Paf.SubBuilding,
+				Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
+			},
+		},
 		Mpan:              mpan.GetMpxn(),
 		TariffElectricity: mpan.GetTariffType(),
 		Mprn:              mprn.GetMpxn(),
