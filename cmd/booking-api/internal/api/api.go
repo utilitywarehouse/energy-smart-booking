@@ -566,6 +566,10 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		return nil, status.Error(codes.InvalidArgument, "no site address provided")
 	}
 
+	if req.SiteAddress.Paf.Postcode == "" {
+		return nil, status.Error(codes.InvalidArgument, "no post code provided")
+	}
+
 	if req.Meterpoints == nil {
 		return nil, status.Error(codes.InvalidArgument, "no meterpoints provided")
 	}
