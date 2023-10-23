@@ -659,7 +659,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 
 	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink create booking event: %+v, %w", createBookingResponse.Event, err)
+		logrus.Errorf("failed to sink create booking event: %+v, %s", createBookingResponse.Event, err)
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{
