@@ -12,6 +12,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/json-iterator/go v1.1.12
 	github.com/justinas/alice v1.2.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/rubenv/sql-migrate v1.5.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
