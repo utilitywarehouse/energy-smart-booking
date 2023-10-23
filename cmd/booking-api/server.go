@@ -63,6 +63,11 @@ func init() {
 				EnvVars:  []string{"POSTGRES_DSN"},
 				Required: true,
 			},
+			&cli.StringFlag{
+				Name:    flagPartialBookingCron,
+				EnvVars: []string{"PARTIAL_BOOKING_CRON"},
+				Value:   "* * * * *",
+			},
 		),
 	})
 }

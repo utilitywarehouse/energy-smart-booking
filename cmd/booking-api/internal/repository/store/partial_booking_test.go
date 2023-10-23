@@ -408,3 +408,100 @@ func Test_PartialBookingStore_Insert_UpdateRetries_Get(t *testing.T) {
 
 	}
 }
+
+// tests the GetPending
+func Test_PartialBookingStore_GetPendingProcessing(t *testing.T) {
+	ctx := context.Background()
+
+	testContainer, err := setupTestContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dsn, err := postgres.GetTestContainerDSN(testContainer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := store.Setup(ctx, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	partialBookingStore := store.NewPartialBooking(db)
+
+	type inputParams struct {
+		bookingID string
+		accountID string
+		event     *bookingv1.BookingCreatedEvent
+	}
+
+	type outputParams struct {
+		err            error
+		partialBooking []*models.PartialBooking
+	}
+
+	type testSetup struct {
+		description string
+		input       inputParams
+		output      outputParams
+	}
+
+	timeNow := time.Now()
+
+	testCases := []testSetup{
+		{
+			description: "should upsert an booking created event, update the retries count and retrieve it",
+			input: inputParams{
+				bookingID: "booking-id-1",
+				event: &bookingv1.BookingCreatedEvent{
+					BookingId:   "booking-id-1",
+					OccupancyId: "",
+					Details: &bookingv1.Booking{
+						AccountId: "account-id-1",
+					},
+				},
+			},
+			output: outputParams{
+				err: nil,
+				partialBooking: []*models.PartialBooking{
+					{
+						BookingID: "booking-id-1",
+						Event: &bookingv1.BookingCreatedEvent{
+							BookingId:   "booking-id-1",
+							OccupancyId: "",
+							Details: &bookingv1.Booking{
+								AccountId: "account-id-1",
+							},
+						},
+						CreatedAt: timeNow,
+						UpdatedAt: nil,
+						DeletedAt: nil,
+						Retries:   0,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			err := partialBookingStore.Upsert(ctx, tc.input.bookingID, tc.input.event)
+			if err != nil {
+				t.Fatalf("should not have errored, %s", err)
+			}
+
+			actual, err := partialBookingStore.GetPending(ctx)
+			if err != nil {
+				t.Fatalf("should not have errored, %s", err)
+			}
+
+			if diff := cmp.Diff(tc.output.partialBooking, actual, cmpopts.IgnoreUnexported(), protocmp.Transform(), cmpopts.EquateApproxTime(time.Second)); diff != "" {
+				t.Fatal(diff)
+			}
+
+		})
+
+	}
+}

@@ -92,6 +92,59 @@ func (s *PartialBookingStore) Get(ctx context.Context, bookingID string) (*model
 	return partialBooking, nil
 }
 
+func (s *PartialBookingStore) GetPending(ctx context.Context) ([]*models.PartialBooking, error) {
+
+	var bID string
+	var updatedAt, deletedAt, createdAt sql.NullTime
+	var retries int
+	var event []byte
+
+	partialBookings := []*models.PartialBooking{}
+
+	q := `
+	SELECT booking_id, event, created_at, updated_at, deleted_at, retries
+	FROM partial_booking
+	WHERE deleted_at is NULL;`
+
+	rows, err := s.pool.Query(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pending partial bookings, %w", err)
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&bID, &event, &createdAt, &updatedAt, &deletedAt, &retries)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row, %w", err)
+		}
+
+		e := &bookingv1.BookingCreatedEvent{}
+		if err := protojson.Unmarshal(event, e); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal partial booking, %v, %w", string(event), err)
+		}
+
+		partialBooking := &models.PartialBooking{
+			BookingID: bID,
+			Event:     e,
+			CreatedAt: createdAt.Time,
+			UpdatedAt: nil,
+			DeletedAt: nil,
+			Retries:   retries,
+		}
+
+		if updatedAt.Valid {
+			partialBooking.UpdatedAt = &updatedAt.Time
+		}
+
+		if deletedAt.Valid {
+			partialBooking.DeletedAt = &deletedAt.Time
+		}
+
+		partialBookings = append(partialBookings, partialBooking)
+	}
+
+	return partialBookings, nil
+}
+
 func (s *PartialBookingStore) UpdateRetries(ctx context.Context, bookingID string, retries int) error {
 	q := `UPDATE partial_booking SET retries = $2 + 1, updated_at = NOW() WHERE booking_id = $1;`
 

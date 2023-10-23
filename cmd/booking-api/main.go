@@ -18,8 +18,9 @@ var (
 	gitHash string
 
 	// shared flags
-	flagPostgresDSN  = "postgres-dsn"
-	flagBookingTopic = "booking-topic"
+	flagPostgresDSN        = "postgres-dsn"
+	flagBookingTopic       = "booking-topic"
+	flagPartialBookingCron = "partial-booking-cron"
 
 	application = &cli.App{
 		Name:   appName,
