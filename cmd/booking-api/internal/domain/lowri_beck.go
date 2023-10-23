@@ -23,6 +23,7 @@ import (
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
 	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
+	ErrUnsucessfulBooking               = errors.New("create booking point of sale did not return success")
 )
 
 type GetAvailableSlotsParams struct {
@@ -304,7 +305,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		return CreateBookingResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
 	}
 	if !response.Success {
-		return CreateBookingResponse{}, fmt.Errorf("create booking point of sale did not return success, %w", err)
+		return CreateBookingResponse{}, ErrUnsucessfulBooking
 	}
 
 	event = &bookingv1.BookingCreatedEvent{

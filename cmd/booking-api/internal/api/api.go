@@ -566,6 +566,10 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		return nil, status.Error(codes.InvalidArgument, "no site address provided")
 	}
 
+	if req.SiteAddress.Paf == nil {
+		return nil, status.Error(codes.InvalidArgument, "no Postcode Address File(PAF) provided")
+	}
+
 	if req.SiteAddress.Paf.Postcode == "" {
 		return nil, status.Error(codes.InvalidArgument, "no post code provided")
 	}
@@ -655,7 +659,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 
 	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink create booking event: %+v", createBookingResponse.Event)
+		logrus.Errorf("failed to sink create booking event: %+v, %w", createBookingResponse.Event, err)
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{
