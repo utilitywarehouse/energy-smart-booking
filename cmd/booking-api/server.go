@@ -9,8 +9,6 @@ import (
 	"syscall"
 
 	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/robfig/cron/v3"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
@@ -19,7 +17,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/workers"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -164,9 +161,6 @@ func serverAction(c *cli.Context) error {
 	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth, true)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
-	//WORKERS
-	partialBookingWorker := workers.NewPartialBookingWorker(partialBookingStore, occupancyStore, syncBookingPublisher)
-
 	g.Go(func() error {
 		defer log.Info("ops server finished")
 		return opsServer.Start(ctx)
@@ -175,25 +169,6 @@ func serverAction(c *cli.Context) error {
 	g.Go(func() error {
 		defer log.Info("grpc server finished")
 		return grpcServer.Serve(listen)
-	})
-
-	g.Go(func() error {
-		defer logrus.Info("electricity loss queue finished")
-		cron := cron.New()
-
-		cron.Start()
-		defer cron.Stop()
-
-		if _, err := cron.AddFunc(c.String(flagPartialBookingCron), func() {
-			if err := partialBookingWorker.Run(ctx); err != nil {
-				logrus.WithError(err).Panic("failed to run partial booking cron")
-			}
-		}); err != nil {
-			return fmt.Errorf("cron job failed for partial booking cron, %w", err)
-		}
-
-		<-ctx.Done()
-		return ctx.Err()
 	})
 
 	sigChan := make(chan os.Signal, 1)
