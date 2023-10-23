@@ -34,7 +34,7 @@ func (s *PartialBookingStore) Upsert(ctx context.Context, bookingID string, even
 
 	q := `
 	INSERT INTO partial_booking (booking_id, event)
-	VALUES ($1, $2, $3)
+	VALUES ($1, $2)
 	ON CONFLICT (booking_id)
 	DO UPDATE SET event = $2;`
 
