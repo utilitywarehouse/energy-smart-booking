@@ -58,32 +58,30 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 	for _, elem := range pendingPartialBookings {
 
-		switch event := elem.Event.(type) {
-		case *bookingv1.BookingCreatedEvent:
+		event := elem.Event.(*bookingv1.BookingCreatedEvent)
 
-			occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)
-			if err != nil {
-				return fmt.Errorf("failed to get occupancy by account id: %s, %w", event.Details.AccountId, err)
-			}
-
-			event.OccupancyId = occupancy.OccupancyID
-
-			if err := w.publisher.Sink(ctx, event, time.Now()); err != nil {
-				err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
-				if err != nil {
-					return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
-				}
-
-				return fmt.Errorf("failed to publish occupancy, %w", err)
-			}
-
-			err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID)
-			if err != nil {
-				return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
-			}
-
-			PendingPartialBookings.WithLabelValues(ProcessedBookings).Inc()
+		occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)
+		if err != nil {
+			return fmt.Errorf("failed to get occupancy by account id: %s, %w", event.Details.AccountId, err)
 		}
+
+		event.OccupancyId = occupancy.OccupancyID
+
+		if err := w.publisher.Sink(ctx, event, time.Now()); err != nil {
+			err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
+			if err != nil {
+				return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
+			}
+
+			return fmt.Errorf("failed to publish occupancy, %w", err)
+		}
+
+		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID)
+		if err != nil {
+			return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
+		}
+
+		PendingPartialBookings.WithLabelValues(ProcessedBookings).Inc()
 	}
 
 	return nil
