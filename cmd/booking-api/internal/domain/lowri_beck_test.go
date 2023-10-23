@@ -34,8 +34,9 @@ func Test_GetAvailableSlots(t *testing.T) {
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
 
 	type inputParams struct {
 		params domain.GetAvailableSlotsParams
@@ -246,8 +247,9 @@ func Test_CreateBooking(t *testing.T) {
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
 
 	var emptyMsg *bookingv1.BookingCreatedEvent
 
@@ -386,6 +388,7 @@ func Test_CreateBooking(t *testing.T) {
 							},
 							Status:            bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 							ExternalReference: "booking-reference-1",
+							BookingType:       bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
 						},
 					},
 				},
@@ -502,8 +505,9 @@ func Test_RescheduleBooking(t *testing.T) {
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
 
 	type inputParams struct {
 		params domain.RescheduleBookingParams
@@ -747,7 +751,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, nil, false)
 
 	type inputParams struct {
 		params domain.GetPOSAvailableSlotsParams
@@ -919,10 +923,10 @@ func Test_CreatePOSBooking(t *testing.T) {
 	accGw := mocks.NewMockAccountGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	occupancySt := mocks.NewMockOccupancyStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, false)
-
-	var emptyMsg *bookingv1.BookingCreatedEvent
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occupancySt, nil, bookingSt, partialBookingSt, false)
 
 	type inputParams struct {
 		params domain.CreatePOSBookingParams
@@ -935,7 +939,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway)
+		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -945,8 +949,23 @@ func Test_CreatePOSBooking(t *testing.T) {
 			description: "should create booking",
 			input: inputParams{
 				params: domain.CreatePOSBookingParams{
-					AccountID:         "account-id-1",
-					Postcode:          "E2 1ZZ",
+					AccountID: "account-id-1",
+					SiteAddress: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							Department:              "department-1",
+							DependentLocality:       "dl-1",
+							DependentThoroughfare:   "dt-1",
+							DoubleDependentLocality: "ddl-1",
+							Organisation:            "org",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+							SubBuilding:             "sub-1",
+							Thoroughfare:            "tf-1",
+						},
+					},
 					Mpan:              "mpan-1",
 					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
@@ -970,7 +989,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore) {
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
 					"E2 1ZZ",
@@ -995,6 +1014,10 @@ func Test_CreatePOSBooking(t *testing.T) {
 					ReferenceID: "test-ref",
 				}, nil)
 
+				occupancySt.EXPECT().GetOccupancyByAccountID(ctx, "account-id-1").Return(&models.Occupancy{
+					OccupancyID: "occ-id-1",
+					AccountID:   "account-id-1",
+				}, nil)
 			},
 			output: outputParams{
 				event: domain.CreateBookingResponse{
@@ -1026,9 +1049,156 @@ func Test_CreatePOSBooking(t *testing.T) {
 								},
 								Other: "",
 							},
-							Status:            bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+							Status:            bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 							ExternalReference: "test-ref",
+							SiteAddress: &addressv1.Address{
+								Uprn: "uprn-1",
+								Paf: &addressv1.Address_PAF{
+									Organisation:            "org",
+									Department:              "department-1",
+									SubBuilding:             "sub-1",
+									BuildingName:            "bn-1",
+									BuildingNumber:          "bnum-1",
+									DependentThoroughfare:   "dt-1",
+									Thoroughfare:            "tf-1",
+									DoubleDependentLocality: "ddl-1",
+									DependentLocality:       "dl-1",
+									PostTown:                "pt",
+									Postcode:                "E2 1ZZ",
+								},
+							},
+							BookingType: bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
 						},
+						OccupancyId: "occ-id-1",
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should create booking but not return an event to be published because occupancy id does not exist yet",
+			input: inputParams{
+				params: domain.CreatePOSBookingParams{
+					AccountID: "account-id-1",
+					SiteAddress: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							Department:              "department-1",
+							DependentLocality:       "dl-1",
+							DependentThoroughfare:   "dt-1",
+							DoubleDependentLocality: "ddl-1",
+							Organisation:            "org",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+							SubBuilding:             "sub-1",
+							Thoroughfare:            "tf-1",
+						},
+					},
+					Mpan:              "mpan-1",
+					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					},
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "",
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+				},
+			},
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore) {
+
+				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
+					"E2 1ZZ",
+					"mpan-1",
+					"",
+					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					}, models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Dough",
+						Email:     "jdough@example.com",
+						Mobile:    "555-0145",
+					}, []lowribeckv1.Vulnerability{
+						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
+					Success:     true,
+					ReferenceID: "test-ref",
+				}, nil)
+
+				occupancySt.EXPECT().GetOccupancyByAccountID(ctx, "account-id-1").Return(nil, store.ErrOccupancyNotFound)
+
+				partialBookingSt.EXPECT().Upsert(ctx, gomock.Any(), gomock.Any()).Return(nil)
+			},
+			output: outputParams{
+				event: domain.CreateBookingResponse{
+					Event: &bookingv1.BookingCreatedEvent{
+						BookingId:     "my-uuid",
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+						Details: &bookingv1.Booking{
+							Id:        "my-uuid",
+							AccountId: "account-id-1",
+							ContactDetails: &bookingv1.ContactDetails{
+								Title:     "Mr",
+								FirstName: "John",
+								LastName:  "Dough",
+								Phone:     "555-0145",
+								Email:     "jdough@example.com",
+							},
+							Slot: &bookingv1.BookingSlot{
+								Date: &date.Date{
+									Year:  2023,
+									Month: 8,
+									Day:   27,
+								},
+								StartTime: 9,
+								EndTime:   15,
+							},
+							VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+								Vulnerabilities: []bookingv1.Vulnerability{
+									bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+								},
+								Other: "",
+							},
+							Status:            bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+							ExternalReference: "test-ref",
+							SiteAddress: &addressv1.Address{
+								Uprn: "uprn-1",
+								Paf: &addressv1.Address_PAF{
+									Organisation:            "org",
+									Department:              "department-1",
+									SubBuilding:             "sub-1",
+									BuildingName:            "bn-1",
+									BuildingNumber:          "bnum-1",
+									DependentThoroughfare:   "dt-1",
+									Thoroughfare:            "tf-1",
+									DoubleDependentLocality: "ddl-1",
+									DependentLocality:       "dl-1",
+									PostTown:                "pt",
+									Postcode:                "E2 1ZZ",
+								},
+							},
+							BookingType: bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
+						},
+						OccupancyId: "",
 					},
 				},
 				err: nil,
@@ -1038,9 +1208,24 @@ func Test_CreatePOSBooking(t *testing.T) {
 			description: "should return nil event because booking call was unsuccessful",
 			input: inputParams{
 				params: domain.CreatePOSBookingParams{
-					AccountID:         "account-id-1",
-					Postcode:          "E2 1ZZ",
-					Mpan:              "mpan-1",
+					AccountID: "account-id-1",
+					Mpan:      "mpan-1",
+					SiteAddress: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							Department:              "department-1",
+							DependentLocality:       "dl-1",
+							DependentThoroughfare:   "dt-1",
+							DoubleDependentLocality: "ddl-1",
+							Organisation:            "org",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+							SubBuilding:             "sub-1",
+							Thoroughfare:            "tf-1",
+						},
+					},
 					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
@@ -1062,7 +1247,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore) {
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
 					"E2 1ZZ",
@@ -1090,7 +1275,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 			},
 			output: outputParams{
 				event: domain.CreateBookingResponse{
-					Event: emptyMsg,
+					Event: nil,
 				},
 				err: nil,
 			},
@@ -1100,7 +1285,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, lbGw)
+			tc.setup(ctx, lbGw, occupancySt, partialBookingSt)
 
 			actual, err := myDomain.CreateBookingPointOfSale(ctx, tc.input.params)
 

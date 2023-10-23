@@ -535,7 +535,6 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 	}, nil
 }
 
-// TODO - Publish booking event https://linear.app/utilitywarehouse/issue/SMT-329/publish-point-of-sale-booking-event
 func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv1.CreateBookingPointOfSaleRequest) (_ *bookingv1.CreateBookingPointOfSaleResponse, err error) {
 	if err := validatePOSRequest(req); err != nil {
 		return nil, err
@@ -561,6 +560,18 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		default:
 			return nil, status.Error(codes.Internal, "failed to validate credentials")
 		}
+	}
+
+	if req.SiteAddress == nil {
+		return nil, status.Error(codes.InvalidArgument, "no site address provided")
+	}
+
+	if req.SiteAddress.Paf == nil {
+		return nil, status.Error(codes.InvalidArgument, "no Postcode Address File(PAF) provided")
+	}
+
+	if req.SiteAddress.Paf.Postcode == "" {
+		return nil, status.Error(codes.InvalidArgument, "no post code provided")
 	}
 
 	if req.Meterpoints == nil {
@@ -594,8 +605,23 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	}
 
 	params := domain.CreatePOSBookingParams{
-		AccountID:         accountID,
-		Postcode:          req.GetPostCode(),
+		AccountID: accountID,
+		SiteAddress: models.AccountAddress{
+			UPRN: req.SiteAddress.Uprn,
+			PAF: models.PAF{
+				BuildingName:            req.SiteAddress.Paf.BuildingName,
+				BuildingNumber:          req.SiteAddress.Paf.BuildingNumber,
+				Department:              req.SiteAddress.Paf.Department,
+				DependentLocality:       req.SiteAddress.Paf.DependentLocality,
+				DependentThoroughfare:   req.SiteAddress.Paf.DependentThoroughfare,
+				DoubleDependentLocality: req.SiteAddress.Paf.DoubleDependentLocality,
+				Organisation:            req.SiteAddress.Paf.Organisation,
+				PostTown:                req.SiteAddress.Paf.PostTown,
+				Postcode:                req.SiteAddress.Paf.Postcode,
+				SubBuilding:             req.SiteAddress.Paf.SubBuilding,
+				Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
+			},
+		},
 		Mpan:              mpan.GetMpxn(),
 		TariffElectricity: mpan.GetTariffType(),
 		Mprn:              mprn.GetMpxn(),
@@ -618,9 +644,22 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 
 	createBookingResponse, err := b.bookingDomain.CreateBookingPointOfSale(ctx, params)
 	if err != nil {
-		return &bookingv1.CreateBookingPointOfSaleResponse{
-			BookingId: "",
-		}, mapError("failed to create booking, %s", err)
+		switch err {
+		case domain.ErrMissingOccupancyInBooking:
+			logrus.Warnf("occupancy for the account_id: %s was not found! saving the partial booking created event in the database with booking_id: %s", createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).Details.AccountId, createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId)
+			return &bookingv1.CreateBookingPointOfSaleResponse{
+				BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
+			}, nil
+		default:
+			return &bookingv1.CreateBookingPointOfSaleResponse{
+				BookingId: "",
+			}, mapError("failed to create booking, %s", err)
+		}
+	}
+
+	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
+	if err != nil {
+		logrus.Errorf("failed to sink create booking event: %+v, %s", createBookingResponse.Event, err)
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{

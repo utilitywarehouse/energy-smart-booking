@@ -66,6 +66,20 @@ func (s *OccupancyStore) GetOccupancyByID(ctx context.Context, occupancyID strin
 	return &occ, nil
 }
 
+func (s *OccupancyStore) GetOccupancyByAccountID(ctx context.Context, accountID string) (*models.Occupancy, error) {
+	var occ models.Occupancy
+	q := `SELECT occupancy_id, site_id, account_id FROM occupancy WHERE account_id = $1;`
+	if err := s.pool.QueryRow(ctx, q, accountID).
+		Scan(&occ.OccupancyID, &occ.SiteID, &occ.AccountID); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrOccupancyNotFound
+		}
+		return nil, err
+	}
+
+	return &occ, nil
+}
+
 func (s *OccupancyStore) GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error) {
 	var site models.Site
 	var occupancyEligibility models.OccupancyEligibility

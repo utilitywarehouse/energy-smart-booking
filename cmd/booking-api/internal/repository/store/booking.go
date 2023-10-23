@@ -56,8 +56,10 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 
 		vulnerabilities_list,
 		vulnerabilities_other,
-		external_reference
-	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+		external_reference,
+
+		booking_type
+	) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 	ON CONFLICT (booking_id)
 	DO NOTHING;
 	`
@@ -80,7 +82,8 @@ func (s *BookingStore) Upsert(booking models.Booking) {
 		booking.Slot.EndTime,
 		vulnerabilitiesList,
 		booking.VulnerabilityDetails.Other,
-		booking.BookingReference)
+		booking.BookingReference,
+		booking.BookingType)
 }
 
 func (s *BookingStore) UpdateStatus(bookingID string, newStatus bookingv1.BookingStatus) {
@@ -125,7 +128,8 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 		vulnerabilities_list,
 		vulnerabilities_other,
 
-		external_reference
+		external_reference,
+		booking_type
 
 	FROM booking
 	WHERE account_id = $1; 
@@ -155,6 +159,7 @@ func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID str
 			&booking.VulnerabilityDetails.Vulnerabilities,
 			&booking.VulnerabilityDetails.Other,
 			&booking.BookingReference,
+			&booking.BookingType,
 		)
 		if err != nil {
 			return nil, err
@@ -187,7 +192,9 @@ func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID stri
 		vulnerabilities_list,
 		vulnerabilities_other,
 
-		external_reference
+		external_reference,
+
+		booking_type
 
 	FROM booking
 	WHERE booking_id = $1; 
@@ -211,6 +218,7 @@ func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID stri
 		&booking.VulnerabilityDetails.Vulnerabilities,
 		&booking.VulnerabilityDetails.Other,
 		&booking.BookingReference,
+		&booking.BookingType,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

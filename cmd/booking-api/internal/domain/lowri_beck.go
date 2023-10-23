@@ -22,6 +22,8 @@ import (
 
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
+	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
+	ErrUnsucessfulBooking               = errors.New("create booking point of sale did not return success")
 )
 
 type GetAvailableSlotsParams struct {
@@ -58,7 +60,7 @@ type GetPOSAvailableSlotsParams struct {
 
 type CreatePOSBookingParams struct {
 	AccountID            string
-	Postcode             string
+	SiteAddress          models.AccountAddress
 	Mpan                 string
 	Mprn                 string
 	TariffElectricity    bookingv1.TariffType
@@ -188,6 +190,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 				VulnerabilityDetails: params.VulnerabilityDetails,
 				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
 				ExternalReference:    occupancyEligibility.Reference,
+				BookingType:          bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
 			},
 			OccupancyId:   occupancyEligibility.OccupancyID,
 			BookingSource: params.Source,
@@ -281,13 +284,14 @@ func (d BookingDomain) GetAvailableSlotsPointOfSale(ctx context.Context, params 
 
 func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params CreatePOSBookingParams) (CreateBookingResponse, error) {
 
+	bookingID := uuid.New().String()
 	var event *bookingv1.BookingCreatedEvent
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.GetVulnerabilities())
 
 	response, err := d.lowribeckGw.CreateBookingPointOfSale(
 		ctx,
-		params.Postcode,
+		params.SiteAddress.PAF.Postcode,
 		params.Mpan,
 		params.Mprn,
 		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
@@ -300,38 +304,71 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 	if err != nil {
 		return CreateBookingResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
 	}
-
-	if response.Success {
-		bookingID := uuid.New().String()
-
-		event = &bookingv1.BookingCreatedEvent{
-			BookingId: bookingID,
-			Details: &bookingv1.Booking{
-				Id:        bookingID,
-				AccountId: params.AccountID,
-				ContactDetails: &bookingv1.ContactDetails{
-					Title:     params.ContactDetails.Title,
-					FirstName: params.ContactDetails.FirstName,
-					LastName:  params.ContactDetails.LastName,
-					Phone:     params.ContactDetails.Mobile,
-					Email:     params.ContactDetails.Email,
-				},
-				Slot: &bookingv1.BookingSlot{
-					Date: &date.Date{
-						Year:  int32(params.Slot.Date.Year()),
-						Month: int32(params.Slot.Date.Month()),
-						Day:   int32(params.Slot.Date.Day()),
-					},
-					StartTime: int32(params.Slot.StartTime),
-					EndTime:   int32(params.Slot.EndTime),
-				},
-				VulnerabilityDetails: params.VulnerabilityDetails,
-				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
-				ExternalReference:    response.ReferenceID,
-			},
-			BookingSource: params.Source,
-		}
+	if !response.Success {
+		return CreateBookingResponse{}, ErrUnsucessfulBooking
 	}
+
+	event = &bookingv1.BookingCreatedEvent{
+		BookingId: bookingID,
+		Details: &bookingv1.Booking{
+			Id:        bookingID,
+			AccountId: params.AccountID,
+			ContactDetails: &bookingv1.ContactDetails{
+				Title:     params.ContactDetails.Title,
+				FirstName: params.ContactDetails.FirstName,
+				LastName:  params.ContactDetails.LastName,
+				Phone:     params.ContactDetails.Mobile,
+				Email:     params.ContactDetails.Email,
+			},
+			Slot: &bookingv1.BookingSlot{
+				Date: &date.Date{
+					Year:  int32(params.Slot.Date.Year()),
+					Month: int32(params.Slot.Date.Month()),
+					Day:   int32(params.Slot.Date.Day()),
+				},
+				StartTime: int32(params.Slot.StartTime),
+				EndTime:   int32(params.Slot.EndTime),
+			},
+			SiteAddress: &addressv1.Address{
+				Uprn: params.SiteAddress.UPRN,
+				Paf: &addressv1.Address_PAF{
+					Organisation:            params.SiteAddress.PAF.Organisation,
+					Department:              params.SiteAddress.PAF.Department,
+					SubBuilding:             params.SiteAddress.PAF.SubBuilding,
+					BuildingName:            params.SiteAddress.PAF.BuildingName,
+					BuildingNumber:          params.SiteAddress.PAF.BuildingNumber,
+					DependentThoroughfare:   params.SiteAddress.PAF.DependentThoroughfare,
+					Thoroughfare:            params.SiteAddress.PAF.Thoroughfare,
+					DoubleDependentLocality: params.SiteAddress.PAF.DoubleDependentLocality,
+					DependentLocality:       params.SiteAddress.PAF.DependentLocality,
+					PostTown:                params.SiteAddress.PAF.PostTown,
+					Postcode:                params.SiteAddress.PAF.Postcode,
+				},
+			},
+			VulnerabilityDetails: params.VulnerabilityDetails,
+			Status:               bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+			ExternalReference:    response.ReferenceID,
+			BookingType:          bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
+		},
+		BookingSource: params.Source,
+	}
+
+	occupancy, err := d.occupancyStore.GetOccupancyByAccountID(ctx, params.AccountID)
+	if err != nil {
+		if errors.Is(err, store.ErrOccupancyNotFound) {
+			err := d.partialBookingStore.Upsert(ctx, bookingID, event)
+			if err != nil {
+				return CreateBookingResponse{}, fmt.Errorf("failed to insert partial booking store, %w", err)
+			}
+
+			return CreateBookingResponse{
+				Event: event,
+			}, ErrMissingOccupancyInBooking
+		}
+		return CreateBookingResponse{}, fmt.Errorf("failed to get occupancy by id: %s, %w", params.AccountID, err)
+	}
+
+	event.OccupancyId = occupancy.OccupancyID
 
 	return CreateBookingResponse{
 		Event: event,

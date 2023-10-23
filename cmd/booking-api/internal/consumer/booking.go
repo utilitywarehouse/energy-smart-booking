@@ -96,6 +96,7 @@ func (h *BookingHandler) Handle(_ context.Context, message substrate.Message) er
 				Other:           vulns.GetOther(),
 			},
 			BookingReference: details.GetExternalReference(),
+			BookingType:      details.BookingType,
 		})
 	case *bookingv1.BookingRescheduledEvent:
 		bookingID := ev.GetBookingId()

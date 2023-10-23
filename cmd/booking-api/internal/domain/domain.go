@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 
+	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -14,6 +15,7 @@ type AccountGateway interface {
 
 type OccupancyStore interface {
 	GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error)
+	GetOccupancyByAccountID(context.Context, string) (*models.Occupancy, error)
 }
 
 type SiteStore interface {
@@ -32,13 +34,18 @@ type BookingStore interface {
 	GetBookingsByAccountID(ctx context.Context, accountID string) ([]models.Booking, error)
 }
 
+type PartialBookingStore interface {
+	Upsert(ctx context.Context, bookingID string, event *bookingv1.BookingCreatedEvent) error
+}
+
 type BookingDomain struct {
-	accounts       AccountGateway
-	lowribeckGw    LowriBeckGateway
-	occupancyStore OccupancyStore
-	siteStore      SiteStore
-	bookingStore   BookingStore
-	useTracing     bool
+	accounts            AccountGateway
+	lowribeckGw         LowriBeckGateway
+	occupancyStore      OccupancyStore
+	siteStore           SiteStore
+	bookingStore        BookingStore
+	partialBookingStore PartialBookingStore
+	useTracing          bool
 }
 
 func NewBookingDomain(accounts AccountGateway,
@@ -46,6 +53,7 @@ func NewBookingDomain(accounts AccountGateway,
 	occupancyStore OccupancyStore,
 	siteStore SiteStore,
 	bookingStore BookingStore,
+	partialBookingStore PartialBookingStore,
 	useTracing bool,
 ) BookingDomain {
 	return BookingDomain{
@@ -54,6 +62,7 @@ func NewBookingDomain(accounts AccountGateway,
 		occupancyStore,
 		siteStore,
 		bookingStore,
+		partialBookingStore,
 		useTracing,
 	}
 }
