@@ -36,9 +36,6 @@ type BookingStore interface {
 
 type PartialBookingStore interface {
 	Upsert(ctx context.Context, bookingID string, event *bookingv1.BookingCreatedEvent) error
-	GetPending(ctx context.Context) ([]*models.PartialBooking, error)
-	UpdateRetries(ctx context.Context, bookingID string, retries int) error
-	MarkAsDeleted(ctx context.Context, bookingID string) error
 }
 
 type BookingDomain struct {
