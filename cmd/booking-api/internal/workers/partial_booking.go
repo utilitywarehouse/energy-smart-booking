@@ -5,9 +5,21 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/protobuf/proto"
+)
+
+var PendingPartialBookings = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "pending_partial_bookings",
+	Help: "the count of pending partial bookings",
+}, []string{"type"})
+
+const (
+	PendingBookings   = "pending_bookings"
+	ProcessedBookings = "processed_bookings"
 )
 
 type BookingPublisher interface {
@@ -42,6 +54,8 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to get pending partial bookings, %w", err)
 	}
 
+	PendingPartialBookings.WithLabelValues(PendingBookings).Add(float64(len(pendingPartialBookings)))
+
 	for _, elem := range pendingPartialBookings {
 
 		switch event := elem.Event.(type) {
@@ -67,6 +81,8 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 			if err != nil {
 				return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
 			}
+
+			PendingPartialBookings.WithLabelValues(ProcessedBookings).Inc()
 		}
 	}
 
