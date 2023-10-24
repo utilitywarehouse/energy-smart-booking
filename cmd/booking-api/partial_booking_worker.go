@@ -31,7 +31,7 @@ func init() {
 	application.Commands = append(application.Commands, &cli.Command{
 		Name:   commandNamePartialBookingWorker,
 		Usage:  commandUsagePartialBookingWorker,
-		Action: serverAction,
+		Action: partialBookingWorkerAction,
 		Flags: app.DefaultFlags().WithGrpc().WithCustom(
 			&cli.StringFlag{
 				Name:     flagPostgresDSN,
