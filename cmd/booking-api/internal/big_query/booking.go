@@ -42,6 +42,7 @@ type Booking struct {
 	BookingEndTime     int32     `bigquery:"end_time"`
 	VulnerabilityList  []string  `bigquery:"vulnerability_list"`
 	VulnerabilityOther string    `bigquery:"vulnerability_other"`
+	BookingType        string    `bigquery:"booking_type"`
 
 	CreatedAt time.Time `bigquery:"created_at"`
 }
@@ -126,6 +127,7 @@ func (i *RescheduledBookingIndexer) Handle(_ context.Context, message substrate.
 			VulnerabilityList:  vulnerabilitiesAsStringSlice(x.GetDetails().VulnerabilityDetails.Vulnerabilities),
 			VulnerabilityOther: x.GetDetails().VulnerabilityDetails.Other,
 			ExternalReference:  x.GetDetails().ExternalReference,
+			BookingType:        x.GetDetails().BookingType.String(),
 			CreatedAt:          env.CreatedAt.AsTime(),
 		}
 
