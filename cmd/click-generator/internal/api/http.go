@@ -8,15 +8,19 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/generator"
 )
 
-type Handler struct {
-	generator *generator.LinkProvider
+type ClickLinkGateway interface {
+	GenerateGenericLink(ctx context.Context, accountNo string) (string, error)
+	GenerateAuthenticated(ctx context.Context, accountNo string) (string, error)
 }
 
-func NewHandler(generator *generator.LinkProvider) *Handler {
-	return &Handler{generator: generator}
+type Handler struct {
+	clickLinkGw ClickLinkGateway
+}
+
+func NewHandler(clickLinkGw ClickLinkGateway) *Handler {
+	return &Handler{clickLinkGw}
 }
 
 const (
@@ -68,9 +72,9 @@ func (s *Handler) generate(ctx context.Context) http.Handler {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		case "auth":
-			link, err = s.generator.GenerateAuthenticated(ctx, req.AccountNumber)
+			link, err = s.clickLinkGw.GenerateAuthenticated(ctx, req.AccountNumber)
 		case "generic":
-			link, err = s.generator.GenerateGenericLink(ctx, req.AccountNumber)
+			link, err = s.clickLinkGw.GenerateGenericLink(ctx, req.AccountNumber)
 		}
 
 		if err != nil {
