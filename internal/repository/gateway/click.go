@@ -2,11 +2,18 @@ package gateway
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/gogo/protobuf/types"
 	click "github.com/utilitywarehouse/click.uw.co.uk/generated/contract"
 	"google.golang.org/grpc"
+)
+
+var (
+	ErrInvalidLocationProvided      = errors.New("invalid empty location provided for both web and mobile")
+	ErrInvalidExpirationTimeSeconds = errors.New("invalid expiration time provided")
+	ErrInvalidClickKeyID            = errors.New("invalid empty key provided")
 )
 
 type ClickLinkProviderConfig struct {
@@ -110,15 +117,15 @@ func (p *ClickLinkProvider) GenerateGenericLink(ctx context.Context, accountNo s
 
 func (c *ClickLinkProviderConfig) validate() error {
 	if c.WebLocation == "" && c.MobileLocation == "" {
-		return fmt.Errorf("invalid empty location provided for both web and mobile")
+		return ErrInvalidLocationProvided
 	}
 
 	if c.ExpirationTimeSeconds == 0 {
-		return fmt.Errorf("invalid expiration time provided")
+		return ErrInvalidExpirationTimeSeconds
 	}
 
 	if c.ClickKeyID == "" {
-		return fmt.Errorf("invalid empty key provided")
+		return ErrInvalidClickKeyID
 	}
 
 	return nil
