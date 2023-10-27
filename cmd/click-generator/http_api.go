@@ -17,7 +17,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/api"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/click-generator/internal/generator"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -38,24 +38,24 @@ func runHTTPApi(c *cli.Context) error {
 
 	clickClient := click.NewIssuerServiceClient(clickGRPCConn)
 
-	clickConfig := generator.LinkProviderConfig{
-		ExpirationTimeSeconds: c.Int(clickLinkExpirySeconds),
+	clickConfig := gateway.ClickLinkProviderConfig{
+		ExpirationTimeSeconds: c.Int64(clickLinkExpirySeconds),
 		ClickKeyID:            c.String(clickSigningKeyID),
 		AuthScope:             c.String(clickScope),
-		Location:              c.String(clickWebLocation),
+		WebLocation:           c.String(clickWebLocation),
 		MobileLocation:        c.String(clickMobileLocation),
 		Subject:               c.String(subject),
 		Intent:                c.String(intent),
 		Channel:               c.String(channel),
 	}
 
-	linkProvider, err := generator.NewLinkProvider(clickClient, &clickConfig)
+	clickLinkProvider, err := gateway.NewClickLinkProvider(clickClient, &clickConfig)
 	if err != nil {
-		return fmt.Errorf("failed to create link provider: %w", err)
+		return fmt.Errorf("failed to create click link provider: %w", err)
 	}
 
 	router := mux.NewRouter()
-	apiHandler := api.NewHandler(linkProvider)
+	apiHandler := api.NewHandler(clickLinkProvider)
 	apiHandler.Register(ctx, router)
 
 	httpServer := &http.Server{
