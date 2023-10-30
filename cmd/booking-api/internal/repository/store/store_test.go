@@ -63,6 +63,32 @@ func populateDB(ctx context.Context, pool *pgxpool.Pool) error {
 		VALUES
 			('service-id-001G', 'mpxn-ref#1', 'occupancy-id-ref-test', 'gas', 'account-id', NOW(), NOW(), true),
 			('service-id-001E', 'mpxn-ref#2', 'occupancy-id-ref-test', 'electricity', 'account-id', NOW(), NOW(), true);
+
+		INSERT INTO booking (
+			booking_id,
+			account_id,
+			status,
+	
+			occupancy_id,
+	
+			contact_title,
+			contact_first_name,
+			contact_last_name,
+			contact_phone,
+			contact_email,
+	
+			booking_date,
+			booking_start_time,
+			booking_end_time,
+	
+			vulnerabilities_list,
+			vulnerabilities_other,
+			external_reference,
+	
+			booking_type
+		) VALUES ('booking-id-1', 'account-id-1', 'some-status', 'occupancy-id-1', 'Mr', 'John', 'Doe', '333-100', 'jdoe@example.com', NOW(), 10, 14, [], 'nothing', 'lbg100', 'normal journey')
+		ON CONFLICT (booking_id)
+		DO NOTHING;
 	`,
 	)
 

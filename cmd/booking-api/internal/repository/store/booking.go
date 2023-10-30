@@ -106,6 +106,41 @@ func (s *BookingStore) UpdateSchedule(bookingID string, newSchedule *time.Time) 
 	s.batch.Queue(q, bookingID, *newSchedule)
 }
 
+func (s *BookingStore) UpdateBookingOnReschedule(bookingID string, contactDetails models.AccountDetails, bookingSlot models.BookingSlot, vulnerabilityDetails models.VulnerabilityDetails) {
+	q := `
+	UPDATE booking
+	SET booking_date = $2,
+		booking_start_time = $3,
+		booking_end_time = $4,
+		vulnerabilities_list = $5,
+		vulnerabilities_other = $6,
+		contact_title = $7,
+		contact_first_name = $8,
+		contact_last_name = $9,
+		contact_phone = $10,
+		contact_email = $11,
+		updated_at = now()
+	WHERE booking_id = $1;
+	`
+
+	vulnerabilitiesList := vulnerabilityDetails.Vulnerabilities
+	if vulnerabilitiesList.IsEmpty() {
+		vulnerabilitiesList = models.Vulnerabilities{}
+	}
+	s.batch.Queue(q, bookingID,
+		bookingSlot.Date,
+		bookingSlot.StartTime,
+		bookingSlot.EndTime,
+		vulnerabilitiesList,
+		vulnerabilityDetails.Other,
+		contactDetails.Title,
+		contactDetails.FirstName,
+		contactDetails.LastName,
+		contactDetails.Mobile,
+		contactDetails.Email,
+	)
+}
+
 func (s *BookingStore) GetBookingsByAccountID(ctx context.Context, accountID string) ([]models.Booking, error) {
 	q := `
 	SELECT

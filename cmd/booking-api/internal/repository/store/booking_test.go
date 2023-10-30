@@ -202,3 +202,77 @@ func Test_BookingStore_UpsertAndQuery(t *testing.T) {
 		})
 	}
 }
+
+func Test_BookingStore_UpdateBookingOnReschedule(t *testing.T) {
+	ctx := context.Background()
+
+	testContainer, err := setupTestContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dsn, err := postgres.GetTestContainerDSN(testContainer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := store.Setup(ctx, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bookingStore := store.NewBooking(db)
+
+	type inputParams struct {
+		bookingID            string
+		contactDetails       models.AccountDetails
+		bookingSlot          models.BookingSlot
+		vulnerabilityDetails models.VulnerabilityDetails
+	}
+
+	type testSetup struct {
+		description string
+		input       inputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should update a booking",
+			input: inputParams{
+				bookingID: "booking-id-1",
+				contactDetails: models.AccountDetails{
+					Title:     "Mr",
+					FirstName: "John",
+					LastName:  "Doe",
+					Email:     "jdoe@example.com",
+					Mobile:    "333-100",
+				},
+				bookingSlot: models.BookingSlot{
+					Date:      time.Now(),
+					StartTime: 12,
+					EndTime:   16,
+				},
+				vulnerabilityDetails: models.VulnerabilityDetails{
+					Vulnerabilities: models.Vulnerabilities{
+						bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+					},
+					Other: "bad knee",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			bookingStore.Begin()
+
+			bookingStore.UpdateBookingOnReschedule(tc.input.bookingID, tc.input.contactDetails, tc.input.bookingSlot, tc.input.vulnerabilityDetails)
+
+			err := bookingStore.Commit(ctx)
+
+			if err != nil {
+				t.Fatalf("should not have errored, %s", err)
+			}
+		})
+	}
+}
