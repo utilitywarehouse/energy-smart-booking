@@ -2294,6 +2294,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2313,6 +2326,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{
@@ -2328,6 +2354,20 @@ func Test_RescheduleBooking(t *testing.T) {
 							StartTime: 10,
 							EndTime:   20,
 						},
+						ContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Phone:     "333-100",
+							Email:     "jdoe@example.com",
+						},
+						VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+							Vulnerabilities: []bookingv1.Vulnerability{
+								bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+							},
+							Other: "runny nose",
+						},
+						Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 					},
 				}, nil)
 
@@ -2343,6 +2383,20 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 				}, gomock.Any()).Return(nil)
 
 			},
@@ -2369,6 +2423,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2388,6 +2455,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInvalidArgument)
@@ -2416,6 +2496,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2435,6 +2528,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInternalBadParameters)
@@ -2463,6 +2569,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2482,6 +2601,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInternal)
@@ -2510,6 +2642,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2529,6 +2674,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrNotFound)
@@ -2557,6 +2715,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2576,6 +2747,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrOutOfRange)
@@ -2604,6 +2788,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2623,6 +2820,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrAlreadyExists)
@@ -2651,6 +2861,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2670,6 +2893,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInvalidAppointmentDate)
@@ -2698,6 +2934,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2717,6 +2966,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, gateway.ErrInvalidAppointmentTime)
@@ -2745,6 +3007,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
@@ -2764,6 +3039,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{}, errOops)
@@ -2792,6 +3080,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						EndTime:   20,
 					},
 					Platform: bookingv1.Platform_PLATFORM_APP,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockBookingPublisher, mAuth *mocks.MockAuth) {
