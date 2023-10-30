@@ -18,7 +18,7 @@ type BookingStore interface {
 	Upsert(models.Booking)
 	UpdateStatus(bookingID string, newStatus bookingv1.BookingStatus)
 
-	UpdateBookingOnReschedule(bookingID string, rescheduledBooking models.Booking)
+	UpdateBookingOnReschedule(bookingID string, contactDetails models.AccountDetails, bookingSlot models.BookingSlot, vulnerabilityDetails models.VulnerabilityDetails)
 
 	Begin()
 	Commit(context.Context) error
@@ -106,24 +106,19 @@ func (h *BookingHandler) Handle(_ context.Context, message substrate.Message) er
 		}
 
 		contactDetails := ev.GetContactDetails()
-		h.bookingStore.UpdateBookingOnReschedule(bookingID, models.Booking{
-			Contact: models.AccountDetails{
-				Title:     contactDetails.GetTitle(),
-				FirstName: contactDetails.GetFirstName(),
-				LastName:  contactDetails.GetLastName(),
-				Email:     contactDetails.GetEmail(),
-				Mobile:    contactDetails.GetPhone(),
-			},
-			Slot: models.BookingSlot{
-				Date:      *dt,
-				StartTime: int(ev.GetSlot().GetStartTime()),
-				EndTime:   int(ev.GetSlot().GetEndTime()),
-			},
-			VulnerabilityDetails: models.VulnerabilityDetails{
-				Vulnerabilities: ev.GetVulnerabilityDetails().Vulnerabilities,
-				Other:           ev.GetVulnerabilityDetails().Other,
-			},
-			BookingID: bookingID,
+		h.bookingStore.UpdateBookingOnReschedule(bookingID, models.AccountDetails{
+			Title:     contactDetails.GetTitle(),
+			FirstName: contactDetails.GetFirstName(),
+			LastName:  contactDetails.GetLastName(),
+			Email:     contactDetails.GetEmail(),
+			Mobile:    contactDetails.GetPhone(),
+		}, models.BookingSlot{
+			Date:      *dt,
+			StartTime: int(ev.GetSlot().GetStartTime()),
+			EndTime:   int(ev.GetSlot().GetEndTime()),
+		}, models.VulnerabilityDetails{
+			Vulnerabilities: ev.GetVulnerabilityDetails().Vulnerabilities,
+			Other:           ev.GetVulnerabilityDetails().Other,
 		})
 	}
 
