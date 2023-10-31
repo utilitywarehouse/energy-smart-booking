@@ -20,7 +20,7 @@ require (
 	github.com/utilitywarehouse/account-platform v0.0.0-20231004142622-2c85ef630889
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230926124646-6793c5ba4e39
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b
-	github.com/utilitywarehouse/energy-contracts v1.105.1-0.20231030161117-a54a41bdf5e6
+	github.com/utilitywarehouse/energy-contracts v1.107.0
 	github.com/utilitywarehouse/energy-pkg/app v1.1.32
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
