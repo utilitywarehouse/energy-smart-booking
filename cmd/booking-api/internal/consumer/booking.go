@@ -3,7 +3,6 @@ package consumer
 import (
 	"context"
 	"fmt"
-	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
@@ -18,7 +17,8 @@ import (
 type BookingStore interface {
 	Upsert(models.Booking)
 	UpdateStatus(bookingID string, newStatus bookingv1.BookingStatus)
-	UpdateSchedule(bookingID string, newSchedule *time.Time)
+
+	UpdateBookingOnReschedule(bookingID string, contactDetails models.AccountDetails, bookingSlot models.BookingSlot, vulnerabilityDetails models.VulnerabilityDetails)
 
 	Begin()
 	Commit(context.Context) error
@@ -104,7 +104,22 @@ func (h *BookingHandler) Handle(_ context.Context, message substrate.Message) er
 		if err != nil {
 			return err
 		}
-		h.bookingStore.UpdateSchedule(bookingID, dt)
+
+		contactDetails := ev.GetContactDetails()
+		h.bookingStore.UpdateBookingOnReschedule(bookingID, models.AccountDetails{
+			Title:     contactDetails.GetTitle(),
+			FirstName: contactDetails.GetFirstName(),
+			LastName:  contactDetails.GetLastName(),
+			Email:     contactDetails.GetEmail(),
+			Mobile:    contactDetails.GetPhone(),
+		}, models.BookingSlot{
+			Date:      *dt,
+			StartTime: int(ev.GetSlot().GetStartTime()),
+			EndTime:   int(ev.GetSlot().GetEndTime()),
+		}, models.VulnerabilityDetails{
+			Vulnerabilities: ev.GetVulnerabilityDetails().Vulnerabilities,
+			Other:           ev.GetVulnerabilityDetails().Other,
+		})
 	}
 
 	return nil

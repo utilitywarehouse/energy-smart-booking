@@ -22,6 +22,15 @@ type RescheduleBooking struct {
 	StartTime   int32     `bigquery:"start_time"`
 	EndTime     int32     `bigquery:"end_time"`
 
+	VulnerabilityList  []string `bigquery:"vulnerability_list"`
+	VulnerabilityOther string   `bigquery:"vulnerability_other"`
+	Title              string   `bigquery:"title"`
+	FirstName          string   `bigquery:"first_name"`
+	LastName           string   `bigquery:"last_name"`
+	Phone              string   `bigquery:"phone"`
+	Email              string   `bigquery:"email"`
+	Status             string   `bigquery:"status"`
+
 	CreatedAt time.Time `bigquery:"created_at"`
 }
 
@@ -141,12 +150,20 @@ func (i *RescheduledBookingIndexer) Handle(_ context.Context, message substrate.
 		}
 
 		rescheduleBooking := RescheduleBooking{
-			BookingID:   x.GetBookingId(),
-			Source:      x.BookingSource.String(),
-			BookingDate: *bookingDate,
-			StartTime:   x.GetSlot().StartTime,
-			EndTime:     x.GetSlot().EndTime,
-			CreatedAt:   env.CreatedAt.AsTime(),
+			BookingID:          x.GetBookingId(),
+			Source:             x.BookingSource.String(),
+			BookingDate:        *bookingDate,
+			StartTime:          x.GetSlot().StartTime,
+			EndTime:            x.GetSlot().EndTime,
+			CreatedAt:          env.CreatedAt.AsTime(),
+			VulnerabilityList:  vulnerabilitiesAsStringSlice(x.GetVulnerabilityDetails().GetVulnerabilities()),
+			VulnerabilityOther: x.GetVulnerabilityDetails().Other,
+			Title:              x.GetContactDetails().Title,
+			FirstName:          x.GetContactDetails().FirstName,
+			LastName:           x.GetContactDetails().LastName,
+			Phone:              x.GetContactDetails().Phone,
+			Email:              x.GetContactDetails().Email,
+			Status:             x.GetStatus().String(),
 		}
 
 		i.rescheduleBookingBuffer = append(i.rescheduleBookingBuffer, rescheduleBooking)
