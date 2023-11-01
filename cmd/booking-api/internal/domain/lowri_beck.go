@@ -41,10 +41,12 @@ type CreateBookingParams struct {
 }
 
 type RescheduleBookingParams struct {
-	AccountID string
-	BookingID string
-	Source    bookingv1.BookingSource
-	Slot      models.BookingSlot
+	AccountID            string
+	BookingID            string
+	Source               bookingv1.BookingSource
+	VulnerabilityDetails *bookingv1.VulnerabilityDetails
+	ContactDetails       models.AccountDetails
+	Slot                 models.BookingSlot
 }
 
 type GetPOSAvailableSlotsParams struct {
@@ -211,21 +213,24 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		return RescheduleBookingResponse{}, err
 	}
 
-	booking, err := d.bookingStore.GetBookingByBookingID(ctx, params.BookingID)
-	if err != nil {
-		return RescheduleBookingResponse{}, err
-	}
+	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.Vulnerabilities)
 
-	lbVulnerabilities := mapLowribeckVulnerabilities(booking.VulnerabilityDetails.Vulnerabilities)
-
-	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, occupancyEligibility.Reference, params.Slot, booking.Contact, lbVulnerabilities, booking.VulnerabilityDetails.Other)
+	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, occupancyEligibility.Reference, params.Slot, params.ContactDetails, lbVulnerabilities, params.VulnerabilityDetails.Other)
 	if err != nil {
 		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
 
 	if response.Success {
 		event = &bookingv1.BookingRescheduledEvent{
-			BookingId: params.BookingID,
+			BookingId:            params.BookingID,
+			VulnerabilityDetails: params.VulnerabilityDetails,
+			ContactDetails: &bookingv1.ContactDetails{
+				Title:     params.ContactDetails.Title,
+				FirstName: params.ContactDetails.FirstName,
+				LastName:  params.ContactDetails.LastName,
+				Phone:     params.ContactDetails.Mobile,
+				Email:     params.ContactDetails.Email,
+			},
 			Slot: &bookingv1.BookingSlot{
 				Date: &date.Date{
 					Year:  int32(params.Slot.Date.Year()),
@@ -235,6 +240,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 				StartTime: int32(params.Slot.StartTime),
 				EndTime:   int32(params.Slot.EndTime),
 			},
+			Status:        bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 			BookingSource: params.Source,
 		}
 	}

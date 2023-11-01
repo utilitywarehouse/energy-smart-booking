@@ -412,9 +412,25 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		return nil, status.Error(codes.InvalidArgument, "no slot was provided")
 	}
 
+	if req.ContactDetails == nil {
+		return nil, status.Error(codes.InvalidArgument, "no contact details provided")
+	}
+
+	if req.VulnerabilityDetails == nil {
+		return nil, status.Error(codes.InvalidArgument, "no vulnerability details provided")
+	}
+
 	params := domain.RescheduleBookingParams{
-		AccountID: req.AccountId,
-		BookingID: req.BookingId,
+		AccountID:            req.AccountId,
+		BookingID:            req.BookingId,
+		VulnerabilityDetails: req.VulnerabilityDetails,
+		ContactDetails: models.AccountDetails{
+			Title:     req.GetContactDetails().Title,
+			FirstName: req.GetContactDetails().FirstName,
+			LastName:  req.GetContactDetails().LastName,
+			Email:     req.GetContactDetails().Email,
+			Mobile:    req.GetContactDetails().Phone,
+		},
 		Slot: models.BookingSlot{
 			Date:      time.Date(int(req.Slot.Date.Year), time.Month(req.Slot.Date.Month), int(req.Slot.Date.Day), 0, 0, 0, 0, time.UTC),
 			StartTime: int(req.Slot.StartTime),

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
@@ -539,6 +538,20 @@ func Test_RescheduleBooking(t *testing.T) {
 						StartTime: 9,
 						EndTime:   15,
 					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_MY_ACCOUNT,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				},
 			},
 			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
@@ -567,32 +580,6 @@ func Test_RescheduleBooking(t *testing.T) {
 						Reference:   "booking-reference-1",
 					}, nil)
 
-				bookingSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
-					BookingID:   "booking-id-1",
-					AccountID:   "account-id-1",
-					Status:      bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
-					OccupancyID: "occupancy-id-1",
-					Contact: models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "555-0145",
-					},
-					Slot: models.BookingSlot{
-						Date:      time.Time{},
-						StartTime: 1,
-						EndTime:   1,
-					},
-					VulnerabilityDetails: models.VulnerabilityDetails{
-						Vulnerabilities: models.Vulnerabilities{
-							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-						},
-						Other: "Bad Knee",
-					},
-					BookingReference: "booking-reference-1",
-				}, nil)
-
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 					Date:      mustDate(t, "2023-08-27"),
 					StartTime: 9,
@@ -600,12 +587,12 @@ func Test_RescheduleBooking(t *testing.T) {
 				}, models.AccountDetails{
 					Title:     "Mr",
 					FirstName: "John",
-					LastName:  "Dough",
-					Email:     "jdough@example.com",
-					Mobile:    "555-0145",
+					LastName:  "Doe",
+					Email:     "jdoe@example.com",
+					Mobile:    "333-100",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "Bad Knee").Return(gateway.CreateBookingResponse{
+				}, "runny nose").Return(gateway.CreateBookingResponse{
 					Success: true,
 				}, nil)
 
@@ -623,6 +610,21 @@ func Test_RescheduleBooking(t *testing.T) {
 							StartTime: 9,
 							EndTime:   15,
 						},
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_MY_ACCOUNT,
+						ContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Phone:     "333-100",
+							Email:     "jdoe@example.com",
+						},
+						VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+							Vulnerabilities: []bookingv1.Vulnerability{
+								bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+							},
+							Other: "runny nose",
+						},
+						Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 					},
 				},
 				err: nil,
@@ -638,6 +640,20 @@ func Test_RescheduleBooking(t *testing.T) {
 						Date:      mustDate(t, "2023-08-27"),
 						StartTime: 9,
 						EndTime:   15,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_MY_ACCOUNT,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
 					},
 				},
 			},
@@ -667,31 +683,6 @@ func Test_RescheduleBooking(t *testing.T) {
 						Reference:   "booking-reference-1",
 					}, nil)
 
-				bookingSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
-					BookingID:   "booking-id-1",
-					AccountID:   "account-id-1",
-					Status:      bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
-					OccupancyID: "occupancy-id-1",
-					Contact: models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "555-0145",
-					},
-					Slot: models.BookingSlot{
-						Date:      time.Time{},
-						StartTime: 1,
-						EndTime:   1,
-					},
-					VulnerabilityDetails: models.VulnerabilityDetails{
-						Vulnerabilities: models.Vulnerabilities{
-							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-						},
-						Other: "Bad Knee",
-					},
-				}, nil)
-
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 					Date:      mustDate(t, "2023-08-27"),
 					StartTime: 9,
@@ -699,12 +690,12 @@ func Test_RescheduleBooking(t *testing.T) {
 				}, models.AccountDetails{
 					Title:     "Mr",
 					FirstName: "John",
-					LastName:  "Dough",
-					Email:     "jdough@example.com",
-					Mobile:    "555-0145",
+					LastName:  "Doe",
+					Email:     "jdoe@example.com",
+					Mobile:    "333-100",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "Bad Knee").Return(gateway.CreateBookingResponse{
+				}, "runny nose").Return(gateway.CreateBookingResponse{
 					Success: false,
 				}, nil)
 
