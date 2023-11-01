@@ -18,7 +18,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serializers"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -249,7 +248,7 @@ func serverAction(c *cli.Context) error {
 	siteStore := store.NewSite(pool)
 	bookingStore := store.NewBooking(pool)
 	partialBookingStore := store.NewPartialBooking(pool)
-	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(pool, serializers.PointOfSaleCustomerDetails{})
+	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(pool, serialisers.PointOfSaleCustomerDetails{})
 
 	// DOMAIN //
 	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore, partialBookingStore, pointOfSaleCustomerDetailsStore, eligibilityGateway, clickGw, true)

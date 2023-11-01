@@ -11,7 +11,7 @@ import (
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serializers"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serialisers"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/protobuf/testing/protocmp"
 )
@@ -35,7 +35,7 @@ func Test_PointOfSaleCustomerDetails_Insert_Get(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(db, serializers.PointOfSaleCustomerDetails{})
+	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(db, serialisers.PointOfSaleCustomerDetails{})
 
 	type inputParams struct {
 		accountNumber string
@@ -177,7 +177,7 @@ func Test_PointOfSaleCustomerDetails_Upsert_Get(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(db, serializers.PointOfSaleCustomerDetails{})
+	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(db, serialisers.PointOfSaleCustomerDetails{})
 
 	type inputParams struct {
 		accountNumber string
@@ -361,7 +361,7 @@ func Test_PointOfSaleCustomerDetails_Insert_Delete_Get(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(db, serializers.PointOfSaleCustomerDetails{})
+	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(db, serialisers.PointOfSaleCustomerDetails{})
 
 	type inputParams struct {
 		accountNumber string

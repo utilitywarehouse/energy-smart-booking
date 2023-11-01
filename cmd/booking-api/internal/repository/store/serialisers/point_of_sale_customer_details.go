@@ -1,4 +1,4 @@
-package serializers
+package serialisers
 
 import (
 	"encoding/json"
@@ -49,7 +49,7 @@ type pointOfSaleCustomerDetails struct {
 	Meterpoints   []meterpoint   `json:"meterpoints"`
 }
 
-func (s PointOfSaleCustomerDetails) Serialize(details models.PointOfSaleCustomerDetails) ([]byte, error) {
+func (s PointOfSaleCustomerDetails) Serialise(details models.PointOfSaleCustomerDetails) ([]byte, error) {
 
 	meterpoints := []meterpoint{}
 
@@ -94,7 +94,7 @@ func (s PointOfSaleCustomerDetails) Serialize(details models.PointOfSaleCustomer
 	return marshalledDetails, nil
 }
 
-func (s PointOfSaleCustomerDetails) Deserialize(details []byte) (models.PointOfSaleCustomerDetails, error) {
+func (s PointOfSaleCustomerDetails) Deserialise(details []byte) (models.PointOfSaleCustomerDetails, error) {
 
 	structuredDetails := pointOfSaleCustomerDetails{}
 
