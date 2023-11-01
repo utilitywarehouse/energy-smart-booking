@@ -55,7 +55,7 @@ func Test_PointOfSaleCustomerDetails_Insert_Get(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should upsert a booking created event and retrieve it",
+			description: "should upsert a customer details point of sale and retrieve it",
 			input: inputParams{
 				accountNumber: "1",
 				details: models.PointOfSaleCustomerDetails{
@@ -198,7 +198,7 @@ func Test_PointOfSaleCustomerDetails_Upsert_Get(t *testing.T) {
 
 	testCases := []testSetup{
 		{
-			description: "should upsert a booking created event for booking-id-1 and get the upserted value",
+			description: "should upsert customer details for point of sale and get the upserted value",
 			input: inputParams{
 				accountNumber: "1",
 				detail: models.PointOfSaleCustomerDetails{
