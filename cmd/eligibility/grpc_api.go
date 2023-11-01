@@ -23,6 +23,8 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	grpchealth "github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
@@ -62,17 +64,19 @@ func runGRPCApi(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not connect to ecoes gRPC integration: %w", err)
 	}
-	defer ecoesConn.Close()
-	ecoesClient := ecoesv1.NewEcoesAPIClient(ecoesConn)
 	opsServer.Add("ecoes-api", grpchealth.NewCheck(c.String(ecoesHost), "", "cannot find mpans address"))
+	defer ecoesConn.Close()
 
 	xoserveConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(xoserveHost), c.String(grpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("could not connect to xoserve gRPC integration: %w", err)
 	}
-	defer xoserveConn.Close()
-	xoserveClient := xoservev1.NewXoserveAPIClient(xoserveConn)
 	opsServer.Add("xoserve-api", grpchealth.NewCheck(c.String(xoserveHost), "", "cannot find mprns address"))
+	defer xoserveConn.Close()
+
+	// GATEWAYS //
+	ecoesGw := gateway.NewEcoesGateway(ecoesv1.NewEcoesAPIClient(ecoesConn))
+	xoserveGateway := gateway.NewXOServeGateway(xoservev1.NewXoserveAPIClient(xoserveConn))
 
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)
@@ -107,8 +111,8 @@ func runGRPCApi(c *cli.Context) error {
 			accountStore,
 			serviceStore,
 			auth,
-			ecoesClient,
-			xoserveClient,
+			ecoesGw,
+			xoserveGateway,
 		)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 

@@ -10,6 +10,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
@@ -47,11 +48,11 @@ type ServiceStore interface {
 }
 
 type EcoesAPI interface {
-	GetTechnicalDetailsByMPAN(ctx context.Context, req *ecoesv1.SearchByMPANRequest, opts ...grpc.CallOption) (*ecoesv1.TechnicalDetailsResponse, error)
+	GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error)
 }
 
 type XoserveAPI interface {
-	GetSwitchDataByMPRN(ctx context.Context, req *xoservev1.SearchByMPRNRequest, opts ...grpc.CallOption) (*xoservev1.TechnicalDetailsResponse, error)
+	GetMPRNTechnicalDetails(ctx context.Context, mprn string) (*models.GasMeterTechnicalDetails, error)
 }
 
 type EligibilityGRPCApi struct {
@@ -72,7 +73,10 @@ func NewEligibilityGRPCApi(
 	occupancyStore OccupancyStore,
 	accountStore AccountStore,
 	serviceStore ServiceStore,
-	auth Auth) *EligibilityGRPCApi {
+	auth Auth,
+	ecoesAPI EcoesAPI,
+	xoserveAPI XoserveAPI,
+) *EligibilityGRPCApi {
 	return &EligibilityGRPCApi{
 		eligibilityStore:   eligibilityStore,
 		suppliabilityStore: suppliabilityStore,
@@ -80,6 +84,8 @@ func NewEligibilityGRPCApi(
 		accountStore:       accountStore,
 		serviceStore:       serviceStore,
 		auth:               auth,
+		ecoesAPI:           ecoesAPI,
+		xoserveAPI:         xoserveAPI,
 	}
 }
 
@@ -317,7 +323,7 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 
 	account, err := a.accountStore.GetAccount(ctx, req.AccountNumber)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
+		logrus.Debugf("failed to get account for account Number %s: %s", req.GetAccountNumber(), err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountNumber)
 	}
 
@@ -326,13 +332,14 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 	// an account which has opted out of smart booking should not be considered eligible to go through the journey
 	if account.OptOut {
 		return &smart_booking.GetEligibilityForPointOfSaleJourneyResponse{
-			Eligible: false
+			Eligible: false,
 		}, nil
 	}
 
 	return &smart_booking.GetEligibilityForPointOfSaleJourneyResponse{
-		Eligible: eligible,
-		Link:     link,
+		//TODO
+		// Eligible: eligible,
+		// Link:     link,
 	}, nil
 }
 
