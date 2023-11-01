@@ -29,6 +29,14 @@ type LowriBeckGateway interface {
 	CreateBookingPointOfSale(ctx context.Context, postcode, mpan, mprn string, tariffElectricity, tariffGas lowribeckv1.TariffType, slot models.BookingSlot, accountDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (gateway.CreateBookingPointOfSaleResponse, error)
 }
 
+type EligibilityGateway interface {
+	GetMeterpointEligibility(ctx context.Context, accountNumber, mpan, mprn, postcode string) (bool, error)
+}
+
+type ClickGateway interface {
+	GenerateAuthenticated(ctx context.Context, accountNo string) (string, error)
+}
+
 type BookingStore interface {
 	GetBookingByBookingID(ctx context.Context, bookingID string) (models.Booking, error)
 	GetBookingsByAccountID(ctx context.Context, accountID string) ([]models.Booking, error)
@@ -38,14 +46,22 @@ type PartialBookingStore interface {
 	Upsert(ctx context.Context, bookingID string, event *bookingv1.BookingCreatedEvent) error
 }
 
+type PointOfSaleCustomerDetailsStore interface {
+	GetByAccountNumber(context.Context, string) (*models.PointOfSaleCustomerDetails, error)
+	Upsert(context.Context, string, models.PointOfSaleCustomerDetails) error
+}
+
 type BookingDomain struct {
-	accounts            AccountGateway
-	lowribeckGw         LowriBeckGateway
-	occupancyStore      OccupancyStore
-	siteStore           SiteStore
-	bookingStore        BookingStore
-	partialBookingStore PartialBookingStore
-	useTracing          bool
+	accounts                        AccountGateway
+	lowribeckGw                     LowriBeckGateway
+	occupancyStore                  OccupancyStore
+	siteStore                       SiteStore
+	bookingStore                    BookingStore
+	partialBookingStore             PartialBookingStore
+	pointOfSaleCustomerDetailsStore PointOfSaleCustomerDetailsStore
+	eligibilityGw                   EligibilityGateway
+	clickGw                         ClickGateway
+	useTracing                      bool
 }
 
 func NewBookingDomain(accounts AccountGateway,
@@ -54,6 +70,9 @@ func NewBookingDomain(accounts AccountGateway,
 	siteStore SiteStore,
 	bookingStore BookingStore,
 	partialBookingStore PartialBookingStore,
+	pointOfSaleCustomerDetailsStore PointOfSaleCustomerDetailsStore,
+	eligibilityGw EligibilityGateway,
+	clickGw ClickGateway,
 	useTracing bool,
 ) BookingDomain {
 	return BookingDomain{
@@ -63,6 +82,9 @@ func NewBookingDomain(accounts AccountGateway,
 		siteStore,
 		bookingStore,
 		partialBookingStore,
+		pointOfSaleCustomerDetailsStore,
+		eligibilityGw,
+		clickGw,
 		useTracing,
 	}
 }

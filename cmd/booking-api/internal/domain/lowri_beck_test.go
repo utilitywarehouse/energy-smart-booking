@@ -34,8 +34,11 @@ func Test_GetAvailableSlots(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		params domain.GetAvailableSlotsParams
@@ -247,8 +250,11 @@ func Test_CreateBooking(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	var emptyMsg *bookingv1.BookingCreatedEvent
 
@@ -505,8 +511,11 @@ func Test_RescheduleBooking(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		params domain.RescheduleBookingParams
@@ -740,9 +749,15 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	occSt := mocks.NewMockOccupancyStore(ctrl)
+	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, nil, nil, bookingSt, nil, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		params domain.GetPOSAvailableSlotsParams
@@ -913,11 +928,15 @@ func Test_CreatePOSBooking(t *testing.T) {
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	occSt := mocks.NewMockOccupancyStore(ctrl)
+	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
-	occupancySt := mocks.NewMockOccupancyStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occupancySt, nil, bookingSt, partialBookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		params domain.CreatePOSBookingParams
@@ -1276,7 +1295,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, lbGw, occupancySt, partialBookingSt)
+			tc.setup(ctx, lbGw, occSt, partialBookingSt)
 
 			actual, err := myDomain.CreateBookingPointOfSale(ctx, tc.input.params)
 

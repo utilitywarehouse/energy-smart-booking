@@ -5,7 +5,6 @@ package domain_test
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
@@ -18,15 +17,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/genproto/googleapis/type/date"
 )
-
-func mustDate(t *testing.T, value string) time.Time {
-	t.Helper()
-	d, err := time.ParseInLocation(time.DateOnly, value, time.UTC)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return d
-}
 
 func Test_GetCustomerContactDetails(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -41,8 +31,11 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		accountID string
@@ -50,7 +43,6 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 	type outputParams struct {
 		account models.Account
-		err     error
 	}
 
 	type testSetup struct {
@@ -123,8 +115,11 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		accountID string
@@ -230,20 +225,16 @@ func Test_GetCustomerBookings(t *testing.T) {
 	ctx := context.Background()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	lGw := mocks.NewMockLowriBeckGateway(ctrl)
-	oSt := mocks.NewMockOccupancyStore(ctrl)
+	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(
-		accGw,
-		lGw,
-		oSt,
-		siteSt,
-		bookingSt,
-		partialBookingSt,
-		false)
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		accountID string
@@ -552,6 +543,159 @@ func Test_GetCustomerBookings(t *testing.T) {
 				tc.output.bookings,
 				cmpopts.IgnoreUnexported(bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{}, bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{}, date.Date{}),
 			); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	accGw := mocks.NewMockAccountGateway(ctrl)
+	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	occSt := mocks.NewMockOccupancyStore(ctrl)
+	siteSt := mocks.NewMockSiteStore(ctrl)
+	bookingSt := mocks.NewMockBookingStore(ctrl)
+	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
+	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
+	clickGw := mocks.NewMockClickGateway(ctrl)
+
+	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
+
+	type inputParams struct {
+		accountNumber string
+	}
+
+	type outputParams struct {
+		details *models.PointOfSaleCustomerDetails
+		err     error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(context.Context, *mocks.MockPointOfSaleCustomerDetailsStore)
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should get the customer details for the provided account number",
+			input: inputParams{
+				accountNumber: "1",
+			},
+			setup: func(ctx context.Context, p *mocks.MockPointOfSaleCustomerDetailsStore) {
+				p.EXPECT().GetByAccountNumber(ctx, "1").Return(
+					&models.PointOfSaleCustomerDetails{
+						AccountNumber: "1",
+						Details: models.AccountDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Email:     "jdoe@example.com",
+							Mobile:    "555-100",
+						},
+						Address: models.AccountAddress{
+							UPRN: "u",
+							PAF: models.PAF{
+								BuildingName:            "bn",
+								BuildingNumber:          "bn1",
+								Department:              "dp",
+								DependentLocality:       "dl",
+								DependentThoroughfare:   "dtg",
+								DoubleDependentLocality: "ddl",
+								Organisation:            "o",
+								PostTown:                "pt",
+								Postcode:                "pc",
+								SubBuilding:             "sb",
+								Thoroughfare:            "tf",
+							},
+						},
+						Meterpoints: []models.Meterpoint{
+							{
+								MPXN:       "mpxn-1",
+								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+							},
+							{
+								MPXN:       "mpxn-2",
+								TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+							},
+						},
+					}, nil)
+			},
+			output: outputParams{
+				details: &models.PointOfSaleCustomerDetails{
+					AccountNumber: "1",
+					Details: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "555-100",
+					},
+					Address: models.AccountAddress{
+						UPRN: "u",
+						PAF: models.PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "pc",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+					Meterpoints: []models.Meterpoint{
+						{
+							MPXN:       "mpxn-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+						{
+							MPXN:       "mpxn-2",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should fail to get the customer details because they don't exist",
+			input: inputParams{
+				accountNumber: "1",
+			},
+			setup: func(ctx context.Context, p *mocks.MockPointOfSaleCustomerDetailsStore) {
+				p.EXPECT().GetByAccountNumber(ctx, "1").Return(nil, store.ErrPointOfSaleCustomerDetailsNotFound)
+			},
+			output: outputParams{
+				details: nil,
+				err:     domain.ErrPointOfSaleCustomerDetailsNotFound,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, pointOfSaleCustomerDetailsSt)
+
+			expected, err := myDomain.GetCustomerDetailsPointOfSale(ctx, tc.input.accountNumber)
+
+			if diff := cmp.Diff(err, tc.output.err, cmpopts.EquateErrors()); diff != "" {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(expected, tc.output.details); diff != "" {
 				t.Fatal(diff)
 			}
 		})
