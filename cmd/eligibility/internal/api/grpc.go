@@ -46,6 +46,14 @@ type ServiceStore interface {
 	GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
 }
 
+type EcoesAPI interface {
+	GetTechnicalDetailsByMPAN(ctx context.Context, req *ecoesv1.SearchByMPANRequest, opts ...grpc.CallOption) (*ecoesv1.TechnicalDetailsResponse, error)
+}
+
+type XoserveAPI interface {
+	GetSwitchDataByMPRN(ctx context.Context, req *xoservev1.SearchByMPRNRequest, opts ...grpc.CallOption) (*xoservev1.TechnicalDetailsResponse, error)
+}
+
 type EligibilityGRPCApi struct {
 	smart_booking.UnimplementedEligiblityAPIServer
 	eligibilityStore   EligibilityStore
@@ -54,6 +62,8 @@ type EligibilityGRPCApi struct {
 	accountStore       AccountStore
 	serviceStore       ServiceStore
 	auth               Auth
+	ecoesAPI           EcoesAPI
+	xoserveAPI         XoserveAPI
 }
 
 func NewEligibilityGRPCApi(
@@ -281,6 +291,48 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		AccountId:   req.AccountId,
 		OccupancyId: req.OccupancyId,
 		Eligible:    eligible,
+	}, nil
+}
+
+func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Context, req *smart_booking.GetEligibilityForPointOfSaleJourneyRequest) (_ *smart_booking.GetEligibilityForPointOfSaleJourneyResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetEligibilityForPointOfSaleJourney",
+		trace.WithAttributes(attribute.String("account.id", req.GetAccountNumber())),
+		trace.WithAttributes(attribute.String("electricity.meterpoint.number", req.GetMpan())),
+		trace.WithAttributes(attribute.String("gas.meterpoint.number", req.GetMprn())),
+		trace.WithAttributes(attribute.String("customer.postcode", req.GetPostcode())))
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
+
+	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	account, err := a.accountStore.GetAccount(ctx, req.AccountNumber)
+	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
+		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountNumber)
+	}
+
+	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt.out", account.OptOut), attribute.String("psr.codes", fmt.Sprintf("%v", account.PSRCodes))))
+
+	// an account which has opted out of smart booking should not be considered eligible to go through the journey
+	if account.OptOut {
+		return &smart_booking.GetEligibilityForPointOfSaleJourneyResponse{
+			Eligible: false
+		}, nil
+	}
+
+	return &smart_booking.GetEligibilityForPointOfSaleJourneyResponse{
+		Eligible: eligible,
+		Link:     link,
 	}, nil
 }
 

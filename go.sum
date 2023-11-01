@@ -304,8 +304,8 @@ github.com/google/s2a-go v0.1.4/go.mod h1:Ej+mSEMGRnqRzjc7VtF+jdBwYG5fuJfiZ8ELkj
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
-github.com/google/uuid v1.3.1 h1:KjJaJ9iWZ3jOFZIf1Lqf4laDRCasjl0BCmnEGxkdLb4=
-github.com/google/uuid v1.3.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/google/uuid v1.4.0 h1:MtMxsa51/r9yyhkyLsVeVt0B+BGQZzpQiTQ4eHZ8bc4=
+github.com/google/uuid v1.4.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/enterprise-certificate-proxy v0.2.4 h1:uGy6JWR/uMIILU8wbf+OkstIrNiMjGpEIyhx8f6W7s4=
 github.com/googleapis/enterprise-certificate-proxy v0.2.4/go.mod h1:AwSRAtLfXpU5Nm3pW+v7rGDHp09LsPtGY9MduiEsR9k=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
@@ -654,8 +654,10 @@ github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b h1
 github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b/go.mod h1:ibrXoopS3Y9/lTl/Z5vAxPdrAjIRSJgp8B6hZMcgGVM=
 github.com/utilitywarehouse/energy-contracts v1.40.5/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
 github.com/utilitywarehouse/energy-contracts v1.40.6/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
-github.com/utilitywarehouse/energy-contracts v1.103.1 h1:SvrSSFMSEJA7cCgG0jOV477i0ez4HFjB539uYRhj+j0=
-github.com/utilitywarehouse/energy-contracts v1.103.1/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.105.0 h1:Bbe7qt6TgPt6n5iafprxGN0zWvDFAby9SUBbPPJ1Mw8=
+github.com/utilitywarehouse/energy-contracts v1.105.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.106.0 h1:ybiWjyfgvJaH76VIhpFssRuEyV/VRCQBgbwk/r3IS7o=
+github.com/utilitywarehouse/energy-contracts v1.106.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32 h1:AQf3esEkg/rPxiO97HniPIA7c+bSNz+U0v2NueFZkN0=
 github.com/utilitywarehouse/energy-pkg/app v1.1.32/go.mod h1:2Hlz8GeCkNq5V/VXHL/SuEPieOtGpvrADHc84ukqqe8=
 github.com/utilitywarehouse/energy-pkg/domain v1.17.1/go.mod h1:kQ151K87dOXjiyHgKQ0lAf/tY7xMlXd+s0KsMlFyE34=
@@ -714,8 +716,8 @@ github.com/uw-labs/substrate v0.0.0-20200128100231-abc43d668589/go.mod h1:4En77y
 github.com/uw-labs/substrate v0.0.0-20201023111501-59196123a2be/go.mod h1:MZ4ydeB7WuwhalHHs3rZeyEJ7Ag1ISg48RXCqjL2Xho=
 github.com/uw-labs/substrate v0.0.0-20210217154412-8b8e8460e5a5/go.mod h1:MZ4ydeB7WuwhalHHs3rZeyEJ7Ag1ISg48RXCqjL2Xho=
 github.com/uw-labs/substrate v0.0.0-20210823101324-bd7a101bde22/go.mod h1:uHwewuOzIK9zMgPcaelQcLHalfEbcy8qLJYlqJZ68mE=
-github.com/uw-labs/substrate v0.0.0-20230131092757-4c15442fc1b1 h1:WKeW/qg7lwR/cLFhaOkTdWS2YMoEpvhncdgrZHzORmc=
-github.com/uw-labs/substrate v0.0.0-20230131092757-4c15442fc1b1/go.mod h1:2faM0t/waDqsbzPVVKqI2/EH0SNNFM9RoaXm/5bQAS0=
+github.com/uw-labs/substrate v0.0.0-20230324124119-dbc62c85ad0b h1:wprmtVWuauwEFv4Db3yv8/JTszo29fz9kt5FaJt4Mh0=
+github.com/uw-labs/substrate v0.0.0-20230324124119-dbc62c85ad0b/go.mod h1:M8cuu7B4yokRKqZRuZ0buSw+bRC2gBmq96Kjzp/+LIg=
 github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e h1:Gn3zVdd6A723Cgl3tojOK7rGoDeBl9Vj8rSQ/4bhPNk=
 github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e/go.mod h1:h8ynbE07HrlsAYe3mxp0dnuWXyvJQ8RkDMQ+p/y/uGI=
 github.com/uw-labs/sync v0.0.0-20190307114256-1bb306bf6e71/go.mod h1:zTU/pesbF9d3ZN7+XwKhdE50y0SCCblmzwukXRnZkXs=

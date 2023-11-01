@@ -15,6 +15,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
+	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
+	xoservev1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/xoserve/v1"
 	pkgapp "github.com/utilitywarehouse/energy-pkg/app"
 	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-pkg/ops"
@@ -56,9 +58,9 @@ func runGRPCApi(c *cli.Context) error {
 	defer pg.Close()
 	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 
-	/*ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(ecoesHost), c.String(grpcLogLevel))
+	ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(ecoesHost), c.String(grpcLogLevel))
 	if err != nil {
-		logrus.WithError(err).Panic("could not connect to ecoes gRPC integration")
+		return fmt.Errorf("could not connect to ecoes gRPC integration: %w", err)
 	}
 	defer ecoesConn.Close()
 	ecoesClient := ecoesv1.NewEcoesAPIClient(ecoesConn)
@@ -66,11 +68,11 @@ func runGRPCApi(c *cli.Context) error {
 
 	xoserveConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(xoserveHost), c.String(grpcLogLevel))
 	if err != nil {
-		logrus.WithError(err).Panic("could not connect to xoserve gRPC integration")
+		return fmt.Errorf("could not connect to xoserve gRPC integration: %w", err)
 	}
 	defer xoserveConn.Close()
 	xoserveClient := xoservev1.NewXoserveAPIClient(xoserveConn)
-	opsServer.Add("xoserve-api", grpchealth.NewCheck(c.String(xoserveHost), "", "cannot find mprns address"))*/
+	opsServer.Add("xoserve-api", grpchealth.NewCheck(c.String(xoserveHost), "", "cannot find mprns address"))
 
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)
@@ -98,7 +100,16 @@ func runGRPCApi(c *cli.Context) error {
 		}
 		defer listen.Close()
 
-		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore, serviceStore, auth)
+		eligibilityAPI := api.NewEligibilityGRPCApi(
+			eligibilityStore,
+			suppliabilityStore,
+			occupancyStore,
+			accountStore,
+			serviceStore,
+			auth,
+			ecoesClient,
+			xoserveClient,
+		)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 
 		return grpcServer.Serve(listen)
