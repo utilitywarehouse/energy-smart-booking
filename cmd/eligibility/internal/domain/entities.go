@@ -395,20 +395,25 @@ func (m Meter) IsSmart() bool {
 		}
 		return false
 	case domain.SupplyTypeElectricity:
-		switch m.MeterType {
-		case platform.MeterTypeElec_METER_TYPE_ELEC_SMETS1.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2A.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2B.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2C.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2AD.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2BD.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2CD.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2ADE.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2BDE.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2CDE.String():
-			return true
-		}
+		IsElectricitySmartMeter(m.MeterType)
 	}
 
+	return false
+}
+
+func IsElectricitySmartMeter(meterType string) bool {
+	switch meterType {
+	case platform.MeterTypeElec_METER_TYPE_ELEC_SMETS1.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2A.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2B.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2C.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2AD.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2BD.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2CD.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2ADE.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2BDE.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2CDE.String():
+		return true
+	}
 	return false
 }

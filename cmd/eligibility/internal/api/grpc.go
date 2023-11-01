@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"github.com/utilitywarehouse/account-platform/pkg/id"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
@@ -300,9 +301,21 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	}, nil
 }
 
-func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Context, req *smart_booking.GetEligibilityForPointOfSaleJourneyRequest) (_ *smart_booking.GetEligibilityForPointOfSaleJourneyResponse, err error) {
+func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Context, req *smart_booking.GetMeterpointEligibilityRequest) (_ *smart_booking.GetMeterpointEligibilityResponse, err error) {
+	if req.GetMpan() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no mpan provided")
+	}
+	if req.GetAccountNumber() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no account number provided")
+	}
+	if req.GetPostcode() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no postcode provided")
+	}
+
+	accountID := id.NewAccountID(req.GetAccountNumber())
+
 	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetEligibilityForPointOfSaleJourney",
-		trace.WithAttributes(attribute.String("account.id", req.GetAccountNumber())),
+		trace.WithAttributes(attribute.String("account.id", accountID)),
 		trace.WithAttributes(attribute.String("electricity.meterpoint.number", req.GetMpan())),
 		trace.WithAttributes(attribute.String("gas.meterpoint.number", req.GetMprn())),
 		trace.WithAttributes(attribute.String("customer.postcode", req.GetPostcode())))
@@ -321,25 +334,40 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 		}
 	}
 
-	account, err := a.accountStore.GetAccount(ctx, req.AccountNumber)
-	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-		logrus.Debugf("failed to get account for account Number %s: %s", req.GetAccountNumber(), err.Error())
-		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountNumber)
+	// None of the meters at the meters points are smart (SMETS1 or SMETS2)
+	// to use exactly the same logic as in https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/domain/entities.go#L388
+
+	electricityMeters, err := a.ecoesAPI.GetMPANTechnicalDetails(ctx, req.Mpan)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "could not retrieve meterpoint details")
 	}
 
-	span.AddEvent("get-account", trace.WithAttributes(attribute.Bool("opt.out", account.OptOut), attribute.String("psr.codes", fmt.Sprintf("%v", account.PSRCodes))))
-
-	// an account which has opted out of smart booking should not be considered eligible to go through the journey
-	if account.OptOut {
-		return &smart_booking.GetEligibilityForPointOfSaleJourneyResponse{
-			Eligible: false,
-		}, nil
+	for _, meter := range electricityMeters.Meters {
+		if domain.IsElectricitySmartMeter(meter.MeterType.String()) {
+			return &smart_booking.GetMeterpointEligibilityResponse{
+				Eligible: false,
+			}, nil
+		}
 	}
 
-	return &smart_booking.GetEligibilityForPointOfSaleJourneyResponse{
-		//TODO
-		// Eligible: eligible,
-		// Link:     link,
+	// Property has WAN
+
+	// Property does not require ALT-HAN
+
+	// Electricity is not a related MPAN Set-up
+	// We should not receive a related MPAN from a GetRelatedMPANs call
+
+	// Electricity does not have “complex tariff”
+	// Similar to the current logic in the normal eligibilty check for "complex tariff"
+	// same logic as https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/domain/entities.go#L377
+
+	// Gas meter at property is not “large capacity”
+	// Large Capacity means the meter's capacity is different than 6 or 212
+	// same logic as https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/evaluation/rules.go#L55
+
+	var eligible bool
+	return &smart_booking.GetMeterpointEligibilityResponse{
+		Eligible: eligible,
 	}, nil
 }
 
