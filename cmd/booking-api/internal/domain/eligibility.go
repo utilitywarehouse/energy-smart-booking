@@ -20,11 +20,6 @@ type ProcessEligibilityResult struct {
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
 
-	err := d.pointOfSaleCustomerDetailsStore.Upsert(ctx, params.AccountNumber, params.Details)
-	if err != nil {
-		return ProcessEligibilityResult{}, fmt.Errorf("failed to upsert customer details, %w", err)
-	}
-
 	elecMeterpoint, gasMeterpoint, err := deduceMeterpoints(params.Details.Meterpoints)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce meterpoints, %w", err)
@@ -40,6 +35,11 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 			Eligible: eligible,
 			Link:     "",
 		}, nil
+	}
+
+	err = d.pointOfSaleCustomerDetailsStore.Upsert(ctx, params.AccountNumber, params.Details)
+	if err != nil {
+		return ProcessEligibilityResult{}, fmt.Errorf("failed to upsert customer details, %w", err)
 	}
 
 	link, err := d.clickGw.GenerateAuthenticated(ctx, params.AccountNumber)

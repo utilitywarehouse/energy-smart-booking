@@ -87,6 +87,8 @@ func Test_ProcessEligibility(t *testing.T) {
 				},
 			},
 			setup: func(ctx context.Context, p *mocks.MockPointOfSaleCustomerDetailsStore, e *mocks.MockEligibilityGateway, c *mocks.MockClickGateway) {
+				e.EXPECT().GetMeterpointEligibility(ctx, "1", "2199996734008", "2724968810", "E2 1Z").Return(true, nil)
+
 				p.EXPECT().Upsert(ctx, "1", models.PointOfSaleCustomerDetails{
 					AccountNumber: "1",
 					Details: models.AccountDetails{
@@ -123,8 +125,6 @@ func Test_ProcessEligibility(t *testing.T) {
 						},
 					},
 				}).Return(nil)
-
-				e.EXPECT().GetMeterpointEligibility(ctx, "1", "2199996734008", "2724968810", "E2 1Z").Return(true, nil)
 
 				c.EXPECT().GenerateAuthenticated(ctx, "1").Return("best_link_ever?", nil)
 			},
