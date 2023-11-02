@@ -12,11 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	eligibilityv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serialisers"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -31,6 +33,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
+	click "github.com/utilitywarehouse/click.uw.co.uk/generated/contract"
 	lowribeck_api "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 )
 
@@ -40,6 +43,18 @@ var (
 
 	accountsAPIHost  = "accounts-api-host"
 	lowribeckAPIHost = "lowribeck-api-host"
+
+	eligibilityAPIHost = "eligibility-api-host"
+	clickAPIHost       = "click-api-host"
+
+	flagExpirationTimeSeconds = "flag-expiration-time-seconds"
+	flagClickKeyID            = "flag-click-key-id"
+	flagAuthScope             = "flag-auth-scope"
+	flagWebLocation           = "flag-web-location"
+	flagMobileLocation        = "flag-mobile-location"
+	flagSubject               = "flag-subject"
+	flagIntent                = "flag-intent"
+	flagChannel               = "flag-channel"
 )
 
 func init() {
@@ -67,6 +82,56 @@ func init() {
 				Name:    flagPartialBookingCron,
 				EnvVars: []string{"PARTIAL_BOOKING_CRON"},
 				Value:   "* * * * *",
+			},
+			&cli.StringFlag{
+				Name:     eligibilityAPIHost,
+				EnvVars:  []string{"ELIGIBILITY_API_HOST"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     clickAPIHost,
+				EnvVars:  []string{"CLICK_API_HOST"},
+				Required: true,
+			},
+			&cli.Int64Flag{
+				Name:     flagExpirationTimeSeconds,
+				EnvVars:  []string{"EXPIRATION_TIME_SECONDS"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagClickKeyID,
+				EnvVars:  []string{"CLICK_KEY_ID"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagAuthScope,
+				EnvVars:  []string{"AUTH_SCOPE"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagWebLocation,
+				EnvVars:  []string{"WEB_LOCATIOn"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagMobileLocation,
+				EnvVars:  []string{"MOBILE_LOCATION"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagSubject,
+				EnvVars:  []string{"SUBJECT"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagIntent,
+				EnvVars:  []string{"INTENT"},
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagChannel,
+				EnvVars:  []string{"CHANNEL"},
+				Required: true,
 			},
 		),
 	})
@@ -113,6 +178,22 @@ func serverAction(c *cli.Context) error {
 	opsServer.Add("lowribeck-api", grpchealth.NewCheck(c.String(lowribeckAPIHost), "", "cannot connect to lowribeck-api"))
 	defer lowribeckConn.Close()
 
+	eligibilityConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(eligibilityAPIHost), c.String(app.GrpcLogLevel))
+	if err != nil {
+		return fmt.Errorf("error connecting to eligibility-grpc-api host [%s]: %w", c.String(eligibilityAPIHost), err)
+	}
+	opsServer.Add("eligibility-grpc-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect to eligibility-grpc-api"))
+	defer eligibilityConn.Close()
+
+	clickUwConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(clickAPIHost), c.String(app.GrpcLogLevel))
+	if err != nil {
+		return fmt.Errorf("error connecting to click-uw-api host [%s]: %w", c.String(clickAPIHost), err)
+	}
+	opsServer.Add("click-uw-api", grpchealth.NewCheck(c.String(clickAPIHost), "", "cannot connect to click-uw-api"))
+	defer eligibilityConn.Close()
+
+	clickClient := click.NewIssuerServiceClient(clickUwConn)
+
 	bookingSink, err := app.GetKafkaSinkWithBroker(c.String(flagBookingTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
 	if err != nil {
 		return fmt.Errorf("unable to connect to booking [%s] kafka sink: %w", c.String(flagBookingTopic), err)
@@ -144,6 +225,20 @@ func serverAction(c *cli.Context) error {
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
 	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
+	eligibilityGateway := gateway.NewEligibilityGateway(mn, eligibilityv1.NewEligiblityAPIClient(eligibilityConn))
+	clickGw, err := gateway.NewClickLinkProvider(clickClient, &gateway.ClickLinkProviderConfig{
+		ExpirationTimeSeconds: c.Int64(flagExpirationTimeSeconds),
+		ClickKeyID:            c.String(flagClickKeyID),
+		AuthScope:             c.String(flagAuthScope),
+		WebLocation:           c.String(flagWebLocation),
+		MobileLocation:        c.String(flagMobileLocation),
+		Subject:               c.String(flagSubject),
+		Intent:                c.String(flagIntent),
+		Channel:               c.String(flagChannel),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to initialise click link provider, %w", err)
+	}
 
 	// PUBLISHERS //
 
@@ -154,9 +249,10 @@ func serverAction(c *cli.Context) error {
 	siteStore := store.NewSite(pool)
 	bookingStore := store.NewBooking(pool)
 	partialBookingStore := store.NewPartialBooking(pool)
+	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(pool, serialisers.PointOfSaleCustomerDetails{})
 
 	// DOMAIN //
-	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore, partialBookingStore, true)
+	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore, partialBookingStore, pointOfSaleCustomerDetailsStore, eligibilityGateway, clickGw, true)
 
 	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth, true)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)

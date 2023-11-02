@@ -3197,13 +3197,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3225,10 +3218,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3315,13 +3305,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3344,10 +3327,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3377,13 +3357,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3406,10 +3379,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3439,13 +3409,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3462,10 +3425,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 
 				accountID := id.NewAccountID("account-number-1")
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3501,13 +3461,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3530,10 +3483,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3563,13 +3513,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3592,10 +3535,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3625,13 +3565,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3648,10 +3581,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 
 				accountID := id.NewAccountID("account-number-1")
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3687,13 +3617,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3710,10 +3633,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 
 				accountID := id.NewAccountID("account-number-1")
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID:         accountID,
-					Postcode:          "E2 1ZZ",
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: accountID,
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3749,13 +3669,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3788,13 +3701,6 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.GetAvailableSlotsPointOfSaleRequest{
 					AccountNumber: "account-number-2",
-					PostCode:      "E2 1ZZ",
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "654321",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3897,12 +3803,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -3955,8 +3855,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4042,12 +3940,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4100,8 +3992,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4186,12 +4076,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4244,8 +4128,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4298,12 +4180,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4356,8 +4232,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4410,12 +4284,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4468,8 +4336,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4522,12 +4388,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4580,8 +4440,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4634,12 +4492,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4692,8 +4544,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4746,12 +4596,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4804,8 +4648,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4858,12 +4700,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4916,8 +4752,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4970,12 +4804,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -5028,8 +4856,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -5082,12 +4908,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -5140,8 +4960,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -5194,12 +5012,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -5252,8 +5064,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "123456",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -5304,12 +5114,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							DependentLocality:       "dl-1",
 							PostTown:                "pt",
 							Postcode:                "E2 1ZZ",
-						},
-					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "123456",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 						},
 					},
 					Slot: &bookingv1.BookingSlot{
@@ -5372,12 +5176,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 							Postcode:                "E2 1ZZ",
 						},
 					},
-					Meterpoints: []*bookingv1.Meterpoint{
-						{
-							Mpxn:       "654321",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -5434,6 +5232,641 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.CreateBookingPointOfSaleResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
+				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	bookingDomain := mocks.NewMockBookingDomain(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
+	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
+
+	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
+
+	type inputParams struct {
+		req *bookingv1.GetCustomerDetailsPointOfSaleRequest
+	}
+
+	type outputParams struct {
+		res *bookingv1.GetCustomerDetailsPointOfSaleResponse
+		err error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should retrieve the details of the customer for point of sale",
+			input: inputParams{
+				req: &bookingv1.GetCustomerDetailsPointOfSaleRequest{
+					AccountNumber: "account-number-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-number-1",
+				}).Return(true, nil)
+
+				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(&models.PointOfSaleCustomerDetails{
+					AccountNumber: "account-number-1",
+					Details: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "555-100",
+					},
+					Address: models.AccountAddress{
+						UPRN: "u",
+						PAF: models.PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+					Meterpoints: []models.Meterpoint{
+						{
+							MPXN:       "2199996734008",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+						{
+							MPXN:       "2724968810",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+						},
+					},
+				}, nil)
+			},
+			output: outputParams{
+				res: &bookingv1.GetCustomerDetailsPointOfSaleResponse{
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "create booking call returns a gateway.ErrInvalidArgument",
+			input: inputParams{
+				req: &bookingv1.GetCustomerDetailsPointOfSaleRequest{
+					AccountNumber: "",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "invalid account number provided (empty string)"),
+			},
+		},
+		{
+			description: "get customer point of sale details call returns an error",
+			input: inputParams{
+				req: &bookingv1.GetCustomerDetailsPointOfSaleRequest{
+					AccountNumber: "account-number-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-number-1",
+				}).Return(true, nil)
+
+				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(nil, errOops)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.Internal, "failed to get customer details point of sale, %s", errOops),
+			},
+		},
+		{
+			description: "create booking call returns a not found",
+			input: inputParams{
+				req: &bookingv1.GetCustomerDetailsPointOfSaleRequest{
+					AccountNumber: "account-number-1",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.booking",
+					ResourceID: "account-number-1",
+				}).Return(true, nil)
+
+				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(nil, domain.ErrPointOfSaleCustomerDetailsNotFound)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.NotFound, "did not find customer details for provided account number: %s", "account-number-1"),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, bookingDomain, mockAuth)
+
+			expected, err := myAPIHandler.GetCustomerDetailsPointOfSale(ctx, tc.input.req)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
+			} else if err != nil {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetCustomerDetailsPointOfSaleResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
+				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	bookingDomain := mocks.NewMockBookingDomain(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
+	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
+
+	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
+
+	type inputParams struct {
+		req *bookingv1.GetEligibilityPointOfSaleJourneyRequest
+	}
+
+	type outputParams struct {
+		res *bookingv1.GetEligibilityPointOfSaleJourneyResponse
+		err error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should process an eligibility request for a candidate to a point of sale journey",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.eligibility",
+					ResourceID: "account-number-1",
+				}).Return(true, nil)
+
+				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+					AccountNumber: "account-number-1",
+					Details: models.PointOfSaleCustomerDetails{
+						AccountNumber: "account-number-1",
+						Details: models.AccountDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Email:     "jdoe@example.com",
+							Mobile:    "555-100",
+						},
+						Address: models.AccountAddress{
+							UPRN: "u",
+							PAF: models.PAF{
+								BuildingName:            "bn",
+								BuildingNumber:          "bn1",
+								Department:              "dp",
+								DependentLocality:       "dl",
+								DependentThoroughfare:   "dtg",
+								DoubleDependentLocality: "ddl",
+								Organisation:            "o",
+								PostTown:                "pt",
+								Postcode:                "E2 1Z",
+								SubBuilding:             "sb",
+								Thoroughfare:            "tf",
+							},
+						},
+						Meterpoints: []models.Meterpoint{
+							{
+								MPXN:       "mpan-1",
+								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+							},
+							{
+								MPXN:       "mprn-1",
+								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+							},
+						},
+					},
+				}).Return(domain.ProcessEligibilityResult{
+					Eligible: true,
+					Link:     "very_nice_link",
+				}, nil)
+			},
+			output: outputParams{
+				res: &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+					Eligible: true,
+					Link:     "very_nice_link",
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should fail to get eligibility because contact details are nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails:        nil,
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided contact details is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because site address is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: nil,
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided site address is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because paf is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf:  nil,
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided PAF is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because postcode is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided post code is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because account number is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided account number is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because account number is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided mpan is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because electricity tariff type is unknown",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided electricity type is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because mprn is provided but the gas tariff type is unknown",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber:         "account-number-1",
+					Mpan:                  "mpan-1",
+					Mprn:                  "mprn-1",
+					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					ContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Phone:     "555-100",
+					},
+					SiteAddress: &addressv1.Address{
+						Uprn: "u",
+						Paf: &addressv1.Address_PAF{
+							BuildingName:            "bn",
+							BuildingNumber:          "bn1",
+							Department:              "dp",
+							DependentLocality:       "dl",
+							DependentThoroughfare:   "dtg",
+							DoubleDependentLocality: "ddl",
+							Organisation:            "o",
+							PostTown:                "pt",
+							Postcode:                "E2 1Z",
+							SubBuilding:             "sb",
+							Thoroughfare:            "tf",
+						},
+					},
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown"),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, bookingDomain, mockAuth)
+
+			expected, err := myAPIHandler.GetEligibilityPointOfSaleJourney(ctx, tc.input.req)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
+			} else if err != nil {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetEligibilityPointOfSaleJourneyResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
 				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
 				t.Fatal(diff)
 			}

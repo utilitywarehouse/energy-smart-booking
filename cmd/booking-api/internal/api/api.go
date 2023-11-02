@@ -10,7 +10,6 @@ import (
 	"github.com/utilitywarehouse/account-platform/pkg/id"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
-	energy "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
@@ -40,6 +39,10 @@ type BookingDomain interface {
 	// POS Journey
 	CreateBookingPointOfSale(ctx context.Context, params domain.CreatePOSBookingParams) (domain.CreateBookingResponse, error)
 	GetAvailableSlotsPointOfSale(ctx context.Context, params domain.GetPOSAvailableSlotsParams) (domain.GetAvailableSlotsResponse, error)
+	GetCustomerDetailsPointOfSale(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error)
+
+	// Process Eligibility
+	ProcessEligibility(context.Context, domain.ProcessEligibilityParams) (domain.ProcessEligibilityResult, error)
 }
 
 type BookingPublisher interface {
@@ -484,10 +487,6 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 		}
 	}
 
-	if req.Meterpoints == nil {
-		return nil, status.Error(codes.InvalidArgument, "no meterpoints provided")
-	}
-
 	if req.From == nil {
 		return nil, status.Error(codes.InvalidArgument, "no date From provided")
 	}
@@ -496,25 +495,10 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 		return nil, status.Error(codes.InvalidArgument, "no date To provided")
 	}
 
-	mpan, mprn, err := getSupplyMeters(req.GetMeterpoints())
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	// We must have an MPAN, MPRN's are optional
-	if mpan == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "no mpan provided")
-	}
-
 	params := domain.GetPOSAvailableSlotsParams{
-		AccountID:         accountID,
-		Postcode:          req.GetPostCode(),
-		Mpan:              mpan.GetMpxn(),
-		TariffElectricity: mpan.GetTariffType(),
-		Mprn:              mprn.GetMpxn(),
-		TariffGas:         mprn.GetTariffType(),
-		From:              req.From,
-		To:                req.To,
+		AccountID: accountID,
+		From:      req.From,
+		To:        req.To,
 	}
 
 	availableSlotsResponse, err := b.bookingDomain.GetAvailableSlotsPointOfSale(ctx, params)
@@ -590,10 +574,6 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		return nil, status.Error(codes.InvalidArgument, "no post code provided")
 	}
 
-	if req.Meterpoints == nil {
-		return nil, status.Error(codes.InvalidArgument, "no meterpoints provided")
-	}
-
 	if req.ContactDetails == nil {
 		return nil, status.Error(codes.InvalidArgument, "no contact details provided")
 	}
@@ -608,16 +588,6 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 
 	if req.VulnerabilityDetails == nil {
 		return nil, status.Error(codes.InvalidArgument, "no vulnerability details provided")
-	}
-
-	mpan, mprn, err := getSupplyMeters(req.GetMeterpoints())
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	// We must have an MPAN, MPRN's are optional
-	if mpan == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "no mpan provided")
 	}
 
 	params := domain.CreatePOSBookingParams{
@@ -638,10 +608,6 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 				Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
 			},
 		},
-		Mpan:              mpan.GetMpxn(),
-		TariffElectricity: mpan.GetTariffType(),
-		Mprn:              mprn.GetMpxn(),
-		TariffGas:         mprn.GetTariffType(),
 		ContactDetails: models.AccountDetails{
 			Title:     req.GetContactDetails().Title,
 			FirstName: req.GetContactDetails().FirstName,
@@ -680,6 +646,162 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{
 		BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
+	}, nil
+}
+
+func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *bookingv1.GetCustomerDetailsPointOfSaleRequest) (_ *bookingv1.GetCustomerDetailsPointOfSaleResponse, err error) {
+
+	if req.AccountNumber == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid account number provided (empty string)")
+	}
+
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerDetailsPointOfSale",
+			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err)
+			span.End()
+		}()
+	}
+
+	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountNumber)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	customerDetails, err := b.bookingDomain.GetCustomerDetailsPointOfSale(ctx, req.AccountNumber)
+	if err != nil {
+		switch {
+		case errors.Is(err, domain.ErrPointOfSaleCustomerDetailsNotFound):
+			return nil, status.Errorf(codes.NotFound, "did not find customer details for provided account number: %s", req.GetAccountNumber())
+		}
+		return nil, status.Errorf(codes.Internal, "failed to get customer details point of sale, %s", err)
+	}
+
+	return &bookingv1.GetCustomerDetailsPointOfSaleResponse{
+		ContactDetails: &bookingv1.ContactDetails{
+			Title:     customerDetails.Details.Title,
+			FirstName: customerDetails.Details.FirstName,
+			LastName:  customerDetails.Details.LastName,
+			Phone:     customerDetails.Details.Mobile,
+			Email:     customerDetails.Details.Email,
+		},
+		SiteAddress: &addressv1.Address{
+			Uprn: customerDetails.Address.UPRN,
+			Paf: &addressv1.Address_PAF{
+				Organisation:            customerDetails.Address.PAF.Organisation,
+				Department:              customerDetails.Address.PAF.Department,
+				SubBuilding:             customerDetails.Address.PAF.SubBuilding,
+				BuildingName:            customerDetails.Address.PAF.BuildingName,
+				BuildingNumber:          customerDetails.Address.PAF.BuildingNumber,
+				DependentThoroughfare:   customerDetails.Address.PAF.DependentThoroughfare,
+				Thoroughfare:            customerDetails.Address.PAF.Thoroughfare,
+				DoubleDependentLocality: customerDetails.Address.PAF.DoubleDependentLocality,
+				DependentLocality:       customerDetails.Address.PAF.DependentLocality,
+				PostTown:                customerDetails.Address.PAF.PostTown,
+				Postcode:                customerDetails.Address.PAF.Postcode,
+			},
+		},
+	}, nil
+}
+
+func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
+
+	if req.ContactDetails == nil {
+		return nil, status.Error(codes.InvalidArgument, "provided contact details is missing")
+	}
+
+	if req.SiteAddress == nil {
+		return nil, status.Error(codes.InvalidArgument, "provided site address is missing")
+	}
+
+	if req.SiteAddress.Paf == nil {
+		return nil, status.Error(codes.InvalidArgument, "provided PAF is missing")
+	}
+
+	if req.SiteAddress.Paf.Postcode == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided post code is missing")
+	}
+
+	if req.AccountNumber == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided account number is missing")
+	}
+
+	if req.Mpan == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided mpan is missing")
+	}
+
+	if req.ElectricityTariffType == bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+		return nil, status.Error(codes.InvalidArgument, "provided electricity type is missing")
+	}
+
+	if req.Mprn != "" && req.GasTariffType == bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+		return nil, status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown")
+	}
+
+	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+		AccountNumber: req.AccountNumber,
+		Details: models.PointOfSaleCustomerDetails{
+			AccountNumber: req.AccountNumber,
+			Details: models.AccountDetails{
+				Title:     req.ContactDetails.Title,
+				FirstName: req.ContactDetails.FirstName,
+				LastName:  req.ContactDetails.LastName,
+				Email:     req.ContactDetails.Email,
+				Mobile:    req.ContactDetails.Phone,
+			},
+			Address: models.AccountAddress{
+				UPRN: req.SiteAddress.Uprn,
+				PAF: models.PAF{
+					BuildingName:            req.SiteAddress.Paf.BuildingName,
+					BuildingNumber:          req.SiteAddress.Paf.BuildingNumber,
+					Department:              req.SiteAddress.Paf.Department,
+					DependentLocality:       req.SiteAddress.Paf.DependentLocality,
+					DependentThoroughfare:   req.SiteAddress.Paf.DependentThoroughfare,
+					DoubleDependentLocality: req.SiteAddress.Paf.DoubleDependentLocality,
+					Organisation:            req.SiteAddress.Paf.Organisation,
+					PostTown:                req.SiteAddress.Paf.PostTown,
+					Postcode:                req.SiteAddress.Paf.Postcode,
+					SubBuilding:             req.SiteAddress.Paf.SubBuilding,
+					Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
+				},
+			},
+			Meterpoints: []models.Meterpoint{
+				{
+					MPXN:       req.Mpan,
+					TariffType: req.ElectricityTariffType,
+				},
+				{
+					MPXN:       req.Mprn,
+					TariffType: req.GasTariffType,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to process eligibility for meterpoint, %s", err)
+	}
+
+	return &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+		Eligible: result.Eligible,
+		Link:     result.Link,
 	}, nil
 }
 
@@ -760,21 +882,4 @@ func mapError(message string, err error) error {
 	default:
 		return status.Errorf(codes.Internal, message, err)
 	}
-}
-
-func getSupplyMeters(meterpoints []*bookingv1.Meterpoint) (*bookingv1.Meterpoint, *bookingv1.Meterpoint, error) {
-	var mpan, mprn *bookingv1.Meterpoint
-	for i, meterpoint := range meterpoints {
-		mpxn, err := energy.NewMeterPointNumber(meterpoint.GetMpxn())
-		if err != nil {
-			return nil, nil, fmt.Errorf("invalid meterpoint number (%s): %v", meterpoint.GetMpxn(), err)
-		}
-		// We want the first electricity MPAN
-		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan == nil {
-			mpan = meterpoints[i]
-		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
-			mpan = meterpoints[i]
-		}
-	}
-	return mpan, mprn, nil
 }
