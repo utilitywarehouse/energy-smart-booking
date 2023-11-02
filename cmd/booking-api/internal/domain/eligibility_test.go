@@ -21,18 +21,11 @@ func Test_ProcessEligibility(t *testing.T) {
 	ctx := context.Background()
 
 	defer ctrl.Finish()
-
-	accGw := mocks.NewMockAccountGateway(ctrl)
-	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
-	occSt := mocks.NewMockOccupancyStore(ctrl)
-	siteSt := mocks.NewMockSiteStore(ctrl)
-	bookingSt := mocks.NewMockBookingStore(ctrl)
-	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
 	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
 	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
+	myDomain := domain.NewBookingDomain(nil, nil, nil, nil, nil, nil, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		accountNumber string

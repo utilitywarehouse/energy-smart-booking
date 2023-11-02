@@ -26,16 +26,8 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	defer ctrl.Finish()
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
-	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
-	occSt := mocks.NewMockOccupancyStore(ctrl)
-	siteSt := mocks.NewMockSiteStore(ctrl)
-	bookingSt := mocks.NewMockBookingStore(ctrl)
-	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
-	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
-	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
-	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
+	myDomain := domain.NewBookingDomain(accGw, nil, nil, nil, nil, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		accountID string
@@ -109,17 +101,9 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 
 	defer ctrl.Finish()
 
-	accGw := mocks.NewMockAccountGateway(ctrl)
-	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
-	siteSt := mocks.NewMockSiteStore(ctrl)
-	bookingSt := mocks.NewMockBookingStore(ctrl)
-	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
-	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
-	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
-	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
+	myDomain := domain.NewBookingDomain(nil, nil, occSt, nil, nil, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		accountID string
@@ -224,17 +208,10 @@ func Test_GetCustomerBookings(t *testing.T) {
 
 	ctx := context.Background()
 
-	accGw := mocks.NewMockAccountGateway(ctrl)
-	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
-	occSt := mocks.NewMockOccupancyStore(ctrl)
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
-	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
-	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
-	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
-	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
+	myDomain := domain.NewBookingDomain(nil, nil, nil, siteSt, bookingSt, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		accountID string
@@ -556,17 +533,9 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 
 	defer ctrl.Finish()
 
-	accGw := mocks.NewMockAccountGateway(ctrl)
-	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
-	occSt := mocks.NewMockOccupancyStore(ctrl)
-	siteSt := mocks.NewMockSiteStore(ctrl)
-	bookingSt := mocks.NewMockBookingStore(ctrl)
-	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
-	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
-	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, lbGw, occSt, siteSt, bookingSt, partialBookingSt, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
+	myDomain := domain.NewBookingDomain(nil, nil, nil, nil, nil, nil, pointOfSaleCustomerDetailsSt, nil, nil, false)
 
 	type inputParams struct {
 		accountNumber string
