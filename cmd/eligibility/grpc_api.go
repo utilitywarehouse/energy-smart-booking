@@ -83,6 +83,8 @@ func runGRPCApi(c *cli.Context) error {
 	occupancyStore := store.NewOccupancy(pg)
 	accountStore := store.NewAccount(pg)
 	serviceStore := store.NewService(pg)
+	meterpointStore := store.NewMeterpoint(pg)
+	postcodeStore := store.NewPostCode(pg)
 
 	closer, err := telemetry.Register(ctx,
 		telemetry.WithServiceName(appName),
@@ -110,6 +112,8 @@ func runGRPCApi(c *cli.Context) error {
 			occupancyStore,
 			accountStore,
 			serviceStore,
+			meterpointStore,
+			postcodeStore,
 			auth,
 			ecoesGw,
 			xoserveGateway,
