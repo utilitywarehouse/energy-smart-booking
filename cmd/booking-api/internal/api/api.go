@@ -712,7 +712,6 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 	}, nil
 }
 
-// TODO: ADD test
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
 
 	if req.ContactDetails == nil {
