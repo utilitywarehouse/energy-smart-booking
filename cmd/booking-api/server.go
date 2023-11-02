@@ -189,8 +189,7 @@ func serverAction(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("error connecting to click-uw-api host [%s]: %w", c.String(clickAPIHost), err)
 	}
-	opsServer.Add("click-uw-api", grpchealth.NewCheck(c.String(clickAPIHost), "", "cannot connect to click-uw-api"))
-	defer eligibilityConn.Close()
+	defer clickUwConn.Close()
 
 	clickClient := click.NewIssuerServiceClient(clickUwConn)
 
