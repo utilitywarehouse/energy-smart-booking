@@ -110,7 +110,7 @@ func init() {
 			},
 			&cli.StringFlag{
 				Name:     flagWebLocation,
-				EnvVars:  []string{"WEB_LOCATIOn"},
+				EnvVars:  []string{"WEB_LOCATION"},
 				Required: true,
 			},
 			&cli.StringFlag{
