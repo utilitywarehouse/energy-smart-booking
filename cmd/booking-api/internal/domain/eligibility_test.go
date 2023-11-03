@@ -74,7 +74,7 @@ func Test_ProcessEligibility(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "2199996734008",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -114,7 +114,7 @@ func Test_ProcessEligibility(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "2199996734008",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,

@@ -10,7 +10,7 @@ import (
 
 type PointOfSaleCustomerDetails struct{}
 
-type meterpoint struct {
+type orderSupply struct {
 	MPXN       string `json:"mpxn"`
 	TariffType uint32 `json:"tariff_type"`
 }
@@ -46,15 +46,15 @@ type pointOfSaleCustomerDetails struct {
 	AccountNumber string         `json:"account_number"`
 	Details       accountDetails `json:"contact_details"`
 	Address       accountAddress `json:"site_address"`
-	Meterpoints   []meterpoint   `json:"meterpoints"`
+	OrderSupplies []orderSupply  `json:"order_supplies"`
 }
 
 func (s PointOfSaleCustomerDetails) Serialise(details models.PointOfSaleCustomerDetails) ([]byte, error) {
 
-	meterpoints := []meterpoint{}
+	orderSupplies := []orderSupply{}
 
-	for _, elem := range details.Meterpoints {
-		meterpoints = append(meterpoints, meterpoint{
+	for _, elem := range details.OrderSupplies {
+		orderSupplies = append(orderSupplies, orderSupply{
 			MPXN:       elem.MPXN,
 			TariffType: uint32(elem.TariffType.Number()),
 		})
@@ -85,7 +85,7 @@ func (s PointOfSaleCustomerDetails) Serialise(details models.PointOfSaleCustomer
 				Thoroughfare:            details.Address.PAF.Thoroughfare,
 			},
 		},
-		Meterpoints: meterpoints,
+		OrderSupplies: orderSupplies,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal details, %w", err)
@@ -103,10 +103,10 @@ func (s PointOfSaleCustomerDetails) Deserialise(details []byte) (models.PointOfS
 		return models.PointOfSaleCustomerDetails{}, fmt.Errorf("failed to unmarshal details, %w", err)
 	}
 
-	meterpoints := []models.Meterpoint{}
+	orderSupplies := []models.OrderSupply{}
 
-	for _, elem := range structuredDetails.Meterpoints {
-		meterpoints = append(meterpoints, models.Meterpoint{
+	for _, elem := range structuredDetails.OrderSupplies {
+		orderSupplies = append(orderSupplies, models.OrderSupply{
 			MPXN:       elem.MPXN,
 			TariffType: bookingv1.TariffType(elem.TariffType),
 		})
@@ -137,6 +137,6 @@ func (s PointOfSaleCustomerDetails) Deserialise(details []byte) (models.PointOfS
 				Thoroughfare:            structuredDetails.Address.PAF.Thoroughfare,
 			},
 		},
-		Meterpoints: meterpoints,
+		OrderSupplies: orderSupplies,
 	}, nil
 }

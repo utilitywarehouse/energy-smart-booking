@@ -20,7 +20,7 @@ type ProcessEligibilityResult struct {
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
 
-	elecMeterpoint, gasMeterpoint, err := deduceMeterpoints(params.Details.Meterpoints)
+	elecMeterpoint, gasMeterpoint, err := deduceMeterpoints(params.Details.OrderSupplies)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce meterpoints, %w", err)
 	}
@@ -53,18 +53,18 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 	}, nil
 }
 
-func deduceMeterpoints(meterpoints []models.Meterpoint) (models.Meterpoint, models.Meterpoint, error) {
-	var mpan, mprn models.Meterpoint
-	for i, meterpoint := range meterpoints {
-		mpxn, err := energy.NewMeterPointNumber(meterpoint.MPXN)
+func deduceMeterpoints(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
+	var mpan, mprn models.OrderSupply
+	for i, orderSupply := range orderSupplies {
+		mpxn, err := energy.NewMeterPointNumber(orderSupply.MPXN)
 		if err != nil {
-			return models.Meterpoint{}, models.Meterpoint{}, fmt.Errorf("invalid meterpoint number (%s): %v", meterpoint.MPXN, err)
+			return models.OrderSupply{}, models.OrderSupply{}, fmt.Errorf("invalid meterpoint number (%s): %v", orderSupply.MPXN, err)
 		}
 		// We want the first electricity MPAN
 		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan.IsEmpty() {
-			mpan = meterpoints[i]
+			mpan = orderSupplies[i]
 		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
-			mprn = meterpoints[i]
+			mprn = orderSupplies[i]
 		}
 	}
 	return mpan, mprn, nil

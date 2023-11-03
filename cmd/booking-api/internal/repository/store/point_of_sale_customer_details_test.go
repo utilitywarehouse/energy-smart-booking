@@ -83,7 +83,7 @@ func Test_PointOfSaleCustomerDetails_Insert_Get(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "mpxn-1",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -122,7 +122,7 @@ func Test_PointOfSaleCustomerDetails_Insert_Get(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "mpxn-1",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -226,7 +226,7 @@ func Test_PointOfSaleCustomerDetails_Upsert_Get(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "mpxn-1",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -262,7 +262,7 @@ func Test_PointOfSaleCustomerDetails_Upsert_Get(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "mpxn-2-updated",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
@@ -301,7 +301,7 @@ func Test_PointOfSaleCustomerDetails_Upsert_Get(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "mpxn-2-updated",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
@@ -409,7 +409,7 @@ func Test_PointOfSaleCustomerDetails_Insert_Delete_Get(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "mpxn-1",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,

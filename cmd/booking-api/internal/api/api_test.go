@@ -5309,7 +5309,7 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					Meterpoints: []models.Meterpoint{
+					OrderSupplies: []models.OrderSupply{
 						{
 							MPXN:       "2199996734008",
 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -5531,7 +5531,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 								Thoroughfare:            "tf",
 							},
 						},
-						Meterpoints: []models.Meterpoint{
+						OrderSupplies: []models.OrderSupply{
 							{
 								MPXN:       "mpan-1",
 								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
