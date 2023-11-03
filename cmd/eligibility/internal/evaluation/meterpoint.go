@@ -2,9 +2,14 @@ package evaluation
 
 import (
 	"context"
+	"errors"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+)
+
+var (
+	ErrThirdPartyMeterpointError = errors.New("could not retrieve meterpoint details")
 )
 
 type WanCoverageStore interface {
@@ -15,19 +20,39 @@ type AltHanStore interface {
 	GetAltHan(ctx context.Context, mpxn string) (bool, error)
 }
 
+type EcoesAPI interface {
+	GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error)
+}
+
+type XoserveAPI interface {
+	GetMPRNTechnicalDetails(ctx context.Context, mprn string) (*models.GasMeterTechnicalDetails, error)
+}
+
 type MeterpointEvaluator struct {
 	WanCoverageStore
 	AltHanStore
+	ecoesAPI   EcoesAPI
+	xoserveAPI XoserveAPI
 }
 
-func NewMeterpointEvaluator(w WanCoverageStore, a AltHanStore) *MeterpointEvaluator {
+func NewMeterpointEvaluator(w WanCoverageStore, a AltHanStore, ecoesAPI EcoesAPI, xoserveAPI XoserveAPI) *MeterpointEvaluator {
 	return &MeterpointEvaluator{
 		WanCoverageStore: w,
 		AltHanStore:      a,
+		ecoesAPI:         ecoesAPI,
+		xoserveAPI:       xoserveAPI,
 	}
 }
 
-func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Context, meters *models.ElectricityMeterTechnicalDetails, postcode string) (bool, error) {
+func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Context, mpan string, postcode string) (bool, error) {
+	// None of the meters at the meters points are smart (SMETS1 or SMETS2)
+	// to use exactly the same logic as in https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/domain/entities.go#L388
+
+	meters, err := e.ecoesAPI.GetMPANTechnicalDetails(ctx, mpan)
+	if err != nil {
+		return false, ErrThirdPartyMeterpointError
+	}
+
 	for _, meter := range meters.Meters {
 		if domain.IsElectricitySmartMeter(meter.MeterType.String()) {
 			return false, nil

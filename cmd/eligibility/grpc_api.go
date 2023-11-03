@@ -21,6 +21,7 @@ import (
 	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/api"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -112,11 +113,13 @@ func runGRPCApi(c *cli.Context) error {
 			occupancyStore,
 			accountStore,
 			serviceStore,
-			meterpointStore,
-			postcodeStore,
 			auth,
-			ecoesGw,
-			xoserveGateway,
+			evaluation.NewMeterpointEvaluator(
+				postcodeStore,
+				meterpointStore,
+				ecoesGw,
+				xoserveGateway,
+			),
 		)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 

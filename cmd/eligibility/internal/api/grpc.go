@@ -12,7 +12,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
@@ -57,26 +56,15 @@ type PostcodeStore interface {
 	GetWanCoverage(ctx context.Context, postcode string) (bool, error)
 }
 
-type EcoesAPI interface {
-	GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error)
-}
-
-type XoserveAPI interface {
-	GetMPRNTechnicalDetails(ctx context.Context, mprn string) (*models.GasMeterTechnicalDetails, error)
-}
-
 type EligibilityGRPCApi struct {
 	smart_booking.UnimplementedEligiblityAPIServer
-	eligibilityStore   EligibilityStore
-	suppliabilityStore SuppliabilityStore
-	occupancyStore     OccupancyStore
-	accountStore       AccountStore
-	serviceStore       ServiceStore
-	meterpointStore    MeterpointStore
-	postcodeStore      PostcodeStore
-	auth               Auth
-	ecoesAPI           EcoesAPI
-	xoserveAPI         XoserveAPI
+	eligibilityStore    EligibilityStore
+	suppliabilityStore  SuppliabilityStore
+	occupancyStore      OccupancyStore
+	accountStore        AccountStore
+	serviceStore        ServiceStore
+	auth                Auth
+	meterpointEvaluator *evaluation.MeterpointEvaluator
 }
 
 func NewEligibilityGRPCApi(
@@ -85,23 +73,17 @@ func NewEligibilityGRPCApi(
 	occupancyStore OccupancyStore,
 	accountStore AccountStore,
 	serviceStore ServiceStore,
-	meterpointStore MeterpointStore,
-	postcodeStore PostcodeStore,
 	auth Auth,
-	ecoesAPI EcoesAPI,
-	xoserveAPI XoserveAPI,
+	meterpointEvaluator *evaluation.MeterpointEvaluator,
 ) *EligibilityGRPCApi {
 	return &EligibilityGRPCApi{
-		eligibilityStore:   eligibilityStore,
-		suppliabilityStore: suppliabilityStore,
-		occupancyStore:     occupancyStore,
-		accountStore:       accountStore,
-		serviceStore:       serviceStore,
-		meterpointStore:    meterpointStore,
-		postcodeStore:      postcodeStore,
-		auth:               auth,
-		ecoesAPI:           ecoesAPI,
-		xoserveAPI:         xoserveAPI,
+		eligibilityStore:    eligibilityStore,
+		suppliabilityStore:  suppliabilityStore,
+		occupancyStore:      occupancyStore,
+		accountStore:        accountStore,
+		serviceStore:        serviceStore,
+		auth:                auth,
+		meterpointEvaluator: meterpointEvaluator,
 	}
 }
 
@@ -349,17 +331,10 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 		}
 	}
 
-	meterpointEvaluator := evaluation.NewMeterpointEvaluator(a.postcodeStore, a.meterpointStore)
-
-	// None of the meters at the meters points are smart (SMETS1 or SMETS2)
-	// to use exactly the same logic as in https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/domain/entities.go#L388
-
-	electricityMeters, err := a.ecoesAPI.GetMPANTechnicalDetails(ctx, req.Mpan)
+	eligible, err := a.meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, req.Mpan, req.GetPostcode())
 	if err != nil {
-		return nil, status.Error(codes.Internal, "could not retrieve meterpoint details")
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-
-	eligible, err := meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, electricityMeters, req.GetPostcode())
 	return &smart_booking.GetMeterpointEligibilityResponse{
 		Eligible: eligible,
 	}, nil
