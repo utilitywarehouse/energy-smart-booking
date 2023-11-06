@@ -104,7 +104,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 	return true, nil
 }
 
-func (e *MeterpointEvaluator) GetGasMeterpointEligibility(ctx context.Context, mprn string, postcode string) (bool, error) {
+func (e *MeterpointEvaluator) GetGasMeterpointEligibility(ctx context.Context, mprn string) (bool, error) {
 	meters, err := e.xoserveAPI.GetMPRNTechnicalDetails(ctx, mprn)
 	if err != nil {
 		return false, fmt.Errorf("%w: %w", ErrThirdPartyMeterpointError, err)

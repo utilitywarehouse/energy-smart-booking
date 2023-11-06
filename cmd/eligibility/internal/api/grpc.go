@@ -332,7 +332,7 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 	}
 
 	if req.GetMprn() != "" {
-		gasEligible, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn(), req.GetPostcode())
+		gasEligible, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn())
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
