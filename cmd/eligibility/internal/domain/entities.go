@@ -399,7 +399,7 @@ func (m Meter) IsSmart() bool {
 		}
 		return false
 	case domain.SupplyTypeElectricity:
-		IsElectricitySmartMeter(m.MeterType)
+		return IsElectricitySmartMeter(m.MeterType)
 	}
 
 	return false
