@@ -11,6 +11,10 @@ type GasMeterTechnicalDetails struct {
 	Capacity  float32
 }
 
+func (m *GasMeterTechnicalDetails) GetCapacity() float32 {
+	return m.Capacity
+}
+
 type ElectricityMeter struct {
 	MeterType   platform.MeterTypeElec
 	InstalledAt time.Time
@@ -20,6 +24,14 @@ type ElectricityMeterTechnicalDetails struct {
 	ProfileClass                    platform.ProfileClass
 	SettlementStandardConfiguration string
 	Meters                          []ElectricityMeter
+}
+
+func (m *ElectricityMeterTechnicalDetails) GetProfileClass() platform.ProfileClass {
+	return m.ProfileClass
+}
+
+func (m *ElectricityMeterTechnicalDetails) GetSSC() string {
+	return m.SettlementStandardConfiguration
 }
 
 type ElectricityMeterRelatedMPAN struct {

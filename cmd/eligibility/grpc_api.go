@@ -15,12 +15,17 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
+	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
+	xoservev1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/xoserve/v1"
 	pkgapp "github.com/utilitywarehouse/energy-pkg/app"
 	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/api"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
+	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
+	grpchealth "github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
@@ -56,27 +61,31 @@ func runGRPCApi(c *cli.Context) error {
 	defer pg.Close()
 	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 
-	/*ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(ecoesHost), c.String(grpcLogLevel))
+	ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(ecoesHost), c.String(grpcLogLevel))
 	if err != nil {
-		logrus.WithError(err).Panic("could not connect to ecoes gRPC integration")
+		return fmt.Errorf("could not connect to ecoes gRPC integration: %w", err)
 	}
-	defer ecoesConn.Close()
-	ecoesClient := ecoesv1.NewEcoesAPIClient(ecoesConn)
 	opsServer.Add("ecoes-api", grpchealth.NewCheck(c.String(ecoesHost), "", "cannot find mpans address"))
+	defer ecoesConn.Close()
 
 	xoserveConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(xoserveHost), c.String(grpcLogLevel))
 	if err != nil {
-		logrus.WithError(err).Panic("could not connect to xoserve gRPC integration")
+		return fmt.Errorf("could not connect to xoserve gRPC integration: %w", err)
 	}
+	opsServer.Add("xoserve-api", grpchealth.NewCheck(c.String(xoserveHost), "", "cannot find mprns address"))
 	defer xoserveConn.Close()
-	xoserveClient := xoservev1.NewXoserveAPIClient(xoserveConn)
-	opsServer.Add("xoserve-api", grpchealth.NewCheck(c.String(xoserveHost), "", "cannot find mprns address"))*/
+
+	// GATEWAYS //
+	ecoesGw := gateway.NewEcoesGateway(ecoesv1.NewEcoesAPIClient(ecoesConn))
+	xoserveGateway := gateway.NewXOServeGateway(xoservev1.NewXoserveAPIClient(xoserveConn))
 
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)
 	occupancyStore := store.NewOccupancy(pg)
 	accountStore := store.NewAccount(pg)
 	serviceStore := store.NewService(pg)
+	meterpointStore := store.NewMeterpoint(pg)
+	postcodeStore := store.NewPostCode(pg)
 
 	closer, err := telemetry.Register(ctx,
 		telemetry.WithServiceName(appName),
@@ -98,7 +107,20 @@ func runGRPCApi(c *cli.Context) error {
 		}
 		defer listen.Close()
 
-		eligibilityAPI := api.NewEligibilityGRPCApi(eligibilityStore, suppliabilityStore, occupancyStore, accountStore, serviceStore, auth)
+		eligibilityAPI := api.NewEligibilityGRPCApi(
+			eligibilityStore,
+			suppliabilityStore,
+			occupancyStore,
+			accountStore,
+			serviceStore,
+			auth,
+			evaluation.NewMeterpointEvaluator(
+				postcodeStore,
+				meterpointStore,
+				ecoesGw,
+				xoserveGateway,
+			),
+		)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 
 		return grpcServer.Serve(listen)

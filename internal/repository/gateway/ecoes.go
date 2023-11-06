@@ -6,15 +6,23 @@ import (
 	"sort"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 type EcoesClient interface {
 	GetTechnicalDetailsByMPAN(context.Context, *ecoesv1.SearchByMPANRequest, ...grpc.CallOption) (*ecoesv1.TechnicalDetailsResponse, error)
 	GetRelatedMPANs(context.Context, *ecoesv1.SearchByMPANRequest, ...grpc.CallOption) (*ecoesv1.GetRelatedMPANsResponse, error)
 }
+
+var ecoesAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
+	Name: "smart_booking_ecoes_response_total",
+	Help: "The number of ecoes API error responses made by status code",
+}, []string{"status"})
 
 type EcoesGateway struct {
 	client EcoesClient
@@ -30,6 +38,8 @@ func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string
 		Mpan: mpan,
 	})
 	if err != nil {
+		code := status.Convert(err).Code()
+		ecoesAPIResponses.WithLabelValues(code.String()).Inc()
 		return nil, fmt.Errorf("failed to get technical details by mpan: %s, %w", mpan, err)
 	}
 
@@ -59,6 +69,8 @@ func (gw *EcoesGateway) GetRelatedMPAN(ctx context.Context, mpan string) (*model
 		Mpan: mpan,
 	})
 	if err != nil {
+		code := status.Convert(err).Code()
+		ecoesAPIResponses.WithLabelValues(code.String()).Inc()
 		return nil, fmt.Errorf("failed to get technical details by mpan: %s, %w", mpan, err)
 	}
 

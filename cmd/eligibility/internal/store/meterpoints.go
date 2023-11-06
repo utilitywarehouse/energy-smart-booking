@@ -106,3 +106,20 @@ func (s *MeterpointStore) Get(ctx context.Context, mpxn string) (Meterpoint, err
 
 	return meterpoint, nil
 }
+
+func (s *MeterpointStore) GetAltHan(ctx context.Context, mpxn string) (bool, error) {
+	q := `
+		SELECT alt_han
+		FROM meterpoints
+		WHERE mpxn = $1;
+	`
+	isAltHan := false
+	err := s.pool.QueryRow(ctx, q, mpxn).Scan(&isAltHan)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return false, ErrMeterpointNotFound
+		}
+		return false, err
+	}
+	return isAltHan, nil
+}

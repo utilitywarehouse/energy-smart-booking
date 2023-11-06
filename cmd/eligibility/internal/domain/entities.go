@@ -374,15 +374,52 @@ var unsupportedSSCs = map[string]bool{
 	"0981": true,
 }
 
-func (m Meterpoint) HasComplexTariff() bool {
-	if m.ProfileClass == platform.ProfileClass_PROFILE_CLASS_02 ||
-		m.ProfileClass == platform.ProfileClass_PROFILE_CLASS_04 {
-		if _, found := unsupportedSSCs[m.SSC]; found {
+type ProfileClasser interface {
+	GetProfileClass() platform.ProfileClass
+}
+
+type SSCer interface {
+	GetSSC() string
+}
+
+func (m *Meterpoint) GetProfileClass() platform.ProfileClass {
+	return m.ProfileClass
+}
+
+func (m *Meterpoint) GetSSC() string {
+	return m.SSC
+}
+
+type ComplexSSCPredicate interface {
+	ProfileClasser
+	SSCer
+}
+
+func HasComplexSSC(m ComplexSSCPredicate) bool {
+	profileClass := m.GetProfileClass()
+	ssc := m.GetSSC()
+
+	if profileClass == platform.ProfileClass_PROFILE_CLASS_02 ||
+		profileClass == platform.ProfileClass_PROFILE_CLASS_04 {
+		if _, found := unsupportedSSCs[ssc]; found {
 			return true
 		}
 	}
 
 	return false
+}
+
+type CapacityGetter interface {
+	GetCapacity() float32
+}
+
+func (m *Meter) GetCapacity() float32 {
+	return *m.Capacity
+}
+
+func IsLargeCapacity(m CapacityGetter) bool {
+	capacity := m.GetCapacity()
+	return capacity != 6 && capacity != 212
 }
 
 func (m Meter) IsSmart() bool {
@@ -395,20 +432,25 @@ func (m Meter) IsSmart() bool {
 		}
 		return false
 	case domain.SupplyTypeElectricity:
-		switch m.MeterType {
-		case platform.MeterTypeElec_METER_TYPE_ELEC_SMETS1.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2A.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2B.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2C.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2AD.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2BD.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2CD.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2ADE.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2BDE.String(),
-			platform.MeterTypeElec_METER_TYPE_ELEC_S2CDE.String():
-			return true
-		}
+		return IsElectricitySmartMeter(m.MeterType)
 	}
 
+	return false
+}
+
+func IsElectricitySmartMeter(meterType string) bool {
+	switch meterType {
+	case platform.MeterTypeElec_METER_TYPE_ELEC_SMETS1.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2A.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2B.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2C.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2AD.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2BD.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2CD.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2ADE.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2BDE.String(),
+		platform.MeterTypeElec_METER_TYPE_ELEC_S2CDE.String():
+		return true
+	}
 	return false
 }

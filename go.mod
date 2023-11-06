@@ -7,7 +7,7 @@ toolchain go1.21.0
 require (
 	cloud.google.com/go/bigquery v1.55.0
 	github.com/golang/mock v1.6.0
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v5 v5.4.2
 	github.com/json-iterator/go v1.1.12
@@ -21,7 +21,7 @@ require (
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230926124646-6793c5ba4e39
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b
 	github.com/utilitywarehouse/energy-contracts v1.108.0
-	github.com/utilitywarehouse/energy-pkg/app v1.1.32
+	github.com/utilitywarehouse/energy-pkg/app v1.3.0
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.2
@@ -33,7 +33,7 @@ require (
 	github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0
 	github.com/utilitywarehouse/uwos-go/v1/iam v1.20.2
 	github.com/utilitywarehouse/uwos-go/v1/telemetry v1.21.3
-	github.com/uw-labs/substrate v0.0.0-20230131092757-4c15442fc1b1
+	github.com/uw-labs/substrate v0.0.0-20230324124119-dbc62c85ad0b
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
 	golang.org/x/sync v0.3.0
 	google.golang.org/api v0.128.0

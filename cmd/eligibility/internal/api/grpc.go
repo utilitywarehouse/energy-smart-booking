@@ -6,8 +6,10 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"github.com/utilitywarehouse/account-platform/pkg/id"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
@@ -46,14 +48,23 @@ type ServiceStore interface {
 	GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
 }
 
+type MeterpointStore interface {
+	GetAltHan(ctx context.Context, mpxn string) (bool, error)
+}
+
+type PostcodeStore interface {
+	GetWanCoverage(ctx context.Context, postcode string) (bool, error)
+}
+
 type EligibilityGRPCApi struct {
 	smart_booking.UnimplementedEligiblityAPIServer
-	eligibilityStore   EligibilityStore
-	suppliabilityStore SuppliabilityStore
-	occupancyStore     OccupancyStore
-	accountStore       AccountStore
-	serviceStore       ServiceStore
-	auth               Auth
+	eligibilityStore    EligibilityStore
+	suppliabilityStore  SuppliabilityStore
+	occupancyStore      OccupancyStore
+	accountStore        AccountStore
+	serviceStore        ServiceStore
+	auth                Auth
+	meterpointEvaluator *evaluation.MeterpointEvaluator
 }
 
 func NewEligibilityGRPCApi(
@@ -62,14 +73,17 @@ func NewEligibilityGRPCApi(
 	occupancyStore OccupancyStore,
 	accountStore AccountStore,
 	serviceStore ServiceStore,
-	auth Auth) *EligibilityGRPCApi {
+	auth Auth,
+	meterpointEvaluator *evaluation.MeterpointEvaluator,
+) *EligibilityGRPCApi {
 	return &EligibilityGRPCApi{
-		eligibilityStore:   eligibilityStore,
-		suppliabilityStore: suppliabilityStore,
-		occupancyStore:     occupancyStore,
-		accountStore:       accountStore,
-		serviceStore:       serviceStore,
-		auth:               auth,
+		eligibilityStore:    eligibilityStore,
+		suppliabilityStore:  suppliabilityStore,
+		occupancyStore:      occupancyStore,
+		accountStore:        accountStore,
+		serviceStore:        serviceStore,
+		auth:                auth,
+		meterpointEvaluator: meterpointEvaluator,
 	}
 }
 
@@ -281,6 +295,61 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		AccountId:   req.AccountId,
 		OccupancyId: req.OccupancyId,
 		Eligible:    eligible,
+	}, nil
+}
+
+func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Context, req *smart_booking.GetMeterpointEligibilityRequest) (_ *smart_booking.GetMeterpointEligibilityResponse, err error) {
+	if req.GetMpan() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no mpan provided")
+	}
+	if req.GetAccountNumber() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no account number provided")
+	}
+	if req.GetPostcode() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no postcode provided")
+	}
+
+	accountID := id.NewAccountID(req.GetAccountNumber())
+
+	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetEligibilityForPointOfSaleJourney",
+		trace.WithAttributes(attribute.String("account.id", accountID)),
+		trace.WithAttributes(attribute.String("electricity.meterpoint.number", req.GetMpan())),
+		trace.WithAttributes(attribute.String("gas.meterpoint.number", req.GetMprn())),
+		trace.WithAttributes(attribute.String("customer.postcode", req.GetPostcode())))
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
+
+	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	if req.GetMprn() != "" {
+		gasEligible, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn())
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if !gasEligible {
+			return &smart_booking.GetMeterpointEligibilityResponse{
+				Eligible: false,
+			}, nil
+		}
+	}
+
+	eligible, err := a.meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, req.Mpan, req.GetPostcode())
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &smart_booking.GetMeterpointEligibilityResponse{
+		Eligible: eligible,
 	}, nil
 }
 
