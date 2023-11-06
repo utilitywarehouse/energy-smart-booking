@@ -783,7 +783,7 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 					Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
 				},
 			},
-			Meterpoints: []models.Meterpoint{
+			OrderSupplies: []models.OrderSupply{
 				{
 					MPXN:       req.Mpan,
 					TariffType: req.ElectricityTariffType,

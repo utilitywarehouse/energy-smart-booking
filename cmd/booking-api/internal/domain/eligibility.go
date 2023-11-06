@@ -20,12 +20,12 @@ type ProcessEligibilityResult struct {
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
 
-	elecMeterpoint, gasMeterpoint, err := deduceMeterpoints(params.Details.Meterpoints)
+	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.Details.OrderSupplies)
 	if err != nil {
-		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce meterpoints, %w", err)
+		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
 	}
 
-	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, params.AccountNumber, elecMeterpoint.MPXN, gasMeterpoint.MPXN, params.Details.Address.PAF.Postcode)
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, params.AccountNumber, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
 	}
@@ -53,18 +53,18 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 	}, nil
 }
 
-func deduceMeterpoints(meterpoints []models.Meterpoint) (models.Meterpoint, models.Meterpoint, error) {
-	var mpan, mprn models.Meterpoint
-	for i, meterpoint := range meterpoints {
-		mpxn, err := energy.NewMeterPointNumber(meterpoint.MPXN)
+func deduceOrderSupplies(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
+	var mpan, mprn models.OrderSupply
+	for i, orderSupply := range orderSupplies {
+		mpxn, err := energy.NewMeterPointNumber(orderSupply.MPXN)
 		if err != nil {
-			return models.Meterpoint{}, models.Meterpoint{}, fmt.Errorf("invalid meterpoint number (%s): %v", meterpoint.MPXN, err)
+			return models.OrderSupply{}, models.OrderSupply{}, fmt.Errorf("invalid meterpoint number (%s): %v", orderSupply.MPXN, err)
 		}
 		// We want the first electricity MPAN
 		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan.IsEmpty() {
-			mpan = meterpoints[i]
+			mpan = orderSupplies[i]
 		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
-			mprn = meterpoints[i]
+			mprn = orderSupplies[i]
 		}
 	}
 	return mpan, mprn, nil
