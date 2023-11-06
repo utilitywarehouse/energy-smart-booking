@@ -74,7 +74,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 	}
 
 	// Property does not require ALT-HAN
-	isAltHan, err := e.GetAltHan(ctx, postcode)
+	isAltHan, err := e.GetAltHan(ctx, mpan)
 	if err != nil {
 		return false, err
 	}
