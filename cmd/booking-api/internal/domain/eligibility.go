@@ -20,12 +20,12 @@ type ProcessEligibilityResult struct {
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
 
-	elecMeterpoint, gasMeterpoint, err := deduceMeterpoints(params.Details.OrderSupplies)
+	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.Details.OrderSupplies)
 	if err != nil {
-		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce meterpoints, %w", err)
+		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
 	}
 
-	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, params.AccountNumber, elecMeterpoint.MPXN, gasMeterpoint.MPXN, params.Details.Address.PAF.Postcode)
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, params.AccountNumber, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
 	}
@@ -53,7 +53,7 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 	}, nil
 }
 
-func deduceMeterpoints(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
+func deduceOrderSupplies(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
 	var mpan, mprn models.OrderSupply
 	for i, orderSupply := range orderSupplies {
 		mpxn, err := energy.NewMeterPointNumber(orderSupply.MPXN)
