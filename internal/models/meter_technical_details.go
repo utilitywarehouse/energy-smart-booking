@@ -22,6 +22,14 @@ type ElectricityMeterTechnicalDetails struct {
 	Meters                          []ElectricityMeter
 }
 
+func (m *ElectricityMeterTechnicalDetails) GetProfileClass() platform.ProfileClass {
+	return m.ProfileClass
+}
+
+func (m *ElectricityMeterTechnicalDetails) GetSSC() string {
+	return m.SettlementStandardConfiguration
+}
+
 type ElectricityMeterRelatedMPAN struct {
 	Relations []MPANRelation
 }

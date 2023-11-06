@@ -96,7 +96,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 
 	// Electricity does not have “complex tariff”
 	// Similar to the current logic in the normal eligibilty check for "complex tariff"
-	if domain.HasComplexSSC(meters.ProfileClass, meters.SettlementStandardConfiguration) {
+	if domain.HasComplexSSC(meters) {
 		logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: has complex SSC")
 		return false, nil
 	}

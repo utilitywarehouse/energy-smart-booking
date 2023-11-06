@@ -88,7 +88,7 @@ func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
 		if s.SupplyType == energy_domain.SupplyTypeElectricity {
 			if s.Meterpoint == nil {
 				result.addReason(domain.IneligibleReasonMissingMeterpointData)
-			} else if s.Meterpoint.HasComplexTariff() {
+			} else if domain.HasComplexSSC(s.Meterpoint) {
 				result.addReason(domain.IneligibleReasonComplexTariff)
 			}
 		}

@@ -374,7 +374,31 @@ var unsupportedSSCs = map[string]bool{
 	"0981": true,
 }
 
-func HasComplexSSC(profileClass platform.ProfileClass, ssc string) bool {
+type ProfileClasser interface {
+	GetProfileClass() platform.ProfileClass
+}
+
+type SSCer interface {
+	GetSSC() string
+}
+
+func (m *Meterpoint) GetProfileClass() platform.ProfileClass {
+	return m.ProfileClass
+}
+
+func (m *Meterpoint) GetSSC() string {
+	return m.SSC
+}
+
+type ComplexSSCPredicate interface {
+	ProfileClasser
+	SSCer
+}
+
+func HasComplexSSC(m ComplexSSCPredicate) bool {
+	profileClass := m.GetProfileClass()
+	ssc := m.GetSSC()
+
 	if profileClass == platform.ProfileClass_PROFILE_CLASS_02 ||
 		profileClass == platform.ProfileClass_PROFILE_CLASS_04 {
 		if _, found := unsupportedSSCs[ssc]; found {
@@ -383,10 +407,6 @@ func HasComplexSSC(profileClass platform.ProfileClass, ssc string) bool {
 	}
 
 	return false
-}
-
-func (m Meterpoint) HasComplexTariff() bool {
-	return HasComplexSSC(m.ProfileClass, m.SSC)
 }
 
 func (m Meter) IsSmart() bool {
