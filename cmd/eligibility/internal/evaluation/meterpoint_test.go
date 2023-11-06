@@ -98,7 +98,7 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 				SettlementStandardConfiguration: "0123",
 				Meters: []models.ElectricityMeter{{
 					MeterType:   platform.MeterTypeElec_METER_TYPE_ELEC_HALF_HOURLY,
-					InstalledAt: mustTime("2020-10-10"),
+					InstalledAt: mustTime("2020-11-11"),
 				}},
 			},
 			"mpan-2": {
@@ -114,7 +114,7 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 				SettlementStandardConfiguration: "0123",
 				Meters: []models.ElectricityMeter{{
 					MeterType:   platform.MeterTypeElec_METER_TYPE_ELEC_HALF_HOURLY,
-					InstalledAt: mustTime("2020-10-10"),
+					InstalledAt: mustTime("2020-09-09"),
 				}},
 			},
 			"mpan-4": {
@@ -122,7 +122,7 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 				SettlementStandardConfiguration: "0123",
 				Meters: []models.ElectricityMeter{{
 					MeterType:   platform.MeterTypeElec_METER_TYPE_ELEC_HALF_HOURLY,
-					InstalledAt: mustTime("2020-10-10"),
+					InstalledAt: mustTime("2020-08-08"),
 				}},
 			},
 			"mpan-5": {
@@ -130,7 +130,7 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 				SettlementStandardConfiguration: "0110",
 				Meters: []models.ElectricityMeter{{
 					MeterType:   platform.MeterTypeElec_METER_TYPE_ELEC_HALF_HOURLY,
-					InstalledAt: mustTime("2020-10-10"),
+					InstalledAt: mustTime("2020-07-07"),
 				}},
 			},
 			"mpan-6": {
@@ -138,7 +138,7 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 				SettlementStandardConfiguration: "0123",
 				Meters: []models.ElectricityMeter{{
 					MeterType:   platform.MeterTypeElec_METER_TYPE_ELEC_S2A,
-					InstalledAt: mustTime("2020-10-10"),
+					InstalledAt: mustTime("2020-06-06"),
 				}},
 			},
 		},
