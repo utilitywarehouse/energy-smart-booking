@@ -3,7 +3,9 @@ package evaluation
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
@@ -22,6 +24,7 @@ type AltHanStore interface {
 
 type EcoesAPI interface {
 	GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error)
+	GetRelatedMPAN(ctx context.Context, mpan string) (*models.ElectricityMeterRelatedMPAN, error)
 }
 
 type XoserveAPI interface {
@@ -50,11 +53,12 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 
 	meters, err := e.ecoesAPI.GetMPANTechnicalDetails(ctx, mpan)
 	if err != nil {
-		return false, ErrThirdPartyMeterpointError
+		return false, fmt.Errorf("%w: %w", ErrThirdPartyMeterpointError, err)
 	}
 
 	for _, meter := range meters.Meters {
 		if domain.IsElectricitySmartMeter(meter.MeterType.String()) {
+			logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: is already a smart meter")
 			return false, nil
 		}
 	}
@@ -65,6 +69,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 		return false, err
 	}
 	if !isWan {
+		logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: is not WAN")
 		return false, nil
 	}
 
@@ -74,19 +79,43 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 		return false, err
 	}
 	if isAltHan {
+		logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: is Alt-HAN")
 		return false, err
 	}
 
 	// Electricity is not a related MPAN Set-up
 	// We should not receive a related MPAN from a GetRelatedMPANs call
+	related, err := e.ecoesAPI.GetRelatedMPAN(ctx, mpan)
+	if err != nil {
+		return false, err
+	}
+	if related != nil && len(related.Relations) != 0 {
+		logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: related meterpoints present")
+		return false, nil
+	}
 
 	// Electricity does not have “complex tariff”
 	// Similar to the current logic in the normal eligibilty check for "complex tariff"
-	// same logic as https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/domain/entities.go#L377
+	if domain.HasComplexSSC(meters.ProfileClass, meters.SettlementStandardConfiguration) {
+		logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: has complex SSC")
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (e *MeterpointEvaluator) GetGasMeterpointEligibility(ctx context.Context, mprn string, postcode string) (bool, error) {
+	meters, err := e.xoserveAPI.GetMPRNTechnicalDetails(ctx, mprn)
+	if err != nil {
+		return false, fmt.Errorf("%w: %w", ErrThirdPartyMeterpointError, err)
+	}
 
 	// Gas meter at property is not “large capacity”
 	// Large Capacity means the meter's capacity is different than 6 or 212
-	// same logic as https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/evaluation/rules.go#L55
+	if meters.Capacity != 6 && meters.Capacity != 212 {
+		logrus.WithField("mprn", mprn).Info("ineligible point-of-sale booking: gas meterpoint is not large capacity")
+		return false, nil
+	}
 
 	return true, nil
 }

@@ -374,15 +374,19 @@ var unsupportedSSCs = map[string]bool{
 	"0981": true,
 }
 
-func (m Meterpoint) HasComplexTariff() bool {
-	if m.ProfileClass == platform.ProfileClass_PROFILE_CLASS_02 ||
-		m.ProfileClass == platform.ProfileClass_PROFILE_CLASS_04 {
-		if _, found := unsupportedSSCs[m.SSC]; found {
+func HasComplexSSC(profileClass platform.ProfileClass, ssc string) bool {
+	if profileClass == platform.ProfileClass_PROFILE_CLASS_02 ||
+		profileClass == platform.ProfileClass_PROFILE_CLASS_04 {
+		if _, found := unsupportedSSCs[ssc]; found {
 			return true
 		}
 	}
 
 	return false
+}
+
+func (m Meterpoint) HasComplexTariff() bool {
+	return HasComplexSSC(m.ProfileClass, m.SSC)
 }
 
 func (m Meter) IsSmart() bool {

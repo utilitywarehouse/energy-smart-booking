@@ -331,10 +331,23 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 		}
 	}
 
+	if req.GetMprn() != "" {
+		gasEligible, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn(), req.GetPostcode())
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		if !gasEligible {
+			return &smart_booking.GetMeterpointEligibilityResponse{
+				Eligible: false,
+			}, nil
+		}
+	}
+
 	eligible, err := a.meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, req.Mpan, req.GetPostcode())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
 	return &smart_booking.GetMeterpointEligibilityResponse{
 		Eligible: eligible,
 	}, nil
