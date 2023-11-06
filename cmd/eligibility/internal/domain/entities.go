@@ -409,6 +409,19 @@ func HasComplexSSC(m ComplexSSCPredicate) bool {
 	return false
 }
 
+type CapacityGetter interface {
+	GetCapacity() float32
+}
+
+func (m *Meter) GetCapacity() float32 {
+	return *m.Capacity
+}
+
+func IsLargeCapacity(m CapacityGetter) bool {
+	capacity := m.GetCapacity()
+	return capacity != 6 && capacity != 212
+}
+
 func (m Meter) IsSmart() bool {
 	switch m.SupplyType {
 	case domain.SupplyTypeGas:

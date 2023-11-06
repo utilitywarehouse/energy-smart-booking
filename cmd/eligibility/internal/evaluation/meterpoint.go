@@ -48,7 +48,7 @@ func NewMeterpointEvaluator(w WanCoverageStore, a AltHanStore, ecoesAPI EcoesAPI
 }
 
 func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Context, mpan string, postcode string) (bool, error) {
-	// None of the meters at the meters points are smart (SMETS1 or SMETS2)
+	// None of the meters at the meters points can be smart (SMETS1 or SMETS2)
 	// to use exactly the same logic as in https://github.com/utilitywarehouse/energy-smart-booking/blob/master/cmd/eligibility/internal/domain/entities.go#L388
 
 	meters, err := e.ecoesAPI.GetMPANTechnicalDetails(ctx, mpan)
@@ -63,7 +63,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 		}
 	}
 
-	// Property has WAN
+	// Property must have WAN
 	isWan, err := e.GetWanCoverage(ctx, postcode)
 	if err != nil {
 		return false, err
@@ -73,7 +73,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 		return false, nil
 	}
 
-	// Property does not require ALT-HAN
+	// Property must not require ALT-HAN
 	isAltHan, err := e.GetAltHan(ctx, mpan)
 	if err != nil {
 		return false, err
@@ -83,7 +83,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 		return false, err
 	}
 
-	// Electricity is not a related MPAN Set-up
+	// Electricity must not have a related MPAN Set-up
 	// We should not receive a related MPAN from a GetRelatedMPANs call
 	related, err := e.ecoesAPI.GetRelatedMPAN(ctx, mpan)
 	if err != nil {
@@ -94,7 +94,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 		return false, nil
 	}
 
-	// Electricity does not have “complex tariff”
+	// Electricity must not have “complex tariff”
 	// Similar to the current logic in the normal eligibilty check for "complex tariff"
 	if domain.HasComplexSSC(meters) {
 		logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: has complex SSC")
@@ -110,9 +110,9 @@ func (e *MeterpointEvaluator) GetGasMeterpointEligibility(ctx context.Context, m
 		return false, fmt.Errorf("%w: %w", ErrThirdPartyMeterpointError, err)
 	}
 
-	// Gas meter at property is not “large capacity”
+	// Gas meter at property must not be “large capacity”
 	// Large Capacity means the meter's capacity is different than 6 or 212
-	if meters.Capacity != 6 && meters.Capacity != 212 {
+	if domain.IsLargeCapacity(meters) {
 		logrus.WithField("mprn", mprn).Info("ineligible point-of-sale booking: gas meterpoint is not large capacity")
 		return false, nil
 	}

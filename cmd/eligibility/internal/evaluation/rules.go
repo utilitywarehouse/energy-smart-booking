@@ -52,7 +52,7 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 		if s.SupplyType == energy_domain.SupplyTypeGas {
 			if s.Meter == nil {
 				result.addReason(domain.IneligibleReasonMissingMeterData)
-			} else if s.Meter.Capacity != nil && (*s.Meter.Capacity != 6 && *s.Meter.Capacity != 212) {
+			} else if s.Meter.Capacity != nil && (domain.IsLargeCapacity(s.Meter)) {
 				result.addReason(domain.IneligibleReasonMeterLargeCapacity)
 			}
 		}

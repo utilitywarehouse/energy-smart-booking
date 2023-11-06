@@ -11,6 +11,10 @@ type GasMeterTechnicalDetails struct {
 	Capacity  float32
 }
 
+func (m *GasMeterTechnicalDetails) GetCapacity() float32 {
+	return m.Capacity
+}
+
 type ElectricityMeter struct {
 	MeterType   platform.MeterTypeElec
 	InstalledAt time.Time
