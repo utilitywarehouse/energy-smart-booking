@@ -30,7 +30,7 @@ type LowriBeckGateway interface {
 }
 
 type EligibilityGateway interface {
-	GetMeterpointEligibility(ctx context.Context, accountNumber, mpan, mprn, postcode string) (bool, error)
+	GetMeterpointEligibility(ctx context.Context, mpan, mprn, postcode string) (bool, error)
 }
 
 type ClickGateway interface {

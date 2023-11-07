@@ -21,13 +21,12 @@ func NewEligibilityGateway(mai MachineAuthInjector, client EligibilityClient) *E
 	return &EligibilityGateway{mai, client}
 }
 
-func (gw *EligibilityGateway) GetMeterpointEligibility(ctx context.Context, accountNumber, mpan, mprn, postcode string) (bool, error) {
+func (gw *EligibilityGateway) GetMeterpointEligibility(ctx context.Context, mpan, mprn, postcode string) (bool, error) {
 
 	result, err := gw.client.GetMeterpointEligibility(gw.mai.ToCtx(ctx), &eligibilityv1.GetMeterpointEligibilityRequest{
-		AccountNumber: accountNumber,
-		Mpan:          mpan,
-		Mprn:          toStr(mprn),
-		Postcode:      postcode,
+		Mpan:     mpan,
+		Mprn:     toStr(mprn),
+		Postcode: postcode,
 	})
 	if err != nil {
 		return false, fmt.Errorf("failed to get meterpoint eligibilty, %w", err)
