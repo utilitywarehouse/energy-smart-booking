@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	"github.com/utilitywarehouse/account-platform/pkg/id"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
@@ -302,17 +301,11 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 	if req.GetMpan() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no mpan provided")
 	}
-	if req.GetAccountNumber() == "" {
-		return nil, status.Error(codes.InvalidArgument, "no account number provided")
-	}
 	if req.GetPostcode() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no postcode provided")
 	}
 
-	accountID := id.NewAccountID(req.GetAccountNumber())
-
 	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetEligibilityForPointOfSaleJourney",
-		trace.WithAttributes(attribute.String("account.id", accountID)),
 		trace.WithAttributes(attribute.String("electricity.meterpoint.number", req.GetMpan())),
 		trace.WithAttributes(attribute.String("gas.meterpoint.number", req.GetMprn())),
 		trace.WithAttributes(attribute.String("customer.postcode", req.GetPostcode())))
@@ -321,7 +314,7 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 		span.End()
 	}()
 
-	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, "")
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
