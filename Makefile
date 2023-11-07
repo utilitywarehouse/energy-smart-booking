@@ -37,12 +37,6 @@ lint: $(LINTER)
 	cd $(SOURCE_FILES) && ./$(LINTER) run
 	rm $(SOURCE_FILES)/$(LINTER)
 
-.PHONY: lint_internal
-lint_internal: $(LINTER)
-	cp ./bin/$(LINTER) .
-	./$(LINTER) run internal/...
-	rm $(LINTER)
-
 .PHONY: clean
 clean:
 	rm -f $(SERVICE)
