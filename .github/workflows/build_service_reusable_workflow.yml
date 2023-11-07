@@ -42,7 +42,7 @@ jobs:
 
       - run: make test SOURCE_FILES=$SOURCE_FILES
 
-      - run: make test SOURCE_FILES=$SOURCE_FILES=internal
+      - run: make test SOURCE_FILES=internal
 
       - name: Docker Build
         run: make ci-docker-build SOURCE_FILES=$SOURCE_FILES SERVICE=$SERVICE DEFAULT_BRANCH_NAME=$DEFAULT_BRANCH_NAME
