@@ -947,7 +947,7 @@ func Test_CreateBookingPointOfSale_HasErrors(t *testing.T) {
 					Mobile:    "555-0777",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "Bad Knee2")
+				}, "Bad Knee")
 
 			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
 				t.Fatal(diff)
