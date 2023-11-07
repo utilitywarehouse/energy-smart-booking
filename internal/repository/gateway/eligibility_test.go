@@ -28,17 +28,16 @@ func Test_Eligibility_GetMeterpointEligibility(t *testing.T) {
 	myGw := gateway.NewEligibilityGateway(mai, mEligibility)
 
 	mEligibility.EXPECT().GetMeterpointEligibility(ctx, &eligibilityv1.GetMeterpointEligibilityRequest{
-		AccountNumber: "14010",
-		Mpan:          "10301031",
-		Mprn:          toStr("120301230"),
-		Postcode:      "E2 1ZZ",
+		Mpan:     "10301031",
+		Mprn:     toStr("120301230"),
+		Postcode: "E2 1ZZ",
 	}).Return(&eligibilityv1.GetMeterpointEligibilityResponse{
 		Eligible: true,
 	}, nil)
 
 	actual := true
 
-	expected, err := myGw.GetMeterpointEligibility(ctx, "14010", "10301031", "120301230", "E2 1ZZ")
+	expected, err := myGw.GetMeterpointEligibility(ctx, "10301031", "120301230", "E2 1ZZ")
 	if err != nil {
 		t.Fatal(err)
 	}

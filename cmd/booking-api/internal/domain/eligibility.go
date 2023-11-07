@@ -25,7 +25,7 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
 	}
 
-	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, params.AccountNumber, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
 	}
