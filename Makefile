@@ -12,6 +12,7 @@ endif
 LINKFLAGS :=-s -X main.gitHash=$(GIT_HASH) -extldflags "-static"
 TESTFLAGS := -v -cover -tags testing
 LINTER := golangci-lint
+GOTEST := gotestsum --
 
 BRANCH_NAME := $(shell echo $(GITHUB_REF_NAME) | sed -e 's/[^a-zA-Z0-9]/-/g')
 
@@ -25,6 +26,7 @@ LEXC :=
 install:
 	GOPROXY=https://proxy.golang.org GO111MODULE=on GOPRIVATE="github.com/utilitywarehouse/*" go mod download
 	go install github.com/golang/mock/mockgen@v1.6.0
+	go install gotest.tools/gotestsum@latest
 
 $(LINTER):
 	@ [ -e ./bin/$(LINTER) ] || wget -O - -q https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
@@ -53,11 +55,11 @@ build: $(SERVICE)
 
 .PHONY: test
 test:
-	cd $(SOURCE_FILES) && GO111MODULE=on $(BUILDENV) go test $(TESTFLAGS) ./...
+	cd $(SOURCE_FILES) && GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./...
 
 .PHONY: test-all
 test-all:
-	GO111MODULE=on $(BUILDENV) go test $(TESTFLAGS) ./...
+	GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./...
 
 .PHONY: all
 all: SOURCE_FILES=${SOURCE_FILES} clean $(LINTER) lint test build
