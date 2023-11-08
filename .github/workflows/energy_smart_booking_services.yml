@@ -38,3 +38,10 @@ jobs:
       source_files: cmd/click-generator
       service: energy-smart-booking-click-generator
     secrets: inherit
+
+  internal:
+    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    with:
+      source_files: internal
+      service: 
+    secrets: inherit
