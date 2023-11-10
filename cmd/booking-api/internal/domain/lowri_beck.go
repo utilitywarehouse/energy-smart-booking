@@ -250,13 +250,23 @@ func (d BookingDomain) GetAvailableSlotsPointOfSale(ctx context.Context, params 
 	fromAsTime := time.Date(int(params.From.Year), time.Month(params.From.Month), int(params.From.Day), 0, 0, 0, 0, time.UTC)
 	toAsTime := time.Date(int(params.To.Year), time.Month(params.To.Month), int(params.To.Day), 0, 0, 0, 0, time.UTC)
 
+	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetByAccountNumber(ctx, params.AccountID)
+	if err != nil {
+		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get customer details, %w", err)
+	}
+
+	mpan, mprn, err := models.DeduceOrderSupplies(customerDetails.OrderSupplies)
+	if err != nil {
+		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to deduce order supplies, %w", err)
+	}
+
 	slotsResponse, err := d.lowribeckGw.GetAvailableSlotsPointOfSale(
 		ctx,
 		params.Postcode,
-		params.Mpan,
-		params.Mprn,
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffGas),
+		mpan.MPXN,
+		mprn.MPXN,
+		models.BookingTariffTypeToLowribeckTariffType(mpan.TariffType),
+		models.BookingTariffTypeToLowribeckTariffType(mprn.TariffType),
 	)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get POS available slots, %w", err)
