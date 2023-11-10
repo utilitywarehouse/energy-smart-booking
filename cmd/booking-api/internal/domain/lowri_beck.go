@@ -63,10 +63,6 @@ type GetPOSAvailableSlotsParams struct {
 type CreatePOSBookingParams struct {
 	AccountID            string
 	SiteAddress          models.AccountAddress
-	Mpan                 string
-	Mprn                 string
-	TariffElectricity    bookingv1.TariffType
-	TariffGas            bookingv1.TariffType
 	ContactDetails       models.AccountDetails
 	Slot                 models.BookingSlot
 	Source               bookingv1.BookingSource
@@ -293,15 +289,25 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 	bookingID := uuid.New().String()
 	var event *bookingv1.BookingCreatedEvent
 
+	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetByAccountNumber(ctx, params.AccountID)
+	if err != nil {
+		return CreateBookingResponse{}, fmt.Errorf("failed to get customer details, %w", err)
+	}
+
+	mpan, mprn, err := models.DeduceOrderSupplies(customerDetails.OrderSupplies)
+	if err != nil {
+		return CreateBookingResponse{}, fmt.Errorf("failed to deduce order supplies, %w", err)
+	}
+
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.GetVulnerabilities())
 
 	response, err := d.lowribeckGw.CreateBookingPointOfSale(
 		ctx,
 		params.SiteAddress.PAF.Postcode,
-		params.Mpan,
-		params.Mprn,
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffGas),
+		mpan.MPXN,
+		mprn.MPXN,
+		models.BookingTariffTypeToLowribeckTariffType(mpan.TariffType),
+		models.BookingTariffTypeToLowribeckTariffType(mprn.TariffType),
 		params.Slot,
 		params.ContactDetails,
 		lbVulnerabilities,

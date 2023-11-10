@@ -55,6 +55,8 @@ var (
 	flagSubject               = "flag-subject"
 	flagIntent                = "flag-intent"
 	flagChannel               = "flag-channel"
+
+	flagCommsBookingConfirmedEvent = "comms-booking-confirmed-event"
 )
 
 func init() {
@@ -133,6 +135,11 @@ func init() {
 				EnvVars:  []string{"CHANNEL"},
 				Required: true,
 			},
+			/*&cli.StringFlag{
+				Name:     flagCommsBookingConfirmedEvent,
+				EnvVars:  []string{"COMMS_BOOKING_CONFIRMED_EVENT"},
+				Required: true,
+			},*/
 		),
 	})
 }
@@ -200,6 +207,13 @@ func serverAction(c *cli.Context) error {
 	defer bookingSink.Close()
 	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
 
+	/*commsSink, err := app.GetKafkaSinkWithBroker(c.String(flagCommsBookingConfirmedEvent), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	if err != nil {
+		return fmt.Errorf("unable to connect to comms booking [%s] kafka sink: %w", c.String(flagCommsBookingConfirmedEvent), err)
+	}
+	defer commsSink.Close()
+	opsServer.Add("comms-sink", substratehealth.NewCheck(bookingSink, "unable to sink comms booking events"))*/
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	closer, err := telemetry.Register(ctx,
@@ -242,6 +256,7 @@ func serverAction(c *cli.Context) error {
 	// PUBLISHERS //
 
 	syncBookingPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingSink), c.App.Name)
+	// syncCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsSink), c.App.Name)
 
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)

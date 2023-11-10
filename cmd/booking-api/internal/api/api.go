@@ -45,7 +45,7 @@ type BookingDomain interface {
 	ProcessEligibility(context.Context, domain.ProcessEligibilityParams) (domain.ProcessEligibilityResult, error)
 }
 
-type BookingPublisher interface {
+type Publisher interface {
 	Sink(ctx context.Context, proto proto.Message, at time.Time) error
 }
 
@@ -54,9 +54,9 @@ type Auth interface {
 }
 
 type BookingAPI struct {
-	bookingDomain BookingDomain
-	publisher     BookingPublisher
-	auth          Auth
+	bookingDomain    BookingDomain
+	bookingPublisher Publisher
+	auth             Auth
 	bookingv1.UnimplementedBookingAPIServer
 	useTracing bool
 }
@@ -69,12 +69,12 @@ type accountNumberer interface {
 	GetAccountNumber() string
 }
 
-func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth, useTracing bool) *BookingAPI {
+func New(bookingDomain BookingDomain, bookingPublisher Publisher, auth Auth, useTracing bool) *BookingAPI {
 	return &BookingAPI{
-		bookingDomain: bookingDomain,
-		publisher:     publisher,
-		auth:          auth,
-		useTracing:    useTracing,
+		bookingDomain:    bookingDomain,
+		bookingPublisher: bookingPublisher,
+		auth:             auth,
+		useTracing:       useTracing,
 	}
 }
 
@@ -369,7 +369,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 		}, mapError("failed to create booking, %s", err)
 	}
 
-	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
+	err = b.bookingPublisher.Sink(ctx, createBookingResponse.Event, time.Now())
 	if err != nil {
 		logrus.Errorf("failed to sink create booking event: %+v", createBookingResponse.Event)
 	}
@@ -449,7 +449,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		}, mapError("failed to reschedule booking, %s", err)
 	}
 
-	err = b.publisher.Sink(ctx, rescheduleBookingResponse.Event, time.Now())
+	err = b.bookingPublisher.Sink(ctx, rescheduleBookingResponse.Event, time.Now())
 	if err != nil {
 		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingResponse.Event)
 	}
@@ -639,7 +639,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		}
 	}
 
-	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
+	err = b.bookingPublisher.Sink(ctx, createBookingResponse.Event, time.Now())
 	if err != nil {
 		logrus.Errorf("failed to sink create booking event: %+v, %s", createBookingResponse.Event, err)
 	}

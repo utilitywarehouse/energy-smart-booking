@@ -900,8 +900,9 @@ func Test_CreatePOSBooking(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
+	customerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, occSt, nil, nil, partialBookingSt, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, lbGw, occSt, nil, nil, partialBookingSt, customerDetailsSt, nil, nil, false)
 
 	type inputParams struct {
 		params domain.CreatePOSBookingParams
@@ -914,7 +915,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore)
+		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -941,8 +942,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "John",
@@ -964,14 +963,27 @@ func Test_CreatePOSBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+
+				customerDetailsSt.EXPECT().GetByAccountNumber(ctx, "account-id-1").Return(&models.PointOfSaleCustomerDetails{
+					OrderSupplies: []models.OrderSupply{
+						{
+							MPXN:       "1012474161550",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+						{
+							MPXN:       "2981636102",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+					},
+				}, nil)
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
 					"E2 1ZZ",
-					"mpan-1",
-					"",
+					"1012474161550",
+					"2981636102",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					models.BookingSlot{
 						Date:      mustDate(t, "2023-08-27"),
 						StartTime: 9,
@@ -1071,8 +1083,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "John",
@@ -1094,11 +1104,20 @@ func Test_CreatePOSBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+
+				customerDetailsSt.EXPECT().GetByAccountNumber(ctx, "account-id-1").Return(&models.PointOfSaleCustomerDetails{
+					OrderSupplies: []models.OrderSupply{
+						{
+							MPXN:       "1012474161550",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+					},
+				}, nil)
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
 					"E2 1ZZ",
-					"mpan-1",
+					"1012474161550",
 					"",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
@@ -1184,7 +1203,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 			input: inputParams{
 				params: domain.CreatePOSBookingParams{
 					AccountID: "account-id-1",
-					Mpan:      "mpan-1",
 					SiteAddress: models.AccountAddress{
 						UPRN: "uprn-1",
 						PAF: models.PAF{
@@ -1201,7 +1219,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 							Thoroughfare:            "tf-1",
 						},
 					},
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "John",
@@ -1222,11 +1239,20 @@ func Test_CreatePOSBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+
+				customerDetailsSt.EXPECT().GetByAccountNumber(ctx, "account-id-1").Return(&models.PointOfSaleCustomerDetails{
+					OrderSupplies: []models.OrderSupply{
+						{
+							MPXN:       "1012474161550",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+					},
+				}, nil)
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
 					"E2 1ZZ",
-					"mpan-1",
+					"1012474161550",
 					"",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
@@ -1260,7 +1286,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, lbGw, occSt, partialBookingSt)
+			tc.setup(ctx, lbGw, occSt, partialBookingSt, customerDetailsSt)
 
 			actual, err := myDomain.CreateBookingPointOfSale(ctx, tc.input.params)
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	energy "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
@@ -20,12 +19,12 @@ type ProcessEligibilityResult struct {
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
 
-	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.Details.OrderSupplies)
+	elecMeterpoint, gasMeterpoint, err := models.DeduceOrderSupplies(params.Details.OrderSupplies)
 	if err != nil {
-		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
+		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce meterpoints, %w", err)
 	}
 
-	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecMeterpoint.MPXN, gasMeterpoint.MPXN, params.Details.Address.PAF.Postcode)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
 	}
@@ -51,21 +50,4 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 		Eligible: eligible,
 		Link:     fmt.Sprintf("%s&journey_type=point_of_sale&account_number=%s", link, params.AccountNumber),
 	}, nil
-}
-
-func deduceOrderSupplies(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
-	var mpan, mprn models.OrderSupply
-	for i, orderSupply := range orderSupplies {
-		mpxn, err := energy.NewMeterPointNumber(orderSupply.MPXN)
-		if err != nil {
-			return models.OrderSupply{}, models.OrderSupply{}, fmt.Errorf("invalid meterpoint number (%s): %v", orderSupply.MPXN, err)
-		}
-		// We want the first electricity MPAN
-		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan.IsEmpty() {
-			mpan = orderSupplies[i]
-		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
-			mprn = orderSupplies[i]
-		}
-	}
-	return mpan, mprn, nil
 }
