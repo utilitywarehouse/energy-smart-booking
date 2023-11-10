@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5/stdlib"
 	log "github.com/sirupsen/logrus"
@@ -16,6 +17,7 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/api"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/cache"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serialisers"
@@ -225,6 +227,7 @@ func serverAction(c *cli.Context) error {
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
 	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
 	eligibilityGateway := gateway.NewEligibilityGateway(mn, eligibilityv1.NewEligiblityAPIClient(eligibilityConn))
+	cachedEligibilityGateway := cache.NewMeterpointEligibilityCacheWrapper(eligibilityGateway, store.NewMeterpointEligible(pool, 6*time.Hour))
 	clickGw, err := gateway.NewClickLinkProvider(clickClient, &gateway.ClickLinkProviderConfig{
 		ExpirationTimeSeconds: c.Int64(flagExpirationTimeSeconds),
 		ClickKeyID:            c.String(flagClickKeyID),
@@ -251,7 +254,18 @@ func serverAction(c *cli.Context) error {
 	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(pool, serialisers.PointOfSaleCustomerDetails{})
 
 	// DOMAIN //
-	bookingDomain := domain.NewBookingDomain(accountGw, lowriBeckGateway, occupancyStore, siteStore, bookingStore, partialBookingStore, pointOfSaleCustomerDetailsStore, eligibilityGateway, clickGw, true)
+	bookingDomain := domain.NewBookingDomain(
+		accountGw,
+		lowriBeckGateway,
+		occupancyStore,
+		siteStore,
+		bookingStore,
+		partialBookingStore,
+		pointOfSaleCustomerDetailsStore,
+		cachedEligibilityGateway,
+		clickGw,
+		true,
+	)
 
 	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth, true)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
