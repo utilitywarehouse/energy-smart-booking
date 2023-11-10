@@ -727,8 +727,9 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 	defer ctrl.Finish()
 
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	mCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, nil, nil, nil, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, lbGw, nil, nil, nil, nil, mCustomerDetailsSt, nil, nil, false)
 
 	type inputParams struct {
 		params domain.GetPOSAvailableSlotsParams
@@ -741,7 +742,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway)
+		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -751,9 +752,8 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 			description: "should get the available slots between From and To",
 			input: inputParams{
 				params: domain.GetPOSAvailableSlotsParams{
-					Postcode:          "E2 1ZZ",
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: "account-id-1",
+					Postcode:  "E2 1ZZ",
 					From: &date.Date{
 						Year:  2023,
 						Month: 12,
@@ -766,11 +766,20 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+
+				customerDetailsSt.EXPECT().GetByAccountNumber(ctx, "account-id-1").Return(&models.PointOfSaleCustomerDetails{
+					OrderSupplies: []models.OrderSupply{
+						{
+							MPXN:       "1012474161550",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+					},
+				}, nil)
 
 				lbGw.EXPECT().GetAvailableSlotsPointOfSale(ctx,
 					"E2 1ZZ",
-					"mpan-1",
+					"1012474161550",
 					"",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
@@ -817,9 +826,8 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 			description: "should return an error because no dates available for provided date",
 			input: inputParams{
 				params: domain.GetPOSAvailableSlotsParams{
-					Postcode:          "E2 1ZZ",
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountID: "account-id-1",
+					Postcode:  "E2 1ZZ",
 					From: &date.Date{
 						Year:  2020,
 						Month: 12,
@@ -832,11 +840,20 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+
+				customerDetailsSt.EXPECT().GetByAccountNumber(ctx, "account-id-1").Return(&models.PointOfSaleCustomerDetails{
+					OrderSupplies: []models.OrderSupply{
+						{
+							MPXN:       "1012474161550",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+					},
+				}, nil)
 
 				lbGw.EXPECT().GetAvailableSlotsPointOfSale(ctx,
 					"E2 1ZZ",
-					"mpan-1",
+					"1012474161550",
 					"",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
@@ -873,7 +890,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, lbGw)
+			tc.setup(ctx, lbGw, mCustomerDetailsSt)
 
 			actual, err := myDomain.GetAvailableSlotsPointOfSale(ctx, tc.input.params)
 

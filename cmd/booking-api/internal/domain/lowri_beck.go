@@ -50,14 +50,10 @@ type RescheduleBookingParams struct {
 }
 
 type GetPOSAvailableSlotsParams struct {
-	AccountID         string
-	Postcode          string
-	Mpan              string
-	Mprn              string
-	TariffElectricity bookingv1.TariffType
-	TariffGas         bookingv1.TariffType
-	From              *date.Date
-	To                *date.Date
+	AccountID string
+	Postcode  string
+	From      *date.Date
+	To        *date.Date
 }
 
 type CreatePOSBookingParams struct {
