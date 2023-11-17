@@ -15,7 +15,6 @@ type ProcessEligibilityParams struct {
 
 type ProcessEligibilityResult struct {
 	Eligible bool
-	Link     string
 }
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
@@ -30,8 +29,35 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
 	}
 
+	return ProcessEligibilityResult{
+		Eligible: eligible,
+	}, nil
+}
+
+type GetClickLinkParams struct {
+	AccountNumber string
+	Details       models.PointOfSaleCustomerDetails
+}
+
+type GetClickLinkResult struct {
+	Eligible bool
+	Link     string
+}
+
+func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkParams) (GetClickLinkResult, error) {
+
+	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.Details.OrderSupplies)
+	if err != nil {
+		return GetClickLinkResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
+	}
+
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
+	if err != nil {
+		return GetClickLinkResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
+	}
+
 	if !eligible {
-		return ProcessEligibilityResult{
+		return GetClickLinkResult{
 			Eligible: eligible,
 			Link:     "",
 		}, nil
@@ -39,15 +65,15 @@ func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEli
 
 	err = d.pointOfSaleCustomerDetailsStore.Upsert(ctx, params.AccountNumber, params.Details)
 	if err != nil {
-		return ProcessEligibilityResult{}, fmt.Errorf("failed to upsert customer details, %w", err)
+		return GetClickLinkResult{}, fmt.Errorf("failed to upsert customer details, %w", err)
 	}
 
 	link, err := d.clickGw.GenerateAuthenticated(ctx, params.AccountNumber)
 	if err != nil {
-		return ProcessEligibilityResult{}, fmt.Errorf("failed to generate authenticated link for account number: %s, %w", params.AccountNumber, err)
+		return GetClickLinkResult{}, fmt.Errorf("failed to generate authenticated link for account number: %s, %w", params.AccountNumber, err)
 	}
 
-	return ProcessEligibilityResult{
+	return GetClickLinkResult{
 		Eligible: eligible,
 		Link:     fmt.Sprintf("%s&journey_type=point_of_sale&account_number=%s", link, params.AccountNumber),
 	}, nil

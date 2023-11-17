@@ -663,6 +663,8 @@ github.com/utilitywarehouse/energy-contracts v1.108.0 h1:mDdtTUiS8fR/p1RlCMRAbAa
 github.com/utilitywarehouse/energy-contracts v1.108.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 github.com/utilitywarehouse/energy-contracts v1.109.0 h1:7+r6xv6WDcJsdahpNVSGMAb40vwyoTdfpdAE6avZKj4=
 github.com/utilitywarehouse/energy-contracts v1.109.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.110.0 h1:+PP+skq7xd0ENK1iH06qz+Q9zwAhME7mIIuQFMifvRU=
+github.com/utilitywarehouse/energy-contracts v1.110.0/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 github.com/utilitywarehouse/energy-pkg/app v1.3.0 h1:GHpU8kSbGNEB8Km/QRjyV38hfhA4VzxIh/OJcrS03rU=
 github.com/utilitywarehouse/energy-pkg/app v1.3.0/go.mod h1:2Hlz8GeCkNq5V/VXHL/SuEPieOtGpvrADHc84ukqqe8=
 github.com/utilitywarehouse/energy-pkg/domain v1.17.1/go.mod h1:kQ151K87dOXjiyHgKQ0lAf/tY7xMlXd+s0KsMlFyE34=

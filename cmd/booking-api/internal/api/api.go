@@ -43,6 +43,7 @@ type BookingDomain interface {
 
 	// Process Eligibility
 	ProcessEligibility(context.Context, domain.ProcessEligibilityParams) (domain.ProcessEligibilityResult, error)
+	GetClickLink(context.Context, domain.GetClickLinkParams) (domain.GetClickLinkResult, error)
 }
 
 type BookingPublisher interface {
@@ -800,6 +801,98 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 	}
 
 	return &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+		Eligible: result.Eligible,
+	}, nil
+}
+
+func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bookingv1.GetClickLinkPointOfSaleJourneyRequest) (_ *bookingv1.GetClickLinkPointOfSaleJourneyResponse, err error) {
+
+	if req.ContactDetails == nil {
+		return nil, status.Error(codes.InvalidArgument, "provided contact details is missing")
+	}
+
+	if req.SiteAddress == nil {
+		return nil, status.Error(codes.InvalidArgument, "provided site address is missing")
+	}
+
+	if req.SiteAddress.Paf == nil {
+		return nil, status.Error(codes.InvalidArgument, "provided PAF is missing")
+	}
+
+	if req.SiteAddress.Paf.Postcode == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided post code is missing")
+	}
+
+	if req.AccountNumber == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided account number is missing")
+	}
+
+	if req.Mpan == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided mpan is missing")
+	}
+
+	if req.ElectricityTariffType == bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+		return nil, status.Error(codes.InvalidArgument, "provided electricity type is missing")
+	}
+
+	if req.Mprn != "" && req.GasTariffType == bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
+		return nil, status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown")
+	}
+
+	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	result, err := b.bookingDomain.GetClickLink(ctx, domain.GetClickLinkParams{
+		AccountNumber: req.AccountNumber,
+		Details: models.PointOfSaleCustomerDetails{
+			AccountNumber: req.AccountNumber,
+			Details: models.AccountDetails{
+				Title:     req.ContactDetails.Title,
+				FirstName: req.ContactDetails.FirstName,
+				LastName:  req.ContactDetails.LastName,
+				Email:     req.ContactDetails.Email,
+				Mobile:    req.ContactDetails.Phone,
+			},
+			Address: models.AccountAddress{
+				UPRN: req.SiteAddress.Uprn,
+				PAF: models.PAF{
+					BuildingName:            req.SiteAddress.Paf.BuildingName,
+					BuildingNumber:          req.SiteAddress.Paf.BuildingNumber,
+					Department:              req.SiteAddress.Paf.Department,
+					DependentLocality:       req.SiteAddress.Paf.DependentLocality,
+					DependentThoroughfare:   req.SiteAddress.Paf.DependentThoroughfare,
+					DoubleDependentLocality: req.SiteAddress.Paf.DoubleDependentLocality,
+					Organisation:            req.SiteAddress.Paf.Organisation,
+					PostTown:                req.SiteAddress.Paf.PostTown,
+					Postcode:                req.SiteAddress.Paf.Postcode,
+					SubBuilding:             req.SiteAddress.Paf.SubBuilding,
+					Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
+				},
+			},
+			OrderSupplies: []models.OrderSupply{
+				{
+					MPXN:       req.Mpan,
+					TariffType: req.ElectricityTariffType,
+				},
+				{
+					MPXN:       req.Mprn,
+					TariffType: req.GasTariffType,
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to process eligibility for meterpoint, %s", err)
+	}
+
+	return &bookingv1.GetClickLinkPointOfSaleJourneyResponse{
 		Eligible: result.Eligible,
 		Link:     result.Link,
 	}, nil

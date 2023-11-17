@@ -15,7 +15,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
-func Test_ProcessEligibility(t *testing.T) {
+func Test_GetClickLink(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	ctx := context.Background()
@@ -33,7 +33,7 @@ func Test_ProcessEligibility(t *testing.T) {
 	}
 
 	type outputParams struct {
-		result domain.ProcessEligibilityResult
+		result domain.GetClickLinkResult
 		err    error
 	}
 
@@ -129,7 +129,7 @@ func Test_ProcessEligibility(t *testing.T) {
 				c.EXPECT().GenerateAuthenticated(ctx, "1").Return("best_link_ever?", nil)
 			},
 			output: outputParams{
-				result: domain.ProcessEligibilityResult{
+				result: domain.GetClickLinkResult{
 					Eligible: true,
 					Link:     "best_link_ever?&journey_type=point_of_sale&account_number=1",
 				},
@@ -143,7 +143,7 @@ func Test_ProcessEligibility(t *testing.T) {
 
 			tc.setup(ctx, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw)
 
-			expected, err := myDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+			expected, err := myDomain.GetClickLink(ctx, domain.GetClickLinkParams{
 				AccountNumber: tc.input.accountNumber,
 				Details:       tc.input.details,
 			})
