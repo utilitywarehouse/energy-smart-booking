@@ -51,6 +51,7 @@ var (
 	clickAPIHost       = "click-api-host"
 
 	flagRedisAddr             = "redis-addr"
+	flagRedisTTLHours         = "redis-ttl-hours"
 	flagExpirationTimeSeconds = "flag-expiration-time-seconds"
 	flagClickKeyID            = "flag-click-key-id"
 	flagAuthScope             = "flag-auth-scope"
@@ -81,6 +82,17 @@ func init() {
 				Name:     flagPostgresDSN,
 				EnvVars:  []string{"POSTGRES_DSN"},
 				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     flagRedisAddr,
+				EnvVars:  []string{"REDIS_ADDR"},
+				Required: true,
+			},
+			&cli.IntFlag{
+				Name:     flagRedisTTLHours,
+				EnvVars:  []string{"REDIS_TTL_HOURS"},
+				Required: true,
+				Value:    6,
 			},
 			&cli.StringFlag{
 				Name:    flagPartialBookingCron,
@@ -225,13 +237,16 @@ func serverAction(c *cli.Context) error {
 	}
 	defer listen.Close()
 
-	red := redis.NewClient(&redis.Options{Addr: c.String(flagRedisAddr)})
+	redis := redis.NewClient(&redis.Options{Addr: c.String(flagRedisAddr)})
+	hoursTTL := time.Duration(c.Int(flagRedisTTLHours)) * time.Hour
+	eligibilityCache := store.NewMeterpointEligible(redis, hoursTTL)
+	opsServer.Add("redis", eligibilityCache.NewCheck())
 
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
 	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
 	eligibilityGateway := gateway.NewEligibilityGateway(mn, eligibilityv1.NewEligiblityAPIClient(eligibilityConn))
-	cachedEligibilityGateway := cache.NewMeterpointEligibilityCacheWrapper(eligibilityGateway, store.NewMeterpointEligible(red, 6*time.Hour))
+	cachedEligibilityGateway := cache.NewMeterpointEligibilityCacheWrapper(eligibilityGateway, eligibilityCache)
 	clickGw, err := gateway.NewClickLinkProvider(clickClient, &gateway.ClickLinkProviderConfig{
 		ExpirationTimeSeconds: c.Int64(flagExpirationTimeSeconds),
 		ClickKeyID:            c.String(flagClickKeyID),
