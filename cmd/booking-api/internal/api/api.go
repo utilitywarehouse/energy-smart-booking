@@ -843,7 +843,7 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
 		default:
 			return nil, status.Error(codes.Internal, "failed to validate credentials")
 		}

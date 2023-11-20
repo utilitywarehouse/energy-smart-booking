@@ -53,7 +53,7 @@ func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkPara
 
 	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
 	if err != nil {
-		return GetClickLinkResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
+		return GetClickLinkResult{}, fmt.Errorf("failed to get meterpoint eligibility for mpan/mprn: (%s/%s), %w", elecOrderSupply.MPXN, gasOrderSupply.MPXN, err)
 	}
 
 	if !eligible {
@@ -65,7 +65,7 @@ func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkPara
 
 	err = d.pointOfSaleCustomerDetailsStore.Upsert(ctx, params.AccountNumber, params.Details)
 	if err != nil {
-		return GetClickLinkResult{}, fmt.Errorf("failed to upsert customer details, %w", err)
+		return GetClickLinkResult{}, fmt.Errorf("failed to upsert customer details for account number: (%s), %w", params.AccountNumber, err)
 	}
 
 	link, err := d.clickGw.GenerateAuthenticated(ctx, params.AccountNumber)
