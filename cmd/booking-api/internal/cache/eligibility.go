@@ -13,7 +13,7 @@ type EligibilityGateway interface {
 
 type EligibilityCache interface {
 	GetEligibilityForMpxn(ctx context.Context, mpxn string) (bool, error)
-	CacheEligibility(ctx context.Context, mpxn string, eligible bool) error
+	SetEligibilityForMpxn(ctx context.Context, mpxn string, eligible bool) error
 }
 
 type MeterpointEligibilityCacheWrapper struct {
@@ -43,6 +43,6 @@ func (c *MeterpointEligibilityCacheWrapper) GetMeterpointEligibility(ctx context
 		return false, err
 	}
 
-	err = c.cache.CacheEligibility(ctx, mpan, eligible)
+	err = c.cache.SetEligibilityForMpxn(ctx, mpan, eligible)
 	return eligible, err
 }

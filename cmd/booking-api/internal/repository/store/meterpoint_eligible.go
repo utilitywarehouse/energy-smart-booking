@@ -27,7 +27,7 @@ func (s *MeterpointEligibleStore) NewCheck() func(*op.CheckResponse) {
 		defer cancel()
 		if err := s.r.Info(ctx).Err(); err != nil {
 			cr.Unhealthy("cant connect to redis: "+err.Error(), "Troubleshoot redis",
-				"Alt-Han meterpoint platform state cannot be determined")
+				"eligiblity cannot be cached")
 			return
 		}
 
@@ -39,7 +39,7 @@ func (s *MeterpointEligibleStore) Key(mpxn string) string {
 	return fmt.Sprintf("%s:%s", s.key, mpxn)
 }
 
-func (s *MeterpointEligibleStore) CacheEligibility(ctx context.Context, mpxn string, eligible bool) error {
+func (s *MeterpointEligibleStore) SetEligibilityForMpxn(ctx context.Context, mpxn string, eligible bool) error {
 	return s.r.Set(ctx, s.Key(mpxn), eligible, s.ttl).Err()
 }
 

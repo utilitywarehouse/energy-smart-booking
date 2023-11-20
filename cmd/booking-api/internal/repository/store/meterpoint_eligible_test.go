@@ -85,7 +85,7 @@ func Test_MeterpointEligibleStore_CacheEligibility(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			err := meterpointEligibleStore.CacheEligibility(ctx, tc.input.mpxn, tc.input.eligible)
+			err := meterpointEligibleStore.SetEligibilityForMpxn(ctx, tc.input.mpxn, tc.input.eligible)
 			if err != tc.output {
 				t.Fatalf("error output does not match, expected: %s | actual: %s", tc.output, err)
 			}
@@ -157,7 +157,7 @@ func Test_MeterpointEligibleStore_GetEligibilityForMpxn(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			if !tc.input.skipInsertion {
-				err := meterpointEligibleStore.CacheEligibility(ctx, tc.input.mpxn, tc.input.eligible)
+				err := meterpointEligibleStore.SetEligibilityForMpxn(ctx, tc.input.mpxn, tc.input.eligible)
 				if err != nil {
 					t.Fatal("error when caching eligibility")
 				}
