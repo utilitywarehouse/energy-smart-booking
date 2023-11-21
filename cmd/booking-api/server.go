@@ -240,7 +240,7 @@ func serverAction(c *cli.Context) error {
 	redis := redis.NewClient(&redis.Options{Addr: c.String(flagRedisAddr)})
 	hoursTTL := time.Duration(c.Int(flagRedisTTLHours)) * time.Hour
 	eligibilityCache := store.NewMeterpointEligible(redis, hoursTTL)
-	opsServer.Add("redis", eligibilityCache.NewCheck())
+	opsServer.Add("redis", eligibilityCache.NewHealthCheck())
 
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))

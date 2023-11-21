@@ -11,17 +11,18 @@ import (
 	"github.com/utilitywarehouse/go-operational/op"
 )
 
+const prefixKeyMeterpointEligibility = "mpe"
+
 type MeterpointEligibleStore struct {
 	r   *redis.Client
 	ttl time.Duration
-	key string
 }
 
 func NewMeterpointEligible(r *redis.Client, ttl time.Duration) *MeterpointEligibleStore {
-	return &MeterpointEligibleStore{r: r, ttl: ttl, key: "mpe"}
+	return &MeterpointEligibleStore{r: r, ttl: ttl}
 }
 
-func (s *MeterpointEligibleStore) NewCheck() func(*op.CheckResponse) {
+func (s *MeterpointEligibleStore) NewHealthCheck() func(*op.CheckResponse) {
 	return func(cr *op.CheckResponse) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -35,8 +36,8 @@ func (s *MeterpointEligibleStore) NewCheck() func(*op.CheckResponse) {
 	}
 }
 
-func (s *MeterpointEligibleStore) Key(mpxn string) string {
-	return fmt.Sprintf("%s:%s", s.key, mpxn)
+func (s *MeterpointEligibleStore) Key(mpan string) string {
+	return fmt.Sprintf("%s:%s", prefixKeyMeterpointEligibility, mpan)
 }
 
 func (s *MeterpointEligibleStore) SetEligibilityForMpxn(ctx context.Context, mpxn string, eligible bool) error {
