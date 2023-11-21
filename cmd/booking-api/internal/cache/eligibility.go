@@ -3,6 +3,8 @@ package cache
 import (
 	"context"
 	"errors"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var ErrNotFound = errors.New("not cached")
@@ -12,8 +14,8 @@ type EligibilityGateway interface {
 }
 
 type EligibilityCache interface {
-	GetEligibilityForMpxn(ctx context.Context, mpxn string) (bool, error)
-	SetEligibilityForMpxn(ctx context.Context, mpxn string, eligible bool) error
+	GetEligibilityForMpxn(ctx context.Context, mpan, mprn string) (bool, error)
+	SetEligibilityForMpxn(ctx context.Context, mpan, mprn string, eligible bool) error
 }
 
 type MeterpointEligibilityCacheWrapper struct {
@@ -29,7 +31,7 @@ func NewMeterpointEligibilityCacheWrapper(gw EligibilityGateway, cache Eligibili
 }
 
 func (c *MeterpointEligibilityCacheWrapper) GetMeterpointEligibility(ctx context.Context, mpan, mprn, postcode string) (bool, error) {
-	eligible, err := c.cache.GetEligibilityForMpxn(ctx, mpan)
+	eligible, err := c.cache.GetEligibilityForMpxn(ctx, mpan, mprn)
 	if err == nil {
 		return eligible, nil
 	}
@@ -43,6 +45,9 @@ func (c *MeterpointEligibilityCacheWrapper) GetMeterpointEligibility(ctx context
 		return false, err
 	}
 
-	err = c.cache.SetEligibilityForMpxn(ctx, mpan, eligible)
-	return eligible, err
+	err = c.cache.SetEligibilityForMpxn(ctx, mpan, mprn, eligible)
+	if err != nil {
+		log.WithField("mpan", mpan).Warn("unable to write to cache")
+	}
+	return eligible, nil
 }

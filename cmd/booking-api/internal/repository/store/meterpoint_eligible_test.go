@@ -61,7 +61,7 @@ func Test_MeterpointEligibleStore_CacheEligibility(t *testing.T) {
 	meterpointEligibleStore := store.NewMeterpointEligible(redis.NewClient(&redis.Options{Addr: containerAddr}), 6*time.Hour)
 
 	type inputParams struct {
-		mpxn      string
+		mpan      string
 		eligible  bool
 		expiresAt time.Time
 	}
@@ -76,7 +76,7 @@ func Test_MeterpointEligibleStore_CacheEligibility(t *testing.T) {
 		{
 			description: "should cache a meterpoint eligible record",
 			input: inputParams{
-				mpxn:     "mpxn-1",
+				mpan:     "mpan-1",
 				eligible: true,
 			},
 			output: nil,
@@ -85,7 +85,7 @@ func Test_MeterpointEligibleStore_CacheEligibility(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			err := meterpointEligibleStore.SetEligibilityForMpxn(ctx, tc.input.mpxn, tc.input.eligible)
+			err := meterpointEligibleStore.SetEligibilityForMpxn(ctx, tc.input.mpan, "", tc.input.eligible)
 			if err != tc.output {
 				t.Fatalf("error output does not match, expected: %s | actual: %s", tc.output, err)
 			}
@@ -112,7 +112,7 @@ func Test_MeterpointEligibleStore_GetEligibilityForMpxn(t *testing.T) {
 	meterpointEligibleStore := store.NewMeterpointEligible(redis.NewClient(&redis.Options{Addr: containerAddr}), 6*time.Hour)
 
 	type inputParams struct {
-		mpxn          string
+		mpan          string
 		eligible      bool
 		skipInsertion bool
 	}
@@ -132,7 +132,7 @@ func Test_MeterpointEligibleStore_GetEligibilityForMpxn(t *testing.T) {
 		{
 			description: "should cache and retrieve a meterpoint eligible record",
 			input: inputParams{
-				mpxn:     "mpxn-1",
+				mpan:     "mpxn-1",
 				eligible: true,
 			},
 			output: testOutput{
@@ -143,7 +143,7 @@ func Test_MeterpointEligibleStore_GetEligibilityForMpxn(t *testing.T) {
 		{
 			description: "should not cache and get a NotFound error when attempting retrieval",
 			input: inputParams{
-				mpxn:          "mpxn-2",
+				mpan:          "mpxn-2",
 				eligible:      true,
 				skipInsertion: true,
 			},
@@ -157,12 +157,12 @@ func Test_MeterpointEligibleStore_GetEligibilityForMpxn(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			if !tc.input.skipInsertion {
-				err := meterpointEligibleStore.SetEligibilityForMpxn(ctx, tc.input.mpxn, tc.input.eligible)
+				err := meterpointEligibleStore.SetEligibilityForMpxn(ctx, tc.input.mpan, "", tc.input.eligible)
 				if err != nil {
 					t.Fatal("error when caching eligibility")
 				}
 			}
-			res, err := meterpointEligibleStore.GetEligibilityForMpxn(ctx, tc.input.mpxn)
+			res, err := meterpointEligibleStore.GetEligibilityForMpxn(ctx, tc.input.mpan, "")
 			if err != tc.output.reserr {
 				t.Fatalf("error output does not match, expected: %s | actual: %s", tc.output.reserr, err)
 			}

@@ -36,16 +36,16 @@ func (s *MeterpointEligibleStore) NewHealthCheck() func(*op.CheckResponse) {
 	}
 }
 
-func (s *MeterpointEligibleStore) Key(mpan string) string {
-	return fmt.Sprintf("%s:%s", prefixKeyMeterpointEligibility, mpan)
+func (s *MeterpointEligibleStore) Key(mpan, mprn string) string {
+	return fmt.Sprintf("%s:%s:%s", prefixKeyMeterpointEligibility, mpan, mprn)
 }
 
-func (s *MeterpointEligibleStore) SetEligibilityForMpxn(ctx context.Context, mpxn string, eligible bool) error {
-	return s.r.Set(ctx, s.Key(mpxn), eligible, s.ttl).Err()
+func (s *MeterpointEligibleStore) SetEligibilityForMpxn(ctx context.Context, mpan, mprn string, eligible bool) error {
+	return s.r.Set(ctx, s.Key(mpan, mprn), eligible, s.ttl).Err()
 }
 
-func (s *MeterpointEligibleStore) GetEligibilityForMpxn(ctx context.Context, mpxn string) (bool, error) {
-	e, err := s.r.Get(ctx, s.Key(mpxn)).Bool()
+func (s *MeterpointEligibleStore) GetEligibilityForMpxn(ctx context.Context, mpan, mprn string) (bool, error) {
+	e, err := s.r.Get(ctx, s.Key(mpan, mprn)).Bool()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return false, cache.ErrNotFound
