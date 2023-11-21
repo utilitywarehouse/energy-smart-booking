@@ -759,40 +759,15 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 
 	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
 		AccountNumber: req.AccountNumber,
-		Details: models.PointOfSaleCustomerDetails{
-			AccountNumber: req.AccountNumber,
-			Details: models.AccountDetails{
-				Title:     req.ContactDetails.Title,
-				FirstName: req.ContactDetails.FirstName,
-				LastName:  req.ContactDetails.LastName,
-				Email:     req.ContactDetails.Email,
-				Mobile:    req.ContactDetails.Phone,
+		Postcode:      req.SiteAddress.Paf.Postcode,
+		OrderSupplies: []models.OrderSupply{
+			{
+				MPXN:       req.Mpan,
+				TariffType: req.ElectricityTariffType,
 			},
-			Address: models.AccountAddress{
-				UPRN: req.SiteAddress.Uprn,
-				PAF: models.PAF{
-					BuildingName:            req.SiteAddress.Paf.BuildingName,
-					BuildingNumber:          req.SiteAddress.Paf.BuildingNumber,
-					Department:              req.SiteAddress.Paf.Department,
-					DependentLocality:       req.SiteAddress.Paf.DependentLocality,
-					DependentThoroughfare:   req.SiteAddress.Paf.DependentThoroughfare,
-					DoubleDependentLocality: req.SiteAddress.Paf.DoubleDependentLocality,
-					Organisation:            req.SiteAddress.Paf.Organisation,
-					PostTown:                req.SiteAddress.Paf.PostTown,
-					Postcode:                req.SiteAddress.Paf.Postcode,
-					SubBuilding:             req.SiteAddress.Paf.SubBuilding,
-					Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
-				},
-			},
-			OrderSupplies: []models.OrderSupply{
-				{
-					MPXN:       req.Mpan,
-					TariffType: req.ElectricityTariffType,
-				},
-				{
-					MPXN:       req.Mprn,
-					TariffType: req.GasTariffType,
-				},
+			{
+				MPXN:       req.Mprn,
+				TariffType: req.GasTariffType,
 			},
 		},
 	})

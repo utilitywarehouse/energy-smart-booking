@@ -5948,40 +5948,15 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 
 				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
 					AccountNumber: "account-number-1",
-					Details: models.PointOfSaleCustomerDetails{
-						AccountNumber: "account-number-1",
-						Details: models.AccountDetails{
-							Title:     "Mr",
-							FirstName: "John",
-							LastName:  "Doe",
-							Email:     "jdoe@example.com",
-							Mobile:    "555-100",
+					Postcode:      "E2 1Z",
+					OrderSupplies: []models.OrderSupply{
+						{
+							MPXN:       "mpan-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 						},
-						Address: models.AccountAddress{
-							UPRN: "u",
-							PAF: models.PAF{
-								BuildingName:            "bn",
-								BuildingNumber:          "bn1",
-								Department:              "dp",
-								DependentLocality:       "dl",
-								DependentThoroughfare:   "dtg",
-								DoubleDependentLocality: "ddl",
-								Organisation:            "o",
-								PostTown:                "pt",
-								Postcode:                "E2 1Z",
-								SubBuilding:             "sb",
-								Thoroughfare:            "tf",
-							},
-						},
-						OrderSupplies: []models.OrderSupply{
-							{
-								MPXN:       "mpan-1",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-							},
-							{
-								MPXN:       "mprn-1",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-							},
+						{
+							MPXN:       "mprn-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 						},
 					},
 				}).Return(domain.ProcessEligibilityResult{

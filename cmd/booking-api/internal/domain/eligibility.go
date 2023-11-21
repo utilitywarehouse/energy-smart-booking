@@ -10,7 +10,8 @@ import (
 
 type ProcessEligibilityParams struct {
 	AccountNumber string
-	Details       models.PointOfSaleCustomerDetails
+	Postcode      string
+	OrderSupplies []models.OrderSupply
 }
 
 type ProcessEligibilityResult struct {
@@ -19,12 +20,12 @@ type ProcessEligibilityResult struct {
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
 
-	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.Details.OrderSupplies)
+	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.OrderSupplies)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
 	}
 
-	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Postcode)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
 	}
