@@ -715,10 +715,6 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
 
-	if req.ContactDetails == nil {
-		return nil, status.Error(codes.InvalidArgument, "provided contact details is missing")
-	}
-
 	if req.SiteAddress == nil {
 		return nil, status.Error(codes.InvalidArgument, "provided site address is missing")
 	}
@@ -737,14 +733,6 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 
 	if req.Mpan == "" {
 		return nil, status.Error(codes.InvalidArgument, "provided mpan is missing")
-	}
-
-	if req.ElectricityTariffType == bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
-		return nil, status.Error(codes.InvalidArgument, "provided electricity type is missing")
-	}
-
-	if req.Mprn != "" && req.GasTariffType == bookingv1.TariffType_TARIFF_TYPE_UNKNOWN {
-		return nil, status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown")
 	}
 
 	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
