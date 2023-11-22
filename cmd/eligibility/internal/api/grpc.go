@@ -297,7 +297,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	}, nil
 }
 
-func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Context, req *smart_booking.GetMeterpointEligibilityRequest) (_ *smart_booking.GetMeterpointEligibilityResponse, err error) {
+func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *smart_booking.GetMeterpointEligibilityRequest) (_ *smart_booking.GetMeterpointEligibilityResponse, err error) {
 	if req.GetMpan() == "" {
 		return nil, status.Error(codes.InvalidArgument, "no mpan provided")
 	}
@@ -305,7 +305,7 @@ func (a *EligibilityGRPCApi) GetEligibilityForPointOfSaleJourney(ctx context.Con
 		return nil, status.Error(codes.InvalidArgument, "no postcode provided")
 	}
 
-	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetEligibilityForPointOfSaleJourney",
+	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetMeterpointEligibility",
 		trace.WithAttributes(attribute.String("electricity.meterpoint.number", req.GetMpan())),
 		trace.WithAttributes(attribute.String("gas.meterpoint.number", req.GetMprn())),
 		trace.WithAttributes(attribute.String("customer.postcode", req.GetPostcode())))
