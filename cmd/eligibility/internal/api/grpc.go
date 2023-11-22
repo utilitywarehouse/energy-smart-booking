@@ -314,15 +314,15 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 		span.End()
 	}()
 
-	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, "")
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
-		default:
-			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
-		}
-	}
+	// err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, "")
+	// if err != nil {
+	// 	switch {
+	// 	case errors.Is(err, ErrUserUnauthorised):
+	// 		return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+	// 	default:
+	// 		return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+	// 	}
+	// }
 
 	if req.GetMprn() != "" {
 		gasEligible, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn())
