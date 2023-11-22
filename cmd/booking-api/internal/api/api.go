@@ -715,15 +715,7 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
 
-	if req.SiteAddress == nil {
-		return nil, status.Error(codes.InvalidArgument, "provided site address is missing")
-	}
-
-	if req.SiteAddress.Paf == nil {
-		return nil, status.Error(codes.InvalidArgument, "provided PAF is missing")
-	}
-
-	if req.SiteAddress.Paf.Postcode == "" {
+	if req.Postcode == "" {
 		return nil, status.Error(codes.InvalidArgument, "provided post code is missing")
 	}
 
@@ -747,15 +739,13 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 
 	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
 		AccountNumber: req.AccountNumber,
-		Postcode:      req.SiteAddress.Paf.Postcode,
+		Postcode:      req.Postcode,
 		OrderSupplies: []models.OrderSupply{
 			{
-				MPXN:       req.Mpan,
-				TariffType: req.ElectricityTariffType,
+				MPXN: req.Mpan,
 			},
 			{
-				MPXN:       req.Mprn,
-				TariffType: req.GasTariffType,
+				MPXN: req.Mprn,
 			},
 		},
 	})

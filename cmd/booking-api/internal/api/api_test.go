@@ -5911,11 +5911,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 					AccountNumber: "account-number-1",
 					Mpan:          "mpan-1",
 					Mprn:          "mprn-1",
-					SiteAddress: &addressv1.Address{
-						Paf: &addressv1.Address_PAF{
-							Postcode: "E2 1Z",
-						},
-					},
+					Postcode:      "E2 1Z",
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
@@ -5955,11 +5951,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 					AccountNumber: "account-number-1",
 					Mpan:          "mpan-1",
 					Mprn:          "mprn-1",
-					SiteAddress: &addressv1.Address{
-						Paf: &addressv1.Address_PAF{
-							Postcode: "",
-						},
-					},
+					Postcode:      "",
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
@@ -5976,11 +5968,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 					AccountNumber: "",
 					Mpan:          "mpan-1",
 					Mprn:          "mprn-1",
-					SiteAddress: &addressv1.Address{
-						Paf: &addressv1.Address_PAF{
-							Postcode: "E2 1Z",
-						},
-					},
+					Postcode:      "E2 1Z",
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
@@ -5997,11 +5985,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 					AccountNumber: "account-number-1",
 					Mpan:          "",
 					Mprn:          "mprn-1",
-					SiteAddress: &addressv1.Address{
-						Paf: &addressv1.Address_PAF{
-							Postcode: "E2 1Z",
-						},
-					},
+					Postcode:      "E2 1Z",
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {

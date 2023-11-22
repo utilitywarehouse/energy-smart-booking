@@ -6,6 +6,7 @@ toolchain go1.21.0
 
 require (
 	cloud.google.com/go/bigquery v1.55.0
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.0
@@ -20,7 +21,7 @@ require (
 	github.com/utilitywarehouse/account-platform v0.0.0-20231004142622-2c85ef630889
 	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20230926124646-6793c5ba4e39
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b
-	github.com/utilitywarehouse/energy-contracts v1.110.0
+	github.com/utilitywarehouse/energy-contracts v1.111.0
 	github.com/utilitywarehouse/energy-pkg/app v1.3.0
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.0
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.5
@@ -50,7 +51,6 @@ require (
 	github.com/alvaroloes/enumer v1.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/lmittmann/tint v1.0.2 // indirect
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
