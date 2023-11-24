@@ -220,15 +220,15 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		span.End()
 	}()
 
-	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
-		default:
-			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
-		}
-	}
+	// err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountId)
+	// if err != nil {
+	// 	switch {
+	// 	case errors.Is(err, ErrUserUnauthorised):
+	// 		return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
+	// 	default:
+	// 		return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+	// 	}
+	// }
 
 	account, err := a.accountStore.GetAccount(ctx, req.AccountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
