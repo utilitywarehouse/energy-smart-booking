@@ -11,6 +11,6 @@
     let pkgs = import nixpkgs { inherit system; };
     in with pkgs; {
       devShells.default =
-        mkShell { buildInputs = [ go_1_21 gopls golangci-lint ]; };
+        mkShell { buildInputs = [ go_1_21 gopls golangci-lint gotestsum ]; };
     });
 }

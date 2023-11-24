@@ -43,6 +43,7 @@ type BookingDomain interface {
 
 	// Process Eligibility
 	ProcessEligibility(context.Context, domain.ProcessEligibilityParams) (domain.ProcessEligibilityResult, error)
+	GetClickLink(context.Context, domain.GetClickLinkParams) (domain.GetClickLinkResult, error)
 }
 
 type BookingPublisher interface {
@@ -714,6 +715,49 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
 
+	if req.Postcode == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided post code is missing")
+	}
+
+	if req.AccountNumber == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided account number is missing")
+	}
+
+	if req.Mpan == "" {
+		return nil, status.Error(codes.InvalidArgument, "provided mpan is missing")
+	}
+
+	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+		AccountNumber: req.AccountNumber,
+		Postcode:      req.Postcode,
+		ElecOrderSupplies: models.OrderSupply{
+			MPXN: req.Mpan,
+		},
+		GasOrderSupplies: models.OrderSupply{
+			MPXN: req.Mprn,
+		},
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to process eligibility for meterpoint, %s", err)
+	}
+
+	return &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+		Eligible: result.Eligible,
+	}, nil
+}
+
+func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bookingv1.GetClickLinkPointOfSaleJourneyRequest) (_ *bookingv1.GetClickLinkPointOfSaleJourneyResponse, err error) {
+
 	if req.ContactDetails == nil {
 		return nil, status.Error(codes.InvalidArgument, "provided contact details is missing")
 	}
@@ -750,13 +794,13 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
 		default:
 			return nil, status.Error(codes.Internal, "failed to validate credentials")
 		}
 	}
 
-	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+	result, err := b.bookingDomain.GetClickLink(ctx, domain.GetClickLinkParams{
 		AccountNumber: req.AccountNumber,
 		Details: models.PointOfSaleCustomerDetails{
 			AccountNumber: req.AccountNumber,
@@ -783,15 +827,13 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 					Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
 				},
 			},
-			OrderSupplies: []models.OrderSupply{
-				{
-					MPXN:       req.Mpan,
-					TariffType: req.ElectricityTariffType,
-				},
-				{
-					MPXN:       req.Mprn,
-					TariffType: req.GasTariffType,
-				},
+			ElecOrderSupplies: models.OrderSupply{
+				MPXN:       req.Mpan,
+				TariffType: req.ElectricityTariffType,
+			},
+			GasOrderSupplies: models.OrderSupply{
+				MPXN:       req.Mprn,
+				TariffType: req.GasTariffType,
 			},
 		},
 	})
@@ -799,7 +841,7 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 		return nil, status.Errorf(codes.Internal, "failed to process eligibility for meterpoint, %s", err)
 	}
 
-	return &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+	return &bookingv1.GetClickLinkPointOfSaleJourneyResponse{
 		Eligible: result.Eligible,
 		Link:     result.Link,
 	}, nil

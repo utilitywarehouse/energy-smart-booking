@@ -5309,15 +5309,13 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					OrderSupplies: []models.OrderSupply{
-						{
-							MPXN:       "2199996734008",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-						{
-							MPXN:       "2724968810",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-						},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "2199996734008",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN:       "2724968810",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 					},
 				}, nil)
 			},
@@ -5432,7 +5430,7 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 	}
 }
 
-func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
+func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	ctx := context.Background()
@@ -5446,11 +5444,11 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
 
 	type inputParams struct {
-		req *bookingv1.GetEligibilityPointOfSaleJourneyRequest
+		req *bookingv1.GetClickLinkPointOfSaleJourneyRequest
 	}
 
 	type outputParams struct {
-		res *bookingv1.GetEligibilityPointOfSaleJourneyResponse
+		res *bookingv1.GetClickLinkPointOfSaleJourneyResponse
 		err error
 	}
 
@@ -5465,7 +5463,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should process an eligibility request for a candidate to a point of sale journey",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5504,7 +5502,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 					ResourceID: "account-number-1",
 				}).Return(true, nil)
 
-				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+				bkDomain.EXPECT().GetClickLink(ctx, domain.GetClickLinkParams{
 					AccountNumber: "account-number-1",
 					Details: models.PointOfSaleCustomerDetails{
 						AccountNumber: "account-number-1",
@@ -5531,24 +5529,22 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 								Thoroughfare:            "tf",
 							},
 						},
-						OrderSupplies: []models.OrderSupply{
-							{
-								MPXN:       "mpan-1",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-							},
-							{
-								MPXN:       "mprn-1",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-							},
+						ElecOrderSupplies: models.OrderSupply{
+							MPXN:       "mpan-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+						GasOrderSupplies: models.OrderSupply{
+							MPXN:       "mprn-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 						},
 					},
-				}).Return(domain.ProcessEligibilityResult{
+				}).Return(domain.GetClickLinkResult{
 					Eligible: true,
 					Link:     "very_nice_link",
 				}, nil)
 			},
 			output: outputParams{
-				res: &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+				res: &bookingv1.GetClickLinkPointOfSaleJourneyResponse{
 					Eligible: true,
 					Link:     "very_nice_link",
 				},
@@ -5558,7 +5554,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because contact details are nil",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5593,7 +5589,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because site address is nil",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5619,7 +5615,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because paf is nil",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5648,7 +5644,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because postcode is nil",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5689,7 +5685,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because account number is nil",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5730,7 +5726,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because account number is nil",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "",
 					Mprn:                  "mprn-1",
@@ -5771,7 +5767,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because electricity tariff type is unknown",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5812,7 +5808,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 		{
 			description: "should fail to get eligibility because mprn is provided but the gas tariff type is unknown",
 			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
 					AccountNumber:         "account-number-1",
 					Mpan:                  "mpan-1",
 					Mprn:                  "mprn-1",
@@ -5848,6 +5844,149 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 			output: outputParams{
 				res: nil,
 				err: status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown"),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, bookingDomain, mockAuth)
+
+			expected, err := myAPIHandler.GetClickLinkPointOfSaleJourney(ctx, tc.input.req)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
+			} else if err != nil {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetClickLinkPointOfSaleJourneyResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
+				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	bookingDomain := mocks.NewMockBookingDomain(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
+	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
+
+	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
+
+	type inputParams struct {
+		req *bookingv1.GetEligibilityPointOfSaleJourneyRequest
+	}
+
+	type outputParams struct {
+		res *bookingv1.GetEligibilityPointOfSaleJourneyResponse
+		err error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should process an eligibility request for a candidate to a point of sale journey",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber: "account-number-1",
+					Mpan:          "mpan-1",
+					Mprn:          "mprn-1",
+					Postcode:      "E2 1Z",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "get",
+					Resource:   "uw.energy-smart.v1.account.eligibility",
+					ResourceID: "account-number-1",
+				}).Return(true, nil)
+
+				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+					AccountNumber: "account-number-1",
+					Postcode:      "E2 1Z",
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN: "mpan-1",
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN: "mprn-1",
+					},
+				}).Return(domain.ProcessEligibilityResult{
+					Eligible: true,
+				}, nil)
+			},
+			output: outputParams{
+				res: &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+					Eligible: true,
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should fail to get eligibility because postcode is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber: "account-number-1",
+					Mpan:          "mpan-1",
+					Mprn:          "mprn-1",
+					Postcode:      "",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided post code is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because account number is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber: "",
+					Mpan:          "mpan-1",
+					Mprn:          "mprn-1",
+					Postcode:      "E2 1Z",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided account number is missing"),
+			},
+		},
+		{
+			description: "should fail to get eligibility because mpan is nil",
+			input: inputParams{
+				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+					AccountNumber: "account-number-1",
+					Mpan:          "",
+					Mprn:          "mprn-1",
+					Postcode:      "E2 1Z",
+				},
+			},
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "provided mpan is missing"),
 			},
 		},
 	}
