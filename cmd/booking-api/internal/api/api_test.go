@@ -150,7 +150,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -192,7 +192,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
@@ -372,7 +372,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -393,7 +393,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
@@ -601,7 +601,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -622,7 +622,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
@@ -1175,7 +1175,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -1206,7 +1206,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
@@ -2180,7 +2180,7 @@ func Test_CreateBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -2223,7 +2223,7 @@ func Test_CreateBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
@@ -3106,7 +3106,7 @@ func Test_RescheduleBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -3138,7 +3138,7 @@ func Test_RescheduleBooking(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
@@ -3693,7 +3693,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -3725,7 +3725,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
@@ -5152,7 +5152,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 		{
@@ -5212,7 +5212,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			},
 			output: outputParams{
 				res: nil,
-				err: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			},
 		},
 	}
