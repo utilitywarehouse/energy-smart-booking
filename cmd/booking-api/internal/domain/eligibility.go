@@ -69,20 +69,3 @@ func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkPara
 		Link:     fmt.Sprintf("%s&journey_type=point_of_sale&account_number=%s", link, params.AccountNumber),
 	}, nil
 }
-
-// func deduceOrderSupplies(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
-// 	var mpan, mprn models.OrderSupply
-// 	for i, orderSupply := range orderSupplies {
-// 		mpxn, err := energy.NewMeterPointNumber(orderSupply.MPXN)
-// 		if err != nil {
-// 			return models.OrderSupply{}, models.OrderSupply{}, fmt.Errorf("invalid meterpoint number (%s): %v", orderSupply.MPXN, err)
-// 		}
-// 		// We want the first electricity MPAN
-// 		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan.IsEmpty() {
-// 			mpan = orderSupplies[i]
-// 		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
-// 			mprn = orderSupplies[i]
-// 		}
-// 	}
-// 	return mpan, mprn, nil
-// }
