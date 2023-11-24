@@ -76,7 +76,7 @@ func runGRPCApi(c *cli.Context) error {
 	defer xoserveConn.Close()
 
 	// GATEWAYS //
-	ecoesGw := gateway.NewEcoesGateway(ecoesv1.NewEcoesAPIClient(ecoesConn))
+	ecoesGateway := gateway.NewEcoesGateway(ecoesv1.NewEcoesAPIClient(ecoesConn))
 	xoserveGateway := gateway.NewXOServeGateway(xoservev1.NewXoserveAPIClient(xoserveConn))
 
 	eligibilityStore := store.NewEligibility(pg)
@@ -117,7 +117,7 @@ func runGRPCApi(c *cli.Context) error {
 			evaluation.NewMeterpointEvaluator(
 				postcodeStore,
 				meterpointStore,
-				ecoesGw,
+				ecoesGateway,
 				xoserveGateway,
 			),
 		)

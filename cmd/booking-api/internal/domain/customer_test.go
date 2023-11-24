@@ -586,15 +586,13 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 								Thoroughfare:            "tf",
 							},
 						},
-						OrderSupplies: []models.OrderSupply{
-							{
-								MPXN:       "mpxn-1",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-							},
-							{
-								MPXN:       "mpxn-2",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-							},
+						ElecOrderSupplies: models.OrderSupply{
+							MPXN:       "mpxn-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+						GasOrderSupplies: models.OrderSupply{
+							MPXN:       "mpxn-2",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 						},
 					}, nil)
 			},
@@ -624,15 +622,13 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					OrderSupplies: []models.OrderSupply{
-						{
-							MPXN:       "mpxn-1",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-						{
-							MPXN:       "mpxn-2",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-						},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "mpxn-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN:       "mpxn-2",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 					},
 				},
 				err: nil,

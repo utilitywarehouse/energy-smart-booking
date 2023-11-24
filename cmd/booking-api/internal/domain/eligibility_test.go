@@ -74,15 +74,13 @@ func Test_GetClickLink(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					OrderSupplies: []models.OrderSupply{
-						{
-							MPXN:       "2199996734008",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-						{
-							MPXN:       "2724968810",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-						},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "2199996734008",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN:       "2724968810",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 					},
 				},
 			},
@@ -114,15 +112,13 @@ func Test_GetClickLink(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					OrderSupplies: []models.OrderSupply{
-						{
-							MPXN:       "2199996734008",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-						{
-							MPXN:       "2724968810",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-						},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "2199996734008",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN:       "2724968810",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 					},
 				}).Return(nil)
 

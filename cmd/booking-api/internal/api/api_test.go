@@ -5309,15 +5309,13 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 							Thoroughfare:            "tf",
 						},
 					},
-					OrderSupplies: []models.OrderSupply{
-						{
-							MPXN:       "2199996734008",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-						{
-							MPXN:       "2724968810",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
-						},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "2199996734008",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN:       "2724968810",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 					},
 				}, nil)
 			},
@@ -5531,15 +5529,13 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 								Thoroughfare:            "tf",
 							},
 						},
-						OrderSupplies: []models.OrderSupply{
-							{
-								MPXN:       "mpan-1",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-							},
-							{
-								MPXN:       "mprn-1",
-								TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-							},
+						ElecOrderSupplies: models.OrderSupply{
+							MPXN:       "mpan-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+						},
+						GasOrderSupplies: models.OrderSupply{
+							MPXN:       "mprn-1",
+							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 						},
 					},
 				}).Return(domain.GetClickLinkResult{
@@ -5925,13 +5921,11 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
 					AccountNumber: "account-number-1",
 					Postcode:      "E2 1Z",
-					OrderSupplies: []models.OrderSupply{
-						{
-							MPXN: "mpan-1",
-						},
-						{
-							MPXN: "mprn-1",
-						},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN: "mpan-1",
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN: "mprn-1",
 					},
 				}).Return(domain.ProcessEligibilityResult{
 					Eligible: true,

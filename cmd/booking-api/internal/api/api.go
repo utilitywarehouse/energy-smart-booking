@@ -740,13 +740,11 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
 		AccountNumber: req.AccountNumber,
 		Postcode:      req.Postcode,
-		OrderSupplies: []models.OrderSupply{
-			{
-				MPXN: req.Mpan,
-			},
-			{
-				MPXN: req.Mprn,
-			},
+		ElecOrderSupplies: models.OrderSupply{
+			MPXN: req.Mpan,
+		},
+		GasOrderSupplies: models.OrderSupply{
+			MPXN: req.Mprn,
 		},
 	})
 	if err != nil {
@@ -829,15 +827,13 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 					Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
 				},
 			},
-			OrderSupplies: []models.OrderSupply{
-				{
-					MPXN:       req.Mpan,
-					TariffType: req.ElectricityTariffType,
-				},
-				{
-					MPXN:       req.Mprn,
-					TariffType: req.GasTariffType,
-				},
+			ElecOrderSupplies: models.OrderSupply{
+				MPXN:       req.Mpan,
+				TariffType: req.ElectricityTariffType,
+			},
+			GasOrderSupplies: models.OrderSupply{
+				MPXN:       req.Mprn,
+				TariffType: req.GasTariffType,
 			},
 		},
 	})

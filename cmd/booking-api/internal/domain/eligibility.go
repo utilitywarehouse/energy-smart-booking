@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	energy "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
 type ProcessEligibilityParams struct {
-	AccountNumber string
-	Postcode      string
-	OrderSupplies []models.OrderSupply
+	AccountNumber     string
+	Postcode          string
+	ElecOrderSupplies models.OrderSupply
+	GasOrderSupplies  models.OrderSupply
 }
 
 type ProcessEligibilityResult struct {
@@ -20,12 +20,7 @@ type ProcessEligibilityResult struct {
 
 func (d BookingDomain) ProcessEligibility(ctx context.Context, params ProcessEligibilityParams) (ProcessEligibilityResult, error) {
 
-	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.OrderSupplies)
-	if err != nil {
-		return ProcessEligibilityResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
-	}
-
-	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Postcode)
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, params.ElecOrderSupplies.MPXN, params.GasOrderSupplies.MPXN, params.Postcode)
 	if err != nil {
 		return ProcessEligibilityResult{}, fmt.Errorf("failed to get meterpoint eligibility, %w", err)
 	}
@@ -47,14 +42,9 @@ type GetClickLinkResult struct {
 
 func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkParams) (GetClickLinkResult, error) {
 
-	elecOrderSupply, gasOrderSupply, err := deduceOrderSupplies(params.Details.OrderSupplies)
+	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, params.Details.ElecOrderSupplies.MPXN, params.Details.GasOrderSupplies.MPXN, params.Details.Address.PAF.Postcode)
 	if err != nil {
-		return GetClickLinkResult{}, fmt.Errorf("failed to deduce order supplies, %w", err)
-	}
-
-	eligible, err := d.eligibilityGw.GetMeterpointEligibility(ctx, elecOrderSupply.MPXN, gasOrderSupply.MPXN, params.Details.Address.PAF.Postcode)
-	if err != nil {
-		return GetClickLinkResult{}, fmt.Errorf("failed to get meterpoint eligibility for mpan/mprn: (%s/%s), %w", elecOrderSupply.MPXN, gasOrderSupply.MPXN, err)
+		return GetClickLinkResult{}, fmt.Errorf("failed to get meterpoint eligibility for mpan/mprn: (%s/%s), %w", params.Details.ElecOrderSupplies.MPXN, params.Details.GasOrderSupplies.MPXN, err)
 	}
 
 	if !eligible {
@@ -80,19 +70,19 @@ func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkPara
 	}, nil
 }
 
-func deduceOrderSupplies(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
-	var mpan, mprn models.OrderSupply
-	for i, orderSupply := range orderSupplies {
-		mpxn, err := energy.NewMeterPointNumber(orderSupply.MPXN)
-		if err != nil {
-			return models.OrderSupply{}, models.OrderSupply{}, fmt.Errorf("invalid meterpoint number (%s): %v", orderSupply.MPXN, err)
-		}
-		// We want the first electricity MPAN
-		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan.IsEmpty() {
-			mpan = orderSupplies[i]
-		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
-			mprn = orderSupplies[i]
-		}
-	}
-	return mpan, mprn, nil
-}
+// func deduceOrderSupplies(orderSupplies []models.OrderSupply) (models.OrderSupply, models.OrderSupply, error) {
+// 	var mpan, mprn models.OrderSupply
+// 	for i, orderSupply := range orderSupplies {
+// 		mpxn, err := energy.NewMeterPointNumber(orderSupply.MPXN)
+// 		if err != nil {
+// 			return models.OrderSupply{}, models.OrderSupply{}, fmt.Errorf("invalid meterpoint number (%s): %v", orderSupply.MPXN, err)
+// 		}
+// 		// We want the first electricity MPAN
+// 		if mpxn.SupplyType() == energy.SupplyTypeElectricity && mpan.IsEmpty() {
+// 			mpan = orderSupplies[i]
+// 		} else if mpxn.SupplyType() == energy.SupplyTypeGas {
+// 			mprn = orderSupplies[i]
+// 		}
+// 	}
+// 	return mpan, mprn, nil
+// }

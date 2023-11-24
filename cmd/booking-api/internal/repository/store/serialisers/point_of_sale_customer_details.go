@@ -17,10 +17,10 @@ type orderSupply struct {
 
 type accountAddress struct {
 	UPRN string `json:"uprn"`
-	PAF  pAF    `json:"paf"`
+	PAF  paf    `json:"paf"`
 }
 
-type pAF struct {
+type paf struct {
 	BuildingName            string `json:"building_name"`
 	BuildingNumber          string `json:"building_number"`
 	Department              string `json:"department"`
@@ -43,22 +43,14 @@ type accountDetails struct {
 }
 
 type pointOfSaleCustomerDetails struct {
-	AccountNumber string         `json:"account_number"`
-	Details       accountDetails `json:"contact_details"`
-	Address       accountAddress `json:"site_address"`
-	OrderSupplies []orderSupply  `json:"order_supplies"`
+	AccountNumber     string         `json:"account_number"`
+	Details           accountDetails `json:"contact_details"`
+	Address           accountAddress `json:"site_address"`
+	ElecOrderSupplies orderSupply    `json:"electricity_order_supply"`
+	GasOrderSupplies  orderSupply    `json:"gas_order_supply"`
 }
 
 func (s PointOfSaleCustomerDetails) Serialise(details models.PointOfSaleCustomerDetails) ([]byte, error) {
-
-	orderSupplies := []orderSupply{}
-
-	for _, elem := range details.OrderSupplies {
-		orderSupplies = append(orderSupplies, orderSupply{
-			MPXN:       elem.MPXN,
-			TariffType: uint32(elem.TariffType.Number()),
-		})
-	}
 
 	marshalledDetails, err := json.Marshal(pointOfSaleCustomerDetails{
 		AccountNumber: details.AccountNumber,
@@ -71,7 +63,7 @@ func (s PointOfSaleCustomerDetails) Serialise(details models.PointOfSaleCustomer
 		},
 		Address: accountAddress{
 			UPRN: details.Address.UPRN,
-			PAF: pAF{
+			PAF: paf{
 				BuildingName:            details.Address.PAF.BuildingName,
 				BuildingNumber:          details.Address.PAF.BuildingNumber,
 				Department:              details.Address.PAF.Department,
@@ -85,7 +77,14 @@ func (s PointOfSaleCustomerDetails) Serialise(details models.PointOfSaleCustomer
 				Thoroughfare:            details.Address.PAF.Thoroughfare,
 			},
 		},
-		OrderSupplies: orderSupplies,
+		ElecOrderSupplies: orderSupply{
+			MPXN:       details.ElecOrderSupplies.MPXN,
+			TariffType: uint32(details.ElecOrderSupplies.TariffType.Number()),
+		},
+		GasOrderSupplies: orderSupply{
+			MPXN:       details.GasOrderSupplies.MPXN,
+			TariffType: uint32(details.GasOrderSupplies.TariffType.Number()),
+		},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal details, %w", err)
@@ -101,15 +100,6 @@ func (s PointOfSaleCustomerDetails) Deserialise(details []byte) (models.PointOfS
 	err := json.Unmarshal(details, &structuredDetails)
 	if err != nil {
 		return models.PointOfSaleCustomerDetails{}, fmt.Errorf("failed to unmarshal details, %w", err)
-	}
-
-	orderSupplies := []models.OrderSupply{}
-
-	for _, elem := range structuredDetails.OrderSupplies {
-		orderSupplies = append(orderSupplies, models.OrderSupply{
-			MPXN:       elem.MPXN,
-			TariffType: bookingv1.TariffType(elem.TariffType),
-		})
 	}
 
 	return models.PointOfSaleCustomerDetails{
@@ -137,6 +127,13 @@ func (s PointOfSaleCustomerDetails) Deserialise(details []byte) (models.PointOfS
 				Thoroughfare:            structuredDetails.Address.PAF.Thoroughfare,
 			},
 		},
-		OrderSupplies: orderSupplies,
+		ElecOrderSupplies: models.OrderSupply{
+			MPXN:       structuredDetails.ElecOrderSupplies.MPXN,
+			TariffType: bookingv1.TariffType(structuredDetails.ElecOrderSupplies.TariffType),
+		},
+		GasOrderSupplies: models.OrderSupply{
+			MPXN:       structuredDetails.GasOrderSupplies.MPXN,
+			TariffType: bookingv1.TariffType(structuredDetails.GasOrderSupplies.TariffType),
+		},
 	}, nil
 }
