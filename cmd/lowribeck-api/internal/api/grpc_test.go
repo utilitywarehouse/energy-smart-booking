@@ -254,7 +254,7 @@ func Test_GetAvailableSlots_Unauthorised(t *testing.T) {
 	}{
 		{
 			desc:          "Unauthorised",
-			expectedError: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			expectedError: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
@@ -541,7 +541,7 @@ func Test_CreateBooking_Unauthorised(t *testing.T) {
 	}{
 		{
 			desc:          "Unauthorised",
-			expectedError: status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			expectedError: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{

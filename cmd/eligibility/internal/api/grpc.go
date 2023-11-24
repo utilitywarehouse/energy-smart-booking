@@ -99,7 +99,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
 		}
@@ -224,7 +224,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
 		}
@@ -318,7 +318,7 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.Unauthenticated, "user does not have access to this action, %s", err)
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
 		default:
 			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
 		}

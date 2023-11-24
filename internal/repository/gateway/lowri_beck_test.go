@@ -149,7 +149,7 @@ func Test_GetAvailableSlots_HasError(t *testing.T) {
 			description: "get available slots receives an unhandled error",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
 
-				errorStatus := status.New(codes.Unauthenticated, "errOops").Err()
+				errorStatus := status.New(codes.PermissionDenied, "errOops").Err()
 
 				lbC.EXPECT().GetAvailableSlots(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsResponse{
 					Slots: []*lowribeckv1.BookingSlot{},
@@ -619,7 +619,7 @@ func Test_GetAvailableSlotsPointOfSale_HasError(t *testing.T) {
 			description: "get available slots receives an unhandled error",
 			setup: func(lbC *mock_gateways.MockLowriBeckClient) {
 
-				errorStatus := status.New(codes.Unauthenticated, "errOops").Err()
+				errorStatus := status.New(codes.PermissionDenied, "errOops").Err()
 
 				lbC.EXPECT().GetAvailableSlotsPointOfSale(ctx, availableSlotsRequest).Return(&lowribeckv1.GetAvailableSlotsPointOfSaleResponse{
 					Slots: []*lowribeckv1.BookingSlot{},
