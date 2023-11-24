@@ -24,7 +24,7 @@ type AltHanStore interface {
 
 type EcoesAPI interface {
 	GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error)
-	GetRelatedMPAN(ctx context.Context, mpan string) (*models.ElectricityMeterRelatedMPAN, error)
+	HasRelatedMPAN(ctx context.Context, mpan string) (bool, error)
 }
 
 type XoserveAPI interface {
@@ -85,11 +85,11 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 
 	// Electricity must not have a related MPAN Set-up
 	// We should not receive a related MPAN from a GetRelatedMPANs call
-	related, err := e.ecoesAPI.GetRelatedMPAN(ctx, mpan)
+	HasRelatedMPAN, err := e.ecoesAPI.HasRelatedMPAN(ctx, mpan)
 	if err != nil {
 		return false, err
 	}
-	if related != nil && len(related.Relations) != 0 {
+	if HasRelatedMPAN {
 		logrus.WithField("mpan", mpan).Info("ineligible point-of-sale booking: related meterpoints present")
 		return false, nil
 	}

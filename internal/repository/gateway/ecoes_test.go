@@ -121,16 +121,8 @@ func Test_GetRelatedMPANs(t *testing.T) {
 		},
 	}, nil)
 
-	actual := &models.ElectricityMeterRelatedMPAN{
-		Relations: []models.MPANRelation{
-			{
-				Primary:   "mpan-1",
-				Secondary: "mpan-2",
-			},
-		},
-	}
-
-	expected, err := myGw.GetRelatedMPAN(ctx, "mpan-1")
+	expected := true
+	actual, err := myGw.HasRelatedMPAN(ctx, "mpan-1")
 	if err != nil {
 		t.Fatal(err)
 	}

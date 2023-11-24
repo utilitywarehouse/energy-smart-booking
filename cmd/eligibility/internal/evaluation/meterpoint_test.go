@@ -37,9 +37,12 @@ func (e *mockEcoesAPI) GetMPANTechnicalDetails(_ context.Context, mpan string) (
 	return details, nil
 }
 
-func (e *mockEcoesAPI) GetRelatedMPAN(_ context.Context, mpan string) (*models.ElectricityMeterRelatedMPAN, error) {
-	related, _ := e.relatedMPANResponses[mpan]
-	return related, nil
+func (e *mockEcoesAPI) HasRelatedMPAN(_ context.Context, mpan string) (bool, error) {
+	related, ok := e.relatedMPANResponses[mpan]
+	if ok == false {
+		return false, nil
+	}
+	return len(related.Relations) > 0, nil
 }
 
 type mockXoserveAPI struct {
@@ -63,8 +66,6 @@ type meterpointEligibilityMocks struct {
 }
 
 type electricityMeterpointEligibilityTestCases struct {
-	mocks meterpointEligibilityMocks
-
 	mpan     string
 	postcode string
 
@@ -157,41 +158,35 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 
 	testCases := []electricityMeterpointEligibilityTestCases{
 		{
-			mocks:               electricityMeterpointTestMocks,
 			mpan:                "mpan-1",
 			postcode:            "post-code-1",
 			description:         "standard eligible test case",
 			expectedEligibility: true,
 		}, {
-			mocks:               electricityMeterpointTestMocks,
 			mpan:                "mpan-2",
 			postcode:            "post-code-2",
 			description:         "ineligible because alt-HAN",
 			expectedEligibility: false,
 		},
 		{
-			mocks:               electricityMeterpointTestMocks,
 			mpan:                "mpan-3",
 			postcode:            "post-code-3",
 			description:         "ineligible because no WAN",
 			expectedEligibility: false,
 		},
 		{
-			mocks:               electricityMeterpointTestMocks,
 			mpan:                "mpan-4",
 			postcode:            "post-code-4",
 			description:         "ineligible because has related MPAN",
 			expectedEligibility: false,
 		},
 		{
-			mocks:               electricityMeterpointTestMocks,
 			mpan:                "mpan-5",
 			postcode:            "post-code-5",
 			description:         "ineligible because complex SSC",
 			expectedEligibility: false,
 		},
 		{
-			mocks:               electricityMeterpointTestMocks,
 			mpan:                "mpan-6",
 			postcode:            "post-code-6",
 			description:         "ineligible because already smart meter",
@@ -202,13 +197,13 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			evaluator := NewMeterpointEvaluator(
-				&mockWanStore{store: tc.mocks.wanStore},
-				&mockAltHanStore{store: tc.mocks.altHanStore},
+				&mockWanStore{store: electricityMeterpointTestMocks.wanStore},
+				&mockAltHanStore{store: electricityMeterpointTestMocks.altHanStore},
 				&mockEcoesAPI{
-					technicalDetailResponses: tc.mocks.ecoesTechnicalDetailsResponses,
-					relatedMPANResponses:     tc.mocks.ecoesRelatedMPANResponses,
+					technicalDetailResponses: electricityMeterpointTestMocks.ecoesTechnicalDetailsResponses,
+					relatedMPANResponses:     electricityMeterpointTestMocks.ecoesRelatedMPANResponses,
 				}, &mockXoserveAPI{
-					technicalDetailResponses: tc.mocks.xoserveTechnicalDetailsResponses,
+					technicalDetailResponses: electricityMeterpointTestMocks.xoserveTechnicalDetailsResponses,
 				},
 			)
 

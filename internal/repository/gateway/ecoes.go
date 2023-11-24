@@ -11,6 +11,7 @@ import (
 	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
@@ -63,27 +64,19 @@ func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string
 	}, nil
 }
 
-func (gw *EcoesGateway) GetRelatedMPAN(ctx context.Context, mpan string) (*models.ElectricityMeterRelatedMPAN, error) {
+func (gw *EcoesGateway) HasRelatedMPAN(ctx context.Context, mpan string) (bool, error) {
 
 	relatedMPAN, err := gw.client.GetRelatedMPANs(ctx, &ecoesv1.SearchByMPANRequest{
 		Mpan: mpan,
 	})
 	if err != nil {
 		code := status.Convert(err).Code()
+		if code == codes.NotFound {
+			return false, nil
+		}
 		ecoesAPIResponses.WithLabelValues(code.String()).Inc()
-		return nil, fmt.Errorf("failed to get technical details by mpan: %s, %w", mpan, err)
+		return false, fmt.Errorf("failed to get related mpan: %s, %w", mpan, err)
 	}
 
-	relations := []models.MPANRelation{}
-
-	for _, elem := range relatedMPAN.GetRelationships() {
-		relations = append(relations, models.MPANRelation{
-			Primary:   elem.PrimaryMpan.Mpan,
-			Secondary: elem.SecondaryMpan.Mpan,
-		})
-	}
-
-	return &models.ElectricityMeterRelatedMPAN{
-		Relations: relations,
-	}, nil
+	return len(relatedMPAN.GetRelationships()) > 0, nil
 }
