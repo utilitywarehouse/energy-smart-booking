@@ -71,7 +71,7 @@ func (gw *EcoesGateway) GetRelatedMPAN(ctx context.Context, mpan string) (*model
 	if err != nil {
 		code := status.Convert(err).Code()
 		ecoesAPIResponses.WithLabelValues(code.String()).Inc()
-		return nil, fmt.Errorf("failed to get technical details by mpan: %s, %w", mpan, err)
+		return nil, fmt.Errorf("failed to get related mpan: %s, %w", mpan, err)
 	}
 
 	relations := []models.MPANRelation{}
