@@ -99,7 +99,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 		}
 
 		pendingPartialBookingsMetric.WithLabelValues(ProcessedBookings).Inc()
-		pendingPartialBookingsByAgeMetric.WithLabelValues("2h").Set(float64(longRetainedBookingsNr))
+		pendingPartialBookingsByAgeMetric.WithLabelValues(w.alertThreshold.String()).Set(float64(longRetainedBookingsNr))
 	}
 
 	return nil
