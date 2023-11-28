@@ -2,20 +2,27 @@ package workers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/protobuf/proto"
 )
 
-var PendingPartialBookings = promauto.NewCounterVec(prometheus.CounterOpts{
+var pendingPartialBookingsMetric = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "pending_partial_bookings",
 	Help: "the count of pending partial bookings",
 }, []string{"type"})
+
+var pendingPartialBookingsByAgeMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "pending_partial_bookings_age",
+	Help: "total partial bookings held by age",
+}, []string{"age"})
 
 const (
 	PendingBookings   = "pending_bookings"
@@ -41,10 +48,11 @@ type PartialBookingWorker struct {
 	pbStore        PartialBookingStore
 	occupancyStore OccupancyStore
 	publisher      BookingPublisher
+	alertThreshold time.Duration
 }
 
-func NewPartialBookingWorker(pbStore PartialBookingStore, occupancyStore OccupancyStore, publisher BookingPublisher) *PartialBookingWorker {
-	return &PartialBookingWorker{pbStore, occupancyStore, publisher}
+func NewPartialBookingWorker(pbStore PartialBookingStore, occupancyStore OccupancyStore, publisher BookingPublisher, alertThreshold time.Duration) *PartialBookingWorker {
+	return &PartialBookingWorker{pbStore, occupancyStore, publisher, alertThreshold}
 }
 
 func (w PartialBookingWorker) Run(ctx context.Context) error {
@@ -54,7 +62,9 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to get pending partial bookings, %w", err)
 	}
 
-	PendingPartialBookings.WithLabelValues(PendingBookings).Add(float64(len(pendingPartialBookings)))
+	longRetainedBookingsNr := 0
+
+	pendingPartialBookingsMetric.WithLabelValues(PendingBookings).Add(float64(len(pendingPartialBookings)))
 
 	for _, elem := range pendingPartialBookings {
 
@@ -62,18 +72,25 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 		occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)
 		if err != nil {
+			if errors.Is(err, store.ErrOccupancyNotFound) {
+				err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
+				if err != nil {
+					return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
+				}
+
+				if time.Now().Sub(elem.CreatedAt) > w.alertThreshold {
+					longRetainedBookingsNr++
+				}
+				continue
+			}
+
 			return fmt.Errorf("failed to get occupancy by account id: %s, %w", event.Details.AccountId, err)
 		}
 
 		event.OccupancyId = occupancy.OccupancyID
 
 		if err := w.publisher.Sink(ctx, event, time.Now()); err != nil {
-			err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
-			if err != nil {
-				return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
-			}
-
-			return fmt.Errorf("failed to publish occupancy, %w", err)
+			return fmt.Errorf("failed to publish booking %s, %w", elem.BookingID, err)
 		}
 
 		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID)
@@ -81,7 +98,8 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
 		}
 
-		PendingPartialBookings.WithLabelValues(ProcessedBookings).Inc()
+		pendingPartialBookingsMetric.WithLabelValues(ProcessedBookings).Inc()
+		pendingPartialBookingsByAgeMetric.WithLabelValues(w.alertThreshold.String()).Set(float64(longRetainedBookingsNr))
 	}
 
 	return nil
