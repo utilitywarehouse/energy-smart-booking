@@ -122,7 +122,9 @@ func Test_GetClickLink(t *testing.T) {
 					},
 				}).Return(nil)
 
-				c.EXPECT().GenerateAuthenticated(ctx, "1", "point_of_sale").Return("best_link_ever", nil)
+				c.EXPECT().GenerateAuthenticated(ctx, "1", map[string]string{
+					"account_number": "1",
+					"journey_type":   "point_of_sale"}).Return("best_link_ever", nil)
 			},
 			output: outputParams{
 				result: domain.GetClickLinkResult{
