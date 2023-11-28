@@ -28,7 +28,6 @@ func Test_GenerateAuthenticated(t *testing.T) {
 		ClickKeyID:            "smart_energy_meter_booking_journey",
 		AuthScope:             "smart-meter-installation",
 		WebLocation:           "https://myaccount.uw.co.uk/energy/smart/upgrade",
-		MobileLocation:        "uw://services/energy/smart/upgrade",
 		Subject:               "smart_meter_installation",
 		Intent:                "appointment_booking",
 		Channel:               "email",
@@ -45,8 +44,7 @@ func Test_GenerateAuthenticated(t *testing.T) {
 			Seconds: int64(300),
 		},
 		Target: &click.TargetSpec{
-			Web:    "https://myaccount.uw.co.uk/energy/smart/upgrade",
-			Mobile: "uw://services/energy/smart/upgrade",
+			Web: "https://myaccount.uw.co.uk/energy/smart/upgrade?journey_type=point_of_sale",
 		},
 		Auth: &click.AuthSpec{
 			Scope:         "smart-meter-installation",
@@ -60,9 +58,6 @@ func Test_GenerateAuthenticated(t *testing.T) {
 			Subject:  "smart_meter_installation",
 			Intent:   "appointment_booking",
 			Channel:  "email",
-			Attributes: map[string]string{
-				"journey_type": "point_of_sale",
-			},
 		},
 	}).Return(&click.IssueURLResponse{
 		Url: "https://click.uw.co.uk/your-link-is-ready",

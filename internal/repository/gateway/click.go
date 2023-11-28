@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/gogo/protobuf/types"
 	click "github.com/utilitywarehouse/click.uw.co.uk/generated/contract"
@@ -61,14 +62,24 @@ func NewClickLinkProvider(client ClickIssuerServiceClient, config *ClickLinkProv
 }
 
 func (p *ClickLinkProvider) GenerateAuthenticated(ctx context.Context, accountNo string, attributes map[string]string) (string, error) {
+
+	baseURL, err := url.Parse(p.config.WebLocation)
+	if err != nil {
+		return "", fmt.Errorf("malformed URL: %v", err)
+	}
+	params := url.Values{}
+	for key, value := range attributes {
+		params.Set(key, value)
+	}
+	baseURL.RawQuery = params.Encode()
+
 	clickLink, err := p.issuerServiceClient.IssueURL(ctx, &click.IssueURLRequest{
 		KeyId: p.config.ClickKeyID,
 		ValidFor: &types.Duration{
 			Seconds: p.config.ExpirationTimeSeconds,
 		},
 		Target: &click.TargetSpec{
-			Web:    p.config.WebLocation,
-			Mobile: p.config.MobileLocation,
+			Web: baseURL.String(),
 		},
 		Auth: &click.AuthSpec{
 			Scope:         p.config.AuthScope,
@@ -78,11 +89,10 @@ func (p *ClickLinkProvider) GenerateAuthenticated(ctx context.Context, accountNo
 			},
 		},
 		Tracking: &click.TrackingSpec{
-			Identity:   accountNo,
-			Subject:    p.config.Subject,
-			Intent:     p.config.Intent,
-			Channel:    p.config.Channel,
-			Attributes: attributes,
+			Identity: accountNo,
+			Subject:  p.config.Subject,
+			Intent:   p.config.Intent,
+			Channel:  p.config.Channel,
 		},
 	})
 	if err != nil {
