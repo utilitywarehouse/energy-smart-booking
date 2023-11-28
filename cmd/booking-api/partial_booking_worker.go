@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/robfig/cron/v3"
@@ -43,6 +44,11 @@ func init() {
 				EnvVars: []string{"PARTIAL_BOOKING_CRON"},
 				Value:   "* * * * *",
 			},
+			&cli.DurationFlag{
+				Name:    flagRetainedBookingPeriodAlertThreshold,
+				EnvVars: []string{"RETAINED_BOOKING_ALERT_THRESHOLD"},
+				Value:   time.Hour * 2,
+			},
 		),
 	})
 }
@@ -77,7 +83,7 @@ func partialBookingWorkerAction(c *cli.Context) error {
 	partialBookingStore := store.NewPartialBooking(pool)
 
 	//WORKERS
-	partialBookingWorker := workers.NewPartialBookingWorker(partialBookingStore, occupancyStore, syncBookingPublisher)
+	partialBookingWorker := workers.NewPartialBookingWorker(partialBookingStore, occupancyStore, syncBookingPublisher, c.Duration(flagRetainedBookingPeriodAlertThreshold))
 
 	g.Go(func() error {
 		defer log.Info("ops server finished")
