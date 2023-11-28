@@ -59,13 +59,13 @@ func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkPara
 		return GetClickLinkResult{}, fmt.Errorf("failed to upsert customer details for account number: (%s), %w", params.AccountNumber, err)
 	}
 
-	link, err := d.clickGw.GenerateAuthenticated(ctx, params.AccountNumber)
+	link, err := d.clickGw.GenerateAuthenticated(ctx, params.AccountNumber, "point_of_sale")
 	if err != nil {
 		return GetClickLinkResult{}, fmt.Errorf("failed to generate authenticated link for account number: %s, %w", params.AccountNumber, err)
 	}
 
 	return GetClickLinkResult{
 		Eligible: eligible,
-		Link:     fmt.Sprintf("%s&journey_type=point_of_sale&account_number=%s", link, params.AccountNumber),
+		Link:     link,
 	}, nil
 }

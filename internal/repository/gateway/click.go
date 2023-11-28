@@ -60,7 +60,7 @@ func NewClickLinkProvider(client ClickIssuerServiceClient, config *ClickLinkProv
 	}, nil
 }
 
-func (p *ClickLinkProvider) GenerateAuthenticated(ctx context.Context, accountNo string) (string, error) {
+func (p *ClickLinkProvider) GenerateAuthenticated(ctx context.Context, accountNo, journeyType string) (string, error) {
 	clickLink, err := p.issuerServiceClient.IssueURL(ctx, &click.IssueURLRequest{
 		KeyId: p.config.ClickKeyID,
 		ValidFor: &types.Duration{
@@ -82,6 +82,10 @@ func (p *ClickLinkProvider) GenerateAuthenticated(ctx context.Context, accountNo
 			Subject:  p.config.Subject,
 			Intent:   p.config.Intent,
 			Channel:  p.config.Channel,
+			Attributes: map[string]string{
+				"journey_type":   journeyType,
+				"account_number": accountNo,
+			},
 		},
 	})
 	if err != nil {
