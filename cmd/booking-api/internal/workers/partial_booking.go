@@ -2,12 +2,14 @@ package workers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/protobuf/proto"
 )
@@ -69,6 +71,13 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 		occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)
 		if err != nil {
+			if errors.Is(err, store.ErrOccupancyNotFound) {
+				if time.Now().Sub(elem.CreatedAt).Hours() >= 2 {
+					longRetainedBookingsNr++
+				}
+				continue
+			}
+
 			return fmt.Errorf("failed to get occupancy by account id: %s, %w", event.Details.AccountId, err)
 		}
 
@@ -76,16 +85,12 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 		if err := w.publisher.Sink(ctx, event, time.Now()); err != nil {
 
-			if time.Now().Sub(elem.CreatedAt).Hours() >= 2 {
-				longRetainedBookingsNr++
-			}
-
 			err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
 			if err != nil {
 				return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
 			}
 
-			return fmt.Errorf("failed to publish occupancy, %w", err)
+			return fmt.Errorf("failed to publish booking %s for occupancy %s, %w", elem.BookingID, occupancy.OccupancyID, err)
 		}
 
 		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID)
