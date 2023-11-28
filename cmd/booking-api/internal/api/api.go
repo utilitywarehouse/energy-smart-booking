@@ -461,21 +461,24 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 }
 
 func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *bookingv1.GetAvailableSlotsPointOfSaleRequest) (_ *bookingv1.GetAvailableSlotsPointOfSaleResponse, err error) {
-	if err := validatePOSRequest(req); err != nil {
-		return nil, err
-	}
-	accountID := id.NewAccountID(req.GetAccountNumber())
-
 	var span trace.Span
 	if b.useTracing {
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
-			trace.WithAttributes(attribute.String("account.id", accountID)),
+			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
+	}
+
+	if err := validatePOSRequest(req); err != nil {
+		return nil, err
+	}
+	accountID := id.NewAccountID(req.GetAccountNumber())
+	if b.useTracing {
+		span.SetAttributes(attribute.String("account.id", accountID))
 	}
 
 	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, accountID)
@@ -537,20 +540,23 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 }
 
 func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv1.CreateBookingPointOfSaleRequest) (_ *bookingv1.CreateBookingPointOfSaleResponse, err error) {
-	if err := validatePOSRequest(req); err != nil {
-		return nil, err
-	}
-	accountID := id.NewAccountID(req.GetAccountNumber())
-
+	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreatePOSBooking",
-			trace.WithAttributes(attribute.String("account.id", accountID)),
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBookingPointOfSale",
+			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
+	}
+
+	if err := validatePOSRequest(req); err != nil {
+		return nil, err
+	}
+	accountID := id.NewAccountID(req.GetAccountNumber())
+	if b.useTracing {
+		span.SetAttributes(attribute.String("account.id", accountID))
 	}
 
 	err = b.validateCredentials(ctx, auth.CreateAction, auth.AccountBookingResource, accountID)
@@ -651,11 +657,6 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 }
 
 func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *bookingv1.GetCustomerDetailsPointOfSaleRequest) (_ *bookingv1.GetCustomerDetailsPointOfSaleResponse, err error) {
-
-	if req.AccountNumber == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid account number provided (empty string)")
-	}
-
 	if b.useTracing {
 		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerDetailsPointOfSale",
@@ -665,6 +666,10 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 			tracing.RecordSpanError(span, err)
 			span.End()
 		}()
+	}
+
+	if req.AccountNumber == "" {
+		return nil, status.Error(codes.InvalidArgument, "invalid account number provided (empty string)")
 	}
 
 	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountNumber)
@@ -714,6 +719,16 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 }
 
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
+	var span trace.Span
+	if b.useTracing {
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetEligibilityPointOfSaleJourney",
+			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err)
+			span.End()
+		}()
+	}
 
 	if req.Postcode == "" {
 		return nil, status.Error(codes.InvalidArgument, "provided post code is missing")
@@ -751,12 +766,26 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 		return nil, status.Errorf(codes.Internal, "failed to process eligibility for meterpoint, %s", err)
 	}
 
+	if b.useTracing {
+		span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", result.Eligible)))
+	}
+
 	return &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
 		Eligible: result.Eligible,
 	}, nil
 }
 
 func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bookingv1.GetClickLinkPointOfSaleJourneyRequest) (_ *bookingv1.GetClickLinkPointOfSaleJourneyResponse, err error) {
+	var span trace.Span
+	if b.useTracing {
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetClickLinkPointOfSaleJourney",
+			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
+		)
+		defer func() {
+			tracing.RecordSpanError(span, err)
+			span.End()
+		}()
+	}
 
 	if req.ContactDetails == nil {
 		return nil, status.Error(codes.InvalidArgument, "provided contact details is missing")
@@ -839,6 +868,12 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to process eligibility for meterpoint, %s", err)
+	}
+
+	if b.useTracing {
+		span.AddEvent("response", trace.WithAttributes(
+			attribute.String("link", fmt.Sprintf("%v", result.Link)),
+			attribute.Bool("eligible", result.Eligible)))
 	}
 
 	return &bookingv1.GetClickLinkPointOfSaleJourneyResponse{
