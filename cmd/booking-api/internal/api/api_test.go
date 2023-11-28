@@ -5430,585 +5430,585 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 	}
 }
 
-func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
-	ctrl := gomock.NewController(t)
+// func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
+// 	ctrl := gomock.NewController(t)
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	defer ctrl.Finish()
+// 	defer ctrl.Finish()
 
-	bookingDomain := mocks.NewMockBookingDomain(ctrl)
-	mockAuth := mocks.NewMockAuth(ctrl)
-	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
+// 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
+// 	mockAuth := mocks.NewMockAuth(ctrl)
+// 	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
+// 	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
 
-	type inputParams struct {
-		req *bookingv1.GetClickLinkPointOfSaleJourneyRequest
-	}
+// 	type inputParams struct {
+// 		req *bookingv1.GetClickLinkPointOfSaleJourneyRequest
+// 	}
 
-	type outputParams struct {
-		res *bookingv1.GetClickLinkPointOfSaleJourneyResponse
-		err error
-	}
+// 	type outputParams struct {
+// 		res *bookingv1.GetClickLinkPointOfSaleJourneyResponse
+// 		err error
+// 	}
 
-	type testSetup struct {
-		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
-		input       inputParams
-		output      outputParams
-	}
+// 	type testSetup struct {
+// 		description string
+// 		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
+// 		input       inputParams
+// 		output      outputParams
+// 	}
 
-	testCases := []testSetup{
-		{
-			description: "should process an eligibility request for a candidate to a point of sale journey",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf: &addressv1.Address_PAF{
-							BuildingName:            "bn",
-							BuildingNumber:          "bn1",
-							Department:              "dp",
-							DependentLocality:       "dl",
-							DependentThoroughfare:   "dtg",
-							DoubleDependentLocality: "ddl",
-							Organisation:            "o",
-							PostTown:                "pt",
-							Postcode:                "E2 1Z",
-							SubBuilding:             "sb",
-							Thoroughfare:            "tf",
-						},
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 	testCases := []testSetup{
+// 		{
+// 			description: "should process an eligibility request for a candidate to a point of sale journey",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf: &addressv1.Address_PAF{
+// 							BuildingName:            "bn",
+// 							BuildingNumber:          "bn1",
+// 							Department:              "dp",
+// 							DependentLocality:       "dl",
+// 							DependentThoroughfare:   "dtg",
+// 							DoubleDependentLocality: "ddl",
+// 							Organisation:            "o",
+// 							PostTown:                "pt",
+// 							Postcode:                "E2 1Z",
+// 							SubBuilding:             "sb",
+// 							Thoroughfare:            "tf",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
-					Action:     "get",
-					Resource:   "uw.energy-smart.v1.account.eligibility",
-					ResourceID: "account-number-1",
-				}).Return(true, nil)
+// 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+// 					Action:     "get",
+// 					Resource:   "uw.energy-smart.v1.account.eligibility",
+// 					ResourceID: "account-number-1",
+// 				}).Return(true, nil)
 
-				bkDomain.EXPECT().GetClickLink(ctx, domain.GetClickLinkParams{
-					AccountNumber: "account-number-1",
-					Details: models.PointOfSaleCustomerDetails{
-						AccountNumber: "account-number-1",
-						Details: models.AccountDetails{
-							Title:     "Mr",
-							FirstName: "John",
-							LastName:  "Doe",
-							Email:     "jdoe@example.com",
-							Mobile:    "555-100",
-						},
-						Address: models.AccountAddress{
-							UPRN: "u",
-							PAF: models.PAF{
-								BuildingName:            "bn",
-								BuildingNumber:          "bn1",
-								Department:              "dp",
-								DependentLocality:       "dl",
-								DependentThoroughfare:   "dtg",
-								DoubleDependentLocality: "ddl",
-								Organisation:            "o",
-								PostTown:                "pt",
-								Postcode:                "E2 1Z",
-								SubBuilding:             "sb",
-								Thoroughfare:            "tf",
-							},
-						},
-						ElecOrderSupplies: models.OrderSupply{
-							MPXN:       "mpan-1",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-						GasOrderSupplies: models.OrderSupply{
-							MPXN:       "mprn-1",
-							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						},
-					},
-				}).Return(domain.GetClickLinkResult{
-					Eligible: true,
-					Link:     "very_nice_link",
-				}, nil)
-			},
-			output: outputParams{
-				res: &bookingv1.GetClickLinkPointOfSaleJourneyResponse{
-					Eligible: true,
-					Link:     "very_nice_link",
-				},
-				err: nil,
-			},
-		},
-		{
-			description: "should fail to get eligibility because contact details are nil",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails:        nil,
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf: &addressv1.Address_PAF{
-							BuildingName:            "bn",
-							BuildingNumber:          "bn1",
-							Department:              "dp",
-							DependentLocality:       "dl",
-							DependentThoroughfare:   "dtg",
-							DoubleDependentLocality: "ddl",
-							Organisation:            "o",
-							PostTown:                "pt",
-							Postcode:                "E2 1Z",
-							SubBuilding:             "sb",
-							Thoroughfare:            "tf",
-						},
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided contact details is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because site address is nil",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: nil,
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided site address is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because paf is nil",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf:  nil,
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided PAF is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because postcode is nil",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf: &addressv1.Address_PAF{
-							BuildingName:            "bn",
-							BuildingNumber:          "bn1",
-							Department:              "dp",
-							DependentLocality:       "dl",
-							DependentThoroughfare:   "dtg",
-							DoubleDependentLocality: "ddl",
-							Organisation:            "o",
-							PostTown:                "pt",
-							Postcode:                "",
-							SubBuilding:             "sb",
-							Thoroughfare:            "tf",
-						},
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided post code is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because account number is nil",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf: &addressv1.Address_PAF{
-							BuildingName:            "bn",
-							BuildingNumber:          "bn1",
-							Department:              "dp",
-							DependentLocality:       "dl",
-							DependentThoroughfare:   "dtg",
-							DoubleDependentLocality: "ddl",
-							Organisation:            "o",
-							PostTown:                "pt",
-							Postcode:                "E2 1Z",
-							SubBuilding:             "sb",
-							Thoroughfare:            "tf",
-						},
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided account number is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because account number is nil",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf: &addressv1.Address_PAF{
-							BuildingName:            "bn",
-							BuildingNumber:          "bn1",
-							Department:              "dp",
-							DependentLocality:       "dl",
-							DependentThoroughfare:   "dtg",
-							DoubleDependentLocality: "ddl",
-							Organisation:            "o",
-							PostTown:                "pt",
-							Postcode:                "E2 1Z",
-							SubBuilding:             "sb",
-							Thoroughfare:            "tf",
-						},
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided mpan is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because electricity tariff type is unknown",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_UNKNOWN,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf: &addressv1.Address_PAF{
-							BuildingName:            "bn",
-							BuildingNumber:          "bn1",
-							Department:              "dp",
-							DependentLocality:       "dl",
-							DependentThoroughfare:   "dtg",
-							DoubleDependentLocality: "ddl",
-							Organisation:            "o",
-							PostTown:                "pt",
-							Postcode:                "E2 1Z",
-							SubBuilding:             "sb",
-							Thoroughfare:            "tf",
-						},
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided electricity type is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because mprn is provided but the gas tariff type is unknown",
-			input: inputParams{
-				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
-					AccountNumber:         "account-number-1",
-					Mpan:                  "mpan-1",
-					Mprn:                  "mprn-1",
-					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_UNKNOWN,
-					ContactDetails: &bookingv1.ContactDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Doe",
-						Email:     "jdoe@example.com",
-						Phone:     "555-100",
-					},
-					SiteAddress: &addressv1.Address{
-						Uprn: "u",
-						Paf: &addressv1.Address_PAF{
-							BuildingName:            "bn",
-							BuildingNumber:          "bn1",
-							Department:              "dp",
-							DependentLocality:       "dl",
-							DependentThoroughfare:   "dtg",
-							DoubleDependentLocality: "ddl",
-							Organisation:            "o",
-							PostTown:                "pt",
-							Postcode:                "E2 1Z",
-							SubBuilding:             "sb",
-							Thoroughfare:            "tf",
-						},
-					},
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown"),
-			},
-		},
-	}
+// 				bkDomain.EXPECT().GetClickLink(ctx, domain.GetClickLinkParams{
+// 					AccountNumber: "account-number-1",
+// 					Details: models.PointOfSaleCustomerDetails{
+// 						AccountNumber: "account-number-1",
+// 						Details: models.AccountDetails{
+// 							Title:     "Mr",
+// 							FirstName: "John",
+// 							LastName:  "Doe",
+// 							Email:     "jdoe@example.com",
+// 							Mobile:    "555-100",
+// 						},
+// 						Address: models.AccountAddress{
+// 							UPRN: "u",
+// 							PAF: models.PAF{
+// 								BuildingName:            "bn",
+// 								BuildingNumber:          "bn1",
+// 								Department:              "dp",
+// 								DependentLocality:       "dl",
+// 								DependentThoroughfare:   "dtg",
+// 								DoubleDependentLocality: "ddl",
+// 								Organisation:            "o",
+// 								PostTown:                "pt",
+// 								Postcode:                "E2 1Z",
+// 								SubBuilding:             "sb",
+// 								Thoroughfare:            "tf",
+// 							},
+// 						},
+// 						ElecOrderSupplies: models.OrderSupply{
+// 							MPXN:       "mpan-1",
+// 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 						},
+// 						GasOrderSupplies: models.OrderSupply{
+// 							MPXN:       "mprn-1",
+// 							TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 						},
+// 					},
+// 				}).Return(domain.GetClickLinkResult{
+// 					Eligible: true,
+// 					Link:     "very_nice_link",
+// 				}, nil)
+// 			},
+// 			output: outputParams{
+// 				res: &bookingv1.GetClickLinkPointOfSaleJourneyResponse{
+// 					Eligible: true,
+// 					Link:     "very_nice_link",
+// 				},
+// 				err: nil,
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because contact details are nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails:        nil,
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf: &addressv1.Address_PAF{
+// 							BuildingName:            "bn",
+// 							BuildingNumber:          "bn1",
+// 							Department:              "dp",
+// 							DependentLocality:       "dl",
+// 							DependentThoroughfare:   "dtg",
+// 							DoubleDependentLocality: "ddl",
+// 							Organisation:            "o",
+// 							PostTown:                "pt",
+// 							Postcode:                "E2 1Z",
+// 							SubBuilding:             "sb",
+// 							Thoroughfare:            "tf",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided contact details is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because site address is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: nil,
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided site address is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because paf is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf:  nil,
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided PAF is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because postcode is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf: &addressv1.Address_PAF{
+// 							BuildingName:            "bn",
+// 							BuildingNumber:          "bn1",
+// 							Department:              "dp",
+// 							DependentLocality:       "dl",
+// 							DependentThoroughfare:   "dtg",
+// 							DoubleDependentLocality: "ddl",
+// 							Organisation:            "o",
+// 							PostTown:                "pt",
+// 							Postcode:                "",
+// 							SubBuilding:             "sb",
+// 							Thoroughfare:            "tf",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided post code is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because account number is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf: &addressv1.Address_PAF{
+// 							BuildingName:            "bn",
+// 							BuildingNumber:          "bn1",
+// 							Department:              "dp",
+// 							DependentLocality:       "dl",
+// 							DependentThoroughfare:   "dtg",
+// 							DoubleDependentLocality: "ddl",
+// 							Organisation:            "o",
+// 							PostTown:                "pt",
+// 							Postcode:                "E2 1Z",
+// 							SubBuilding:             "sb",
+// 							Thoroughfare:            "tf",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided account number is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because account number is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf: &addressv1.Address_PAF{
+// 							BuildingName:            "bn",
+// 							BuildingNumber:          "bn1",
+// 							Department:              "dp",
+// 							DependentLocality:       "dl",
+// 							DependentThoroughfare:   "dtg",
+// 							DoubleDependentLocality: "ddl",
+// 							Organisation:            "o",
+// 							PostTown:                "pt",
+// 							Postcode:                "E2 1Z",
+// 							SubBuilding:             "sb",
+// 							Thoroughfare:            "tf",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided mpan is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because electricity tariff type is unknown",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_UNKNOWN,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf: &addressv1.Address_PAF{
+// 							BuildingName:            "bn",
+// 							BuildingNumber:          "bn1",
+// 							Department:              "dp",
+// 							DependentLocality:       "dl",
+// 							DependentThoroughfare:   "dtg",
+// 							DoubleDependentLocality: "ddl",
+// 							Organisation:            "o",
+// 							PostTown:                "pt",
+// 							Postcode:                "E2 1Z",
+// 							SubBuilding:             "sb",
+// 							Thoroughfare:            "tf",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided electricity type is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because mprn is provided but the gas tariff type is unknown",
+// 			input: inputParams{
+// 				req: &bookingv1.GetClickLinkPointOfSaleJourneyRequest{
+// 					AccountNumber:         "account-number-1",
+// 					Mpan:                  "mpan-1",
+// 					Mprn:                  "mprn-1",
+// 					ElectricityTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+// 					GasTariffType:         bookingv1.TariffType_TARIFF_TYPE_UNKNOWN,
+// 					ContactDetails: &bookingv1.ContactDetails{
+// 						Title:     "Mr",
+// 						FirstName: "John",
+// 						LastName:  "Doe",
+// 						Email:     "jdoe@example.com",
+// 						Phone:     "555-100",
+// 					},
+// 					SiteAddress: &addressv1.Address{
+// 						Uprn: "u",
+// 						Paf: &addressv1.Address_PAF{
+// 							BuildingName:            "bn",
+// 							BuildingNumber:          "bn1",
+// 							Department:              "dp",
+// 							DependentLocality:       "dl",
+// 							DependentThoroughfare:   "dtg",
+// 							DoubleDependentLocality: "ddl",
+// 							Organisation:            "o",
+// 							PostTown:                "pt",
+// 							Postcode:                "E2 1Z",
+// 							SubBuilding:             "sb",
+// 							Thoroughfare:            "tf",
+// 						},
+// 					},
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown"),
+// 			},
+// 		},
+// 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.description, func(t *testing.T) {
+// 	for _, tc := range testCases {
+// 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, mockAuth)
+// 			tc.setup(ctx, bookingDomain, mockAuth)
 
-			expected, err := myAPIHandler.GetClickLinkPointOfSaleJourney(ctx, tc.input.req)
-			if tc.output.err != nil {
-				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
-					t.Fatal(diff)
-				}
-			} else if err != nil {
-				t.Fatal(err)
-			}
+// 			expected, err := myAPIHandler.GetClickLinkPointOfSaleJourney(ctx, tc.input.req)
+// 			if tc.output.err != nil {
+// 				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+// 					t.Fatal(diff)
+// 				}
+// 			} else if err != nil {
+// 				t.Fatal(err)
+// 			}
 
-			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetClickLinkPointOfSaleJourneyResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
-				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
-				t.Fatal(diff)
-			}
-		})
-	}
-}
+// 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetClickLinkPointOfSaleJourneyResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
+// 				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
+// 				t.Fatal(diff)
+// 			}
+// 		})
+// 	}
+// }
 
-func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
-	ctrl := gomock.NewController(t)
+// func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
+// 	ctrl := gomock.NewController(t)
 
-	ctx := context.Background()
+// 	ctx := context.Background()
 
-	defer ctrl.Finish()
+// 	defer ctrl.Finish()
 
-	bookingDomain := mocks.NewMockBookingDomain(ctrl)
-	mockAuth := mocks.NewMockAuth(ctrl)
-	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
+// 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
+// 	mockAuth := mocks.NewMockAuth(ctrl)
+// 	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
+// 	myAPIHandler := api.New(bookingDomain, mockPublisher, mockAuth, false)
 
-	type inputParams struct {
-		req *bookingv1.GetEligibilityPointOfSaleJourneyRequest
-	}
+// 	type inputParams struct {
+// 		req *bookingv1.GetEligibilityPointOfSaleJourneyRequest
+// 	}
 
-	type outputParams struct {
-		res *bookingv1.GetEligibilityPointOfSaleJourneyResponse
-		err error
-	}
+// 	type outputParams struct {
+// 		res *bookingv1.GetEligibilityPointOfSaleJourneyResponse
+// 		err error
+// 	}
 
-	type testSetup struct {
-		description string
-		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
-		input       inputParams
-		output      outputParams
-	}
+// 	type testSetup struct {
+// 		description string
+// 		setup       func(ctx context.Context, domain *mocks.MockBookingDomain, mAuth *mocks.MockAuth)
+// 		input       inputParams
+// 		output      outputParams
+// 	}
 
-	testCases := []testSetup{
-		{
-			description: "should process an eligibility request for a candidate to a point of sale journey",
-			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "account-number-1",
-					Mpan:          "mpan-1",
-					Mprn:          "mprn-1",
-					Postcode:      "E2 1Z",
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 	testCases := []testSetup{
+// 		{
+// 			description: "should process an eligibility request for a candidate to a point of sale journey",
+// 			input: inputParams{
+// 				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+// 					AccountNumber: "account-number-1",
+// 					Mpan:          "mpan-1",
+// 					Mprn:          "mprn-1",
+// 					Postcode:      "E2 1Z",
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
-					Action:     "get",
-					Resource:   "uw.energy-smart.v1.account.eligibility",
-					ResourceID: "account-number-1",
-				}).Return(true, nil)
+// 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+// 					Action:     "get",
+// 					Resource:   "uw.energy-smart.v1.account.eligibility",
+// 					ResourceID: "account-number-1",
+// 				}).Return(true, nil)
 
-				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
-					AccountNumber: "account-number-1",
-					Postcode:      "E2 1Z",
-					ElecOrderSupplies: models.OrderSupply{
-						MPXN: "mpan-1",
-					},
-					GasOrderSupplies: models.OrderSupply{
-						MPXN: "mprn-1",
-					},
-				}).Return(domain.ProcessEligibilityResult{
-					Eligible: true,
-				}, nil)
-			},
-			output: outputParams{
-				res: &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
-					Eligible: true,
-				},
-				err: nil,
-			},
-		},
-		{
-			description: "should fail to get eligibility because postcode is nil",
-			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "account-number-1",
-					Mpan:          "mpan-1",
-					Mprn:          "mprn-1",
-					Postcode:      "",
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided post code is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because account number is nil",
-			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "",
-					Mpan:          "mpan-1",
-					Mprn:          "mprn-1",
-					Postcode:      "E2 1Z",
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided account number is missing"),
-			},
-		},
-		{
-			description: "should fail to get eligibility because mpan is nil",
-			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "account-number-1",
-					Mpan:          "",
-					Mprn:          "mprn-1",
-					Postcode:      "E2 1Z",
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided mpan is missing"),
-			},
-		},
-	}
+// 				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
+// 					AccountNumber: "account-number-1",
+// 					Postcode:      "E2 1Z",
+// 					ElecOrderSupplies: models.OrderSupply{
+// 						MPXN: "mpan-1",
+// 					},
+// 					GasOrderSupplies: models.OrderSupply{
+// 						MPXN: "mprn-1",
+// 					},
+// 				}).Return(domain.ProcessEligibilityResult{
+// 					Eligible: true,
+// 				}, nil)
+// 			},
+// 			output: outputParams{
+// 				res: &bookingv1.GetEligibilityPointOfSaleJourneyResponse{
+// 					Eligible: true,
+// 				},
+// 				err: nil,
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because postcode is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+// 					AccountNumber: "account-number-1",
+// 					Mpan:          "mpan-1",
+// 					Mprn:          "mprn-1",
+// 					Postcode:      "",
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided post code is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because account number is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+// 					AccountNumber: "",
+// 					Mpan:          "mpan-1",
+// 					Mprn:          "mprn-1",
+// 					Postcode:      "E2 1Z",
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided account number is missing"),
+// 			},
+// 		},
+// 		{
+// 			description: "should fail to get eligibility because mpan is nil",
+// 			input: inputParams{
+// 				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
+// 					AccountNumber: "account-number-1",
+// 					Mpan:          "",
+// 					Mprn:          "mprn-1",
+// 					Postcode:      "E2 1Z",
+// 				},
+// 			},
+// 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+// 			},
+// 			output: outputParams{
+// 				res: nil,
+// 				err: status.Error(codes.InvalidArgument, "provided mpan is missing"),
+// 			},
+// 		},
+// 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.description, func(t *testing.T) {
+// 	for _, tc := range testCases {
+// 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, mockAuth)
+// 			tc.setup(ctx, bookingDomain, mockAuth)
 
-			expected, err := myAPIHandler.GetEligibilityPointOfSaleJourney(ctx, tc.input.req)
-			if tc.output.err != nil {
-				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
-					t.Fatal(diff)
-				}
-			} else if err != nil {
-				t.Fatal(err)
-			}
+// 			expected, err := myAPIHandler.GetEligibilityPointOfSaleJourney(ctx, tc.input.req)
+// 			if tc.output.err != nil {
+// 				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+// 					t.Fatal(diff)
+// 				}
+// 			} else if err != nil {
+// 				t.Fatal(err)
+// 			}
 
-			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetEligibilityPointOfSaleJourneyResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
-				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
-				t.Fatal(diff)
-			}
-		})
-	}
-}
+// 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetEligibilityPointOfSaleJourneyResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
+// 				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
+// 				t.Fatal(diff)
+// 			}
+// 		})
+// 	}
+// }

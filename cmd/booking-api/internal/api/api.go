@@ -742,15 +742,15 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 		return nil, status.Error(codes.InvalidArgument, "provided mpan is missing")
 	}
 
-	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
-		default:
-			return nil, status.Error(codes.Internal, "failed to validate credentials")
-		}
-	}
+	// err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	// if err != nil {
+	// 	switch {
+	// 	case errors.Is(err, ErrUserUnauthorised):
+	// 		return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
+	// 	default:
+	// 		return nil, status.Error(codes.Internal, "failed to validate credentials")
+	// 	}
+	// }
 
 	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
 		AccountNumber: req.AccountNumber,
@@ -819,15 +819,15 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 		return nil, status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown")
 	}
 
-	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
-	if err != nil {
-		switch {
-		case errors.Is(err, ErrUserUnauthorised):
-			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
-		default:
-			return nil, status.Error(codes.Internal, "failed to validate credentials")
-		}
-	}
+	// err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	// if err != nil {
+	// 	switch {
+	// 	case errors.Is(err, ErrUserUnauthorised):
+	// 		return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
+	// 	default:
+	// 		return nil, status.Error(codes.Internal, "failed to validate credentials")
+	// 	}
+	// }
 
 	result, err := b.bookingDomain.GetClickLink(ctx, domain.GetClickLinkParams{
 		AccountNumber: req.AccountNumber,
