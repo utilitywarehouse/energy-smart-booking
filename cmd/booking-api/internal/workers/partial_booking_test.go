@@ -5,6 +5,7 @@ package workers_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
@@ -23,8 +24,9 @@ func Test_Run(t *testing.T) {
 	mockPBStore := mocks.NewMockPartialBookingStore(ctrl)
 	mockOccupancyStore := mocks.NewMockOccupancyStore(ctrl)
 	mockPublisher := mocks.NewMockBookingPublisher(ctrl)
+	alertThreshold := time.Hour
 
-	worker := workers.NewPartialBookingWorker(mockPBStore, mockOccupancyStore, mockPublisher)
+	worker := workers.NewPartialBookingWorker(mockPBStore, mockOccupancyStore, mockPublisher, alertThreshold)
 
 	mockPBStore.EXPECT().GetPending(ctx).Return([]*models.PartialBooking{
 		{
