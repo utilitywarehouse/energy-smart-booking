@@ -60,6 +60,9 @@ func Test_GenerateAuthenticated(t *testing.T) {
 			Subject:  "smart_meter_installation",
 			Intent:   "appointment_booking",
 			Channel:  "email",
+			Attributes: map[string]string{
+				"journey_type": "point_of_sale",
+			},
 		},
 	}).Return(&click.IssueURLResponse{
 		Url: "https://click.uw.co.uk/your-link-is-ready",
@@ -67,7 +70,9 @@ func Test_GenerateAuthenticated(t *testing.T) {
 
 	actual := "https://click.uw.co.uk/your-link-is-ready"
 
-	expected, err := myGw.GenerateAuthenticated(ctx, "1001")
+	expected, err := myGw.GenerateAuthenticated(ctx, "1001", map[string]string{
+		"journey_type": "point_of_sale",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}

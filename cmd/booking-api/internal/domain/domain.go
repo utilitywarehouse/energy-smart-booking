@@ -34,7 +34,7 @@ type EligibilityGateway interface {
 }
 
 type ClickGateway interface {
-	GenerateAuthenticated(ctx context.Context, accountNo, journeyType string) (string, error)
+	GenerateAuthenticated(ctx context.Context, accountNo string, attributes map[string]string) (string, error)
 }
 
 type BookingStore interface {

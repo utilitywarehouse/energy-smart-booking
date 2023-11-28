@@ -12,7 +12,7 @@ import (
 
 type ClickLinkGateway interface {
 	GenerateGenericLink(ctx context.Context, accountNo string) (string, error)
-	GenerateAuthenticated(ctx context.Context, accountNo string) (string, error)
+	GenerateAuthenticated(ctx context.Context, accountNo string, attributes map[string]string) (string, error)
 }
 
 type Handler struct {
@@ -28,7 +28,8 @@ const (
 )
 
 type GenerateLinkRequest struct {
-	AccountNumber string `json:"account_number"`
+	AccountNumber string            `json:"account_number"`
+	Attributes    map[string]string `json:"attributes"`
 }
 
 func (s *Handler) Register(ctx context.Context, router *mux.Router) {
@@ -65,14 +66,13 @@ func (s *Handler) generate(ctx context.Context) http.Handler {
 		}
 
 		var link string
-
 		switch linkType {
 		default:
 			logrus.Errorf("unknown link type requested: %s", linkType)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		case "auth":
-			link, err = s.clickLinkGw.GenerateAuthenticated(ctx, req.AccountNumber)
+			link, err = s.clickLinkGw.GenerateAuthenticated(ctx, req.AccountNumber, req.Attributes)
 		case "generic":
 			link, err = s.clickLinkGw.GenerateGenericLink(ctx, req.AccountNumber)
 		}
