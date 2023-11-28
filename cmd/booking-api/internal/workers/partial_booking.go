@@ -12,10 +12,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var PendingPartialBookings = promauto.NewCounterVec(prometheus.CounterOpts{
+var pendingPartialBookingsMetric = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "pending_partial_bookings",
 	Help: "the count of pending partial bookings",
 }, []string{"type"})
+
+var pendingPartialBookingsByAgeMetric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "pending_partial_bookings_age",
+	Help: "total partial bookings held by age",
+}, []string{"age"})
 
 const (
 	PendingBookings   = "pending_bookings"
@@ -54,7 +59,9 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 		return fmt.Errorf("failed to get pending partial bookings, %w", err)
 	}
 
-	PendingPartialBookings.WithLabelValues(PendingBookings).Add(float64(len(pendingPartialBookings)))
+	longRetainedBookingsNr := 0
+
+	pendingPartialBookingsMetric.WithLabelValues(PendingBookings).Add(float64(len(pendingPartialBookings)))
 
 	for _, elem := range pendingPartialBookings {
 
@@ -68,6 +75,11 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 		event.OccupancyId = occupancy.OccupancyID
 
 		if err := w.publisher.Sink(ctx, event, time.Now()); err != nil {
+
+			if time.Now().Sub(elem.CreatedAt).Hours() >= 2 {
+				longRetainedBookingsNr++
+			}
+
 			err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
 			if err != nil {
 				return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
@@ -81,7 +93,8 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
 		}
 
-		PendingPartialBookings.WithLabelValues(ProcessedBookings).Inc()
+		pendingPartialBookingsMetric.WithLabelValues(ProcessedBookings).Inc()
+		pendingPartialBookingsByAgeMetric.WithLabelValues("2h").Set(float64(longRetainedBookingsNr))
 	}
 
 	return nil
