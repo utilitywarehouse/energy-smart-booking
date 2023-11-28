@@ -48,10 +48,11 @@ type PartialBookingWorker struct {
 	pbStore        PartialBookingStore
 	occupancyStore OccupancyStore
 	publisher      BookingPublisher
+	alertThreshold time.Duration
 }
 
-func NewPartialBookingWorker(pbStore PartialBookingStore, occupancyStore OccupancyStore, publisher BookingPublisher) *PartialBookingWorker {
-	return &PartialBookingWorker{pbStore, occupancyStore, publisher}
+func NewPartialBookingWorker(pbStore PartialBookingStore, occupancyStore OccupancyStore, publisher BookingPublisher, alertThreshold time.Duration) *PartialBookingWorker {
+	return &PartialBookingWorker{pbStore, occupancyStore, publisher, alertThreshold}
 }
 
 func (w PartialBookingWorker) Run(ctx context.Context) error {
@@ -72,7 +73,12 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 		occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)
 		if err != nil {
 			if errors.Is(err, store.ErrOccupancyNotFound) {
-				if time.Now().Sub(elem.CreatedAt).Hours() >= 2 {
+				err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
+				if err != nil {
+					return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
+				}
+
+				if time.Now().Sub(elem.CreatedAt) > w.alertThreshold {
 					longRetainedBookingsNr++
 				}
 				continue
@@ -84,13 +90,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 		event.OccupancyId = occupancy.OccupancyID
 
 		if err := w.publisher.Sink(ctx, event, time.Now()); err != nil {
-
-			err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
-			if err != nil {
-				return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
-			}
-
-			return fmt.Errorf("failed to publish booking %s for occupancy %s, %w", elem.BookingID, occupancy.OccupancyID, err)
+			return fmt.Errorf("failed to publish booking %s, %w", elem.BookingID, err)
 		}
 
 		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID)
