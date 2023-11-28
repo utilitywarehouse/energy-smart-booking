@@ -542,7 +542,6 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv1.CreateBookingPointOfSaleRequest) (_ *bookingv1.CreateBookingPointOfSaleResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBookingPointOfSale",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
@@ -722,7 +721,6 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetEligibilityPointOfSaleJourney",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
@@ -780,7 +778,6 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bookingv1.GetClickLinkPointOfSaleJourneyRequest) (_ *bookingv1.GetClickLinkPointOfSaleJourneyResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetClickLinkPointOfSaleJourney",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
