@@ -87,7 +87,7 @@ func Test_GetClickLink(t *testing.T) {
 			setup: func(ctx context.Context, p *mocks.MockPointOfSaleCustomerDetailsStore, e *mocks.MockEligibilityGateway, c *mocks.MockClickGateway) {
 				e.EXPECT().GetMeterpointEligibility(ctx, "2199996734008", "2724968810", "E2 1Z").Return(true, nil)
 
-				p.EXPECT().GetByAccountNumber(ctx, models.PointOfSaleCustomerDetails{
+				p.EXPECT().Upsert(ctx, models.PointOfSaleCustomerDetails{
 					AccountNumber: "1",
 					Details: models.AccountDetails{
 						Title:     "Mr",
