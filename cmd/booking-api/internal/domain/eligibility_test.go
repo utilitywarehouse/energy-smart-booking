@@ -122,12 +122,14 @@ func Test_GetClickLink(t *testing.T) {
 					},
 				}).Return(nil)
 
-				c.EXPECT().GenerateAuthenticated(ctx, "1").Return("best_link_ever?", nil)
+				c.EXPECT().GenerateAuthenticated(ctx, "1", map[string]string{
+					"account_number": "1",
+					"journey_type":   "point_of_sale"}).Return("best_link_ever", nil)
 			},
 			output: outputParams{
 				result: domain.GetClickLinkResult{
 					Eligible: true,
-					Link:     "best_link_ever?&journey_type=point_of_sale&account_number=1",
+					Link:     "best_link_ever",
 				},
 				err: nil,
 			},
