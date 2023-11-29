@@ -21,7 +21,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/cache"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store/serialisers"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -242,6 +241,9 @@ func serverAction(c *cli.Context) error {
 	eligibilityCache := store.NewMeterpointEligible(redis, hoursTTL)
 	opsServer.Add("redis", eligibilityCache.NewHealthCheck())
 
+	customerDetailsStore := store.NewAccountDetailsStore(redis, hoursTTL)
+	opsServer.Add("redis-account-details", customerDetailsStore.NewHealthCheck())
+
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
 	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
@@ -270,7 +272,6 @@ func serverAction(c *cli.Context) error {
 	siteStore := store.NewSite(pool)
 	bookingStore := store.NewBooking(pool)
 	partialBookingStore := store.NewPartialBooking(pool)
-	pointOfSaleCustomerDetailsStore := store.NewPointOfSaleCustomerDetails(pool, serialisers.PointOfSaleCustomerDetails{})
 
 	// DOMAIN //
 	bookingDomain := domain.NewBookingDomain(
@@ -280,7 +281,7 @@ func serverAction(c *cli.Context) error {
 		siteStore,
 		bookingStore,
 		partialBookingStore,
-		pointOfSaleCustomerDetailsStore,
+		customerDetailsStore,
 		cachedEligibilityGateway,
 		clickGw,
 		true,

@@ -56,7 +56,7 @@ func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkPara
 		}, nil
 	}
 
-	err = d.pointOfSaleCustomerDetailsStore.Upsert(ctx, params.AccountNumber, params.Details)
+	err = d.pointOfSaleCustomerDetailsStore.SetAccountDetails(ctx, params.Details)
 	if err != nil {
 		return GetClickLinkResult{}, fmt.Errorf("failed to upsert customer details for account number: (%s), %w", params.AccountNumber, err)
 	}
