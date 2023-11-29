@@ -7,6 +7,8 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
+const posJourneyType = "point_of_sale"
+
 type ProcessEligibilityParams struct {
 	AccountNumber     string
 	Postcode          string
@@ -60,7 +62,7 @@ func (d BookingDomain) GetClickLink(ctx context.Context, params GetClickLinkPara
 	}
 
 	attributes := map[string]string{
-		"journey_type":   "point_of_sale",
+		"journey_type":   posJourneyType,
 		"account_number": params.AccountNumber,
 	}
 	link, err := d.clickGw.GenerateAuthenticated(ctx, params.AccountNumber, attributes)
