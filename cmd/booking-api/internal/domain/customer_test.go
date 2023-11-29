@@ -560,7 +560,7 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 				accountNumber: "1",
 			},
 			setup: func(ctx context.Context, p *mocks.MockPointOfSaleCustomerDetailsStore) {
-				p.EXPECT().GetAccountDetails(ctx, "1").Return(
+				p.EXPECT().GetByAccountNumber(ctx, "1").Return(
 					&models.PointOfSaleCustomerDetails{
 						AccountNumber: "1",
 						Details: models.AccountDetails{
@@ -640,7 +640,7 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 				accountNumber: "1",
 			},
 			setup: func(ctx context.Context, p *mocks.MockPointOfSaleCustomerDetailsStore) {
-				p.EXPECT().GetAccountDetails(ctx, "1").Return(nil, store.ErrPOSCustomerDetailsNotFound)
+				p.EXPECT().GetByAccountNumber(ctx, "1").Return(nil, store.ErrPOSCustomerDetailsNotFound)
 			},
 			output: outputParams{
 				details: nil,

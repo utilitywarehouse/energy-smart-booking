@@ -47,8 +47,8 @@ type PartialBookingStore interface {
 }
 
 type PointOfSaleCustomerDetailsStore interface {
-	GetAccountDetails(context.Context, string) (*models.PointOfSaleCustomerDetails, error)
-	SetAccountDetails(context.Context, models.PointOfSaleCustomerDetails) error
+	GetByAccountNumber(context.Context, string) (*models.PointOfSaleCustomerDetails, error)
+	Upsert(context.Context, models.PointOfSaleCustomerDetails) error
 }
 
 type BookingDomain struct {

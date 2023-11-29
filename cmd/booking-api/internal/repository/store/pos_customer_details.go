@@ -45,7 +45,7 @@ func (s *AccountDetailsStore) key(accountNumber string) string {
 	return fmt.Sprintf("%s:%s", prefixKeyCustomerDetails, accountNumber)
 }
 
-func (s *AccountDetailsStore) SetAccountDetails(ctx context.Context, accountDetails models.PointOfSaleCustomerDetails) error {
+func (s *AccountDetailsStore) Upsert(ctx context.Context, accountDetails models.PointOfSaleCustomerDetails) error {
 	posDetails := serialisers.PointOfSaleCustomerDetails{}
 	b, err := posDetails.Serialise(accountDetails)
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *AccountDetailsStore) SetAccountDetails(ctx context.Context, accountDeta
 	return s.r.Set(ctx, s.key(accountDetails.AccountNumber), string(b), s.ttl).Err()
 }
 
-func (s *AccountDetailsStore) GetAccountDetails(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error) {
+func (s *AccountDetailsStore) GetByAccountNumber(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error) {
 	accountDetailsStr, err := s.r.Get(ctx, s.key(accountNumber)).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {

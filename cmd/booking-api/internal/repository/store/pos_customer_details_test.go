@@ -87,7 +87,7 @@ func Test_AccountDetailsStore_CacheAccountDetails(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			err := accountDetailsStore.SetAccountDetails(ctx, tc.input.accountDetails)
+			err := accountDetailsStore.Upsert(ctx, tc.input.accountDetails)
 			if err != tc.output {
 				t.Fatalf("error output does not match, expected: %s | actual: %s", tc.output, err)
 			}
@@ -222,12 +222,12 @@ func Test_AccountDetailsStore_GetAccountDetails(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 			if !tc.input.skipInsertion {
-				err := accountDetailsStore.SetAccountDetails(ctx, tc.input.accountDetails)
+				err := accountDetailsStore.Upsert(ctx, tc.input.accountDetails)
 				if err != nil {
 					t.Fatal("error when caching eligibility")
 				}
 			}
-			res, err := accountDetailsStore.GetAccountDetails(ctx, tc.input.accountDetails.AccountNumber)
+			res, err := accountDetailsStore.GetByAccountNumber(ctx, tc.input.accountDetails.AccountNumber)
 			if err != tc.output.err {
 				t.Fatalf("error output does not match, expected: %s | actual: %s", tc.output.err, err)
 			}

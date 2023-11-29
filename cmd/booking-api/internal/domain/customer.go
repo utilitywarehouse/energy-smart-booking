@@ -105,7 +105,7 @@ func (d BookingDomain) GetCustomerBookings(ctx context.Context, accountID string
 
 func (d BookingDomain) GetCustomerDetailsPointOfSale(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error) {
 
-	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetAccountDetails(ctx, accountNumber)
+	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetByAccountNumber(ctx, accountNumber)
 	if err != nil {
 		switch err {
 		case store.ErrPOSCustomerDetailsNotFound:
