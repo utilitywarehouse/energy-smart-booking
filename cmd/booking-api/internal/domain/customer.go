@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ErrNoEligibleOccupanciesFound         = errors.New("no eligible occupancies were found")
-	ErrPointOfSaleCustomerDetailsNotFound = errors.New("point of sale customer details not found")
+	ErrNoEligibleOccupanciesFound = errors.New("no eligible occupancies were found")
+	ErrPOSCustomerDetailsNotFound = errors.New("point of sale customer details not found")
 )
 
 func (d BookingDomain) GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error) {
@@ -108,8 +108,8 @@ func (d BookingDomain) GetCustomerDetailsPointOfSale(ctx context.Context, accoun
 	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetByAccountNumber(ctx, accountNumber)
 	if err != nil {
 		switch err {
-		case store.ErrPointOfSaleCustomerDetailsNotFound:
-			return nil, fmt.Errorf("%w, %w", ErrPointOfSaleCustomerDetailsNotFound, err)
+		case store.ErrPOSCustomerDetailsNotFound:
+			return nil, fmt.Errorf("%w, %w", ErrPOSCustomerDetailsNotFound, err)
 		}
 
 		return nil, fmt.Errorf("failed to get customer details, %w", err)

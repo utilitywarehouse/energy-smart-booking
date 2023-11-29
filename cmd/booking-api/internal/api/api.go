@@ -685,7 +685,7 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 	customerDetails, err := b.bookingDomain.GetCustomerDetailsPointOfSale(ctx, req.AccountNumber)
 	if err != nil {
 		switch {
-		case errors.Is(err, domain.ErrPointOfSaleCustomerDetailsNotFound):
+		case errors.Is(err, domain.ErrPOSCustomerDetailsNotFound):
 			return nil, status.Errorf(codes.NotFound, "did not find customer details for provided account number: %s", req.GetAccountNumber())
 		}
 		return nil, status.Errorf(codes.Internal, "failed to get customer details point of sale, %s", err)

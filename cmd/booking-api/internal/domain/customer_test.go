@@ -640,11 +640,11 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 				accountNumber: "1",
 			},
 			setup: func(ctx context.Context, p *mocks.MockPointOfSaleCustomerDetailsStore) {
-				p.EXPECT().GetByAccountNumber(ctx, "1").Return(nil, store.ErrPointOfSaleCustomerDetailsNotFound)
+				p.EXPECT().GetByAccountNumber(ctx, "1").Return(nil, store.ErrPOSCustomerDetailsNotFound)
 			},
 			output: outputParams{
 				details: nil,
-				err:     domain.ErrPointOfSaleCustomerDetailsNotFound,
+				err:     domain.ErrPOSCustomerDetailsNotFound,
 			},
 		},
 	}

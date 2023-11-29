@@ -5399,7 +5399,7 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 					ResourceID: "account-number-1",
 				}).Return(true, nil)
 
-				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(nil, domain.ErrPointOfSaleCustomerDetailsNotFound)
+				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(nil, domain.ErrPOSCustomerDetailsNotFound)
 			},
 			output: outputParams{
 				res: nil,
