@@ -45,14 +45,14 @@ func (s *AccountDetailsStore) key(accountNumber string) string {
 	return fmt.Sprintf("%s:%s", prefixKeyCustomerDetails, accountNumber)
 }
 
-func (s *AccountDetailsStore) Upsert(ctx context.Context, accountDetails models.PointOfSaleCustomerDetails) error {
+func (s *AccountDetailsStore) Upsert(ctx context.Context, accountNumber string, accountDetails models.PointOfSaleCustomerDetails) error {
 	posDetails := serialisers.PointOfSaleCustomerDetails{}
 	b, err := posDetails.Serialise(accountDetails)
 	if err != nil {
 		return err
 	}
 
-	return s.r.Set(ctx, s.key(accountDetails.AccountNumber), string(b), s.ttl).Err()
+	return s.r.Set(ctx, s.key(accountNumber), string(b), s.ttl).Err()
 }
 
 func (s *AccountDetailsStore) GetByAccountNumber(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error) {
