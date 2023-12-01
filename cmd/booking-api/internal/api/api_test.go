@@ -5904,10 +5904,9 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 			description: "should process an eligibility request for a candidate to a point of sale journey",
 			input: inputParams{
 				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "account-number-1",
-					Mpan:          "mpan-1",
-					Mprn:          "mprn-1",
-					Postcode:      "E2 1Z",
+					Mpan:     "mpan-1",
+					Mprn:     "mprn-1",
+					Postcode: "E2 1Z",
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
@@ -5915,12 +5914,11 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.account.eligibility",
-					ResourceID: "account-number-1",
+					ResourceID: "booking-api-server",
 				}).Return(true, nil)
 
 				bkDomain.EXPECT().ProcessEligibility(ctx, domain.ProcessEligibilityParams{
-					AccountNumber: "account-number-1",
-					Postcode:      "E2 1Z",
+					Postcode: "E2 1Z",
 					ElecOrderSupplies: models.OrderSupply{
 						MPXN: "mpan-1",
 					},
@@ -5942,10 +5940,9 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 			description: "should fail to get eligibility because postcode is nil",
 			input: inputParams{
 				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "account-number-1",
-					Mpan:          "mpan-1",
-					Mprn:          "mprn-1",
-					Postcode:      "",
+					Mpan:     "mpan-1",
+					Mprn:     "mprn-1",
+					Postcode: "",
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
@@ -5956,30 +5953,12 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 			},
 		},
 		{
-			description: "should fail to get eligibility because account number is nil",
-			input: inputParams{
-				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "",
-					Mpan:          "mpan-1",
-					Mprn:          "mprn-1",
-					Postcode:      "E2 1Z",
-				},
-			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "provided account number is missing"),
-			},
-		},
-		{
 			description: "should fail to get eligibility because mpan is nil",
 			input: inputParams{
 				req: &bookingv1.GetEligibilityPointOfSaleJourneyRequest{
-					AccountNumber: "account-number-1",
-					Mpan:          "",
-					Mprn:          "mprn-1",
-					Postcode:      "E2 1Z",
+					Mpan:     "",
+					Mprn:     "mprn-1",
+					Postcode: "E2 1Z",
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
