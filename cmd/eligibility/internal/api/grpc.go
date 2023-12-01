@@ -19,6 +19,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const resourceID = "booking-eligibility-grpc-api"
+
 var (
 	ErrUserUnauthorised = errors.New("user does not have required access")
 )
@@ -314,7 +316,7 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 		return nil, status.Error(codes.InvalidArgument, "no postcode provided")
 	}
 
-	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, "")
+	err = a.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, resourceID)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):

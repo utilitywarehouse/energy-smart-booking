@@ -10,7 +10,6 @@ import (
 const posJourneyType = "point_of_sale"
 
 type ProcessEligibilityParams struct {
-	AccountNumber     string
 	Postcode          string
 	ElecOrderSupplies models.OrderSupply
 	GasOrderSupplies  models.OrderSupply

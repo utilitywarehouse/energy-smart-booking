@@ -24,6 +24,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const resourceID = "booking-api-server"
+
 var (
 	ErrUserUnauthorised = errors.New("user does not have required access")
 )
@@ -721,9 +723,7 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetEligibilityPointOfSaleJourney",
-			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
-		)
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetEligibilityPointOfSaleJourney")
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
@@ -734,15 +734,11 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 		return nil, status.Error(codes.InvalidArgument, "provided post code is missing")
 	}
 
-	if req.AccountNumber == "" {
-		return nil, status.Error(codes.InvalidArgument, "provided account number is missing")
-	}
-
 	if req.Mpan == "" {
 		return nil, status.Error(codes.InvalidArgument, "provided mpan is missing")
 	}
 
-	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, resourceID)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -753,8 +749,7 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 	}
 
 	result, err := b.bookingDomain.ProcessEligibility(ctx, domain.ProcessEligibilityParams{
-		AccountNumber: req.AccountNumber,
-		Postcode:      req.Postcode,
+		Postcode: req.Postcode,
 		ElecOrderSupplies: models.OrderSupply{
 			MPXN: req.Mpan,
 		},
