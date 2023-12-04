@@ -724,6 +724,11 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 	var span trace.Span
 	if b.useTracing {
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetEligibilityPointOfSaleJourney")
+		span.AddEvent("request", trace.WithAttributes(
+			attribute.String("postcode", req.GetPostcode()),
+			attribute.String("mpan", req.GetMpan()),
+			attribute.String("mprn", req.GetMprn()),
+		))
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
@@ -776,6 +781,8 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetClickLinkPointOfSaleJourney",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
+		requestAttr := helpers.CreateSpanAttribute(req, "request", span)
+		span.AddEvent("params", trace.WithAttributes(requestAttr))
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
