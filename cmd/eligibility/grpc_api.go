@@ -27,6 +27,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	grpchealth "github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"golang.org/x/sync/errgroup"
@@ -46,6 +47,12 @@ func runGRPCApi(c *cli.Context) error {
 		WithDetails(appName, appDesc)
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	mn, err := machine.New()
+	if err != nil {
+		return fmt.Errorf("unable to create new IAM machine, %w", err)
+	}
+	defer mn.Close()
 
 	pdp, err := pdp.NewClient()
 	if err != nil {
@@ -76,8 +83,8 @@ func runGRPCApi(c *cli.Context) error {
 	defer xoserveConn.Close()
 
 	// GATEWAYS //
-	ecoesGateway := gateway.NewEcoesGateway(ecoesv1.NewEcoesAPIClient(ecoesConn))
-	xoserveGateway := gateway.NewXOServeGateway(xoservev1.NewXoserveAPIClient(xoserveConn))
+	ecoesGateway := gateway.NewEcoesGateway(mn, ecoesv1.NewEcoesAPIClient(ecoesConn))
+	xoserveGateway := gateway.NewXOServeGateway(mn, xoservev1.NewXoserveAPIClient(xoserveConn))
 
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)

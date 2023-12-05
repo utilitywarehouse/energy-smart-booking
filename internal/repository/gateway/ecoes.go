@@ -26,11 +26,12 @@ var ecoesAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
 }, []string{"status"})
 
 type EcoesGateway struct {
+	mai    MachineAuthInjector
 	client EcoesClient
 }
 
-func NewEcoesGateway(client EcoesClient) *EcoesGateway {
-	return &EcoesGateway{client}
+func NewEcoesGateway(mai MachineAuthInjector, client EcoesClient) *EcoesGateway {
+	return &EcoesGateway{mai, client}
 }
 
 func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error) {
