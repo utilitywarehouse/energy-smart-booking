@@ -743,7 +743,7 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 		return nil, status.Error(codes.InvalidArgument, "provided mpan is missing")
 	}
 
-	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, resourceID)
+	err = b.validateCredentials(ctx, auth.GetAction, auth.POSResource, resourceID)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -821,7 +821,7 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 		return nil, status.Error(codes.InvalidArgument, "provided mprn is not empty, but gas tariff type is unknown")
 	}
 
-	err = b.validateCredentials(ctx, auth.GetAction, auth.EligibilityResource, req.AccountNumber)
+	err = b.validateCredentials(ctx, auth.GetAction, auth.POSResource, req.AccountNumber)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
