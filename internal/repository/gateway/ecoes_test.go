@@ -29,7 +29,7 @@ func Test_GetMPANTechnicalDetails(t *testing.T) {
 	mai := fakeMachineAuthInjector{}
 	mai.ctx = ctx
 
-	myGw := gateway.NewEcoesGateway(mEcoes)
+	myGw := gateway.NewEcoesGateway(mai, mEcoes)
 
 	mEcoes.EXPECT().GetTechnicalDetailsByMPAN(ctx, &ecoesv1.SearchByMPANRequest{
 		Mpan: "mpan-1",
@@ -104,7 +104,7 @@ func Test_GetRelatedMPANs(t *testing.T) {
 	mai := fakeMachineAuthInjector{}
 	mai.ctx = ctx
 
-	myGw := gateway.NewEcoesGateway(mEcoes)
+	myGw := gateway.NewEcoesGateway(mai, mEcoes)
 
 	mEcoes.EXPECT().GetRelatedMPANs(ctx, &ecoesv1.SearchByMPANRequest{
 		Mpan: "mpan-1",

@@ -26,16 +26,17 @@ var ecoesAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
 }, []string{"status"})
 
 type EcoesGateway struct {
+	mai    MachineAuthInjector
 	client EcoesClient
 }
 
-func NewEcoesGateway(client EcoesClient) *EcoesGateway {
-	return &EcoesGateway{client}
+func NewEcoesGateway(mai MachineAuthInjector, client EcoesClient) *EcoesGateway {
+	return &EcoesGateway{mai, client}
 }
 
 func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error) {
 
-	technicalDetails, err := gw.client.GetTechnicalDetailsByMPAN(ctx, &ecoesv1.SearchByMPANRequest{
+	technicalDetails, err := gw.client.GetTechnicalDetailsByMPAN(gw.mai.ToCtx(ctx), &ecoesv1.SearchByMPANRequest{
 		Mpan: mpan,
 	})
 	if err != nil {
@@ -66,7 +67,7 @@ func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string
 
 func (gw *EcoesGateway) HasRelatedMPAN(ctx context.Context, mpan string) (bool, error) {
 
-	relatedMPAN, err := gw.client.GetRelatedMPANs(ctx, &ecoesv1.SearchByMPANRequest{
+	relatedMPAN, err := gw.client.GetRelatedMPANs(gw.mai.ToCtx(ctx), &ecoesv1.SearchByMPANRequest{
 		Mpan: mpan,
 	})
 	if err != nil {

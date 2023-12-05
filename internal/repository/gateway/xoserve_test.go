@@ -27,7 +27,7 @@ func Test_GetMPRNTechnicalDetails(t *testing.T) {
 	mai := fakeMachineAuthInjector{}
 	mai.ctx = ctx
 
-	myGw := gateway.NewXOServeGateway(mXOServe)
+	myGw := gateway.NewXOServeGateway(mai, mXOServe)
 
 	mXOServe.EXPECT().GetSwitchDataByMPRN(ctx, &xoservev1.SearchByMPRNRequest{
 		Mprn: "mprn-1",
