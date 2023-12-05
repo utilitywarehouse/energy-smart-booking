@@ -5498,7 +5498,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking.pos-of-sale",
+					Resource:   "uw.energy-smart.v1.point-of-sale",
 					ResourceID: "account-number-1",
 				}).Return(true, nil)
 
@@ -5913,7 +5913,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
-					Resource:   "uw.energy-smart.v1.booking.pos-of-sale",
+					Resource:   "uw.energy-smart.v1.point-of-sale",
 					ResourceID: "booking-api-server",
 				}).Return(true, nil)
 
