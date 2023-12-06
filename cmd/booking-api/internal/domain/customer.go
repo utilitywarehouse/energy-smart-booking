@@ -104,18 +104,7 @@ func (d BookingDomain) GetCustomerBookings(ctx context.Context, accountID string
 }
 
 func (d BookingDomain) GetCustomerDetailsPointOfSale(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error) {
-
-	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetByAccountNumber(ctx, accountNumber)
-	if err != nil {
-		switch err {
-		case store.ErrPOSCustomerDetailsNotFound:
-			return nil, fmt.Errorf("%w, %w", ErrPOSCustomerDetailsNotFound, err)
-		}
-
-		return nil, fmt.Errorf("failed to get customer details, %w", err)
-	}
-
-	return customerDetails, nil
+	return d.getCustomerDetailsPointOfSale(ctx, accountNumber)
 }
 
 func getUniqueOccupancyIDs(bookings []models.Booking) map[string]struct{} {

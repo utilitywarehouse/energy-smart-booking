@@ -39,7 +39,7 @@ type BookingDomain interface {
 	RescheduleBooking(ctx context.Context, params domain.RescheduleBookingParams) (domain.RescheduleBookingResponse, error)
 
 	// POS Journey
-	CreateBookingPointOfSale(ctx context.Context, params domain.CreatePOSBookingParams) (domain.CreateBookingResponse, error)
+	CreateBookingPointOfSale(ctx context.Context, params domain.CreatePOSBookingParams) (domain.CreateBookingPointOfSaleResponse, error)
 	GetAvailableSlotsPointOfSale(ctx context.Context, params domain.GetPOSAvailableSlotsParams) (domain.GetAvailableSlotsResponse, error)
 	GetCustomerDetailsPointOfSale(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error)
 
@@ -48,7 +48,7 @@ type BookingDomain interface {
 	GetClickLink(context.Context, domain.GetClickLinkParams) (domain.GetClickLinkResult, error)
 }
 
-type BookingPublisher interface {
+type Publisher interface {
 	Sink(ctx context.Context, proto proto.Message, at time.Time) error
 }
 
@@ -57,9 +57,10 @@ type Auth interface {
 }
 
 type BookingAPI struct {
-	bookingDomain BookingDomain
-	publisher     BookingPublisher
-	auth          Auth
+	bookingDomain    BookingDomain
+	bookingPublisher Publisher
+	commsPublisher   Publisher
+	auth             Auth
 	bookingv1.UnimplementedBookingAPIServer
 	useTracing bool
 }
@@ -72,12 +73,13 @@ type accountNumberer interface {
 	GetAccountNumber() string
 }
 
-func New(bookingDomain BookingDomain, publisher BookingPublisher, auth Auth, useTracing bool) *BookingAPI {
+func New(bookingDomain BookingDomain, bookingPublisher, commsPublisher Publisher, auth Auth, useTracing bool) *BookingAPI {
 	return &BookingAPI{
-		bookingDomain: bookingDomain,
-		publisher:     publisher,
-		auth:          auth,
-		useTracing:    useTracing,
+		bookingDomain:    bookingDomain,
+		bookingPublisher: bookingPublisher,
+		commsPublisher:   commsPublisher,
+		auth:             auth,
+		useTracing:       useTracing,
 	}
 }
 
@@ -372,7 +374,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 		}, mapError("failed to create booking, %s", err)
 	}
 
-	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
+	err = b.bookingPublisher.Sink(ctx, createBookingResponse.Event, time.Now())
 	if err != nil {
 		logrus.Errorf("failed to sink create booking event: %+v", createBookingResponse.Event)
 	}
@@ -452,7 +454,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		}, mapError("failed to reschedule booking, %s", err)
 	}
 
-	err = b.publisher.Sink(ctx, rescheduleBookingResponse.Event, time.Now())
+	err = b.bookingPublisher.Sink(ctx, rescheduleBookingResponse.Event, time.Now())
 	if err != nil {
 		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingResponse.Event)
 	}
@@ -600,7 +602,8 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	}
 
 	params := domain.CreatePOSBookingParams{
-		AccountID: accountID,
+		AccountNumber: req.GetAccountNumber(),
+		AccountID:     accountID,
 		SiteAddress: models.AccountAddress{
 			UPRN: req.SiteAddress.Uprn,
 			PAF: models.PAF{
@@ -637,10 +640,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	if err != nil {
 		switch err {
 		case domain.ErrMissingOccupancyInBooking:
-			logrus.Warnf("occupancy for the account_id: %s was not found! saving the partial booking created event in the database with booking_id: %s", createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).Details.AccountId, createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId)
-			return &bookingv1.CreateBookingPointOfSaleResponse{
-				BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
-			}, nil
+			logrus.Warnf("occupancy for the account_id: %s was not found! saving the partial booking created event in the database with booking_id: %s", createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).Details.AccountId, createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).BookingId)
 		default:
 			return &bookingv1.CreateBookingPointOfSaleResponse{
 				BookingId: "",
@@ -648,13 +648,20 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		}
 	}
 
-	err = b.publisher.Sink(ctx, createBookingResponse.Event, time.Now())
+	if !errors.Is(err, domain.ErrMissingOccupancyInBooking) {
+		err = b.bookingPublisher.Sink(ctx, createBookingResponse.BookingEvent, time.Now())
+		if err != nil {
+			logrus.Errorf("failed to sink create booking event: %+v, %s", createBookingResponse.BookingEvent, err)
+		}
+	}
+
+	err = b.commsPublisher.Sink(ctx, createBookingResponse.CommsEvent, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink create booking event: %+v, %s", createBookingResponse.Event, err)
+		logrus.Errorf("failed to sink comm point of sale booking confirmation event: %+v, %s", createBookingResponse.CommsEvent, err)
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{
-		BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
+		BookingId: createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).BookingId,
 	}, nil
 }
 

@@ -2,9 +2,12 @@ package domain
 
 import (
 	"context"
+	"fmt"
 
+	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 )
@@ -86,5 +89,38 @@ func NewBookingDomain(accounts AccountGateway,
 		eligibilityGw,
 		clickGw,
 		useTracing,
+	}
+}
+
+func (d BookingDomain) getCustomerDetailsPointOfSale(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error) {
+	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetByAccountNumber(ctx, accountNumber)
+	if err != nil {
+		switch err {
+		case store.ErrPOSCustomerDetailsNotFound:
+			return nil, fmt.Errorf("%w, %w", ErrPOSCustomerDetailsNotFound, err)
+		}
+
+		return nil, fmt.Errorf("failed to get customer details, %w", err)
+	}
+
+	return customerDetails, nil
+}
+
+func toAddress(address models.AccountAddress) *addressv1.Address {
+	return &addressv1.Address{
+		Uprn: address.UPRN,
+		Paf: &addressv1.Address_PAF{
+			Organisation:            address.PAF.Organisation,
+			Department:              address.PAF.Department,
+			SubBuilding:             address.PAF.SubBuilding,
+			BuildingName:            address.PAF.BuildingName,
+			BuildingNumber:          address.PAF.BuildingNumber,
+			DependentThoroughfare:   address.PAF.DependentThoroughfare,
+			Thoroughfare:            address.PAF.Thoroughfare,
+			DoubleDependentLocality: address.PAF.DoubleDependentLocality,
+			DependentLocality:       address.PAF.DependentLocality,
+			PostTown:                address.PAF.PostTown,
+			Postcode:                address.PAF.Postcode,
+		},
 	}
 }
