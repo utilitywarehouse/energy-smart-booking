@@ -504,9 +504,9 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 	}
 
 	params := domain.GetPOSAvailableSlotsParams{
-		AccountID: accountID,
-		From:      req.From,
-		To:        req.To,
+		AccountNumber: req.AccountNumber,
+		From:          req.From,
+		To:            req.To,
 	}
 
 	availableSlotsResponse, err := b.bookingDomain.GetAvailableSlotsPointOfSale(ctx, params)
@@ -604,22 +604,6 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	params := domain.CreatePOSBookingParams{
 		AccountNumber: req.GetAccountNumber(),
 		AccountID:     accountID,
-		SiteAddress: models.AccountAddress{
-			UPRN: req.SiteAddress.Uprn,
-			PAF: models.PAF{
-				BuildingName:            req.SiteAddress.Paf.BuildingName,
-				BuildingNumber:          req.SiteAddress.Paf.BuildingNumber,
-				Department:              req.SiteAddress.Paf.Department,
-				DependentLocality:       req.SiteAddress.Paf.DependentLocality,
-				DependentThoroughfare:   req.SiteAddress.Paf.DependentThoroughfare,
-				DoubleDependentLocality: req.SiteAddress.Paf.DoubleDependentLocality,
-				Organisation:            req.SiteAddress.Paf.Organisation,
-				PostTown:                req.SiteAddress.Paf.PostTown,
-				Postcode:                req.SiteAddress.Paf.Postcode,
-				SubBuilding:             req.SiteAddress.Paf.SubBuilding,
-				Thoroughfare:            req.SiteAddress.Paf.Thoroughfare,
-			},
-		},
 		ContactDetails: models.AccountDetails{
 			Title:     req.GetContactDetails().Title,
 			FirstName: req.GetContactDetails().FirstName,

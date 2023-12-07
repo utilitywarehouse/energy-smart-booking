@@ -728,8 +728,9 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 	defer ctrl.Finish()
 
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
+	customerDetailSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, nil, nil, nil, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, lbGw, nil, nil, nil, nil, customerDetailSt, nil, nil, false)
 
 	type inputParams struct {
 		params domain.GetPOSAvailableSlotsParams
@@ -742,7 +743,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway)
+		setup       func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore)
 		input       inputParams
 		output      outputParams
 	}
@@ -752,9 +753,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 			description: "should get the available slots between From and To",
 			input: inputParams{
 				params: domain.GetPOSAvailableSlotsParams{
-					Postcode:          "E2 1ZZ",
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2023,
 						Month: 12,
@@ -767,7 +766,30 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+
+				customerDetailSt.EXPECT().GetByAccountNumber(ctx, "account-number-1").Return(&models.PointOfSaleCustomerDetails{
+					Address: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "mpan-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					},
+				}, nil)
 
 				lbGw.EXPECT().GetAvailableSlotsPointOfSale(ctx,
 					"E2 1ZZ",
@@ -818,9 +840,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 			description: "should return an error because no dates available for provided date",
 			input: inputParams{
 				params: domain.GetPOSAvailableSlotsParams{
-					Postcode:          "E2 1ZZ",
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2020,
 						Month: 12,
@@ -833,14 +853,41 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+
+				customerDetailSt.EXPECT().GetByAccountNumber(ctx, "account-number-1").Return(&models.PointOfSaleCustomerDetails{
+					Address: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "mpan-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
+					},
+					GasOrderSupplies: models.OrderSupply{
+						MPXN:       "mprn-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_PREPAYMENT,
+					},
+				}, nil)
 
 				lbGw.EXPECT().GetAvailableSlotsPointOfSale(ctx,
 					"E2 1ZZ",
 					"mpan-1",
-					"",
+					"mprn-1",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+					lowribeckv1.TariffType_TARIFF_TYPE_PREPAYMENT,
 				).Return(gateway.AvailableSlotsResponse{
 					BookingSlots: []models.BookingSlot{
 						{
@@ -874,7 +921,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, lbGw)
+			tc.setup(ctx, lbGw, customerDetailSt)
 
 			actual, err := myDomain.GetAvailableSlotsPointOfSale(ctx, tc.input.params)
 
@@ -926,33 +973,9 @@ func Test_CreatePOSBooking(t *testing.T) {
 			description: "should create booking",
 			input: inputParams{
 				params: domain.CreatePOSBookingParams{
-					AccountNumber: "account-number-1",
-					AccountID:     "account-id-1",
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "555-0145",
-					},
+					AccountNumber:  "account-number-1",
+					AccountID:      "account-id-1",
+					ContactDetails: models.AccountDetails{},
 					Slot: models.BookingSlot{
 						Date:      mustDate(t, "2023-08-27"),
 						StartTime: 9,
@@ -976,6 +999,26 @@ func Test_CreatePOSBooking(t *testing.T) {
 						LastName:  "Dough",
 						Email:     "jdough@example.com",
 						Mobile:    "555-0145",
+					},
+					Address: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "mpan-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					},
 				}, nil)
 
@@ -1106,24 +1149,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 				params: domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     "account-id-1",
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mrs",
 						FirstName: "Johanna",
@@ -1154,6 +1179,26 @@ func Test_CreatePOSBooking(t *testing.T) {
 						LastName:  "Dough",
 						Email:     "jdough@example.com",
 						Mobile:    "07485-1111",
+					},
+					Address: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "mpan-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					},
 				}, nil)
 
@@ -1289,33 +1334,9 @@ func Test_CreatePOSBooking(t *testing.T) {
 			description: "should create booking but not return an event to be published because occupancy id does not exist yet",
 			input: inputParams{
 				params: domain.CreatePOSBookingParams{
-					AccountNumber: "account-number-1",
-					AccountID:     "account-id-1",
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
-					Mpan:              "mpan-1",
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					ContactDetails: models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "555-0145",
-					},
+					AccountNumber:  "account-number-1",
+					AccountID:      "account-id-1",
+					ContactDetails: models.AccountDetails{},
 					Slot: models.BookingSlot{
 						Date:      mustDate(t, "2023-08-27"),
 						StartTime: 9,
@@ -1339,6 +1360,26 @@ func Test_CreatePOSBooking(t *testing.T) {
 						LastName:  "Dough",
 						Email:     "jdough@example.com",
 						Mobile:    "555-0145",
+					},
+					Address: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "mpan-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					},
 				}, nil)
 
@@ -1469,24 +1510,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 				params: domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     "account-id-1",
-					Mpan:          "mpan-1",
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
-					TariffElectricity: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "John",
@@ -1516,6 +1539,26 @@ func Test_CreatePOSBooking(t *testing.T) {
 						LastName:  "Dough",
 						Email:     "jdough@example.com",
 						Mobile:    "555-0145",
+					},
+					Address: models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+					ElecOrderSupplies: models.OrderSupply{
+						MPXN:       "mpan-1",
+						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
 					},
 				}, nil)
 

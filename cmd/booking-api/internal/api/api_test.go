@@ -3226,7 +3226,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3335,7 +3335,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3387,7 +3387,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3433,7 +3433,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 
 				accountID := id.NewAccountID("account-number-1")
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3491,7 +3491,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3543,7 +3543,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 				}).Return(true, nil)
 
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3589,7 +3589,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 
 				accountID := id.NewAccountID("account-number-1")
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3641,7 +3641,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 
 				accountID := id.NewAccountID("account-number-1")
 				params := domain.GetPOSAvailableSlotsParams{
-					AccountID: accountID,
+					AccountNumber: "account-number-1",
 					From: &date.Date{
 						Year:  2012,
 						Month: 12,
@@ -3849,22 +3849,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -3992,22 +3976,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4134,22 +4102,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4239,22 +4191,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4344,22 +4280,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4449,22 +4369,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4554,22 +4458,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4659,22 +4547,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4764,22 +4636,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4869,22 +4725,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -4974,22 +4814,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
@@ -5079,22 +4903,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 				params := domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     accountID,
-					SiteAddress: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							Department:              "department-1",
-							DependentLocality:       "dl-1",
-							DependentThoroughfare:   "dt-1",
-							DoubleDependentLocality: "ddl-1",
-							Organisation:            "org",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-							SubBuilding:             "sub-1",
-							Thoroughfare:            "tf-1",
-						},
-					},
 					ContactDetails: models.AccountDetails{
 						Title:     "Mr",
 						FirstName: "Joe",
