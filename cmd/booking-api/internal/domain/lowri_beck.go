@@ -51,25 +51,15 @@ type RescheduleBookingParams struct {
 }
 
 type GetPOSAvailableSlotsParams struct {
-	AccountID         string
-	Postcode          string
-	Mpan              string
-	Mprn              string
-	TariffElectricity bookingv1.TariffType
-	TariffGas         bookingv1.TariffType
-	From              *date.Date
-	To                *date.Date
+	AccountNumber string
+	AccountID     string
+	From          *date.Date
+	To            *date.Date
 }
 
 type CreatePOSBookingParams struct {
 	AccountNumber        string
 	AccountID            string
-	SiteAddress          models.AccountAddress
-	Mpan                 string
-	Mprn                 string
-	TariffElectricity    bookingv1.TariffType
-	TariffGas            bookingv1.TariffType
-	ContactDetails       models.AccountDetails
 	Slot                 models.BookingSlot
 	Source               bookingv1.BookingSource
 	VulnerabilityDetails *bookingv1.VulnerabilityDetails
@@ -261,13 +251,18 @@ func (d BookingDomain) GetAvailableSlotsPointOfSale(ctx context.Context, params 
 	fromAsTime := time.Date(int(params.From.Year), time.Month(params.From.Month), int(params.From.Day), 0, 0, 0, 0, time.UTC)
 	toAsTime := time.Date(int(params.To.Year), time.Month(params.To.Month), int(params.To.Day), 0, 0, 0, 0, time.UTC)
 
+	customerAccountDetails, err := d.getCustomerDetailsPointOfSale(ctx, params.AccountID)
+	if err != nil {
+		return GetAvailableSlotsResponse{}, fmt.Errorf("failed getting available slots, %w", err)
+	}
+
 	slotsResponse, err := d.lowribeckGw.GetAvailableSlotsPointOfSale(
 		ctx,
-		params.Postcode,
-		params.Mpan,
-		params.Mprn,
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffGas),
+		customerAccountDetails.Address.PAF.Postcode,
+		customerAccountDetails.ElecOrderSupplies.MPXN,
+		customerAccountDetails.GasOrderSupplies.MPXN,
+		lowribeckv1.TariffType(customerAccountDetails.ElecOrderSupplies.TariffType),
+		lowribeckv1.TariffType(customerAccountDetails.GasOrderSupplies.TariffType),
 	)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get POS available slots, %w", err)
