@@ -52,7 +52,6 @@ type RescheduleBookingParams struct {
 
 type GetPOSAvailableSlotsParams struct {
 	AccountNumber string
-	AccountID     string
 	From          *date.Date
 	To            *date.Date
 }
@@ -60,6 +59,7 @@ type GetPOSAvailableSlotsParams struct {
 type CreatePOSBookingParams struct {
 	AccountNumber        string
 	AccountID            string
+	ContactDetails       models.AccountDetails
 	Slot                 models.BookingSlot
 	Source               bookingv1.BookingSource
 	VulnerabilityDetails *bookingv1.VulnerabilityDetails
@@ -251,7 +251,7 @@ func (d BookingDomain) GetAvailableSlotsPointOfSale(ctx context.Context, params 
 	fromAsTime := time.Date(int(params.From.Year), time.Month(params.From.Month), int(params.From.Day), 0, 0, 0, 0, time.UTC)
 	toAsTime := time.Date(int(params.To.Year), time.Month(params.To.Month), int(params.To.Day), 0, 0, 0, 0, time.UTC)
 
-	customerAccountDetails, err := d.getCustomerDetailsPointOfSale(ctx, params.AccountID)
+	customerAccountDetails, err := d.getCustomerDetailsPointOfSale(ctx, params.AccountNumber)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed getting available slots, %w", err)
 	}
@@ -261,8 +261,8 @@ func (d BookingDomain) GetAvailableSlotsPointOfSale(ctx context.Context, params 
 		customerAccountDetails.Address.PAF.Postcode,
 		customerAccountDetails.ElecOrderSupplies.MPXN,
 		customerAccountDetails.GasOrderSupplies.MPXN,
-		lowribeckv1.TariffType(customerAccountDetails.ElecOrderSupplies.TariffType),
-		lowribeckv1.TariffType(customerAccountDetails.GasOrderSupplies.TariffType),
+		models.BookingTariffTypeToLowribeckTariffType(customerAccountDetails.ElecOrderSupplies.TariffType),
+		models.BookingTariffTypeToLowribeckTariffType(customerAccountDetails.GasOrderSupplies.TariffType),
 	)
 	if err != nil {
 		return GetAvailableSlotsResponse{}, fmt.Errorf("failed to get POS available slots, %w", err)
@@ -305,11 +305,11 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 
 	response, err := d.lowribeckGw.CreateBookingPointOfSale(
 		ctx,
-		params.SiteAddress.PAF.Postcode,
-		params.Mpan,
-		params.Mprn,
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffElectricity),
-		models.BookingTariffTypeToLowribeckTariffType(params.TariffGas),
+		accountHolderDetails.Address.PAF.Postcode,
+		accountHolderDetails.ElecOrderSupplies.MPXN,
+		accountHolderDetails.GasOrderSupplies.MPXN,
+		models.BookingTariffTypeToLowribeckTariffType(accountHolderDetails.ElecOrderSupplies.TariffType),
+		models.BookingTariffTypeToLowribeckTariffType(accountHolderDetails.GasOrderSupplies.TariffType),
 		params.Slot,
 		accountHolderDetails.Details,
 		lbVulnerabilities,
@@ -322,9 +322,9 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		return CreateBookingPointOfSaleResponse{}, ErrUnsucessfulBooking
 	}
 
-	commsEvent = buildCommsEvent(params, accountHolderDetails.Details)
+	commsEvent = buildCommsEvent(params, *accountHolderDetails)
 
-	bookingEvent = buildBookingEvent(params, accountHolderDetails.Details, response.ReferenceID, bookingID)
+	bookingEvent = buildBookingEvent(params, *accountHolderDetails, response.ReferenceID, bookingID)
 
 	occupancy, err := d.occupancyStore.GetOccupancyByAccountID(ctx, params.AccountID)
 	if err != nil {
@@ -387,16 +387,16 @@ func mapLowribeckVulnerabilities(vulnerabilities []bookingv1.Vulnerability) (lbV
 	return
 }
 
-func buildCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.AccountDetails) *commsv1.PointOfSaleBookingConfirmationCommsEvent {
+func buildCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.PointOfSaleCustomerDetails) *commsv1.PointOfSaleBookingConfirmationCommsEvent {
 	event := &commsv1.PointOfSaleBookingConfirmationCommsEvent{
 		AccountId:     params.AccountID,
 		AccountNumber: params.AccountNumber,
 		AccountHolderContactDetails: &bookingv1.ContactDetails{
-			Title:     accountHolderDetails.Title,
-			FirstName: accountHolderDetails.FirstName,
-			LastName:  accountHolderDetails.LastName,
-			Phone:     accountHolderDetails.Mobile,
-			Email:     accountHolderDetails.Email,
+			Title:     accountHolderDetails.Details.Title,
+			FirstName: accountHolderDetails.Details.FirstName,
+			LastName:  accountHolderDetails.Details.LastName,
+			Phone:     accountHolderDetails.Details.Mobile,
+			Email:     accountHolderDetails.Details.Email,
 		},
 		BookingDate: &date.Date{
 			Year:  int32(params.Slot.Date.Year()),
@@ -406,14 +406,14 @@ func buildCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.
 		StartTime:      int32(params.Slot.StartTime),
 		EndTime:        int32(params.Slot.EndTime),
 		BookingType:    bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
-		SupplyAddress:  toAddress(params.SiteAddress),
-		Mpan:           params.Mpan,
-		Mprn:           params.Mprn,
-		ElecTariffType: params.TariffElectricity,
-		GasTariffType:  params.TariffGas,
+		SupplyAddress:  toAddress(accountHolderDetails.Address),
+		Mpan:           accountHolderDetails.ElecOrderSupplies.MPXN,
+		Mprn:           accountHolderDetails.GasOrderSupplies.MPXN,
+		ElecTariffType: accountHolderDetails.ElecOrderSupplies.TariffType,
+		GasTariffType:  accountHolderDetails.GasOrderSupplies.TariffType,
 	}
 
-	if !accountHolderDetails.Equals(params.ContactDetails) {
+	if !accountHolderDetails.Details.Equals(params.ContactDetails) && !params.ContactDetails.Empty() {
 		event.OnSiteContactDetails = &bookingv1.ContactDetails{
 			Title:     params.ContactDetails.Title,
 			FirstName: params.ContactDetails.FirstName,
@@ -426,18 +426,18 @@ func buildCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.
 	return event
 }
 
-func buildBookingEvent(params CreatePOSBookingParams, accountHolderDetails models.AccountDetails, referenceID, bookingID string) *bookingv1.BookingCreatedEvent {
+func buildBookingEvent(params CreatePOSBookingParams, accountHolderDetails models.PointOfSaleCustomerDetails, referenceID, bookingID string) *bookingv1.BookingCreatedEvent {
 	return &bookingv1.BookingCreatedEvent{
 		BookingId: bookingID,
 		Details: &bookingv1.Booking{
 			Id:        bookingID,
 			AccountId: params.AccountID,
 			ContactDetails: &bookingv1.ContactDetails{
-				Title:     accountHolderDetails.Title,
-				FirstName: accountHolderDetails.FirstName,
-				LastName:  accountHolderDetails.LastName,
-				Phone:     accountHolderDetails.Mobile,
-				Email:     accountHolderDetails.Email,
+				Title:     accountHolderDetails.Details.Title,
+				FirstName: accountHolderDetails.Details.FirstName,
+				LastName:  accountHolderDetails.Details.LastName,
+				Phone:     accountHolderDetails.Details.Mobile,
+				Email:     accountHolderDetails.Details.Email,
 			},
 			Slot: &bookingv1.BookingSlot{
 				Date: &date.Date{
@@ -448,22 +448,7 @@ func buildBookingEvent(params CreatePOSBookingParams, accountHolderDetails model
 				StartTime: int32(params.Slot.StartTime),
 				EndTime:   int32(params.Slot.EndTime),
 			},
-			SiteAddress: &addressv1.Address{
-				Uprn: params.SiteAddress.UPRN,
-				Paf: &addressv1.Address_PAF{
-					Organisation:            params.SiteAddress.PAF.Organisation,
-					Department:              params.SiteAddress.PAF.Department,
-					SubBuilding:             params.SiteAddress.PAF.SubBuilding,
-					BuildingName:            params.SiteAddress.PAF.BuildingName,
-					BuildingNumber:          params.SiteAddress.PAF.BuildingNumber,
-					DependentThoroughfare:   params.SiteAddress.PAF.DependentThoroughfare,
-					Thoroughfare:            params.SiteAddress.PAF.Thoroughfare,
-					DoubleDependentLocality: params.SiteAddress.PAF.DoubleDependentLocality,
-					DependentLocality:       params.SiteAddress.PAF.DependentLocality,
-					PostTown:                params.SiteAddress.PAF.PostTown,
-					Postcode:                params.SiteAddress.PAF.Postcode,
-				},
-			},
+			SiteAddress:          toAddress(accountHolderDetails.Address),
 			VulnerabilityDetails: params.VulnerabilityDetails,
 			Status:               bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 			ExternalReference:    referenceID,
