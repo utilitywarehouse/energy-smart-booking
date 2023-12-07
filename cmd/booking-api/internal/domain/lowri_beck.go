@@ -329,7 +329,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 
 	commsEvent = buildCommsEvent(params, accountHolderDetails.Details)
 
-	bookingEvent = buildBookingEvent(params, accountHolderDetails.Details, bookingID, response.ReferenceID)
+	bookingEvent = buildBookingEvent(params, accountHolderDetails.Details, response.ReferenceID, bookingID)
 
 	occupancy, err := d.occupancyStore.GetOccupancyByAccountID(ctx, params.AccountID)
 	if err != nil {
