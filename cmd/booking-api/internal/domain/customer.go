@@ -142,3 +142,17 @@ func (d BookingDomain) getAddresses(ctx context.Context, occupancyIDs map[string
 	}
 	return addresses, nil
 }
+
+func (d BookingDomain) getCustomerDetailsPointOfSale(ctx context.Context, accountNumber string) (*models.PointOfSaleCustomerDetails, error) {
+	customerDetails, err := d.pointOfSaleCustomerDetailsStore.GetByAccountNumber(ctx, accountNumber)
+	if err != nil {
+		switch err {
+		case store.ErrPOSCustomerDetailsNotFound:
+			return nil, fmt.Errorf("%w, %w", ErrPOSCustomerDetailsNotFound, err)
+		}
+
+		return nil, fmt.Errorf("failed to get customer details, %w", err)
+	}
+
+	return customerDetails, nil
+}
