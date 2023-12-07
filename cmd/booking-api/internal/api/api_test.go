@@ -5277,11 +5277,11 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-
+				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.account.booking",
-					ResourceID: "account-number-1",
+					ResourceID: accountID,
 				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(&models.PointOfSaleCustomerDetails{
@@ -5370,11 +5370,11 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-
+				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.account.booking",
-					ResourceID: "account-number-1",
+					ResourceID: accountID,
 				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(nil, errOops)
@@ -5392,11 +5392,11 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 				},
 			},
 			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
-
+				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
 					Resource:   "uw.energy-smart.v1.account.booking",
-					ResourceID: "account-number-1",
+					ResourceID: accountID,
 				}).Return(true, nil)
 
 				bkDomain.EXPECT().GetCustomerDetailsPointOfSale(ctx, "account-number-1").Return(nil, domain.ErrPOSCustomerDetailsNotFound)

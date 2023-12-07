@@ -659,8 +659,8 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 }
 
 func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *bookingv1.GetCustomerDetailsPointOfSaleRequest) (_ *bookingv1.GetCustomerDetailsPointOfSaleResponse, err error) {
+	var span trace.Span
 	if b.useTracing {
-		var span trace.Span
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerDetailsPointOfSale",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
@@ -674,7 +674,11 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 		return nil, status.Error(codes.InvalidArgument, "invalid account number provided (empty string)")
 	}
 
-	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, req.AccountNumber)
+	accountID := id.NewAccountID(req.GetAccountNumber())
+	if b.useTracing {
+		span.SetAttributes(attribute.String("account.id", accountID))
+	}
+	err = b.validateCredentials(ctx, auth.GetAction, auth.AccountBookingResource, accountID)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
