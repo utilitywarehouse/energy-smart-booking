@@ -215,9 +215,9 @@ func serverAction(c *cli.Context) error {
 	defer bookingSink.Close()
 	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
 
-	commsSink, err := app.GetKafkaSinkWithBroker(c.String(flagCommsTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	commsSink, err := app.GetKafkaSinkWithBroker(c.String(flagBookingCommsTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
 	if err != nil {
-		return fmt.Errorf("unable to connect to comms [%s] kafka sink: %w", c.String(flagCommsTopic), err)
+		return fmt.Errorf("unable to connect to comms [%s] kafka sink: %w", c.String(flagBookingCommsTopic), err)
 	}
 	defer commsSink.Close()
 	opsServer.Add("comms-sink", substratehealth.NewCheck(commsSink, "unable to sink comms events"))
