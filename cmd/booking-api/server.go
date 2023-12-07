@@ -215,6 +215,13 @@ func serverAction(c *cli.Context) error {
 	defer bookingSink.Close()
 	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
 
+	commsSink, err := app.GetKafkaSinkWithBroker(c.String(flagCommsTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	if err != nil {
+		return fmt.Errorf("unable to connect to comms [%s] kafka sink: %w", c.String(flagCommsTopic), err)
+	}
+	defer commsSink.Close()
+	opsServer.Add("comms-sink", substratehealth.NewCheck(commsSink, "unable to sink comms events"))
+
 	g, ctx := errgroup.WithContext(ctx)
 
 	closer, err := telemetry.Register(ctx,
@@ -266,6 +273,7 @@ func serverAction(c *cli.Context) error {
 	// PUBLISHERS //
 
 	syncBookingPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingSink), c.App.Name)
+	syncCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsSink), c.App.Name)
 
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
@@ -287,7 +295,7 @@ func serverAction(c *cli.Context) error {
 		true,
 	)
 
-	bookingAPI := api.New(bookingDomain, syncBookingPublisher, auth, true)
+	bookingAPI := api.New(bookingDomain, syncBookingPublisher, syncCommsPublisher, auth, true)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

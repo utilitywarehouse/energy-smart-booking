@@ -20,6 +20,7 @@ var (
 	// shared flags
 	flagPostgresDSN                         = "postgres-dsn"
 	flagBookingTopic                        = "booking-topic"
+	flagCommsTopic                          = "comms-topic"
 	flagPartialBookingCron                  = "partial-booking-cron"
 	flagRetainedBookingPeriodAlertThreshold = "retained-booking-period-alert-threshold"
 
@@ -31,6 +32,10 @@ var (
 			&cli.StringFlag{
 				Name:    flagBookingTopic,
 				EnvVars: []string{"BOOKING_TOPIC"},
+			},
+			&cli.StringFlag{
+				Name:    flagCommsTopic,
+				EnvVars: []string{"COMMS_TOPIC"},
 			},
 		),
 	}

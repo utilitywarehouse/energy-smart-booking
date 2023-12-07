@@ -14,6 +14,22 @@ type AccountDetails struct {
 	Mobile    string
 }
 
+func (m AccountDetails) Equals(b AccountDetails) bool {
+	return m.Title == b.Title &&
+		m.Email == b.Email &&
+		m.FirstName == b.FirstName &&
+		m.LastName == b.LastName &&
+		m.Mobile == b.Mobile
+}
+
+func (m AccountDetails) Empty() bool {
+	return m.Title == "" &&
+		m.Email == "" &&
+		m.FirstName == "" &&
+		m.LastName == "" &&
+		m.Mobile == ""
+}
+
 type AccountAddress struct {
 	UPRN string
 	PAF  PAF
