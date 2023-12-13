@@ -3796,22 +3796,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -3923,22 +3907,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4049,22 +4017,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4138,22 +4090,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4227,22 +4163,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4316,22 +4236,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4405,22 +4309,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4494,22 +4382,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4583,22 +4455,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4672,22 +4528,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4761,22 +4601,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4850,22 +4674,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4939,22 +4747,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-1",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
@@ -4999,22 +4791,6 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			input: inputParams{
 				req: &bookingv1.CreateBookingPointOfSaleRequest{
 					AccountNumber: "account-number-2",
-					SiteAddress: &addressv1.Address{
-						Uprn: "uprn-1",
-						Paf: &addressv1.Address_PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
 					Slot: &bookingv1.BookingSlot{
 						Date: &date.Date{
 							Year:  2020,
