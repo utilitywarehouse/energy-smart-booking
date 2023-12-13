@@ -78,3 +78,31 @@ type CreateBookingResponse struct {
 	ResponseMessage string `json:"ResponseMessage,omitempty"`
 	ResponseCode    string `json:"ResponseCode,omitempty"`
 }
+
+type UpdateContactDetailsRequest struct {
+	RequestID            string `json:"RequestId,omitempty"`
+	SendingSystem        string `json:"SendingSystem,omitempty"`
+	ReceivingSystem      string `json:"ReceivingSystem,omitempty"`
+	CreatedDate          string `json:"CreatedDate,omitempty"`
+	ReferenceID          string `json:"ReferenceId,omitempty"`
+	SiteContactName      string `json:"SiteContactName,omitempty"`
+	SiteContactNumber    string `json:"SiteContactNumber,omitempty"`
+	SiteContactNumberAlt string `json:"SiteContactNumberAlt,omitempty"`
+	Vulnerabilities      string `json:"Vulnerabilities,omitempty"`
+	VulnerabilitiesOther string `json:"VulnerabilitiesOther,omitempty"`
+	AccessPassword       string `json:"AccessPassword,omitempty"`
+	AdditionalInfo       string `json:"AdditionalInfo,omitempty"`
+	ContactPreferences   string `json:"ContactPreferences,omitempty"`
+}
+
+type UpdateContactDetailsResponse struct {
+	RequestID       string `json:"RequestId,omitempty"`
+	ReferenceID     string `json:"ReferenceId,omitempty"`
+	SendingSystem   string `json:"SendingSystem,omitempty"`
+	ReceivingSystem string `json:"ReceivingSystem,omitempty"`
+	CreatedDate     string `json:"CreatedDate,omitempty"`
+	Mpan            string `json:"Mpan,omitempty"`
+	Mprn            string `json:"Mprn,omitempty"`
+	ResponseMessage string `json:"ResponseMessage,omitempty"`
+	ResponseCode    string `json:"ResponseCode,omitempty"`
+}

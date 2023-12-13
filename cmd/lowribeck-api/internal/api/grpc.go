@@ -17,6 +17,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const resourceID = "lowribeck-api"
+
 var (
 	ErrUserUnauthorised = errors.New("user does not have required access")
 )
@@ -28,6 +30,7 @@ type Auth interface {
 type Client interface {
 	GetCalendarAvailability(context.Context, *lowribeck.GetCalendarAvailabilityRequest) (*lowribeck.GetCalendarAvailabilityResponse, error)
 	CreateBooking(context.Context, *lowribeck.CreateBookingRequest) (*lowribeck.CreateBookingResponse, error)
+	UpdateContactDetails(context.Context, *lowribeck.UpdateContactDetailsRequest) (*lowribeck.UpdateContactDetailsResponse, error)
 
 	// Point Of Sale Methods
 	GetCalendarAvailabilityPointOfSale(context.Context, *lowribeck.GetCalendarAvailabilityRequest) (*lowribeck.GetCalendarAvailabilityResponse, error)
@@ -39,6 +42,8 @@ type Mapper interface {
 	AvailableSlotsResponse(*lowribeck.GetCalendarAvailabilityResponse) (*contract.GetAvailableSlotsResponse, error)
 	BookingRequest(uint32, *contract.CreateBookingRequest) (*lowribeck.CreateBookingRequest, error)
 	BookingResponse(*lowribeck.CreateBookingResponse) (*contract.CreateBookingResponse, error)
+	UpdateContactDetailsRequest(uint32, *contract.UpdateContactDetailsRequest) *lowribeck.UpdateContactDetailsRequest
+	UpdateContactDetailsResponse(*lowribeck.UpdateContactDetailsResponse) (*contract.UpdateContactDetailsResponse, error)
 
 	//Point Of Sale Methods
 	AvailabilityRequestPointOfSale(uint32, *contract.GetAvailableSlotsPointOfSaleRequest) (*lowribeck.GetCalendarAvailabilityRequest, error)
@@ -64,7 +69,7 @@ func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
 
-	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, "lowribeck-api")
+	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, resourceID)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -92,7 +97,7 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
 
-	err := l.validateCredentials(ctx, auth.CreateAction, auth.LowribeckAPIResource, "lowribeck-api")
+	err := l.validateCredentials(ctx, auth.CreateAction, auth.LowribeckAPIResource, resourceID)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -124,6 +129,16 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 
 func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *contract.GetAvailableSlotsPointOfSaleRequest) (*contract.GetAvailableSlotsPointOfSaleResponse, error) {
 
+	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, resourceID)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	requestID := uuid.New().ID()
 	availableSlotsRequest, err := l.mapper.AvailabilityRequestPointOfSale(requestID, req)
 	if err != nil {
@@ -150,6 +165,16 @@ func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *co
 
 func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contract.CreateBookingPointOfSaleRequest) (*contract.CreateBookingPointOfSaleResponse, error) {
 
+	err := l.validateCredentials(ctx, auth.CreateAction, auth.LowribeckAPIResource, resourceID)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequestPointOfSale(requestID, req)
 	if err != nil {
@@ -170,6 +195,35 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	if mappedErr != nil {
 		logrus.Errorf("error mapping booking point of sale response(%d) for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), mappedErr)
 		return nil, getStatusFromError("error making booking point of sale request: %v", metrics.CreateBooking, mappedErr)
+	}
+	return mappedResp, nil
+}
+
+func (l *LowriBeckAPI) UpdateContactDetails(ctx context.Context, req *contract.UpdateContactDetailsRequest) (*contract.UpdateContactDetailsResponse, error) {
+
+	err := l.validateCredentials(ctx, auth.UpdateAction, auth.LowribeckAPIResource, resourceID)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Errorf(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	requestID := uuid.New().ID()
+	updateContactReq := l.mapper.UpdateContactDetailsRequest(requestID, req)
+
+	resp, err := l.client.UpdateContactDetails(ctx, updateContactReq)
+	if err != nil {
+		logrus.Errorf("error making update contact details request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
+		return nil, status.Errorf(codes.Internal, "error making update contact detail request: %v", err)
+	}
+
+	mappedResp, mappedErr := l.mapper.UpdateContactDetailsResponse(resp)
+	if mappedErr != nil {
+		logrus.Errorf("error mapping update contact details response(%d) for reference(%s): %v", requestID, req.GetReference(), mappedErr)
+		return nil, getStatusFromError("error making update contact detail request: %v", metrics.UpdateContactDetails, mappedErr)
 	}
 	return mappedResp, nil
 }
