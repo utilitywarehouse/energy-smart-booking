@@ -71,7 +71,7 @@ type electricityMeterpointEligibilityTestCases struct {
 
 	description         string
 	expectedEligibility bool
-	expectedReason      FailureReasonEnum
+	expectedReason      MeterpointIneligibleReason
 }
 
 func mustTime(date string) time.Time {
