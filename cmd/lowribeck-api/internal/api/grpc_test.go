@@ -781,6 +781,112 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 	}
 }
 
+func Test_GetAvailableSlots_PointOfSale_ClientError(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	errorMessage := "received status code [500] (expected 200): Internal error has occurred, could not complete appointmentManagement GetCalendarAvailability request. The error has been logged."
+
+	mAuth.EXPECT().Authorize(ctx,
+		&auth.PolicyParams{
+			Action:     "get",
+			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			ResourceID: "lowribeck-api",
+		}).Return(true, nil)
+
+	req := &lowribeck.GetCalendarAvailabilityRequest{
+		PostCode:        "postcode",
+		Mpan:            "mpan-1",
+		Mprn:            "mprn-1",
+		ElecJobTypeCode: "credit",
+		GasJobTypeCode:  "credit",
+		CreatedDate:     time.Now().UTC().Format("02/01/2006 15:04:05"),
+	}
+	mapper.availabilityRequest = req
+
+	client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+
+	_, err := myAPIHandler.GetAvailableSlotsPointOfSale(ctx, &contract.GetAvailableSlotsPointOfSaleRequest{
+		Postcode:              "postcode",
+		Mpan:                  "mpan-1",
+		Mprn:                  "mprn-1",
+		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+		GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+	})
+
+	assert.EqualError(err, "rpc error: code = Internal desc = error making get available slots point of sale request: "+errorMessage)
+}
+
+func Test_GetAvailableSlots_PointOfSale_Unauthorised(t *testing.T) {
+
+	testCases := []struct {
+		desc          string
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth)
+	}{
+		{
+			desc:          "Unauthorised",
+			expectedError: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			expectedError: status.Errorf(codes.Internal, "failed to validate credentials"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, errOops)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+
+			tc.setup(ctx, mAuth)
+
+			_, err := myAPIHandler.GetAvailableSlotsPointOfSale(ctx, &contract.GetAvailableSlotsPointOfSaleRequest{
+				Postcode:              "postcode",
+				Mpan:                  "mpan-1",
+				Mprn:                  "mprn-1",
+				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+			})
+
+			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+		})
+	}
+}
+
 func Test_CreateBooking_PointOfSale(t *testing.T) {
 	now := time.Now().UTC().Format("02/01/2006 15:04:05")
 
@@ -1263,6 +1369,111 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			} else {
 				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
 			}
+		})
+	}
+}
+
+func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	errorMessage := "received status code [500] (expected 200): Internal error has occurred, could not complete appointmentManagement CreateBooking request. The error has been logged."
+
+	mAuth.EXPECT().Authorize(ctx,
+		&auth.PolicyParams{
+			Action:     "create",
+			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			ResourceID: "lowribeck-api",
+		}).Return(true, nil)
+
+	req := &lowribeck.CreateBookingRequest{
+		PostCode:        "postcode",
+		Mpan:            "mpan-1",
+		Mprn:            "mprn-1",
+		ElecJobTypeCode: "credit",
+		GasJobTypeCode:  "credit",
+		CreatedDate:     time.Now().UTC().Format("02/01/2006 15:04:05"),
+	}
+	mapper.bookingRequest = req
+
+	client.EXPECT().CreateBookingPointOfSale(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+
+	_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
+		Postcode:              "postcode",
+		Mpan:                  "mpan-1",
+		Mprn:                  "mprn-1",
+		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+		GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+	})
+
+	assert.EqualError(err, "rpc error: code = Internal desc = error making booking point of sale request: "+errorMessage)
+}
+
+func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
+
+	testCases := []struct {
+		desc          string
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth)
+	}{
+		{
+			desc:          "Unauthorised",
+			expectedError: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			expectedError: status.Error(codes.Internal, "failed to validate credentials"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, errOops)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			tc.setup(ctx, mAuth)
+
+			_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
+				Postcode:              "postcode",
+				Mpan:                  "mpan-1",
+				Mprn:                  "mprn-1",
+				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+			})
+
+			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
 		})
 	}
 }

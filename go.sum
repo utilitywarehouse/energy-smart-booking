@@ -664,8 +664,8 @@ github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b h1
 github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20230406072613-4fe701a50a3b/go.mod h1:ibrXoopS3Y9/lTl/Z5vAxPdrAjIRSJgp8B6hZMcgGVM=
 github.com/utilitywarehouse/energy-contracts v1.40.5/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
 github.com/utilitywarehouse/energy-contracts v1.40.6/go.mod h1:f5Py9Z5wck54nNoEbvP843d9W09fKWuhKWlzUaX5bvY=
-github.com/utilitywarehouse/energy-contracts v1.114.1-0.20231213165225-3684616a7544 h1:mhUdEeudCKs3gBC7ZhxMKKvZCzqH8OXlNDPOTTZ+kU4=
-github.com/utilitywarehouse/energy-contracts v1.114.1-0.20231213165225-3684616a7544/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
+github.com/utilitywarehouse/energy-contracts v1.114.1 h1:Hde8Vypf4yQiDblsy2UIkKXUd409fhKWkSnGUZuy5TQ=
+github.com/utilitywarehouse/energy-contracts v1.114.1/go.mod h1:vkAe/DkAqjsGr87Ekxou44R/FQoTMsnskfV+tY6JsuI=
 github.com/utilitywarehouse/energy-pkg/app v1.3.0 h1:GHpU8kSbGNEB8Km/QRjyV38hfhA4VzxIh/OJcrS03rU=
 github.com/utilitywarehouse/energy-pkg/app v1.3.0/go.mod h1:2Hlz8GeCkNq5V/VXHL/SuEPieOtGpvrADHc84ukqqe8=
 github.com/utilitywarehouse/energy-pkg/domain v1.17.1/go.mod h1:kQ151K87dOXjiyHgKQ0lAf/tY7xMlXd+s0KsMlFyE34=
