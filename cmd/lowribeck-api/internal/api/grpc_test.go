@@ -649,6 +649,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 						},
 					},
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -657,6 +663,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.InvalidArgument, "error making get available slots point of sale request: invalid request [postcode]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -665,6 +677,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.NotFound, "error making get available slots point of sale request: no appointments found"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -673,6 +691,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.OutOfRange, "error making get available slots point of sale request: appointment out of range"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -681,6 +705,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.InvalidArgument, "error making get available slots point of sale request: invalid request [something else]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -689,6 +719,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.Internal, "error making get available slots point of sale request: internal server error [Insufficient notice to rearrange this appointment.]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -697,6 +733,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.Internal, "error making get available slots point of sale request: unknown error"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 	}
@@ -774,6 +816,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "B01",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -799,6 +847,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -824,6 +878,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -849,6 +909,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -874,6 +940,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -899,6 +971,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -924,6 +1002,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -949,6 +1033,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -974,6 +1064,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -999,6 +1095,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1024,6 +1126,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1049,6 +1157,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1074,6 +1188,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1099,6 +1219,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 	}
