@@ -332,7 +332,7 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		if !gasEligible {
-			span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", gasEligible), attribute.String("reason", reason)))
+			span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", gasEligible), attribute.String("reason", string(reason))))
 			return &smart_booking.GetMeterpointEligibilityResponse{
 				Eligible: false,
 			}, nil
@@ -344,7 +344,7 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", eligible), attribute.String("reason", reason)))
+	span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", eligible), attribute.String("reason", string(reason))))
 
 	return &smart_booking.GetMeterpointEligibilityResponse{
 		Eligible: eligible,
