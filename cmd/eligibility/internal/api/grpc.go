@@ -319,27 +319,27 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 	}
 
 	if req.GetMprn() != "" {
-		gasEligible, reason, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn())
+		result, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn())
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
-		if !gasEligible {
-			span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", gasEligible), attribute.String("reason", string(reason))))
+		if !result.Eligible {
+			span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", result.Eligible), attribute.String("reason", string(result.Reason))))
 			return &smart_booking.GetMeterpointEligibilityResponse{
 				Eligible: false,
 			}, nil
 		}
 	}
 
-	eligible, reason, err := a.meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, req.Mpan, req.GetPostcode())
+	result, err := a.meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, req.Mpan, req.GetPostcode())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", eligible), attribute.String("reason", string(reason))))
+	span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", result.Eligible), attribute.String("reason", string(result.Reason))))
 
 	return &smart_booking.GetMeterpointEligibilityResponse{
-		Eligible: eligible,
+		Eligible: result.Eligible,
 	}, nil
 }
 

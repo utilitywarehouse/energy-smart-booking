@@ -213,15 +213,15 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 				},
 			)
 
-			actualEligibility, actualReason, err := evaluator.GetElectricityMeterpointEligibility(context.Background(), tc.mpan, tc.postcode)
+			actualEligibility, err := evaluator.GetElectricityMeterpointEligibility(context.Background(), tc.mpan, tc.postcode)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if tc.expectedEligibility != actualEligibility {
-				t.Fatalf("unexpected eligibility result for %s (expected %t, got %t)", tc.description, tc.expectedEligibility, actualEligibility)
+			if tc.expectedEligibility != actualEligibility.Eligible {
+				t.Fatalf("unexpected eligibility result for %s (expected %t, got %t)", tc.description, tc.expectedEligibility, actualEligibility.Eligible)
 			}
-			if tc.expectedReason != actualReason {
-				t.Fatalf("unexpected eligibility faiure reason for %s (expected %q, got %q)", tc.description, tc.expectedReason, actualReason)
+			if tc.expectedReason != actualEligibility.Reason {
+				t.Fatalf("unexpected eligibility faiure reason for %s (expected %q, got %q)", tc.description, tc.expectedReason, actualEligibility.Reason)
 			}
 		})
 	}
