@@ -71,6 +71,7 @@ type electricityMeterpointEligibilityTestCases struct {
 
 	description         string
 	expectedEligibility bool
+	expectedReason      MeterpointIneligibleReason
 }
 
 func mustTime(date string) time.Time {
@@ -167,30 +168,35 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 			postcode:            "post-code-2",
 			description:         "ineligible because alt-HAN",
 			expectedEligibility: false,
+			expectedReason:      "Alt_HAN",
 		},
 		{
 			mpan:                "mpan-3",
 			postcode:            "post-code-3",
 			description:         "ineligible because no WAN",
 			expectedEligibility: false,
+			expectedReason:      "not_WAN",
 		},
 		{
 			mpan:                "mpan-4",
 			postcode:            "post-code-4",
 			description:         "ineligible because has related MPAN",
 			expectedEligibility: false,
+			expectedReason:      "related_meterpoints_present",
 		},
 		{
 			mpan:                "mpan-5",
 			postcode:            "post-code-5",
 			description:         "ineligible because complex SSC",
 			expectedEligibility: false,
+			expectedReason:      "complex_SSC",
 		},
 		{
 			mpan:                "mpan-6",
 			postcode:            "post-code-6",
 			description:         "ineligible because already smart meter",
 			expectedEligibility: false,
+			expectedReason:      "already_a_smart_meter",
 		},
 	}
 
@@ -211,8 +217,11 @@ func TestGetElectricityMeterpointEligibility(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if tc.expectedEligibility != actualEligibility {
-				t.Fatalf("unexpected eligibility result for %s (expected %t, got %t)", tc.description, tc.expectedEligibility, actualEligibility)
+			if tc.expectedEligibility != actualEligibility.Eligible {
+				t.Fatalf("unexpected eligibility result for %s (expected %t, got %t)", tc.description, tc.expectedEligibility, actualEligibility.Eligible)
+			}
+			if tc.expectedReason != actualEligibility.Reason {
+				t.Fatalf("unexpected eligibility faiure reason for %s (expected %q, got %q)", tc.description, tc.expectedReason, actualEligibility.Reason)
 			}
 		})
 	}

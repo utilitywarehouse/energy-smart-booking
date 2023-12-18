@@ -467,7 +467,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *bookingv1.GetAvailableSlotsPointOfSaleRequest) (_ *bookingv1.GetAvailableSlotsPointOfSaleResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlotsPointOfSale",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))

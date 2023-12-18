@@ -49,14 +49,6 @@ type ServiceStore interface {
 	GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
 }
 
-type MeterpointStore interface {
-	GetAltHan(ctx context.Context, mpxn string) (bool, error)
-}
-
-type PostcodeStore interface {
-	GetWanCoverage(ctx context.Context, postcode string) (bool, error)
-}
-
 type EligibilityGRPCApi struct {
 	smart_booking.UnimplementedEligiblityAPIServer
 	eligibilityStore    EligibilityStore
@@ -327,26 +319,27 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 	}
 
 	if req.GetMprn() != "" {
-		gasEligible, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn())
+		result, err := a.meterpointEvaluator.GetGasMeterpointEligibility(ctx, req.GetMprn())
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
-		if !gasEligible {
+		if !result.Eligible {
+			span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", result.Eligible), attribute.String("reason", string(result.Reason))))
 			return &smart_booking.GetMeterpointEligibilityResponse{
 				Eligible: false,
 			}, nil
 		}
 	}
 
-	eligible, err := a.meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, req.Mpan, req.GetPostcode())
+	result, err := a.meterpointEvaluator.GetElectricityMeterpointEligibility(ctx, req.Mpan, req.GetPostcode())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", eligible)))
+	span.AddEvent("response", trace.WithAttributes(attribute.Bool("eligible", result.Eligible), attribute.String("reason", string(result.Reason))))
 
 	return &smart_booking.GetMeterpointEligibilityResponse{
-		Eligible: eligible,
+		Eligible: result.Eligible,
 	}, nil
 }
 
