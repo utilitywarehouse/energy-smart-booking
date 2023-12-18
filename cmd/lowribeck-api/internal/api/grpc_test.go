@@ -649,6 +649,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 						},
 					},
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -657,6 +663,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.InvalidArgument, "error making get available slots point of sale request: invalid request [postcode]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -665,6 +677,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.NotFound, "error making get available slots point of sale request: no appointments found"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -673,6 +691,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.OutOfRange, "error making get available slots point of sale request: appointment out of range"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -681,6 +705,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.InvalidArgument, "error making get available slots point of sale request: invalid request [something else]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -689,6 +719,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.Internal, "error making get available slots point of sale request: internal server error [Insufficient notice to rearrange this appointment.]"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -697,6 +733,12 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 			expectedError: status.Error(codes.Internal, "error making get available slots point of sale request: unknown error"),
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, client *mocks.MockClient) {
 				client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, gomock.Any()).Return(nil, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 	}
@@ -739,6 +781,112 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 	}
 }
 
+func Test_GetAvailableSlots_PointOfSale_ClientError(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	errorMessage := "received status code [500] (expected 200): Internal error has occurred, could not complete appointmentManagement GetCalendarAvailability request. The error has been logged."
+
+	mAuth.EXPECT().Authorize(ctx,
+		&auth.PolicyParams{
+			Action:     "get",
+			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			ResourceID: "lowribeck-api",
+		}).Return(true, nil)
+
+	req := &lowribeck.GetCalendarAvailabilityRequest{
+		PostCode:        "postcode",
+		Mpan:            "mpan-1",
+		Mprn:            "mprn-1",
+		ElecJobTypeCode: "credit",
+		GasJobTypeCode:  "credit",
+		CreatedDate:     time.Now().UTC().Format("02/01/2006 15:04:05"),
+	}
+	mapper.availabilityRequest = req
+
+	client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+
+	_, err := myAPIHandler.GetAvailableSlotsPointOfSale(ctx, &contract.GetAvailableSlotsPointOfSaleRequest{
+		Postcode:              "postcode",
+		Mpan:                  "mpan-1",
+		Mprn:                  "mprn-1",
+		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+		GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+	})
+
+	assert.EqualError(err, "rpc error: code = Internal desc = error making get available slots point of sale request: "+errorMessage)
+}
+
+func Test_GetAvailableSlots_PointOfSale_Unauthorised(t *testing.T) {
+
+	testCases := []struct {
+		desc          string
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth)
+	}{
+		{
+			desc:          "Unauthorised",
+			expectedError: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			expectedError: status.Errorf(codes.Internal, "failed to validate credentials"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "get",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, errOops)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+
+			tc.setup(ctx, mAuth)
+
+			_, err := myAPIHandler.GetAvailableSlotsPointOfSale(ctx, &contract.GetAvailableSlotsPointOfSaleRequest{
+				Postcode:              "postcode",
+				Mpan:                  "mpan-1",
+				Mprn:                  "mprn-1",
+				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+			})
+
+			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+		})
+	}
+}
+
 func Test_CreateBooking_PointOfSale(t *testing.T) {
 	now := time.Now().UTC().Format("02/01/2006 15:04:05")
 
@@ -774,6 +922,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "B01",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -799,6 +953,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -824,6 +984,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -849,6 +1015,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -874,6 +1046,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -899,6 +1077,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -924,6 +1108,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -949,6 +1139,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -974,6 +1170,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -999,6 +1201,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1024,6 +1232,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1049,6 +1263,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1074,6 +1294,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 		{
@@ -1099,6 +1325,12 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				}).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
 			},
 		},
 	}
@@ -1141,6 +1373,354 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 	}
 }
 
+func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	errorMessage := "received status code [500] (expected 200): Internal error has occurred, could not complete appointmentManagement CreateBooking request. The error has been logged."
+
+	mAuth.EXPECT().Authorize(ctx,
+		&auth.PolicyParams{
+			Action:     "create",
+			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			ResourceID: "lowribeck-api",
+		}).Return(true, nil)
+
+	req := &lowribeck.CreateBookingRequest{
+		PostCode:        "postcode",
+		Mpan:            "mpan-1",
+		Mprn:            "mprn-1",
+		ElecJobTypeCode: "credit",
+		GasJobTypeCode:  "credit",
+		CreatedDate:     time.Now().UTC().Format("02/01/2006 15:04:05"),
+	}
+	mapper.bookingRequest = req
+
+	client.EXPECT().CreateBookingPointOfSale(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+
+	_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
+		Postcode:              "postcode",
+		Mpan:                  "mpan-1",
+		Mprn:                  "mprn-1",
+		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+		GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+	})
+
+	assert.EqualError(err, "rpc error: code = Internal desc = error making booking point of sale request: "+errorMessage)
+}
+
+func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
+
+	testCases := []struct {
+		desc          string
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth)
+	}{
+		{
+			desc:          "Unauthorised",
+			expectedError: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			expectedError: status.Error(codes.Internal, "failed to validate credentials"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "create",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, errOops)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			tc.setup(ctx, mAuth)
+
+			_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
+				Postcode:              "postcode",
+				Mpan:                  "mpan-1",
+				Mprn:                  "mprn-1",
+				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+			})
+
+			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+		})
+	}
+}
+
+func Test_UpdateContactDetails(t *testing.T) {
+	now := time.Now().UTC().Format("02/01/2006 15:04:05")
+
+	testCases := []struct {
+		desc          string
+		req           *lowribeck.UpdateContactDetailsRequest
+		clientResp    *lowribeck.UpdateContactDetailsResponse
+		mapperErr     error
+		expected      *contract.UpdateContactDetailsResponse
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth)
+	}{
+		{
+			desc: "Valid",
+			req: &lowribeck.UpdateContactDetailsRequest{
+				SiteContactName: "Test User",
+				ReferenceID:     "reference",
+				CreatedDate:     now,
+			},
+			clientResp: &lowribeck.UpdateContactDetailsResponse{
+				ResponseCode: "U01",
+			},
+			expected: &contract.UpdateContactDetailsResponse{
+				Success: true,
+			},
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
+			},
+		},
+		{
+			desc:          "Invalid reference",
+			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidReference),
+			expectedError: status.Error(codes.InvalidArgument, "error making update contact detail request: invalid request [reference]"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
+			},
+		},
+		{
+			desc:          "Appointment not found",
+			mapperErr:     mapper.ErrAppointmentNotFound,
+			expectedError: status.Error(codes.NotFound, "error making update contact detail request: no appointments found"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
+			},
+		},
+		{
+			desc:          "Unknown bad parameter",
+			mapperErr:     mapper.NewInvalidRequestError("something else"),
+			expectedError: status.Error(codes.InvalidArgument, "error making update contact detail request: invalid request [something else]"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			mapperErr:     fmt.Errorf("%w [%s]", mapper.ErrInternalError, "Insufficient notice to rearrange this appointment."),
+			expectedError: status.Error(codes.Internal, "error making update contact detail request: internal server error [Insufficient notice to rearrange this appointment.]"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
+			},
+		},
+		{
+			desc:          "Unknown error",
+			mapperErr:     mapper.ErrUnknownError,
+			expectedError: status.Error(codes.Internal, "error making update contact detail request: unknown error"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(true, nil)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			mapper.updateContactRequest = tc.req
+			mapper.updateContactResponse = tc.expected
+			mapper.updateContactError = tc.mapperErr
+
+			tc.setup(ctx, mAuth)
+
+			client.EXPECT().UpdateContactDetails(ctx, tc.req).Return(tc.clientResp, nil)
+
+			result, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
+				ContactDetails: &lowribeckv1.ContactDetails{
+					FirstName: "Test",
+					LastName:  "User",
+				},
+				Reference: "reference",
+			})
+
+			if tc.expectedError == nil {
+				assert.NoError(err, tc.desc)
+				diff := cmp.Diff(tc.expected, result, protocmp.Transform(), cmpopts.IgnoreUnexported())
+				assert.Empty(diff, tc.desc)
+			} else {
+				assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+			}
+		})
+	}
+}
+
+func Test_UpdateContactDetails_ClientError(t *testing.T) {
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	errorMessage := "received status code [500] (expected 200): Internal error has occurred, could not complete appointmentManagement UpdateContactDetails request. The error has been logged."
+
+	mAuth.EXPECT().Authorize(ctx,
+		&auth.PolicyParams{
+			Action:     "update",
+			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			ResourceID: "lowribeck-api",
+		}).Return(true, nil)
+
+	req := &lowribeck.UpdateContactDetailsRequest{
+		SiteContactName: "Test User",
+		ReferenceID:     "reference",
+		CreatedDate:     time.Now().UTC().Format("02/01/2006 15:04:05"),
+	}
+	mapper.updateContactRequest = req
+
+	client.EXPECT().UpdateContactDetails(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+
+	_, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
+		ContactDetails: &lowribeckv1.ContactDetails{
+			FirstName: "Test",
+			LastName:  "User",
+		},
+		Reference: "reference",
+	})
+
+	assert.EqualError(err, "rpc error: code = Internal desc = error making update contact detail request: "+errorMessage)
+}
+
+func Test_UpdateContactDetails_Unauthorised(t *testing.T) {
+
+	testCases := []struct {
+		desc          string
+		expectedError error
+		setup         func(context.Context, *mocks.MockAuth)
+	}{
+		{
+			desc:          "Unauthorised",
+			expectedError: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, nil)
+			},
+		},
+		{
+			desc:          "Internal error",
+			expectedError: status.Error(codes.Internal, "failed to validate credentials"),
+			setup: func(ctx context.Context, mAuth *mocks.MockAuth) {
+				mAuth.EXPECT().Authorize(ctx,
+					&auth.PolicyParams{
+						Action:     "update",
+						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						ResourceID: "lowribeck-api",
+					}).Return(false, errOops)
+			},
+		},
+	}
+
+	assert := assert.New(t)
+	ctrl := gomock.NewController(t)
+	ctx := context.Background()
+	defer ctrl.Finish()
+
+	client := mocks.NewMockClient(ctrl)
+	mAuth := mocks.NewMockAuth(ctrl)
+	mapper := &fakeMapper{}
+
+	myAPIHandler := api.New(client, mapper, mAuth)
+
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			tc.setup(ctx, mAuth)
+
+			_, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
+				ContactDetails: &lowribeckv1.ContactDetails{
+					FirstName: "Test",
+					LastName:  "User",
+				},
+				Reference: "reference",
+			})
+
+			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
+		})
+	}
+}
+
 type fakeMapper struct {
 	availabilityRequest  *lowribeck.GetCalendarAvailabilityRequest
 	availabilityResponse *contract.GetAvailableSlotsResponse
@@ -1148,6 +1728,10 @@ type fakeMapper struct {
 	bookingRequest       *lowribeck.CreateBookingRequest
 	bookingResponse      *contract.CreateBookingResponse
 	bookingError         error
+
+	updateContactRequest  *lowribeck.UpdateContactDetailsRequest
+	updateContactResponse *contract.UpdateContactDetailsResponse
+	updateContactError    error
 
 	availabilityPointOfSaleResponse *contract.GetAvailableSlotsPointOfSaleResponse
 	bookingPointOfSaleResponse      *contract.CreateBookingPointOfSaleResponse
@@ -1193,4 +1777,14 @@ func (f *fakeMapper) BookingResponsePointOfSale(_ *lowribeck.CreateBookingRespon
 		return nil, f.bookingError
 	}
 	return f.bookingPointOfSaleResponse, nil
+}
+
+func (f *fakeMapper) UpdateContactDetailsRequest(_ uint32, _ *contract.UpdateContactDetailsRequest) *lowribeck.UpdateContactDetailsRequest {
+	return f.updateContactRequest
+}
+func (f *fakeMapper) UpdateContactDetailsResponse(_ *lowribeck.UpdateContactDetailsResponse) (*contract.UpdateContactDetailsResponse, error) {
+	if f.updateContactError != nil {
+		return nil, f.updateContactError
+	}
+	return f.updateContactResponse, nil
 }

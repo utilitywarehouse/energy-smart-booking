@@ -198,6 +198,31 @@ func (lb LowriBeck) BookingResponsePointOfSale(resp *lowribeck.CreateBookingResp
 	}, nil
 }
 
+func (lb LowriBeck) UpdateContactDetailsRequest(id uint32, req *lowribeckv1.UpdateContactDetailsRequest) *lowribeck.UpdateContactDetailsRequest {
+	return &lowribeck.UpdateContactDetailsRequest{
+		ReferenceID:          req.GetReference(),
+		Vulnerabilities:      mapVulnerabilities(req.GetVulnerabilityDetails()),
+		VulnerabilitiesOther: req.GetVulnerabilityDetails().GetOther(),
+		SiteContactName:      mapContactName(req.GetContactDetails()),
+		SiteContactNumber:    req.GetContactDetails().GetPhone(),
+		SendingSystem:        lb.sendingSystem,
+		ReceivingSystem:      lb.receivingSystem,
+		CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+		// An ID sent to LB which they return in the response and can be used for debugging issues with them
+		RequestID: fmt.Sprintf("%d", id),
+	}
+}
+
+func (lb LowriBeck) UpdateContactDetailsResponse(resp *lowribeck.UpdateContactDetailsResponse) (*lowribeckv1.UpdateContactDetailsResponse, error) {
+	err := mapUpdateContactDetailsResponseCodes(resp.ResponseCode, resp.ResponseMessage)
+	if err != nil {
+		return nil, err
+	}
+	return &lowribeckv1.UpdateContactDetailsResponse{
+		Success: true,
+	}, nil
+}
+
 func mapAvailabilitySlots(availabilityResults []lowribeck.AvailabilitySlot) ([]*lowribeckv1.BookingSlot, error) {
 	var err error
 	slots := make([]*lowribeckv1.BookingSlot, len(availabilityResults))
@@ -371,6 +396,37 @@ func mapBookingResponseCodes(responseCode, responseMessage string) error {
 		// R11 – Rearranging request sent outside agreed time parameter
 	case "R11":
 		return ErrAppointmentOutOfRange
+	}
+	return fmt.Errorf("%w [%s]", ErrUnknownError, responseMessage)
+}
+
+func mapUpdateContactDetailsResponseCodes(responseCode, responseMessage string) error {
+	switch responseCode {
+	// U01 - Update confirmed
+	case "U01":
+		return nil
+	// U02 - Invalid Reference ID
+	case "U02":
+		return NewInvalidRequestError(InvalidReference)
+	// U03 - Invalid MPAN
+	case "U03":
+		return NewInvalidRequestError(InvalidMPAN)
+	// U04 - Invalid MPRN
+	case "U04":
+		return NewInvalidRequestError(InvalidMPRN)
+	case "U05":
+		switch responseMessage {
+		// U05 - No jobs found
+		case "No jobs found":
+			return ErrAppointmentNotFound
+		// U05 - Update sent for an appointment in the past
+		case "Update sent for an appointment in the past":
+			return fmt.Errorf("%w [%s]", ErrInternalError, responseMessage)
+		}
+	// U06 - Request sent after update deadline
+	case "B06", "R06":
+		return NewInvalidRequestError(InvalidAppointmentDate)
+
 	}
 	return fmt.Errorf("%w [%s]", ErrUnknownError, responseMessage)
 }

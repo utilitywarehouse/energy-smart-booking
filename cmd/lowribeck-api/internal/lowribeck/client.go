@@ -23,11 +23,12 @@ var (
 )
 
 const (
-	contentHeader   = "Content-Type"
-	contentJSON     = "application/json"
-	availabilityURL = "appointmentManagement/getCalendarAvailability"
-	bookingURL      = "appointmentManagement/book"
-	healthCheckURL  = "health/get"
+	contentHeader    = "Content-Type"
+	contentJSON      = "application/json"
+	availabilityURL  = "appointmentManagement/getCalendarAvailability"
+	bookingURL       = "appointmentManagement/book"
+	updateContactURL = "appointmentManagement/updateContact"
+	healthCheckURL   = "health/get"
 )
 
 type Client struct {
@@ -112,12 +113,12 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 }
 
 func (c *Client) GetCalendarAvailabilityPointOfSale(ctx context.Context, req *GetCalendarAvailabilityRequest) (_ *GetCalendarAvailabilityResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", availabilityURL),
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.POS.%s", availabilityURL),
 		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
 		trace.WithAttributes(attribute.String("mpan", req.Mpan)),
 		trace.WithAttributes(attribute.String("mprn", req.Mprn)),
-		trace.WithAttributes(attribute.String("lowribeck.elec_job_type_code", req.ElecJobTypeCode)),
-		trace.WithAttributes(attribute.String("lowribeck.gas_job_type_code", req.GasJobTypeCode)),
+		trace.WithAttributes(attribute.String("elec.job", req.ElecJobTypeCode)),
+		trace.WithAttributes(attribute.String("gas.job.", req.GasJobTypeCode)),
 	)
 	defer func() {
 		tracing.RecordSpanError(span, err)
@@ -147,11 +148,11 @@ func (c *Client) GetCalendarAvailabilityPointOfSale(ctx context.Context, req *Ge
 }
 
 func (c *Client) CreateBookingPointOfSale(ctx context.Context, req *CreateBookingRequest) (_ *CreateBookingResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", bookingURL),
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.POS.%s", bookingURL),
 		trace.WithAttributes(attribute.String("mpan", req.Mpan)),
 		trace.WithAttributes(attribute.String("mprn", req.Mprn)),
-		trace.WithAttributes(attribute.String("lowribeck.elecJobTypeCode", req.ElecJobTypeCode)),
-		trace.WithAttributes(attribute.String("lowribeck.gasJobTypeCode", req.GasJobTypeCode)),
+		trace.WithAttributes(attribute.String("elec.job", req.ElecJobTypeCode)),
+		trace.WithAttributes(attribute.String("gas.job.", req.GasJobTypeCode)),
 	)
 	defer func() {
 		tracing.RecordSpanError(span, err)
@@ -178,6 +179,37 @@ func (c *Client) CreateBookingPointOfSale(ctx context.Context, req *CreateBookin
 	}
 
 	return &br, nil
+}
+
+func (c *Client) UpdateContactDetails(ctx context.Context, req *UpdateContactDetailsRequest) (_ *UpdateContactDetailsResponse, err error) {
+	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", updateContactURL),
+		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
+	)
+	defer func() {
+		tracing.RecordSpanError(span, err)
+		span.End()
+	}()
+
+	payload, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("unable to marshal request: %w", err)
+	}
+
+	span.AddEvent("request", trace.WithAttributes(attribute.String("req", string(payload))))
+
+	responseBody, err := c.doRequest(ctx, payload, updateContactURL)
+	if err != nil {
+		return nil, err
+	}
+
+	span.AddEvent("response", trace.WithAttributes(attribute.String("resp", string(responseBody))))
+
+	var ucr UpdateContactDetailsResponse
+	if err = json.Unmarshal(responseBody, &ucr); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal update contact details response body: %w", err)
+	}
+
+	return &ucr, nil
 }
 
 func (c *Client) doRequest(ctx context.Context, payload []byte, endpoint string) (_ []byte, err error) {

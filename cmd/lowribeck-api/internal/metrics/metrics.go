@@ -33,8 +33,9 @@ const (
 
 // LBErrorsCount endpoint
 const (
-	GetAvailableSlots = "get_available_slots"
-	CreateBooking     = "create_booking"
+	GetAvailableSlots    = "get_available_slots"
+	CreateBooking        = "create_booking"
+	UpdateContactDetails = "update_contact_details"
 )
 
 var LBAPIRunning = promauto.NewGauge(prometheus.GaugeOpts{
