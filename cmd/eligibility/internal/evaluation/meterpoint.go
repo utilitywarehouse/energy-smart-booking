@@ -16,12 +16,12 @@ var (
 type MeterpointIneligibleReason string
 
 const (
-	alreadyMeterpointIneligibleReason               MeterpointIneligibleReason = "already_a_smart_meter"
-	notWanMeterpointIneligibleReason                MeterpointIneligibleReason = "not_WAN"
-	isAltHanlreadyMeterpointIneligibleReason        MeterpointIneligibleReason = "Alt_HAN"
-	hasRelatedMeterpointsMeterpointIneligibleReason MeterpointIneligibleReason = "related_meterpoints_present"
-	hasComplexSSCMeterpointIneligibleReason         MeterpointIneligibleReason = "complex_SSC"
-	notLargeCapacityMeterpointIneligibleReason      MeterpointIneligibleReason = "not_large_capacity"
+	alreadySmartMeterpointIneligibleReason     MeterpointIneligibleReason = "already_a_smart_meter"
+	notWanMeterpointIneligibleReason           MeterpointIneligibleReason = "not_WAN"
+	isAltHanMeterpointIneligibleReason         MeterpointIneligibleReason = "Alt_HAN"
+	hasRelatedMeterpointIneligibleReason       MeterpointIneligibleReason = "related_meterpoints_present"
+	hasComplexSSCMeterpointIneligibleReason    MeterpointIneligibleReason = "complex_SSC"
+	notLargeCapacityMeterpointIneligibleReason MeterpointIneligibleReason = "not_large_capacity"
 )
 
 type MeterpointEligible struct {
@@ -75,7 +75,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 		if domain.IsElectricitySmartMeter(meter.MeterType.String()) {
 			return MeterpointEligible{
 				Eligible: false,
-				Reason:   alreadyMeterpointIneligibleReason,
+				Reason:   alreadySmartMeterpointIneligibleReason,
 			}, nil
 		}
 	}
@@ -100,7 +100,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 	if isAltHan {
 		return MeterpointEligible{
 			Eligible: false,
-			Reason:   isAltHanlreadyMeterpointIneligibleReason,
+			Reason:   isAltHanMeterpointIneligibleReason,
 		}, nil
 	}
 
@@ -113,7 +113,7 @@ func (e *MeterpointEvaluator) GetElectricityMeterpointEligibility(ctx context.Co
 	if HasRelatedMPAN {
 		return MeterpointEligible{
 			Eligible: false,
-			Reason:   hasRelatedMeterpointsMeterpointIneligibleReason,
+			Reason:   hasRelatedMeterpointIneligibleReason,
 		}, nil
 	}
 
