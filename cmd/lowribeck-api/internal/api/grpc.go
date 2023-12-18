@@ -69,7 +69,7 @@ func New(c Client, m Mapper, a Auth) *LowriBeckAPI {
 
 func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetAvailableSlotsRequest) (*contract.GetAvailableSlotsResponse, error) {
 
-	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, resourceID)
+	err := l.validateCredentials(ctx, auth.GetAction)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -97,7 +97,7 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 
 func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBookingRequest) (*contract.CreateBookingResponse, error) {
 
-	err := l.validateCredentials(ctx, auth.CreateAction, auth.LowribeckAPIResource, resourceID)
+	err := l.validateCredentials(ctx, auth.CreateAction)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -129,7 +129,7 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 
 func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *contract.GetAvailableSlotsPointOfSaleRequest) (*contract.GetAvailableSlotsPointOfSaleResponse, error) {
 
-	err := l.validateCredentials(ctx, auth.GetAction, auth.LowribeckAPIResource, resourceID)
+	err := l.validateCredentials(ctx, auth.GetAction)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -165,7 +165,7 @@ func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *co
 
 func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contract.CreateBookingPointOfSaleRequest) (*contract.CreateBookingPointOfSaleResponse, error) {
 
-	err := l.validateCredentials(ctx, auth.CreateAction, auth.LowribeckAPIResource, resourceID)
+	err := l.validateCredentials(ctx, auth.CreateAction)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -201,7 +201,7 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 
 func (l *LowriBeckAPI) UpdateContactDetails(ctx context.Context, req *contract.UpdateContactDetailsRequest) (*contract.UpdateContactDetailsResponse, error) {
 
-	err := l.validateCredentials(ctx, auth.UpdateAction, auth.LowribeckAPIResource, resourceID)
+	err := l.validateCredentials(ctx, auth.UpdateAction)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -302,17 +302,17 @@ func getStatusFromError(formatMessage, endpoint string, err error) error {
 	return status.Errorf(codes.Internal, formatMessage, err)
 }
 
-func (l *LowriBeckAPI) validateCredentials(ctx context.Context, action, resource, requestAccountID string) error {
+func (l *LowriBeckAPI) validateCredentials(ctx context.Context, action string) error {
 
 	authorised, err := l.auth.Authorize(ctx, &auth.PolicyParams{
 		Action:     action,
-		Resource:   resource,
-		ResourceID: requestAccountID,
+		Resource:   auth.LowribeckAPIResource,
+		ResourceID: resourceID,
 	})
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"action":   action,
-			"resource": resource,
+			"resource": auth.LowribeckAPIResource,
 		}).Error("Authorize error: ", err)
 		return err
 	}
