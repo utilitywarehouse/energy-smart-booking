@@ -14,7 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
-	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api/mocks"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
@@ -766,8 +766,8 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
 				Mprn:                  "mprn-1",
-				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
 			})
 
 			if tc.expectedError == nil {
@@ -818,8 +818,8 @@ func Test_GetAvailableSlots_PointOfSale_ClientError(t *testing.T) {
 		Postcode:              "postcode",
 		Mpan:                  "mpan-1",
 		Mprn:                  "mprn-1",
-		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-		GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+		ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
+		GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
 	})
 
 	assert.EqualError(err, "rpc error: code = Internal desc = error making get available slots point of sale request: "+errorMessage)
@@ -878,8 +878,8 @@ func Test_GetAvailableSlots_PointOfSale_Unauthorised(t *testing.T) {
 				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
 				Mprn:                  "mprn-1",
-				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
 			})
 
 			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
@@ -1358,8 +1358,8 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
 				Mprn:                  "mprn-1",
-				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
 			})
 
 			if tc.expectedError == nil {
@@ -1410,8 +1410,8 @@ func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
 		Postcode:              "postcode",
 		Mpan:                  "mpan-1",
 		Mprn:                  "mprn-1",
-		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-		GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+		ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
+		GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
 	})
 
 	assert.EqualError(err, "rpc error: code = Internal desc = error making booking point of sale request: "+errorMessage)
@@ -1469,8 +1469,8 @@ func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
 				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
 				Mprn:                  "mprn-1",
-				ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-				GasTariffType:         lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
+				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
+				GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
 			})
 
 			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
@@ -1601,7 +1601,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 			client.EXPECT().UpdateContactDetails(ctx, tc.req).Return(tc.clientResp, nil)
 
 			result, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
-				ContactDetails: &lowribeckv1.ContactDetails{
+				ContactDetails: &contract.ContactDetails{
 					FirstName: "Test",
 					LastName:  "User",
 				},
@@ -1650,7 +1650,7 @@ func Test_UpdateContactDetails_ClientError(t *testing.T) {
 	client.EXPECT().UpdateContactDetails(ctx, req).Return(nil, fmt.Errorf(errorMessage))
 
 	_, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
-		ContactDetails: &lowribeckv1.ContactDetails{
+		ContactDetails: &contract.ContactDetails{
 			FirstName: "Test",
 			LastName:  "User",
 		},
@@ -1709,7 +1709,7 @@ func Test_UpdateContactDetails_Unauthorised(t *testing.T) {
 			tc.setup(ctx, mAuth)
 
 			_, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
-				ContactDetails: &lowribeckv1.ContactDetails{
+				ContactDetails: &contract.ContactDetails{
 					FirstName: "Test",
 					LastName:  "User",
 				},
