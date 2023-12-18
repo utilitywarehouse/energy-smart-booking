@@ -17,12 +17,12 @@ type MeterpointIneligibleReason string
 
 const (
 	noneMeterpointIneligibleReason                  MeterpointIneligibleReason = ""
-	alreadyMeterpointIneligibleReason                                          = "already_a_smart_meter"
-	notWanMeterpointIneligibleReason                                           = "not_WAN"
-	isAltHanlreadyMeterpointIneligibleReason                                   = "Alt_HAN"
-	hasRelatedMeterpointsMeterpointIneligibleReason                            = "related_meterpoints_present"
-	hasComplexSSCMeterpointIneligibleReason                                    = "complex_SSC"
-	notLargeCapacityMeterpointIneligibleReason                                 = "not_large_capacity"
+	alreadyMeterpointIneligibleReason               MeterpointIneligibleReason = "already_a_smart_meter"
+	notWanMeterpointIneligibleReason                MeterpointIneligibleReason = "not_WAN"
+	isAltHanlreadyMeterpointIneligibleReason        MeterpointIneligibleReason = "Alt_HAN"
+	hasRelatedMeterpointsMeterpointIneligibleReason MeterpointIneligibleReason = "related_meterpoints_present"
+	hasComplexSSCMeterpointIneligibleReason         MeterpointIneligibleReason = "complex_SSC"
+	notLargeCapacityMeterpointIneligibleReason      MeterpointIneligibleReason = "not_large_capacity"
 )
 
 type WanCoverageStore interface {

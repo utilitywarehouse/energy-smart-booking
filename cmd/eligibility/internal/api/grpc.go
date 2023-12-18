@@ -49,14 +49,6 @@ type ServiceStore interface {
 	GetLiveServicesWithBookingRef(ctx context.Context, occupancyID string) ([]store.ServiceBookingRef, error)
 }
 
-type MeterpointStore interface {
-	GetAltHan(ctx context.Context, mpxn string) (bool, error)
-}
-
-type PostcodeStore interface {
-	GetWanCoverage(ctx context.Context, postcode string) (bool, error)
-}
-
 type EligibilityGRPCApi struct {
 	smart_booking.UnimplementedEligiblityAPIServer
 	eligibilityStore    EligibilityStore
