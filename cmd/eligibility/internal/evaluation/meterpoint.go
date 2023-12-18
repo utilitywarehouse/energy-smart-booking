@@ -16,12 +16,12 @@ var (
 type MeterpointIneligibleReason string
 
 const (
-	alreadySmartMeterpointIneligibleReason     MeterpointIneligibleReason = "already_a_smart_meter"
-	notWanMeterpointIneligibleReason           MeterpointIneligibleReason = "not_WAN"
-	isAltHanMeterpointIneligibleReason         MeterpointIneligibleReason = "Alt_HAN"
-	hasRelatedMeterpointIneligibleReason       MeterpointIneligibleReason = "related_meterpoints_present"
-	hasComplexSSCMeterpointIneligibleReason    MeterpointIneligibleReason = "complex_SSC"
-	notLargeCapacityMeterpointIneligibleReason MeterpointIneligibleReason = "not_large_capacity"
+	alreadySmartMeterpointIneligibleReason  MeterpointIneligibleReason = "already_a_smart_meter"
+	notWanMeterpointIneligibleReason        MeterpointIneligibleReason = "not_WAN"
+	isAltHanMeterpointIneligibleReason      MeterpointIneligibleReason = "Alt_HAN"
+	hasRelatedMeterpointIneligibleReason    MeterpointIneligibleReason = "related_meterpoints_present"
+	hasComplexSSCMeterpointIneligibleReason MeterpointIneligibleReason = "complex_SSC"
+	largeCapacityMeterpointIneligibleReason MeterpointIneligibleReason = "large_capacity"
 )
 
 type MeterpointEligible struct {
@@ -142,7 +142,7 @@ func (e *MeterpointEvaluator) GetGasMeterpointEligibility(ctx context.Context, m
 	if domain.IsLargeCapacity(meters) {
 		return MeterpointEligible{
 			Eligible: false,
-			Reason:   notLargeCapacityMeterpointIneligibleReason,
+			Reason:   largeCapacityMeterpointIneligibleReason,
 		}, nil
 	}
 
