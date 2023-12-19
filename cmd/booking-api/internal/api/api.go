@@ -581,9 +581,20 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		return nil, status.Error(codes.InvalidArgument, "no slot provided")
 	}
 
+	if req.ContactDetails == nil {
+		return nil, status.Error(codes.InvalidArgument, "no contact details provided")
+	}
+
 	params := domain.CreatePOSBookingParams{
 		AccountNumber: req.GetAccountNumber(),
 		AccountID:     accountID,
+		ContactDetails: models.AccountDetails{
+			Title:     req.GetContactDetails().Title,
+			FirstName: req.GetContactDetails().FirstName,
+			LastName:  req.GetContactDetails().LastName,
+			Email:     req.GetContactDetails().Email,
+			Mobile:    req.GetContactDetails().Phone,
+		},
 		Slot: models.BookingSlot{
 			Date:      time.Date(int(req.Slot.Date.Year), time.Month(req.Slot.Date.Month), int(req.Slot.Date.Day), 0, 0, 0, 0, time.UTC),
 			StartTime: int(req.Slot.StartTime),
@@ -591,16 +602,6 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		},
 		VulnerabilityDetails: req.VulnerabilityDetails,
 		Source:               models.PlatformSourceToBookingSource(req.Platform),
-	}
-
-	if req.GetContactDetails() != nil {
-		params.ContactDetails = models.AccountDetails{
-			Title:     req.GetContactDetails().Title,
-			FirstName: req.GetContactDetails().FirstName,
-			LastName:  req.GetContactDetails().LastName,
-			Email:     req.GetContactDetails().Email,
-			Mobile:    req.GetContactDetails().Phone,
-		}
 	}
 
 	createBookingResponse, err := b.bookingDomain.CreateBookingPointOfSale(ctx, params)
