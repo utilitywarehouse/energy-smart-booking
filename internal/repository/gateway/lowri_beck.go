@@ -63,12 +63,12 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 		span.End()
 	}()
 
-	availableSlots, err := g.getAvailableSlots(ctx, &lowribeckv1.GetAvailableSlotsRequest{
+	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), &lowribeckv1.GetAvailableSlotsRequest{
 		Postcode:  postcode,
 		Reference: reference,
 	})
 	if err != nil {
-		return AvailableSlotsResponse{}, err
+		return AvailableSlotsResponse{}, mapAvailableSlotsError(err)
 	}
 
 	slots := []models.BookingSlot{}
@@ -126,9 +126,9 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 	reqAttr := helpers.CreateSpanAttribute(req, "CreateBookingRequest", span)
 	span.AddEvent("request", trace.WithAttributes(reqAttr))
 
-	bookingResponse, err := g.createBooking(ctx, req)
+	bookingResponse, err := g.client.CreateBooking(g.mai.ToCtx(ctx), req)
 	if err != nil {
-		return CreateBookingResponse{Success: false}, err
+		return CreateBookingResponse{Success: false}, mapCreateBookingError(err)
 	}
 
 	span.AddEvent("response", trace.WithAttributes(attribute.Bool("resp", bookingResponse.Success)))
@@ -151,7 +151,7 @@ func (g LowriBeckGateway) GetAvailableSlotsPointOfSale(ctx context.Context, post
 		span.End()
 	}()
 
-	availableSlots, err := g.getAvailableSlotsPointOfSale(ctx, &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
+	availableSlots, err := g.client.GetAvailableSlotsPointOfSale(g.mai.ToCtx(ctx), &lowribeckv1.GetAvailableSlotsPointOfSaleRequest{
 		Postcode:              postcode,
 		Mpan:                  mpan,
 		ElectricityTariffType: tariffElectricity,
@@ -159,7 +159,7 @@ func (g LowriBeckGateway) GetAvailableSlotsPointOfSale(ctx context.Context, post
 		GasTariffType:         tariffGas,
 	})
 	if err != nil {
-		return AvailableSlotsResponse{}, err
+		return AvailableSlotsResponse{}, mapAvailableSlotsPointOfSaleError(err)
 	}
 
 	slots := []models.BookingSlot{}
@@ -223,9 +223,9 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, postcode
 	reqAttr := helpers.CreateSpanAttribute(req, "CreateBookingRequest", span)
 	span.AddEvent("request", trace.WithAttributes(reqAttr))
 
-	bookingResponse, err := g.createBookingPOS(ctx, req)
+	bookingResponse, err := g.client.CreateBookingPointOfSale(g.mai.ToCtx(ctx), req)
 	if err != nil {
-		return CreateBookingPointOfSaleResponse{Success: false}, err
+		return CreateBookingPointOfSaleResponse{Success: false}, mapCreateBookingPointOfSaleError(err)
 	}
 
 	span.AddEvent("response", trace.WithAttributes(attribute.Bool("resp", bookingResponse.Success)))
@@ -236,167 +236,156 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, postcode
 	}, nil
 }
 
-func (g LowriBeckGateway) getAvailableSlots(ctx context.Context, req *lowribeckv1.GetAvailableSlotsRequest) (*lowribeckv1.GetAvailableSlotsResponse, error) {
-	availableSlots, err := g.client.GetAvailableSlots(g.mai.ToCtx(ctx), req)
-	if err != nil {
-		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
+func mapAvailableSlotsError(err error) error {
+	logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
 
-		switch status.Convert(err).Code() {
-		case codes.Internal:
-			return nil, ErrInternal
-		case codes.NotFound:
-			return nil, ErrNotFound
-		case codes.OutOfRange:
-			return nil, ErrOutOfRange
-		case codes.InvalidArgument:
+	switch status.Convert(err).Code() {
+	case codes.Internal:
+		return ErrInternal
+	case codes.NotFound:
+		return ErrNotFound
+	case codes.OutOfRange:
+		return ErrOutOfRange
+	case codes.InvalidArgument:
 
-			details := status.Convert(err).Details()
+		details := status.Convert(err).Details()
 
-			for _, detail := range details {
-				switch x := detail.(type) {
-				case *lowribeckv1.InvalidParameterResponse:
-					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+		for _, detail := range details {
+			switch x := detail.(type) {
+			case *lowribeckv1.InvalidParameterResponse:
+				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
 
-					switch x.GetParameters() {
-					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
-						lowribeckv1.Parameters_PARAMETERS_REFERENCE:
-						return nil, ErrInternalBadParameters
-					}
+				switch x.GetParameters() {
+				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+					lowribeckv1.Parameters_PARAMETERS_REFERENCE:
+					return ErrInternalBadParameters
 				}
 			}
-			return nil, ErrInvalidArgument
-
-		default:
-			return nil, ErrUnhandledErrorCode
 		}
+		return ErrInvalidArgument
+
+	default:
+		return ErrUnhandledErrorCode
 	}
-	return availableSlots, nil
 }
 
-func (g LowriBeckGateway) createBooking(ctx context.Context, req *lowribeckv1.CreateBookingRequest) (*lowribeckv1.CreateBookingResponse, error) {
-	bookingResponse, err := g.client.CreateBooking(g.mai.ToCtx(ctx), req)
-	if err != nil {
-		switch status.Convert(err).Code() {
-		case codes.Internal:
-			return nil, ErrInternal
-		case codes.InvalidArgument:
+func mapCreateBookingError(err error) error {
 
-			details := status.Convert(err).Details()
+	switch status.Convert(err).Code() {
+	case codes.Internal:
+		return ErrInternal
+	case codes.InvalidArgument:
 
-			for _, detail := range details {
+		details := status.Convert(err).Details()
 
-				switch x := detail.(type) {
-				case *lowribeckv1.InvalidParameterResponse:
-					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+		for _, detail := range details {
 
-					switch x.GetParameters() {
-					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
-						lowribeckv1.Parameters_PARAMETERS_REFERENCE,
-						lowribeckv1.Parameters_PARAMETERS_SITE:
-						return nil, ErrInternalBadParameters
-					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE:
-						return nil, ErrInvalidAppointmentDate
+			switch x := detail.(type) {
+			case *lowribeckv1.InvalidParameterResponse:
+				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
 
-					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME:
-						return nil, ErrInvalidAppointmentTime
-					}
+				switch x.GetParameters() {
+				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+					lowribeckv1.Parameters_PARAMETERS_REFERENCE,
+					lowribeckv1.Parameters_PARAMETERS_SITE:
+					return ErrInternalBadParameters
+				case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE:
+					return ErrInvalidAppointmentDate
+
+				case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME:
+					return ErrInvalidAppointmentTime
 				}
 			}
-			return nil, ErrInvalidArgument
-		case codes.AlreadyExists:
-			return nil, ErrAlreadyExists
-		case codes.OutOfRange:
-			return nil, ErrOutOfRange
-		case codes.NotFound:
-			return nil, ErrNotFound
-		default:
-			return nil, ErrUnhandledErrorCode
 		}
+		return ErrInvalidArgument
+	case codes.AlreadyExists:
+		return ErrAlreadyExists
+	case codes.OutOfRange:
+		return ErrOutOfRange
+	case codes.NotFound:
+		return ErrNotFound
+	default:
+		return ErrUnhandledErrorCode
 	}
-	return bookingResponse, nil
+
 }
 
-func (g LowriBeckGateway) getAvailableSlotsPointOfSale(ctx context.Context, req *lowribeckv1.GetAvailableSlotsPointOfSaleRequest) (*lowribeckv1.GetAvailableSlotsPointOfSaleResponse, error) {
-	availableSlots, err := g.client.GetAvailableSlotsPointOfSale(g.mai.ToCtx(ctx), req)
-	if err != nil {
-		logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
+func mapAvailableSlotsPointOfSaleError(err error) error {
 
-		switch status.Convert(err).Code() {
-		case codes.Internal:
-			return nil, ErrInternal
-		case codes.NotFound:
-			return nil, ErrNotFound
-		case codes.OutOfRange:
-			return nil, ErrOutOfRange
-		case codes.InvalidArgument:
+	logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
 
-			details := status.Convert(err).Details()
+	switch status.Convert(err).Code() {
+	case codes.Internal:
+		return ErrInternal
+	case codes.NotFound:
+		return ErrNotFound
+	case codes.OutOfRange:
+		return ErrOutOfRange
+	case codes.InvalidArgument:
 
-			for _, detail := range details {
-				switch x := detail.(type) {
-				case *lowribeckv1.InvalidParameterResponse:
-					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+		details := status.Convert(err).Details()
 
-					switch x.GetParameters() {
-					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
-						lowribeckv1.Parameters_PARAMETERS_MPAN,
-						lowribeckv1.Parameters_PARAMETERS_MPRN,
-						lowribeckv1.Parameters_PARAMETERS_ELECTRICITY_TARIFF,
-						lowribeckv1.Parameters_PARAMETERS_GAS_TARIFF:
-						return nil, ErrInternalBadParameters
-					}
+		for _, detail := range details {
+			switch x := detail.(type) {
+			case *lowribeckv1.InvalidParameterResponse:
+				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+
+				switch x.GetParameters() {
+				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+					lowribeckv1.Parameters_PARAMETERS_MPAN,
+					lowribeckv1.Parameters_PARAMETERS_MPRN,
+					lowribeckv1.Parameters_PARAMETERS_ELECTRICITY_TARIFF,
+					lowribeckv1.Parameters_PARAMETERS_GAS_TARIFF:
+					return ErrInternalBadParameters
 				}
 			}
-			return nil, ErrInvalidArgument
-
-		default:
-			return nil, ErrUnhandledErrorCode
 		}
+		return ErrInvalidArgument
+
+	default:
+		return ErrUnhandledErrorCode
 	}
-	return availableSlots, nil
+
 }
 
-func (g LowriBeckGateway) createBookingPOS(ctx context.Context, req *lowribeckv1.CreateBookingPointOfSaleRequest) (*lowribeckv1.CreateBookingPointOfSaleResponse, error) {
-	bookingResponse, err := g.client.CreateBookingPointOfSale(g.mai.ToCtx(ctx), req)
-	if err != nil {
-		switch status.Convert(err).Code() {
-		case codes.Internal:
-			return nil, ErrInternal
-		case codes.InvalidArgument:
+func mapCreateBookingPointOfSaleError(err error) error {
 
-			details := status.Convert(err).Details()
+	switch status.Convert(err).Code() {
+	case codes.Internal:
+		return ErrInternal
+	case codes.InvalidArgument:
 
-			for _, detail := range details {
+		details := status.Convert(err).Details()
 
-				switch x := detail.(type) {
-				case *lowribeckv1.InvalidParameterResponse:
-					logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+		for _, detail := range details {
 
-					switch x.GetParameters() {
-					case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
-						lowribeckv1.Parameters_PARAMETERS_MPAN,
-						lowribeckv1.Parameters_PARAMETERS_MPRN,
-						lowribeckv1.Parameters_PARAMETERS_ELECTRICITY_TARIFF,
-						lowribeckv1.Parameters_PARAMETERS_GAS_TARIFF:
-						return nil, ErrInternalBadParameters
-					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE:
-						return nil, ErrInvalidAppointmentDate
+			switch x := detail.(type) {
+			case *lowribeckv1.InvalidParameterResponse:
+				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
 
-					case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME:
-						return nil, ErrInvalidAppointmentTime
-					}
+				switch x.GetParameters() {
+				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
+					lowribeckv1.Parameters_PARAMETERS_MPAN,
+					lowribeckv1.Parameters_PARAMETERS_MPRN,
+					lowribeckv1.Parameters_PARAMETERS_ELECTRICITY_TARIFF,
+					lowribeckv1.Parameters_PARAMETERS_GAS_TARIFF:
+					return ErrInternalBadParameters
+				case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_DATE:
+					return ErrInvalidAppointmentDate
+
+				case lowribeckv1.Parameters_PARAMETERS_APPOINTMENT_TIME:
+					return ErrInvalidAppointmentTime
 				}
 			}
-			return nil, ErrInvalidArgument
-		case codes.AlreadyExists:
-			return nil, ErrAlreadyExists
-		case codes.OutOfRange:
-			return nil, ErrOutOfRange
-		case codes.NotFound:
-			return nil, ErrNotFound
-		default:
-			return nil, ErrUnhandledErrorCode
 		}
+		return ErrInvalidArgument
+	case codes.AlreadyExists:
+		return ErrAlreadyExists
+	case codes.OutOfRange:
+		return ErrOutOfRange
+	case codes.NotFound:
+		return ErrNotFound
+	default:
+		return ErrUnhandledErrorCode
 	}
-	return bookingResponse, nil
 }
