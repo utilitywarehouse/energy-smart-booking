@@ -311,7 +311,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		models.BookingTariffTypeToLowribeckTariffType(accountHolderDetails.ElecOrderSupplies.TariffType),
 		models.BookingTariffTypeToLowribeckTariffType(accountHolderDetails.GasOrderSupplies.TariffType),
 		params.Slot,
-		accountHolderDetails.Details,
+		params.ContactDetails,
 		lbVulnerabilities,
 		params.VulnerabilityDetails.Other,
 	)
@@ -413,7 +413,7 @@ func buildCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.
 		GasTariffType:  accountHolderDetails.GasOrderSupplies.TariffType,
 	}
 
-	if !accountHolderDetails.Details.Equals(params.ContactDetails) && !params.ContactDetails.Empty() {
+	if !params.ContactDetails.Empty() {
 		event.OnSiteContactDetails = &bookingv1.ContactDetails{
 			Title:     params.ContactDetails.Title,
 			FirstName: params.ContactDetails.FirstName,
@@ -433,11 +433,11 @@ func buildBookingEvent(params CreatePOSBookingParams, accountHolderDetails model
 			Id:        bookingID,
 			AccountId: params.AccountID,
 			ContactDetails: &bookingv1.ContactDetails{
-				Title:     accountHolderDetails.Details.Title,
-				FirstName: accountHolderDetails.Details.FirstName,
-				LastName:  accountHolderDetails.Details.LastName,
-				Phone:     accountHolderDetails.Details.Mobile,
-				Email:     accountHolderDetails.Details.Email,
+				Title:     params.ContactDetails.Title,
+				FirstName: params.ContactDetails.FirstName,
+				LastName:  params.ContactDetails.LastName,
+				Phone:     params.ContactDetails.Mobile,
+				Email:     params.ContactDetails.Email,
 			},
 			Slot: &bookingv1.BookingSlot{
 				Date: &date.Date{

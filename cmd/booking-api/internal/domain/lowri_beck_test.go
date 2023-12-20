@@ -973,188 +973,13 @@ func Test_CreatePOSBooking(t *testing.T) {
 			description: "should create booking",
 			input: inputParams{
 				params: domain.CreatePOSBookingParams{
-					AccountNumber:  "account-number-1",
-					AccountID:      "account-id-1",
-					ContactDetails: models.AccountDetails{},
-					Slot: models.BookingSlot{
-						Date:      mustDate(t, "2023-08-27"),
-						StartTime: 9,
-						EndTime:   15,
-					},
-					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
-						Vulnerabilities: []bookingv1.Vulnerability{
-							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-						},
-						Other: "",
-					},
-					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
-				},
-			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
-
-				customerDetailSt.EXPECT().GetByAccountNumber(ctx, "account-number-1").Return(&models.PointOfSaleCustomerDetails{
-					Details: models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "555-0145",
-					},
-					Address: models.AccountAddress{
-						UPRN: "uprn-1",
-						PAF: models.PAF{
-							Organisation:            "org",
-							Department:              "department-1",
-							SubBuilding:             "sub-1",
-							BuildingName:            "bn-1",
-							BuildingNumber:          "bnum-1",
-							DependentThoroughfare:   "dt-1",
-							Thoroughfare:            "tf-1",
-							DoubleDependentLocality: "ddl-1",
-							DependentLocality:       "dl-1",
-							PostTown:                "pt",
-							Postcode:                "E2 1ZZ",
-						},
-					},
-					ElecOrderSupplies: models.OrderSupply{
-						MPXN:       "mpan-1",
-						TariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-					},
-				}, nil)
-
-				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
-					"E2 1ZZ",
-					"mpan-1",
-					"",
-					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
-					lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
-					models.BookingSlot{
-						Date:      mustDate(t, "2023-08-27"),
-						StartTime: 9,
-						EndTime:   15,
-					}, models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
-						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "555-0145",
-					}, []lowribeckv1.Vulnerability{
-						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
-					Success:     true,
-					ReferenceID: "test-ref",
-				}, nil)
-
-				occupancySt.EXPECT().GetOccupancyByAccountID(ctx, "account-id-1").Return(&models.Occupancy{
-					OccupancyID: "occ-id-1",
-					AccountID:   "account-id-1",
-				}, nil)
-			},
-			output: outputParams{
-				event: domain.CreateBookingPointOfSaleResponse{
-					CommsEvent: &commsv1.PointOfSaleBookingConfirmationCommsEvent{
-						AccountId:     "account-id-1",
-						AccountNumber: "account-number-1",
-						AccountHolderContactDetails: &bookingv1.ContactDetails{
-							Title:     "Mr",
-							FirstName: "John",
-							LastName:  "Dough",
-							Phone:     "555-0145",
-							Email:     "jdough@example.com",
-						},
-						BookingDate: &date.Date{
-							Year:  2023,
-							Month: 8,
-							Day:   27,
-						},
-						StartTime:      9,
-						EndTime:        15,
-						BookingType:    bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
-						Mpan:           "mpan-1",
-						ElecTariffType: bookingv1.TariffType_TARIFF_TYPE_CREDIT,
-						SupplyAddress: &addressv1.Address{
-							Uprn: "uprn-1",
-							Paf: &addressv1.Address_PAF{
-								Organisation:            "org",
-								Department:              "department-1",
-								SubBuilding:             "sub-1",
-								BuildingName:            "bn-1",
-								BuildingNumber:          "bnum-1",
-								DependentThoroughfare:   "dt-1",
-								Thoroughfare:            "tf-1",
-								DoubleDependentLocality: "ddl-1",
-								DependentLocality:       "dl-1",
-								PostTown:                "pt",
-								Postcode:                "E2 1ZZ",
-							},
-						},
-					},
-					BookingEvent: &bookingv1.BookingCreatedEvent{
-						BookingId:     "my-uuid",
-						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
-						Details: &bookingv1.Booking{
-							Id:        "my-uuid",
-							AccountId: "account-id-1",
-							ContactDetails: &bookingv1.ContactDetails{
-								Title:     "Mr",
-								FirstName: "John",
-								LastName:  "Dough",
-								Phone:     "555-0145",
-								Email:     "jdough@example.com",
-							},
-							Slot: &bookingv1.BookingSlot{
-								Date: &date.Date{
-									Year:  2023,
-									Month: 8,
-									Day:   27,
-								},
-								StartTime: 9,
-								EndTime:   15,
-							},
-							VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
-								Vulnerabilities: []bookingv1.Vulnerability{
-									bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-								},
-								Other: "",
-							},
-							Status:            bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
-							ExternalReference: "test-ref",
-							SiteAddress: &addressv1.Address{
-								Uprn: "uprn-1",
-								Paf: &addressv1.Address_PAF{
-									Organisation:            "org",
-									Department:              "department-1",
-									SubBuilding:             "sub-1",
-									BuildingName:            "bn-1",
-									BuildingNumber:          "bnum-1",
-									DependentThoroughfare:   "dt-1",
-									Thoroughfare:            "tf-1",
-									DoubleDependentLocality: "ddl-1",
-									DependentLocality:       "dl-1",
-									PostTown:                "pt",
-									Postcode:                "E2 1ZZ",
-								},
-							},
-							BookingType: bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
-						},
-						OccupancyId: "occ-id-1",
-					},
-				},
-				err: nil,
-			},
-		},
-		{
-			description: "should create booking, but the account details in the params are different than the original account holder contact details",
-			input: inputParams{
-				params: domain.CreatePOSBookingParams{
 					AccountNumber: "account-number-1",
 					AccountID:     "account-id-1",
 					ContactDetails: models.AccountDetails{
 						Title:     "Mrs",
-						FirstName: "Johanna",
-						LastName:  "Weak",
-						Email:     "jweak@example.com",
-						Mobile:    "555-0145",
+						FirstName: "Jane",
+						LastName:  "Dough",
+						Mobile:    "555-0147",
 					},
 					Slot: models.BookingSlot{
 						Date:      mustDate(t, "2023-08-27"),
@@ -1178,7 +1003,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 						FirstName: "John",
 						LastName:  "Dough",
 						Email:     "jdough@example.com",
-						Mobile:    "07485-1111",
+						Mobile:    "555-0145",
 					},
 					Address: models.AccountAddress{
 						UPRN: "uprn-1",
@@ -1213,11 +1038,10 @@ func Test_CreatePOSBooking(t *testing.T) {
 						StartTime: 9,
 						EndTime:   15,
 					}, models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
+						Title:     "Mrs",
+						FirstName: "Jane",
 						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "07485-1111",
+						Mobile:    "555-0147",
 					}, []lowribeckv1.Vulnerability{
 						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
@@ -1239,15 +1063,14 @@ func Test_CreatePOSBooking(t *testing.T) {
 							Title:     "Mr",
 							FirstName: "John",
 							LastName:  "Dough",
-							Phone:     "07485-1111",
+							Phone:     "555-0145",
 							Email:     "jdough@example.com",
 						},
 						OnSiteContactDetails: &bookingv1.ContactDetails{
 							Title:     "Mrs",
-							FirstName: "Johanna",
-							LastName:  "Weak",
-							Email:     "jweak@example.com",
-							Phone:     "555-0145",
+							FirstName: "Jane",
+							LastName:  "Dough",
+							Phone:     "555-0147",
 						},
 						BookingDate: &date.Date{
 							Year:  2023,
@@ -1283,11 +1106,10 @@ func Test_CreatePOSBooking(t *testing.T) {
 							Id:        "my-uuid",
 							AccountId: "account-id-1",
 							ContactDetails: &bookingv1.ContactDetails{
-								Title:     "Mr",
-								FirstName: "John",
+								Title:     "Mrs",
+								FirstName: "Jane",
 								LastName:  "Dough",
-								Phone:     "07485-1111",
-								Email:     "jdough@example.com",
+								Phone:     "555-0147",
 							},
 							Slot: &bookingv1.BookingSlot{
 								Date: &date.Date{
@@ -1334,9 +1156,14 @@ func Test_CreatePOSBooking(t *testing.T) {
 			description: "should create booking but not return an event to be published because occupancy id does not exist yet",
 			input: inputParams{
 				params: domain.CreatePOSBookingParams{
-					AccountNumber:  "account-number-1",
-					AccountID:      "account-id-1",
-					ContactDetails: models.AccountDetails{},
+					AccountNumber: "account-number-1",
+					AccountID:     "account-id-1",
+					ContactDetails: models.AccountDetails{
+						Title:     "Mrs",
+						FirstName: "Jane",
+						LastName:  "Dough",
+						Mobile:    "555-0147",
+					},
 					Slot: models.BookingSlot{
 						Date:      mustDate(t, "2023-08-27"),
 						StartTime: 9,
@@ -1394,11 +1221,10 @@ func Test_CreatePOSBooking(t *testing.T) {
 						StartTime: 9,
 						EndTime:   15,
 					}, models.AccountDetails{
-						Title:     "Mr",
-						FirstName: "John",
+						Title:     "Mrs",
+						FirstName: "Jane",
 						LastName:  "Dough",
-						Email:     "jdough@example.com",
-						Mobile:    "555-0145",
+						Mobile:    "555-0147",
 					}, []lowribeckv1.Vulnerability{
 						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
 					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
@@ -1422,6 +1248,12 @@ func Test_CreatePOSBooking(t *testing.T) {
 							LastName:  "Dough",
 							Phone:     "555-0145",
 							Email:     "jdough@example.com",
+						},
+						OnSiteContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mrs",
+							FirstName: "Jane",
+							LastName:  "Dough",
+							Phone:     "555-0147",
 						},
 						BookingDate: &date.Date{
 							Year:  2023,
@@ -1457,11 +1289,10 @@ func Test_CreatePOSBooking(t *testing.T) {
 							Id:        "my-uuid",
 							AccountId: "account-id-1",
 							ContactDetails: &bookingv1.ContactDetails{
-								Title:     "Mr",
-								FirstName: "John",
+								Title:     "Mrs",
+								FirstName: "Jane",
 								LastName:  "Dough",
-								Phone:     "555-0145",
-								Email:     "jdough@example.com",
+								Phone:     "555-0147",
 							},
 							Slot: &bookingv1.BookingSlot{
 								Date: &date.Date{
