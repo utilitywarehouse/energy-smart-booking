@@ -585,6 +585,10 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 		return nil, status.Error(codes.InvalidArgument, "no contact details provided")
 	}
 
+	if req.ContactDetails.GetFirstName() == "" {
+		return nil, status.Error(codes.InvalidArgument, "no first name provided for contact details")
+	}
+
 	params := domain.CreatePOSBookingParams{
 		AccountNumber: req.GetAccountNumber(),
 		AccountID:     accountID,
