@@ -187,7 +187,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 					EndTime:   int32(params.Slot.EndTime),
 				},
 				VulnerabilityDetails: params.VulnerabilityDetails,
-				Status:               bookingv1.BookingStatus_BOOKING_STATUS_COMPLETED,
+				Status:               bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 				ExternalReference:    occupancyEligibility.Reference,
 				BookingType:          bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
 			},
