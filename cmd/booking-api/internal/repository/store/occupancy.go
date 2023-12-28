@@ -14,6 +14,8 @@ var (
 	ErrFailedUpdate      = errors.New("no rows were affected by update statement")
 
 	ErrNoEligibleOccupancyFound = errors.New("eligible occupancy not found")
+
+	ErrNoSiteFound = errors.New("no site was found for the given account ID")
 )
 
 type OccupancyStore struct {

@@ -39,9 +39,10 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerContactDetailsRequest
@@ -228,9 +229,10 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerSiteAddressRequest
@@ -430,9 +432,10 @@ func Test_GetCustomerBookings(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerBookingsRequest
@@ -666,9 +669,10 @@ func Test_GetAvailableSlot(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetAvailableSlotsRequest
@@ -1246,9 +1250,10 @@ func Test_CreateBooking(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.CreateBookingRequest
@@ -2264,9 +2269,10 @@ func Test_RescheduleBooking(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.RescheduleBookingRequest
@@ -2349,7 +2355,7 @@ func Test_RescheduleBooking(t *testing.T) {
 				}
 
 				bkDomain.EXPECT().RescheduleBooking(ctx, params).Return(domain.RescheduleBookingResponse{
-					Event: &bookingv1.BookingRescheduledEvent{
+					BookingEvent: &bookingv1.BookingRescheduledEvent{
 						BookingId:     "booking-id-1",
 						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 						Slot: &bookingv1.BookingSlot{
@@ -2375,6 +2381,41 @@ func Test_RescheduleBooking(t *testing.T) {
 							Other: "runny nose",
 						},
 						Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+					},
+					CommsEvent: &commsv1.BookingRescheduledCommsEvent{
+						AccountId:     "account-id-1",
+						AccountNumber: "account-number-1",
+						AccountHolderContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Phone:     "333-100",
+							Email:     "jdoe@example.com",
+						},
+						OnSiteContactDetails: nil,
+						BookingDate: &date.Date{
+							Year:  2023,
+							Month: 8,
+							Day:   12,
+						},
+						StartTime: 12,
+						EndTime:   16,
+						SupplyAddress: &addressv1.Address{
+							Uprn: "uprn",
+							Paf: &addressv1.Address_PAF{
+								Organisation:            "o",
+								Department:              "d",
+								SubBuilding:             "sb",
+								BuildingName:            "bn",
+								BuildingNumber:          "bnu",
+								DependentThoroughfare:   "dt",
+								Thoroughfare:            "tf",
+								DoubleDependentLocality: "ddl",
+								DependentLocality:       "dl",
+								PostTown:                "pt",
+								Postcode:                "pc",
+							},
+						},
 					},
 				}, nil)
 
@@ -2404,6 +2445,42 @@ func Test_RescheduleBooking(t *testing.T) {
 						Other: "runny nose",
 					},
 					Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+				}, gomock.Any()).Return(nil)
+
+				commReschedulePublisher.EXPECT().Sink(ctx, &commsv1.BookingRescheduledCommsEvent{
+					AccountId:     "account-id-1",
+					AccountNumber: "account-number-1",
+					AccountHolderContactDetails: &bookingv1.ContactDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Phone:     "333-100",
+						Email:     "jdoe@example.com",
+					},
+					OnSiteContactDetails: nil,
+					BookingDate: &date.Date{
+						Year:  2023,
+						Month: 8,
+						Day:   12,
+					},
+					StartTime: 12,
+					EndTime:   16,
+					SupplyAddress: &addressv1.Address{
+						Uprn: "uprn",
+						Paf: &addressv1.Address_PAF{
+							Organisation:            "o",
+							Department:              "d",
+							SubBuilding:             "sb",
+							BuildingName:            "bn",
+							BuildingNumber:          "bnu",
+							DependentThoroughfare:   "dt",
+							Thoroughfare:            "tf",
+							DoubleDependentLocality: "ddl",
+							DependentLocality:       "dl",
+							PostTown:                "pt",
+							Postcode:                "pc",
+						},
+					},
 				}, gomock.Any()).Return(nil)
 
 			},
@@ -3179,9 +3256,10 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetAvailableSlotsPointOfSaleRequest
@@ -3768,11 +3846,12 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 	defer ctrl.Finish()
 
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
-	mockPublisher := mocks.NewMockPublisher(ctrl)
+	bookingPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.CreateBookingPointOfSaleRequest
@@ -4835,7 +4914,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, bookingDomain, mockAuth, mockPublisher, commPublisher)
+			tc.setup(ctx, bookingDomain, mockAuth, bookingPublisher, commPublisher)
 
 			expected, err := myAPIHandler.CreateBookingPointOfSale(ctx, tc.input.req)
 			if tc.output.err != nil {
@@ -4865,8 +4944,9 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 	mockAuth := mocks.NewMockAuth(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerDetailsPointOfSaleRequest
@@ -5056,9 +5136,10 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 	bookingDomain := mocks.NewMockBookingDomain(ctrl)
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetClickLinkPointOfSaleJourneyRequest
@@ -5498,8 +5579,9 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 	mockPublisher := mocks.NewMockPublisher(ctrl)
 	commPublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
+	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetEligibilityPointOfSaleJourneyRequest

@@ -215,12 +215,19 @@ func serverAction(c *cli.Context) error {
 	defer bookingSink.Close()
 	opsServer.Add("booking-sink", substratehealth.NewCheck(bookingSink, "unable to sink booking events"))
 
-	commsSink, err := app.GetKafkaSinkWithBroker(c.String(flagBookingCommsTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	commsPoSBookingSink, err := app.GetKafkaSinkWithBroker(c.String(flagBookingCommsTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
 	if err != nil {
 		return fmt.Errorf("unable to connect to comms [%s] kafka sink: %w", c.String(flagBookingCommsTopic), err)
 	}
-	defer commsSink.Close()
-	opsServer.Add("comms-sink", substratehealth.NewCheck(commsSink, "unable to sink comms events"))
+	defer commsPoSBookingSink.Close()
+	opsServer.Add("comms-pos-booking-sink", substratehealth.NewCheck(commsPoSBookingSink, "unable to sink point of sale bookings comms events"))
+
+	commsRescheduleSink, err := app.GetKafkaSinkWithBroker(c.String(flagRescheduleCommsTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	if err != nil {
+		return fmt.Errorf("unable to connect to comms [%s] kafka sink: %w", c.String(flagBookingCommsTopic), err)
+	}
+	defer commsRescheduleSink.Close()
+	opsServer.Add("comms-reschedule-sink", substratehealth.NewCheck(commsRescheduleSink, "unable to sink reschedule comms events"))
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -253,6 +260,7 @@ func serverAction(c *cli.Context) error {
 
 	// GATEWAYS //
 	accountGw := gateway.NewAccountGateway(mn, accountService.NewAccountServiceClient(accountsConn))
+	accountNumberGw := gateway.NewAccountNumberGateway(mn, accountService.NewNumberLookupServiceClient(accountsConn))
 	lowriBeckGateway := gateway.NewLowriBeckGateway(mn, lowribeck_api.NewLowriBeckAPIClient(lowribeckConn))
 	eligibilityGateway := gateway.NewEligibilityGateway(mn, eligibilityv1.NewEligiblityAPIClient(eligibilityConn))
 	cachedEligibilityGateway := cache.NewMeterpointEligibilityCacheWrapper(eligibilityGateway, eligibilityCache)
@@ -273,7 +281,8 @@ func serverAction(c *cli.Context) error {
 	// PUBLISHERS //
 
 	syncBookingPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingSink), c.App.Name)
-	syncCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsSink), c.App.Name)
+	syncCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsPoSBookingSink), c.App.Name)
+	syncRescheduleCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsRescheduleSink), c.App.Name)
 
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
@@ -284,6 +293,7 @@ func serverAction(c *cli.Context) error {
 	// DOMAIN //
 	bookingDomain := domain.NewBookingDomain(
 		accountGw,
+		accountNumberGw,
 		lowriBeckGateway,
 		occupancyStore,
 		siteStore,
@@ -295,7 +305,7 @@ func serverAction(c *cli.Context) error {
 		true,
 	)
 
-	bookingAPI := api.New(bookingDomain, syncBookingPublisher, syncCommsPublisher, auth, true)
+	bookingAPI := api.New(bookingDomain, syncBookingPublisher, syncCommsPublisher, syncRescheduleCommsPublisher, auth, true)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

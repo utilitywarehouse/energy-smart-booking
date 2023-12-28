@@ -57,10 +57,11 @@ type Auth interface {
 }
 
 type BookingAPI struct {
-	bookingDomain    BookingDomain
-	bookingPublisher Publisher
-	commsPublisher   Publisher
-	auth             Auth
+	bookingDomain            BookingDomain
+	bookingPublisher         Publisher
+	commsPublisher           Publisher
+	rescheduleCommsPublisher Publisher
+	auth                     Auth
 	bookingv1.UnimplementedBookingAPIServer
 	useTracing bool
 }
@@ -73,13 +74,14 @@ type accountNumberer interface {
 	GetAccountNumber() string
 }
 
-func New(bookingDomain BookingDomain, bookingPublisher, commsPublisher Publisher, auth Auth, useTracing bool) *BookingAPI {
+func New(bookingDomain BookingDomain, bookingPublisher, commsPublisher, rescheduleCommsPublisher Publisher, auth Auth, useTracing bool) *BookingAPI {
 	return &BookingAPI{
-		bookingDomain:    bookingDomain,
-		bookingPublisher: bookingPublisher,
-		commsPublisher:   commsPublisher,
-		auth:             auth,
-		useTracing:       useTracing,
+		bookingDomain:            bookingDomain,
+		bookingPublisher:         bookingPublisher,
+		commsPublisher:           commsPublisher,
+		rescheduleCommsPublisher: rescheduleCommsPublisher,
+		auth:                     auth,
+		useTracing:               useTracing,
 	}
 }
 
@@ -454,13 +456,20 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		}, mapError("failed to reschedule booking, %s", err)
 	}
 
-	err = b.bookingPublisher.Sink(ctx, rescheduleBookingResponse.Event, time.Now())
+	err = b.bookingPublisher.Sink(ctx, rescheduleBookingResponse.BookingEvent, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingResponse.Event)
+		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingResponse.BookingEvent)
+	}
+
+	if rescheduleBookingResponse.CommsEvent != nil {
+		err = b.rescheduleCommsPublisher.Sink(ctx, rescheduleBookingResponse.CommsEvent, time.Now())
+		if err != nil {
+			logrus.Errorf("failed to sink reschedule booking comms event: %+v", rescheduleBookingResponse.CommsEvent)
+		}
 	}
 
 	return &bookingv1.RescheduleBookingResponse{
-		BookingId: rescheduleBookingResponse.Event.(*bookingv1.BookingRescheduledEvent).BookingId,
+		BookingId: rescheduleBookingResponse.BookingEvent.(*bookingv1.BookingRescheduledEvent).BookingId,
 	}, nil
 }
 

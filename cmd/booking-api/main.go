@@ -21,6 +21,7 @@ var (
 	flagPostgresDSN                         = "postgres-dsn"
 	flagBookingTopic                        = "booking-topic"
 	flagBookingCommsTopic                   = "booking-comms-topic"
+	flagRescheduleCommsTopic                = "reschedule-comms-topic"
 	flagPartialBookingCron                  = "partial-booking-cron"
 	flagRetainedBookingPeriodAlertThreshold = "retained-booking-period-alert-threshold"
 
@@ -36,6 +37,10 @@ var (
 			&cli.StringFlag{
 				Name:    flagBookingCommsTopic,
 				EnvVars: []string{"BOOKING_COMMS_TOPIC"},
+			},
+			&cli.StringFlag{
+				Name:    flagRescheduleCommsTopic,
+				EnvVars: []string{"RESCHEDULE_BOOKING_COMMS_TOPIC"},
 			},
 		),
 	}
