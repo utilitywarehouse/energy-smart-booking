@@ -36,7 +36,7 @@ func Test_GetAccountNumberByAccountID(t *testing.T) {
 
 	actual := "80001"
 
-	expected, err := myGw.AccountNumber(ctx, "account-id-1")
+	expected, err := myGw.Get(ctx, "account-id-1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +68,7 @@ func Test_GetAccountNumberByAccountID_NotFound(t *testing.T) {
 
 	expectedErr := fmt.Errorf("%w, %w", gateway.ErrAccountNotFound, status.Error(codes.NotFound, "not found"))
 
-	_, actualErr := myGw.AccountNumber(ctx, "account-id-1")
+	_, actualErr := myGw.Get(ctx, "account-id-1")
 
 	if diff := cmp.Diff(actualErr.Error(), expectedErr.Error()); diff != "" {
 		t.Fatal(diff)

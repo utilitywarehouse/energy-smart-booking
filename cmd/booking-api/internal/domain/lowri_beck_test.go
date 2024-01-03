@@ -597,7 +597,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					Success: true,
 				}, nil)
 
-				accountNumberGw.EXPECT().AccountNumber(ctx, "account-id-1").Return("8000", nil)
+				accountNumberGw.EXPECT().Get(ctx, "account-id-1").Return("8000", nil)
 
 			},
 			output: outputParams{
@@ -750,7 +750,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					Success: true,
 				}, nil)
 
-				accountNumberGw.EXPECT().AccountNumber(ctx, "account-id-1").Return("8000", nil)
+				accountNumberGw.EXPECT().Get(ctx, "account-id-1").Return("8000", nil)
 
 			},
 			output: outputParams{

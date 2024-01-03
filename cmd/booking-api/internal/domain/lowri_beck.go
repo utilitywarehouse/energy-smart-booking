@@ -259,7 +259,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 	// this is a temporary change, at this moment we only want to send comms for point of sale journey bookings
 	if booking.BookingType == bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY {
 
-		accountNumber, err := d.accountNumber.AccountNumber(ctx, params.AccountID)
+		accountNumber, err := d.accountNumber.Get(ctx, params.AccountID)
 		if err != nil {
 			return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 		}

@@ -35,7 +35,7 @@ type EligibilityGateway interface {
 }
 
 type AccountNumberGateway interface {
-	AccountNumber(ctx context.Context, accountID string) (string, error)
+	Get(ctx context.Context, accountID string) (string, error)
 }
 type ClickGateway interface {
 	GenerateAuthenticated(ctx context.Context, accountNo string, attributes map[string]string) (string, error)
