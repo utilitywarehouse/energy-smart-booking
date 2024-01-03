@@ -511,7 +511,6 @@ func Test_RescheduleBooking(t *testing.T) {
 		output      outputParams
 	}
 
-	var emptyMsg *bookingv1.BookingRescheduledEvent
 	var emptyCommsMsg *commsv1.BookingRescheduledCommsEvent
 
 	testCases := []testSetup{
@@ -1028,8 +1027,8 @@ func Test_RescheduleBooking(t *testing.T) {
 			},
 			output: outputParams{
 				event: domain.RescheduleBookingResponse{
-					CommsEvent:   emptyCommsMsg,
-					BookingEvent: emptyMsg,
+					CommsEvent:   nil,
+					BookingEvent: nil,
 				},
 				err: nil,
 			},
