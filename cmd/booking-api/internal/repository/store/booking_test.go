@@ -75,6 +75,7 @@ func makeDummyBooking(
 			Other:           "",
 		},
 		BookingReference: bookingReference,
+		BookingType:      bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
 	}
 }
 
