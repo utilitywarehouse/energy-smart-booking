@@ -10,7 +10,6 @@ import (
 
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/robfig/cron/v3"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -61,7 +60,7 @@ func partialBookingWorkerAction(c *cli.Context) error {
 	ctx, cancel := context.WithCancel(c.Context)
 	defer cancel()
 
-	pool, err := store.GetPool(ctx, c.String(flagPostgresDSN))
+	pool, err := store.Setup(ctx, c.String(flagPostgresDSN))
 	if err != nil {
 		return err
 	}
@@ -91,7 +90,7 @@ func partialBookingWorkerAction(c *cli.Context) error {
 	})
 
 	g.Go(func() error {
-		defer logrus.Info("partial booking cron job finished")
+		defer log.Info("partial booking cron job finished")
 		cron := cron.New()
 
 		cron.Start()
@@ -99,7 +98,7 @@ func partialBookingWorkerAction(c *cli.Context) error {
 
 		if _, err := cron.AddFunc(c.String(flagPartialBookingCron), func() {
 			if err := partialBookingWorker.Run(ctx); err != nil {
-				logrus.WithError(err).Panic("failed to run partial booking cron")
+				log.WithError(err).Panic("failed to run partial booking cron")
 			}
 		}); err != nil {
 			return fmt.Errorf("cron job failed for partial booking cron, %w", err)
