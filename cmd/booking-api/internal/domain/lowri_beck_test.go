@@ -511,8 +511,6 @@ func Test_RescheduleBooking(t *testing.T) {
 		output      outputParams
 	}
 
-	var emptyCommsMsg *commsv1.BookingRescheduledCommsEvent
-
 	testCases := []testSetup{
 		{
 			description: "should reschedule booking",
@@ -937,7 +935,7 @@ func Test_RescheduleBooking(t *testing.T) {
 						},
 						Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 					},
-					CommsEvent: emptyCommsMsg,
+					CommsEvent: nil,
 				},
 				err: nil,
 			},

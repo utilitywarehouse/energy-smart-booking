@@ -280,11 +280,15 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		}
 
 		commsEvent = buildRescheduleCommsEvent(params, booking.Contact, accAddress, accountNumber)
+		return RescheduleBookingResponse{
+			BookingEvent: event,
+			CommsEvent:   commsEvent,
+		}, nil
 	}
 
 	return RescheduleBookingResponse{
 		BookingEvent: event,
-		CommsEvent:   commsEvent,
+		CommsEvent:   nil,
 	}, nil
 }
 
