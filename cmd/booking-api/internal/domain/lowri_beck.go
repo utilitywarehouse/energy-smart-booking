@@ -24,8 +24,8 @@ import (
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
 	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
-	ErrUnsuccessfulBooking              = errors.New("create booking point of sale did not return success")
-	ErrUnsucessfulReschedule            = errors.New("reschedule booking did not return success")
+	ErrUnsucessfulBooking               = errors.New("create booking point of sale did not return success")
+	ErrUnsuccessfulReschedule           = errors.New("reschedule booking did not return success")
 )
 
 type GetAvailableSlotsParams struct {
@@ -228,7 +228,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 	}
 
 	if !response.Success {
-		return RescheduleBookingResponse{}, ErrUnsucessfulReschedule
+		return RescheduleBookingResponse{}, ErrUnsuccessfulReschedule
 	}
 
 	event = &bookingv1.BookingRescheduledEvent{

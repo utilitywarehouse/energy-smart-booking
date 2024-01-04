@@ -452,7 +452,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 	rescheduleBookingResponse, err := b.bookingDomain.RescheduleBooking(ctx, params)
 	if err != nil {
 		switch err {
-		case domain.ErrUnsucessfulReschedule:
+		case domain.ErrUnsuccessfulReschedule:
 			return &bookingv1.RescheduleBookingResponse{
 				BookingId: "",
 			}, mapError("failed to reschedule booking, %s", err)
