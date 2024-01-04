@@ -455,7 +455,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		case domain.ErrUnsuccessfulReschedule:
 			return &bookingv1.RescheduleBookingResponse{
 				BookingId: "",
-			}, mapError("failed to reschedule booking, %s", err)
+			}, status.Errorf(codes.Internal, "failed to reschedule booking, %s", domain.ErrUnsuccessfulReschedule)
 		default:
 			return &bookingv1.RescheduleBookingResponse{
 				BookingId: "",
@@ -957,9 +957,12 @@ func mapError(message string, err error) error {
 	case errors.Is(err, gateway.ErrInvalidAppointmentTime):
 		return status.Errorf(codes.InvalidArgument, message, err)
 
+<<<<<<< HEAD
 	case errors.Is(err, domain.ErrUnsuccessfulBooking):
 		return status.Errorf(codes.Aborted, message, err)
 
+=======
+>>>>>>> d042c60 (revise comment)
 	default:
 		return status.Errorf(codes.Internal, message, err)
 	}
