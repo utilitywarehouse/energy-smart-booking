@@ -207,9 +207,6 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleBookingParams) (RescheduleBookingResponse, error) {
 
-	var event *bookingv1.BookingRescheduledEvent
-	var commsEvent *commsv1.BookingRescheduledCommsEvent
-
 	site, occupancyEligibility, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return RescheduleBookingResponse{}, err
@@ -231,7 +228,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		return RescheduleBookingResponse{}, ErrUnsuccessfulReschedule
 	}
 
-	event = &bookingv1.BookingRescheduledEvent{
+	event := &bookingv1.BookingRescheduledEvent{
 		BookingId:            params.BookingID,
 		VulnerabilityDetails: params.VulnerabilityDetails,
 		ContactDetails: &bookingv1.ContactDetails{
@@ -279,7 +276,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 			},
 		}
 
-		commsEvent = buildRescheduleCommsEvent(params, booking.Contact, accAddress, accountNumber)
+		commsEvent := buildRescheduleCommsEvent(params, booking.Contact, accAddress, accountNumber)
 		return RescheduleBookingResponse{
 			BookingEvent: event,
 			CommsEvent:   commsEvent,
