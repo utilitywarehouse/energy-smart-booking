@@ -86,7 +86,8 @@ func populateDB(ctx context.Context, pool *pgxpool.Pool) error {
 			external_reference,
 	
 			booking_type
-		) VALUES ('booking-id-1', 'account-id-1', 1, 'occupancy-id-1', 'Mr', 'John', 'Doe', '333-100', 'jdoe@example.com', NOW(), 10, 14, '{}', 'nothing', 'lbg100', 1)
+		) VALUES ('booking-id-1', 'account-id-1', 1, 'occupancy-id-1', 'Mr', 'John', 'Doe', '333-100', 'jdoe@example.com', NOW(), 10, 14, '{}', 'nothing', 'lbg100', 1),
+				('booking-id-2', 'account-id-2', 1, 'occupancy-id-2', 'Mr', 'John', 'Doe', '400-500', 'jdoe@example.com', ('2024-04-01 00:00:00'), 10, 16, '{}', 'weak jaw', 'booking-reference-1', 2)
 		ON CONFLICT (booking_id)
 		DO NOTHING;
 	`,

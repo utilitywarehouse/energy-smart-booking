@@ -212,7 +212,7 @@ func (s *BookingStore) GetBookingByBookingID(ctx context.Context, bookingID stri
 		account_id,
 		status,
 
-		site_id,
+		occupancy_id,
 
 		contact_title,
 		contact_first_name,
