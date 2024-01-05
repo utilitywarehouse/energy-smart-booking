@@ -277,3 +277,91 @@ func Test_BookingStore_UpdateBookingOnReschedule(t *testing.T) {
 		})
 	}
 }
+
+func Test_BookingStore_GetBookingByBookinID(t *testing.T) {
+	ctx := context.Background()
+
+	testContainer, err := setupTestContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dsn, err := postgres.GetTestContainerDSN(testContainer)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	db, err := store.Setup(ctx, dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bookingStore := store.NewBooking(db)
+
+	err = populateDB(ctx, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	type inputParams struct {
+		bookingID string
+	}
+
+	type outputParams struct {
+		booking models.Booking
+		err     error
+	}
+
+	type testSetup struct {
+		description string
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should get a booking by the booking id",
+			input: inputParams{
+				bookingID: "booking-id-1",
+			},
+			output: outputParams{
+				booking: models.Booking{
+					BookingID:   "booking-id-2",
+					AccountID:   "account-id-2",
+					Status:      bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+					OccupancyID: "occupancy-id-2",
+					Contact: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "johndoe@example.com",
+						Mobile:    "400-500",
+					},
+					Slot: models.BookingSlot{
+						Date:      time.Date(2024, time.April, 1, 0, 0, 0, 0, time.UTC),
+						StartTime: 10,
+						EndTime:   16,
+					},
+					VulnerabilityDetails: models.VulnerabilityDetails{
+						Vulnerabilities: models.Vulnerabilities{},
+						Other:           "weak jaw",
+					},
+					BookingReference: "booking-reference-1",
+					BookingType:      bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			bookingStore.GetBookingByBookingID(ctx, tc.input.bookingID)
+
+			if err != nil {
+				t.Fatalf("should not have errored, %s", err)
+			}
+		})
+	}
+}
