@@ -243,8 +243,6 @@ func Test_CreateBooking(t *testing.T) {
 
 	myDomain := domain.NewBookingDomain(nil, lbGw, occSt, nil, nil, nil, nil, nil, nil, false)
 
-	var emptyMsg *bookingv1.BookingCreatedEvent
-
 	type inputParams struct {
 		params domain.CreateBookingParams
 	}
@@ -456,10 +454,8 @@ func Test_CreateBooking(t *testing.T) {
 
 			},
 			output: outputParams{
-				event: domain.CreateBookingResponse{
-					Event: emptyMsg,
-				},
-				err: nil,
+				event: domain.CreateBookingResponse{},
+				err:   domain.ErrUnsucessfulBooking,
 			},
 		},
 	}
