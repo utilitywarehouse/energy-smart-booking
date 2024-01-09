@@ -14,10 +14,6 @@ type AccountNumberGateway struct {
 	client AccountNumberClient
 }
 
-type ctxKey string
-
-const outgoingCtxKey = ctxKey("user.outgoing")
-
 func NewAccountNumberGateway(mai MachineAuthInjector, client AccountNumberClient) *AccountNumberGateway {
 	return &AccountNumberGateway{mai, client}
 }
