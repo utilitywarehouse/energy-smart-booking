@@ -957,12 +957,12 @@ func mapError(message string, err error) error {
 	case errors.Is(err, gateway.ErrInvalidAppointmentTime):
 		return status.Errorf(codes.InvalidArgument, message, err)
 
-<<<<<<< HEAD
 	case errors.Is(err, domain.ErrUnsuccessfulBooking):
 		return status.Errorf(codes.Aborted, message, err)
 
-=======
->>>>>>> d042c60 (revise comment)
+	case errors.Is(err, domain.ErrUnsuccessfulPointOfSaleBooking):
+		return status.Errorf(codes.Internal, message, err)
+
 	default:
 		return status.Errorf(codes.Internal, message, err)
 	}

@@ -24,7 +24,8 @@ import (
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
 	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
-	ErrUnsucessfulBooking               = errors.New("create booking point of sale did not return success")
+	ErrUnsuccessfulBooking              = errors.New("create booking did not return success")
+	ErrUnsuccessfulPointOfSaleBooking   = errors.New("create booking point of sale did not return success")
 	ErrUnsuccessfulReschedule           = errors.New("reschedule booking did not return success")
 )
 
@@ -361,7 +362,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		return CreateBookingPointOfSaleResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
 	}
 	if !response.Success {
-		return CreateBookingPointOfSaleResponse{}, ErrUnsuccessfulBooking
+		return CreateBookingPointOfSaleResponse{}, ErrUnsuccessfulPointOfSaleBooking
 	}
 
 	commsEvent = buildPointOfSaleCommsEvent(params, *accountHolderDetails)
