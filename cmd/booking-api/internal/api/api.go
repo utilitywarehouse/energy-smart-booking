@@ -941,7 +941,7 @@ func mapError(message string, err error) error {
 	case errors.Is(err, gateway.ErrInvalidAppointmentTime):
 		return status.Errorf(codes.InvalidArgument, message, err)
 
-	case errors.Is(err, domain.ErrUnsucessfulBooking):
+	case errors.Is(err, domain.ErrUnsuccessfulBooking):
 		return status.Errorf(codes.Aborted, message, err)
 
 	default:

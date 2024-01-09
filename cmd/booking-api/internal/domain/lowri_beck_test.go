@@ -455,7 +455,7 @@ func Test_CreateBooking(t *testing.T) {
 			},
 			output: outputParams{
 				event: domain.CreateBookingResponse{},
-				err:   domain.ErrUnsucessfulBooking,
+				err:   domain.ErrUnsuccessfulBooking,
 			},
 		},
 	}

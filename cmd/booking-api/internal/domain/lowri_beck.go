@@ -24,7 +24,7 @@ import (
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
 	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
-	ErrUnsucessfulBooking               = errors.New("create booking point of sale did not return success")
+	ErrUnsuccessfulBooking              = errors.New("create booking point of sale did not return success")
 )
 
 type GetAvailableSlotsParams struct {
@@ -147,7 +147,7 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 	}
 
 	if !response.Success {
-		return CreateBookingResponse{}, ErrUnsucessfulBooking
+		return CreateBookingResponse{}, ErrUnsuccessfulBooking
 	}
 
 	bookingID := uuid.New().String()
@@ -321,7 +321,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		return CreateBookingPointOfSaleResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
 	}
 	if !response.Success {
-		return CreateBookingPointOfSaleResponse{}, ErrUnsucessfulBooking
+		return CreateBookingPointOfSaleResponse{}, ErrUnsuccessfulBooking
 	}
 
 	commsEvent = buildCommsEvent(params, *accountHolderDetails)
