@@ -24,7 +24,7 @@ import (
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
 	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
-	ErrUnsucessfulBooking               = errors.New("create booking point of sale did not return success")
+	ErrUnsuccessfulBooking              = errors.New("create booking point of sale did not return success")
 )
 
 type GetAvailableSlotsParams struct {
@@ -146,54 +146,56 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 		return CreateBookingResponse{}, fmt.Errorf("failed to create booking, %w", err)
 	}
 
-	if response.Success {
-		bookingID := uuid.New().String()
+	if !response.Success {
+		return CreateBookingResponse{}, ErrUnsuccessfulBooking
+	}
 
-		event = &bookingv1.BookingCreatedEvent{
-			BookingId: bookingID,
-			Details: &bookingv1.Booking{
-				Id:        bookingID,
-				AccountId: params.AccountID,
-				SiteAddress: &addressv1.Address{
-					Uprn: site.UPRN,
-					Paf: &addressv1.Address_PAF{
-						Organisation:            site.Organisation,
-						Department:              site.Department,
-						SubBuilding:             site.SubBuildingNameNumber,
-						BuildingName:            site.BuildingNameNumber,
-						BuildingNumber:          site.BuildingNameNumber,
-						DependentThoroughfare:   site.DependentThoroughfare,
-						Thoroughfare:            site.Thoroughfare,
-						DoubleDependentLocality: site.DoubleDependentLocality,
-						DependentLocality:       site.DependentLocality,
-						PostTown:                site.Town,
-						Postcode:                site.Postcode,
-					},
+	bookingID := uuid.New().String()
+
+	event = &bookingv1.BookingCreatedEvent{
+		BookingId: bookingID,
+		Details: &bookingv1.Booking{
+			Id:        bookingID,
+			AccountId: params.AccountID,
+			SiteAddress: &addressv1.Address{
+				Uprn: site.UPRN,
+				Paf: &addressv1.Address_PAF{
+					Organisation:            site.Organisation,
+					Department:              site.Department,
+					SubBuilding:             site.SubBuildingNameNumber,
+					BuildingName:            site.BuildingNameNumber,
+					BuildingNumber:          site.BuildingNameNumber,
+					DependentThoroughfare:   site.DependentThoroughfare,
+					Thoroughfare:            site.Thoroughfare,
+					DoubleDependentLocality: site.DoubleDependentLocality,
+					DependentLocality:       site.DependentLocality,
+					PostTown:                site.Town,
+					Postcode:                site.Postcode,
 				},
-				ContactDetails: &bookingv1.ContactDetails{
-					Title:     params.ContactDetails.Title,
-					FirstName: params.ContactDetails.FirstName,
-					LastName:  params.ContactDetails.LastName,
-					Phone:     params.ContactDetails.Mobile,
-					Email:     params.ContactDetails.Email,
-				},
-				Slot: &bookingv1.BookingSlot{
-					Date: &date.Date{
-						Year:  int32(params.Slot.Date.Year()),
-						Month: int32(params.Slot.Date.Month()),
-						Day:   int32(params.Slot.Date.Day()),
-					},
-					StartTime: int32(params.Slot.StartTime),
-					EndTime:   int32(params.Slot.EndTime),
-				},
-				VulnerabilityDetails: params.VulnerabilityDetails,
-				Status:               bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
-				ExternalReference:    occupancyEligibility.Reference,
-				BookingType:          bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
 			},
-			OccupancyId:   occupancyEligibility.OccupancyID,
-			BookingSource: params.Source,
-		}
+			ContactDetails: &bookingv1.ContactDetails{
+				Title:     params.ContactDetails.Title,
+				FirstName: params.ContactDetails.FirstName,
+				LastName:  params.ContactDetails.LastName,
+				Phone:     params.ContactDetails.Mobile,
+				Email:     params.ContactDetails.Email,
+			},
+			Slot: &bookingv1.BookingSlot{
+				Date: &date.Date{
+					Year:  int32(params.Slot.Date.Year()),
+					Month: int32(params.Slot.Date.Month()),
+					Day:   int32(params.Slot.Date.Day()),
+				},
+				StartTime: int32(params.Slot.StartTime),
+				EndTime:   int32(params.Slot.EndTime),
+			},
+			VulnerabilityDetails: params.VulnerabilityDetails,
+			Status:               bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+			ExternalReference:    occupancyEligibility.Reference,
+			BookingType:          bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
+		},
+		OccupancyId:   occupancyEligibility.OccupancyID,
+		BookingSource: params.Source,
 	}
 
 	return CreateBookingResponse{
@@ -319,7 +321,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		return CreateBookingPointOfSaleResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
 	}
 	if !response.Success {
-		return CreateBookingPointOfSaleResponse{}, ErrUnsucessfulBooking
+		return CreateBookingPointOfSaleResponse{}, ErrUnsuccessfulBooking
 	}
 
 	commsEvent = buildCommsEvent(params, *accountHolderDetails)
