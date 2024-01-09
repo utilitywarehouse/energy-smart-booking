@@ -6,7 +6,6 @@ import (
 
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -15,19 +14,11 @@ type AccountNumberGateway struct {
 	client AccountNumberClient
 }
 
-type ctxKey string
-
-const outgoingCtxKey = ctxKey("user.outgoing")
-
 func NewAccountNumberGateway(mai MachineAuthInjector, client AccountNumberClient) *AccountNumberGateway {
 	return &AccountNumberGateway{mai, client}
 }
 
 func (gw *AccountNumberGateway) Get(ctx context.Context, accountID string) (string, error) {
-
-	ctx = metadata.AppendToOutgoingContext(ctx, "authorization", "")
-
-	ctx = context.WithValue(ctx, outgoingCtxKey, "")
 
 	response, err := gw.client.AccountNumber(gw.mai.ToCtx(ctx), &accountService.AccountNumberRequest{
 		AccountId: []string{accountID},
