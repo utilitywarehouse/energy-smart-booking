@@ -298,7 +298,8 @@ func mapAvailabilityErrorCodes(responseCode, responseMessage string) error {
 			"Postcode mismatch": // error seen
 			return NewInvalidRequestError(InvalidPostcode)
 		// EA03 - Work Reference Invalid
-		case "Work Reference Invalid":
+		case "Work Reference Invalid", // error in spec
+			"Invalid Reference ID": // error seen
 			return NewInvalidRequestError(InvalidReference)
 		// EA03 - Invalid Job/Sub Job Code
 		case "Invalid Job/Sub Job Code":
