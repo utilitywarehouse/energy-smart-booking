@@ -183,7 +183,6 @@ func serverAction(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("error connecting to accounts-api host [%s]: %w", c.String(accountsAPIHost), err)
 	}
-	opsServer.Add("accounts-api", grpchealth.NewCheck(c.String(accountsAPIHost), "", "cannot query accounts"))
 	defer accountsConn.Close()
 
 	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
