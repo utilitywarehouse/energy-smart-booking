@@ -20,7 +20,8 @@ func NewAccountNumberGateway(mai MachineAuthInjector, client AccountNumberClient
 
 func (gw *AccountNumberGateway) Get(ctx context.Context, accountID string) (string, error) {
 
-	response, err := gw.client.AccountNumber(gw.mai.ToCtx(ctx), &accountService.AccountNumberRequest{
+	ctx2 := context.Background()
+	response, err := gw.client.AccountNumber(gw.mai.ToCtx(ctx2), &accountService.AccountNumberRequest{
 		AccountId: []string{accountID},
 	})
 	if err != nil {
