@@ -25,7 +25,7 @@ func Test_GetClickLink(t *testing.T) {
 	eligbilityGw := mocks.NewMockEligibilityGateway(ctrl)
 	clickGw := mocks.NewMockClickGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, nil, nil, nil, nil, nil, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
+	myDomain := domain.NewBookingDomain(nil, nil, nil, nil, nil, nil, nil, pointOfSaleCustomerDetailsSt, eligbilityGw, clickGw, false)
 
 	type inputParams struct {
 		accountNumber string

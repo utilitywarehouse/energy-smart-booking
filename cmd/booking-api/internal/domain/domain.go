@@ -34,6 +34,9 @@ type EligibilityGateway interface {
 	GetMeterpointEligibility(ctx context.Context, mpan, mprn, postcode string) (bool, error)
 }
 
+type AccountNumberGateway interface {
+	Get(ctx context.Context, accountID string) (string, error)
+}
 type ClickGateway interface {
 	GenerateAuthenticated(ctx context.Context, accountNo string, attributes map[string]string) (string, error)
 }
@@ -54,6 +57,7 @@ type PointOfSaleCustomerDetailsStore interface {
 
 type BookingDomain struct {
 	accounts                        AccountGateway
+	accountNumber                   AccountNumberGateway
 	lowribeckGw                     LowriBeckGateway
 	occupancyStore                  OccupancyStore
 	siteStore                       SiteStore
@@ -66,6 +70,7 @@ type BookingDomain struct {
 }
 
 func NewBookingDomain(accounts AccountGateway,
+	accountNumberGateway AccountNumberGateway,
 	lowribeckGw LowriBeckGateway,
 	occupancyStore OccupancyStore,
 	siteStore SiteStore,
@@ -78,6 +83,7 @@ func NewBookingDomain(accounts AccountGateway,
 ) BookingDomain {
 	return BookingDomain{
 		accounts,
+		accountNumberGateway,
 		lowribeckGw,
 		occupancyStore,
 		siteStore,

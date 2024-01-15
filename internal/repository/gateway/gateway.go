@@ -16,6 +16,10 @@ type AccountClient interface {
 	GetAccount(ctx context.Context, in *accountService.GetAccountRequest, opts ...grpc.CallOption) (*accountService.GetAccountResponse, error)
 }
 
+type AccountNumberClient interface {
+	AccountNumber(ctx context.Context, in *accountService.AccountNumberRequest, opts ...grpc.CallOption) (*accountService.AccountNumberResponse, error)
+}
+
 type LowriBeckClient interface {
 	GetAvailableSlots(ctx context.Context, in *lowribeckv1.GetAvailableSlotsRequest, opts ...grpc.CallOption) (*lowribeckv1.GetAvailableSlotsResponse, error)
 	CreateBooking(ctx context.Context, in *lowribeckv1.CreateBookingRequest, opts ...grpc.CallOption) (*lowribeckv1.CreateBookingResponse, error)

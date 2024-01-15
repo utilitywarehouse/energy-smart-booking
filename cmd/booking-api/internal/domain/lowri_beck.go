@@ -24,7 +24,9 @@ import (
 var (
 	ErrNoAvailableSlotsForProvidedDates = errors.New("no available slots for provided dates")
 	ErrMissingOccupancyInBooking        = errors.New("no occupancy id was found, can not publish create booking event")
-	ErrUnsuccessfulBooking              = errors.New("create booking point of sale did not return success")
+	ErrUnsuccessfulBooking              = errors.New("create booking did not return success")
+	ErrUnsuccessfulPointOfSaleBooking   = errors.New("create booking point of sale did not return success")
+	ErrUnsuccessfulReschedule           = errors.New("reschedule booking did not return success")
 )
 
 type GetAvailableSlotsParams struct {
@@ -91,7 +93,8 @@ type CreateBookingPointOfSaleResponse struct {
 }
 
 type RescheduleBookingResponse struct {
-	Event proto.Message
+	CommsEvent   proto.Message
+	BookingEvent proto.Message
 }
 
 func (d BookingDomain) GetAvailableSlots(ctx context.Context, params GetAvailableSlotsParams) (GetAvailableSlotsResponse, error) {
@@ -205,11 +208,14 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleBookingParams) (RescheduleBookingResponse, error) {
 
-	var event *bookingv1.BookingRescheduledEvent
-
 	site, occupancyEligibility, err := d.findLowriBeckKeys(ctx, params.AccountID)
 	if err != nil {
 		return RescheduleBookingResponse{}, err
+	}
+
+	booking, err := d.bookingStore.GetBookingByBookingID(ctx, params.BookingID)
+	if err != nil {
+		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.Vulnerabilities)
@@ -219,33 +225,68 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
 
-	if response.Success {
-		event = &bookingv1.BookingRescheduledEvent{
-			BookingId:            params.BookingID,
-			VulnerabilityDetails: params.VulnerabilityDetails,
-			ContactDetails: &bookingv1.ContactDetails{
-				Title:     params.ContactDetails.Title,
-				FirstName: params.ContactDetails.FirstName,
-				LastName:  params.ContactDetails.LastName,
-				Phone:     params.ContactDetails.Mobile,
-				Email:     params.ContactDetails.Email,
+	if !response.Success {
+		return RescheduleBookingResponse{}, ErrUnsuccessfulReschedule
+	}
+
+	event := &bookingv1.BookingRescheduledEvent{
+		BookingId:            params.BookingID,
+		VulnerabilityDetails: params.VulnerabilityDetails,
+		ContactDetails: &bookingv1.ContactDetails{
+			Title:     params.ContactDetails.Title,
+			FirstName: params.ContactDetails.FirstName,
+			LastName:  params.ContactDetails.LastName,
+			Phone:     params.ContactDetails.Mobile,
+			Email:     params.ContactDetails.Email,
+		},
+		Slot: &bookingv1.BookingSlot{
+			Date: &date.Date{
+				Year:  int32(params.Slot.Date.Year()),
+				Month: int32(params.Slot.Date.Month()),
+				Day:   int32(params.Slot.Date.Day()),
 			},
-			Slot: &bookingv1.BookingSlot{
-				Date: &date.Date{
-					Year:  int32(params.Slot.Date.Year()),
-					Month: int32(params.Slot.Date.Month()),
-					Day:   int32(params.Slot.Date.Day()),
-				},
-				StartTime: int32(params.Slot.StartTime),
-				EndTime:   int32(params.Slot.EndTime),
-			},
-			Status:        bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
-			BookingSource: params.Source,
+			StartTime: int32(params.Slot.StartTime),
+			EndTime:   int32(params.Slot.EndTime),
+		},
+		Status:        bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+		BookingSource: params.Source,
+	}
+
+	// this is a temporary change, at this moment we only want to send comms for point of sale journey bookings
+	if booking.BookingType == bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY {
+
+		accountNumber, err := d.accountNumber.Get(ctx, params.AccountID)
+		if err != nil {
+			return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 		}
+
+		accAddress := models.AccountAddress{
+			UPRN: site.UPRN,
+			PAF: models.PAF{
+				BuildingName:            site.BuildingNameNumber,
+				BuildingNumber:          site.BuildingNameNumber,
+				Department:              site.Department,
+				DependentLocality:       site.DependentLocality,
+				DependentThoroughfare:   site.DependentThoroughfare,
+				DoubleDependentLocality: site.DoubleDependentLocality,
+				Organisation:            site.Organisation,
+				PostTown:                site.Town,
+				Postcode:                site.Postcode,
+				SubBuilding:             site.SubBuildingNameNumber,
+				Thoroughfare:            site.Thoroughfare,
+			},
+		}
+
+		commsEvent := buildRescheduleCommsEvent(params, booking.Contact, accAddress, accountNumber)
+		return RescheduleBookingResponse{
+			BookingEvent: event,
+			CommsEvent:   commsEvent,
+		}, nil
 	}
 
 	return RescheduleBookingResponse{
-		Event: event,
+		BookingEvent: event,
+		CommsEvent:   nil,
 	}, nil
 }
 
@@ -321,10 +362,10 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		return CreateBookingPointOfSaleResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
 	}
 	if !response.Success {
-		return CreateBookingPointOfSaleResponse{}, ErrUnsuccessfulBooking
+		return CreateBookingPointOfSaleResponse{}, ErrUnsuccessfulPointOfSaleBooking
 	}
 
-	commsEvent = buildCommsEvent(params, *accountHolderDetails)
+	commsEvent = buildPointOfSaleCommsEvent(params, *accountHolderDetails)
 
 	bookingEvent = buildBookingEvent(params, *accountHolderDetails, response.ReferenceID, bookingID)
 
@@ -389,7 +430,7 @@ func mapLowribeckVulnerabilities(vulnerabilities []bookingv1.Vulnerability) (lbV
 	return
 }
 
-func buildCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.PointOfSaleCustomerDetails) *commsv1.PointOfSaleBookingConfirmationCommsEvent {
+func buildPointOfSaleCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.PointOfSaleCustomerDetails) *commsv1.PointOfSaleBookingConfirmationCommsEvent {
 	event := &commsv1.PointOfSaleBookingConfirmationCommsEvent{
 		AccountId:     params.AccountID,
 		AccountNumber: params.AccountNumber,
@@ -416,6 +457,40 @@ func buildCommsEvent(params CreatePOSBookingParams, accountHolderDetails models.
 	}
 
 	if !params.ContactDetails.Empty() {
+		event.OnSiteContactDetails = &bookingv1.ContactDetails{
+			Title:     params.ContactDetails.Title,
+			FirstName: params.ContactDetails.FirstName,
+			LastName:  params.ContactDetails.LastName,
+			Phone:     params.ContactDetails.Mobile,
+			Email:     params.ContactDetails.Email,
+		}
+	}
+
+	return event
+}
+
+func buildRescheduleCommsEvent(params RescheduleBookingParams, accountHolderDetails models.AccountDetails, siteAddress models.AccountAddress, accountNumber string) *commsv1.BookingRescheduledCommsEvent {
+	event := &commsv1.BookingRescheduledCommsEvent{
+		AccountId:     params.AccountID,
+		AccountNumber: accountNumber,
+		AccountHolderContactDetails: &bookingv1.ContactDetails{
+			Title:     accountHolderDetails.Title,
+			FirstName: accountHolderDetails.FirstName,
+			LastName:  accountHolderDetails.LastName,
+			Phone:     accountHolderDetails.Mobile,
+			Email:     accountHolderDetails.Email,
+		},
+		BookingDate: &date.Date{
+			Year:  int32(params.Slot.Date.Year()),
+			Month: int32(params.Slot.Date.Month()),
+			Day:   int32(params.Slot.Date.Day()),
+		},
+		StartTime:     int32(params.Slot.StartTime),
+		EndTime:       int32(params.Slot.EndTime),
+		SupplyAddress: toAddress(siteAddress),
+	}
+
+	if !params.ContactDetails.Equals(accountHolderDetails) {
 		event.OnSiteContactDetails = &bookingv1.ContactDetails{
 			Title:     params.ContactDetails.Title,
 			FirstName: params.ContactDetails.FirstName,

@@ -27,7 +27,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 
 	accGw := mocks.NewMockAccountGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(accGw, nil, nil, nil, nil, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(accGw, nil, nil, nil, nil, nil, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		accountID string
@@ -103,7 +103,7 @@ func Test_GetAccountAddressByAccountID(t *testing.T) {
 
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, nil, occSt, nil, nil, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, nil, nil, occSt, nil, nil, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		accountID string
@@ -211,7 +211,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 	siteSt := mocks.NewMockSiteStore(ctrl)
 	bookingSt := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, nil, nil, siteSt, bookingSt, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, nil, nil, nil, siteSt, bookingSt, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		accountID string
@@ -535,7 +535,7 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 
 	pointOfSaleCustomerDetailsSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, nil, nil, nil, nil, nil, pointOfSaleCustomerDetailsSt, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, nil, nil, nil, nil, nil, nil, pointOfSaleCustomerDetailsSt, nil, nil, false)
 
 	type inputParams struct {
 		accountNumber string

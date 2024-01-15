@@ -32,7 +32,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, occSt, nil, nil, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, nil, lbGw, occSt, nil, nil, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		params domain.GetAvailableSlotsParams
@@ -241,7 +241,7 @@ func Test_CreateBooking(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, occSt, nil, nil, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, nil, lbGw, occSt, nil, nil, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		params domain.CreateBookingParams
@@ -490,8 +490,10 @@ func Test_RescheduleBooking(t *testing.T) {
 
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	occSt := mocks.NewMockOccupancyStore(ctrl)
+	accountNumberGw := mocks.NewMockAccountNumberGateway(ctrl)
+	bookingStore := mocks.NewMockBookingStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, occSt, nil, nil, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, accountNumberGw, lbGw, occSt, nil, bookingStore, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		params domain.RescheduleBookingParams
@@ -504,12 +506,10 @@ func Test_RescheduleBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway)
+		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore)
 		input       inputParams
 		output      outputParams
 	}
-
-	var emptyMsg *bookingv1.BookingRescheduledEvent
 
 	testCases := []testSetup{
 		{
@@ -539,7 +539,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -565,6 +565,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						Reference:   "booking-reference-1",
 					}, nil)
 
+				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
+					BookingID: "booking-id-1",
+					AccountID: "account-id-1",
+					Contact: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
+					BookingType: bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
+				}, nil)
+
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 					Date:      mustDate(t, "2023-08-27"),
 					StartTime: 9,
@@ -581,10 +594,12 @@ func Test_RescheduleBooking(t *testing.T) {
 					Success: true,
 				}, nil)
 
+				accountNumberGw.EXPECT().Get(ctx, "account-id-1").Return("8000", nil)
+
 			},
 			output: outputParams{
 				event: domain.RescheduleBookingResponse{
-					Event: &bookingv1.BookingRescheduledEvent{
+					BookingEvent: &bookingv1.BookingRescheduledEvent{
 						BookingId: "my-uuid",
 						Slot: &bookingv1.BookingSlot{
 							Date: &date.Date{
@@ -611,6 +626,316 @@ func Test_RescheduleBooking(t *testing.T) {
 						},
 						Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
 					},
+					CommsEvent: &commsv1.BookingRescheduledCommsEvent{
+						AccountId:     "account-id-1",
+						AccountNumber: "8000",
+						AccountHolderContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Phone:     "333-100",
+							Email:     "jdoe@example.com",
+						},
+						OnSiteContactDetails: nil,
+						BookingDate: &date.Date{
+							Year:  2023,
+							Month: 8,
+							Day:   27,
+						},
+						StartTime: 9,
+						EndTime:   15,
+						SupplyAddress: &addressv1.Address{
+							Uprn: "u",
+							Paf: &addressv1.Address_PAF{
+								Organisation:            "o",
+								Department:              "d",
+								SubBuilding:             "sb",
+								BuildingName:            "bn",
+								BuildingNumber:          "bn",
+								DependentThoroughfare:   "dt",
+								Thoroughfare:            "t",
+								DoubleDependentLocality: "ddl",
+								DependentLocality:       "dl",
+								PostTown:                "pt",
+								Postcode:                "E2 1ZZ",
+							},
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should reschedule booking, with an onsite contact details",
+			input: inputParams{
+				params: domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_MY_ACCOUNT,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mrs",
+						FirstName: "Jane",
+						LastName:  "Dough",
+						Email:     "jadough@example.com",
+						Mobile:    "333-101",
+					},
+				},
+			},
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore) {
+
+				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
+					&models.Site{
+						SiteID:                  "site-id-1",
+						Postcode:                "E2 1ZZ",
+						UPRN:                    "u",
+						BuildingNameNumber:      "bn",
+						SubBuildingNameNumber:   "sb",
+						DependentThoroughfare:   "dt",
+						Thoroughfare:            "t",
+						DoubleDependentLocality: "ddl",
+						DependentLocality:       "dl",
+						Locality:                "l",
+						County:                  "c",
+						Town:                    "pt",
+						Department:              "d",
+						Organisation:            "o",
+						PoBox:                   "po",
+						DeliveryPointSuffix:     "dps",
+					},
+					&models.OccupancyEligibility{
+						OccupancyID: "occupancy-id-1",
+						Reference:   "booking-reference-1",
+					}, nil)
+
+				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
+					BookingID: "booking-id-1",
+					AccountID: "account-id-1",
+					Contact: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
+					BookingType: bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
+				}, nil)
+
+				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+					Date:      mustDate(t, "2023-08-27"),
+					StartTime: 9,
+					EndTime:   15,
+				}, models.AccountDetails{
+					Title:     "Mrs",
+					FirstName: "Jane",
+					LastName:  "Dough",
+					Email:     "jadough@example.com",
+					Mobile:    "333-101",
+				}, []lowribeckv1.Vulnerability{
+					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+				}, "runny nose").Return(gateway.CreateBookingResponse{
+					Success: true,
+				}, nil)
+
+				accountNumberGw.EXPECT().Get(ctx, "account-id-1").Return("8000", nil)
+
+			},
+			output: outputParams{
+				event: domain.RescheduleBookingResponse{
+					BookingEvent: &bookingv1.BookingRescheduledEvent{
+						BookingId: "my-uuid",
+						Slot: &bookingv1.BookingSlot{
+							Date: &date.Date{
+								Year:  2023,
+								Month: 8,
+								Day:   27,
+							},
+							StartTime: 9,
+							EndTime:   15,
+						},
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_MY_ACCOUNT,
+						ContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mrs",
+							FirstName: "Jane",
+							LastName:  "Dough",
+							Phone:     "333-101",
+							Email:     "jadough@example.com",
+						},
+						VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+							Vulnerabilities: []bookingv1.Vulnerability{
+								bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+							},
+							Other: "runny nose",
+						},
+						Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+					},
+					CommsEvent: &commsv1.BookingRescheduledCommsEvent{
+						AccountId:     "account-id-1",
+						AccountNumber: "8000",
+						AccountHolderContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Phone:     "333-100",
+							Email:     "jdoe@example.com",
+						},
+						OnSiteContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mrs",
+							FirstName: "Jane",
+							LastName:  "Dough",
+							Phone:     "333-101",
+							Email:     "jadough@example.com",
+						},
+						BookingDate: &date.Date{
+							Year:  2023,
+							Month: 8,
+							Day:   27,
+						},
+						StartTime: 9,
+						EndTime:   15,
+						SupplyAddress: &addressv1.Address{
+							Uprn: "u",
+							Paf: &addressv1.Address_PAF{
+								Organisation:            "o",
+								Department:              "d",
+								SubBuilding:             "sb",
+								BuildingName:            "bn",
+								BuildingNumber:          "bn",
+								DependentThoroughfare:   "dt",
+								Thoroughfare:            "t",
+								DoubleDependentLocality: "ddl",
+								DependentLocality:       "dl",
+								PostTown:                "pt",
+								Postcode:                "E2 1ZZ",
+							},
+						},
+					},
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should reschedule booking, but not create a reschedule comms event because it is not a point of sale booking",
+			input: inputParams{
+				params: domain.RescheduleBookingParams{
+					AccountID: "account-id-1",
+					BookingID: "booking-id-1",
+					Slot: models.BookingSlot{
+						Date:      mustDate(t, "2023-08-27"),
+						StartTime: 9,
+						EndTime:   15,
+					},
+					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_MY_ACCOUNT,
+					VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+						Vulnerabilities: []bookingv1.Vulnerability{
+							bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+						},
+						Other: "runny nose",
+					},
+					ContactDetails: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
+				},
+			},
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore) {
+
+				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
+					&models.Site{
+						SiteID:                  "site-id-1",
+						Postcode:                "E2 1ZZ",
+						UPRN:                    "u",
+						BuildingNameNumber:      "bn",
+						SubBuildingNameNumber:   "sb",
+						DependentThoroughfare:   "dt",
+						Thoroughfare:            "t",
+						DoubleDependentLocality: "ddl",
+						DependentLocality:       "dl",
+						Locality:                "l",
+						County:                  "c",
+						Town:                    "pt",
+						Department:              "d",
+						Organisation:            "o",
+						PoBox:                   "po",
+						DeliveryPointSuffix:     "dps",
+					},
+					&models.OccupancyEligibility{
+						OccupancyID: "occupancy-id-1",
+						Reference:   "booking-reference-1",
+					}, nil)
+
+				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
+					BookingID: "booking-id-1",
+					AccountID: "account-id-1",
+					Contact: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
+					BookingType: bookingv1.BookingType_BOOKING_TYPE_SMART_BOOKING_JOURNEY,
+				}, nil)
+
+				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
+					Date:      mustDate(t, "2023-08-27"),
+					StartTime: 9,
+					EndTime:   15,
+				}, models.AccountDetails{
+					Title:     "Mr",
+					FirstName: "John",
+					LastName:  "Doe",
+					Email:     "jdoe@example.com",
+					Mobile:    "333-100",
+				}, []lowribeckv1.Vulnerability{
+					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+				}, "runny nose").Return(gateway.CreateBookingResponse{
+					Success: true,
+				}, nil)
+			},
+			output: outputParams{
+				event: domain.RescheduleBookingResponse{
+					BookingEvent: &bookingv1.BookingRescheduledEvent{
+						BookingId: "my-uuid",
+						Slot: &bookingv1.BookingSlot{
+							Date: &date.Date{
+								Year:  2023,
+								Month: 8,
+								Day:   27,
+							},
+							StartTime: 9,
+							EndTime:   15,
+						},
+						BookingSource: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_MY_ACCOUNT,
+						ContactDetails: &bookingv1.ContactDetails{
+							Title:     "Mr",
+							FirstName: "John",
+							LastName:  "Doe",
+							Phone:     "333-100",
+							Email:     "jdoe@example.com",
+						},
+						VulnerabilityDetails: &bookingv1.VulnerabilityDetails{
+							Vulnerabilities: []bookingv1.Vulnerability{
+								bookingv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
+							},
+							Other: "runny nose",
+						},
+						Status: bookingv1.BookingStatus_BOOKING_STATUS_SCHEDULED,
+					},
+					CommsEvent: nil,
 				},
 				err: nil,
 			},
@@ -642,7 +967,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore) {
 
 				oSt.EXPECT().GetSiteExternalReferenceByAccountID(ctx, "account-id-1").Return(
 					&models.Site{
@@ -668,6 +993,19 @@ func Test_RescheduleBooking(t *testing.T) {
 						Reference:   "booking-reference-1",
 					}, nil)
 
+				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
+					BookingID: "booking-id-1",
+					AccountID: "account-id-1",
+					Contact: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
+					BookingType: bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY,
+				}, nil)
+
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
 					Date:      mustDate(t, "2023-08-27"),
 					StartTime: 9,
@@ -687,7 +1025,8 @@ func Test_RescheduleBooking(t *testing.T) {
 			},
 			output: outputParams{
 				event: domain.RescheduleBookingResponse{
-					Event: emptyMsg,
+					CommsEvent:   nil,
+					BookingEvent: nil,
 				},
 				err: nil,
 			},
@@ -697,7 +1036,7 @@ func Test_RescheduleBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, occSt, lbGw)
+			tc.setup(ctx, occSt, lbGw, bookingStore)
 
 			actual, err := myDomain.RescheduleBooking(ctx, tc.input.params)
 
@@ -708,7 +1047,7 @@ func Test_RescheduleBooking(t *testing.T) {
 			}
 
 			if diff := cmp.Diff(actual, tc.output.event, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.BookingRescheduledEvent{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
-				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{}), cmpopts.IgnoreFields(bookingv1.BookingRescheduledEvent{}, "BookingId")); diff != "" {
+				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{}, commsv1.BookingRescheduledCommsEvent{}), cmpopts.IgnoreFields(bookingv1.BookingRescheduledEvent{}, "BookingId")); diff != "" {
 				t.Fatal(diff)
 			}
 		})
@@ -726,7 +1065,7 @@ func Test_GetPOSAvailableSlots(t *testing.T) {
 	lbGw := mocks.NewMockLowriBeckGateway(ctrl)
 	customerDetailSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, nil, nil, nil, nil, customerDetailSt, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, nil, lbGw, nil, nil, nil, nil, customerDetailSt, nil, nil, false)
 
 	type inputParams struct {
 		params domain.GetPOSAvailableSlotsParams
@@ -946,7 +1285,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 	partialBookingSt := mocks.NewMockPartialBookingStore(ctrl)
 	customerDetailSt := mocks.NewMockPointOfSaleCustomerDetailsStore(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, lbGw, occSt, nil, nil, partialBookingSt, customerDetailSt, nil, nil, false)
+	myDomain := domain.NewBookingDomain(nil, nil, lbGw, occSt, nil, nil, partialBookingSt, customerDetailSt, nil, nil, false)
 
 	type inputParams struct {
 		params domain.CreatePOSBookingParams
