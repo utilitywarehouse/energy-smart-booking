@@ -208,19 +208,49 @@ func (d BookingDomain) CreateBooking(ctx context.Context, params CreateBookingPa
 
 func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleBookingParams) (RescheduleBookingResponse, error) {
 
-	site, occupancyEligibility, err := d.findLowriBeckKeys(ctx, params.AccountID)
-	if err != nil {
-		return RescheduleBookingResponse{}, err
-	}
+	var commsEvent *commsv1.BookingRescheduledCommsEvent
 
 	booking, err := d.bookingStore.GetBookingByBookingID(ctx, params.BookingID)
 	if err != nil {
 		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
 
+	site, err := d.siteStore.GetSiteByOccupancyID(ctx, booking.OccupancyID)
+	if err != nil {
+		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
+	}
+
+	// Temporary change, we need to have a different behaviour from a point of sale journey to a smart booking journey because findLowriBeckKeys underlying implementation requires an occupancy_eligible row
+	if booking.BookingType == bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY {
+
+		accountNumber, err := d.accountNumber.Get(ctx, params.AccountID)
+		if err != nil {
+			return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
+		}
+
+		accAddress := models.AccountAddress{
+			UPRN: site.UPRN,
+			PAF: models.PAF{
+				BuildingName:            site.BuildingNameNumber,
+				BuildingNumber:          site.BuildingNameNumber,
+				Department:              site.Department,
+				DependentLocality:       site.DependentLocality,
+				DependentThoroughfare:   site.DependentThoroughfare,
+				DoubleDependentLocality: site.DoubleDependentLocality,
+				Organisation:            site.Organisation,
+				PostTown:                site.Town,
+				Postcode:                site.Postcode,
+				SubBuilding:             site.SubBuildingNameNumber,
+				Thoroughfare:            site.Thoroughfare,
+			},
+		}
+
+		commsEvent = buildRescheduleCommsEvent(params, booking.Contact, accAddress, accountNumber)
+	}
+
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.Vulnerabilities)
 
-	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, occupancyEligibility.Reference, params.Slot, params.ContactDetails, lbVulnerabilities, params.VulnerabilityDetails.Other)
+	response, err := d.lowribeckGw.CreateBooking(ctx, site.Postcode, booking.BookingReference, params.Slot, params.ContactDetails, lbVulnerabilities, params.VulnerabilityDetails.Other)
 	if err != nil {
 		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
@@ -254,30 +284,6 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 
 	// this is a temporary change, at this moment we only want to send comms for point of sale journey bookings
 	if booking.BookingType == bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY {
-
-		accountNumber, err := d.accountNumber.Get(ctx, params.AccountID)
-		if err != nil {
-			return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
-		}
-
-		accAddress := models.AccountAddress{
-			UPRN: site.UPRN,
-			PAF: models.PAF{
-				BuildingName:            site.BuildingNameNumber,
-				BuildingNumber:          site.BuildingNameNumber,
-				Department:              site.Department,
-				DependentLocality:       site.DependentLocality,
-				DependentThoroughfare:   site.DependentThoroughfare,
-				DoubleDependentLocality: site.DoubleDependentLocality,
-				Organisation:            site.Organisation,
-				PostTown:                site.Town,
-				Postcode:                site.Postcode,
-				SubBuilding:             site.SubBuildingNameNumber,
-				Thoroughfare:            site.Thoroughfare,
-			},
-		}
-
-		commsEvent := buildRescheduleCommsEvent(params, booking.Contact, accAddress, accountNumber)
 		return RescheduleBookingResponse{
 			BookingEvent: event,
 			CommsEvent:   commsEvent,
