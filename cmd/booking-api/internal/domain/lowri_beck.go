@@ -220,8 +220,14 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 		return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
 	}
 
-	// Temporary change, we need to have a different behaviour from a point of sale journey to a smart booking journey because findLowriBeckKeys underlying implementation requires an occupancy_eligible row
 	if booking.BookingType == bookingv1.BookingType_BOOKING_TYPE_POINT_OF_SALE_JOURNEY {
+
+		// Currently because we only need the account holder contact details for the reschedule
+		// we will only call it here
+		accountHolderContactDetails, err := d.getCustomerContactDetails(ctx, booking.AccountID)
+		if err != nil {
+			return RescheduleBookingResponse{}, fmt.Errorf("failed to reschedule booking, %w", err)
+		}
 
 		accountNumber, err := d.accountNumber.Get(ctx, params.AccountID)
 		if err != nil {
@@ -245,7 +251,7 @@ func (d BookingDomain) RescheduleBooking(ctx context.Context, params RescheduleB
 			},
 		}
 
-		commsEvent = buildRescheduleCommsEvent(params, booking.Contact, accAddress, accountNumber)
+		commsEvent = buildRescheduleCommsEvent(params, accountHolderContactDetails.Details, accAddress, accountNumber)
 	}
 
 	lbVulnerabilities := mapLowribeckVulnerabilities(params.VulnerabilityDetails.Vulnerabilities)

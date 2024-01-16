@@ -493,8 +493,9 @@ func Test_RescheduleBooking(t *testing.T) {
 	accountNumberGw := mocks.NewMockAccountNumberGateway(ctrl)
 	bookingStore := mocks.NewMockBookingStore(ctrl)
 	siteStore := mocks.NewMockSiteStore(ctrl)
+	accGw := mocks.NewMockAccountGateway(ctrl)
 
-	myDomain := domain.NewBookingDomain(nil, accountNumberGw, lbGw, occSt, siteStore, bookingStore, nil, nil, nil, nil, false)
+	myDomain := domain.NewBookingDomain(accGw, accountNumberGw, lbGw, occSt, siteStore, bookingStore, nil, nil, nil, nil, false)
 
 	type inputParams struct {
 		params domain.RescheduleBookingParams
@@ -507,7 +508,7 @@ func Test_RescheduleBooking(t *testing.T) {
 
 	type testSetup struct {
 		description string
-		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore)
+		setup       func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway)
 		input       inputParams
 		output      outputParams
 	}
@@ -540,7 +541,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway) {
 
 				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID: "booking-id-1",
@@ -574,6 +575,16 @@ func Test_RescheduleBooking(t *testing.T) {
 					Organisation:            "o",
 					PoBox:                   "po",
 					DeliveryPointSuffix:     "dps",
+				}, nil)
+
+				accGw.EXPECT().GetAccountByAccountID(ctx, "account-id-1").Return(models.Account{
+					Details: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}, nil)
 
 				accountNumberGw.EXPECT().Get(ctx, "account-id-1").Return("8000", nil)
@@ -690,7 +701,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway) {
 
 				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID: "booking-id-1",
@@ -724,6 +735,16 @@ func Test_RescheduleBooking(t *testing.T) {
 					Organisation:            "o",
 					PoBox:                   "po",
 					DeliveryPointSuffix:     "dps",
+				}, nil)
+
+				accGw.EXPECT().GetAccountByAccountID(ctx, "account-id-1").Return(models.Account{
+					Details: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
 				}, nil)
 
 				accountNumberGw.EXPECT().Get(ctx, "account-id-1").Return("8000", nil)
@@ -846,7 +867,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway) {
 
 				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID:   "booking-id-1",
@@ -959,7 +980,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore) {
+			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway) {
 
 				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID: "booking-id-1",
@@ -995,6 +1016,16 @@ func Test_RescheduleBooking(t *testing.T) {
 					DeliveryPointSuffix:     "dps",
 				}, nil)
 
+				accGw.EXPECT().GetAccountByAccountID(ctx, "account-id-1").Return(models.Account{
+					Details: models.AccountDetails{
+						Title:     "Mr",
+						FirstName: "John",
+						LastName:  "Doe",
+						Email:     "jdoe@example.com",
+						Mobile:    "333-100",
+					},
+				}, nil)
+
 				accountNumberGw.EXPECT().Get(ctx, "account-id-1").Return("8000", nil)
 
 				lbGw.EXPECT().CreateBooking(ctx, "E2 1ZZ", "booking-reference-1", models.BookingSlot{
@@ -1027,7 +1058,7 @@ func Test_RescheduleBooking(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			tc.setup(ctx, occSt, lbGw, bookingStore, siteStore)
+			tc.setup(ctx, occSt, lbGw, bookingStore, siteStore, accGw)
 
 			actual, err := myDomain.RescheduleBooking(ctx, tc.input.params)
 
