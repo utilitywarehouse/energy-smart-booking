@@ -18,13 +18,7 @@ var (
 )
 
 func (d BookingDomain) GetCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error) {
-
-	account, err := d.accounts.GetAccountByAccountID(ctx, accountID)
-	if err != nil {
-		return models.Account{}, err
-	}
-
-	return account, nil
+	return d.getCustomerContactDetails(ctx, accountID)
 }
 
 func (d BookingDomain) GetAccountAddressByAccountID(ctx context.Context, accountID string) (models.AccountAddress, error) {
@@ -155,4 +149,13 @@ func (d BookingDomain) getCustomerDetailsPointOfSale(ctx context.Context, accoun
 	}
 
 	return customerDetails, nil
+}
+
+func (d BookingDomain) getCustomerContactDetails(ctx context.Context, accountID string) (models.Account, error) {
+	account, err := d.accounts.GetAccountByAccountID(ctx, accountID)
+	if err != nil {
+		return models.Account{}, err
+	}
+
+	return account, nil
 }
