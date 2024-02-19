@@ -316,7 +316,7 @@ func TestRunFull(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.description, func(_ *testing.T) {
 			err := tc.evaluator.RunFull(ctx, tc.occupancyID)
 			assert.NoError(err)
 			tc.checkOutput()
@@ -1293,7 +1293,7 @@ func TestRunSuppliability(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.description, func(_ *testing.T) {
 			err := tc.evaluator.RunSuppliability(ctx, tc.occupancyID)
 			assert.NoError(err)
 			tc.checkOutput()
@@ -1891,7 +1891,7 @@ func TestRunCampaignability(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.description, func(_ *testing.T) {
 			err := tc.evaluator.RunCampaignability(ctx, tc.occupancyID)
 			assert.NoError(err)
 			tc.checkOutput()
@@ -2896,7 +2896,7 @@ func TestRunEligibility(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.description, func(_ *testing.T) {
 			err := tc.evaluator.RunEligibility(ctx, tc.occupancyID)
 			assert.NoError(err)
 			tc.checkOutput()
