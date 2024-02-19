@@ -312,7 +312,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
@@ -366,7 +366,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
@@ -387,7 +387,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 					AccountId: "account-id-2",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
@@ -461,7 +461,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
@@ -573,7 +573,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
@@ -597,7 +597,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 					AccountId: "account-id-1",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
@@ -618,7 +618,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 					AccountId: "account-id-2",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(ctx context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "get",
@@ -4121,7 +4121,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, _ *mocks.MockPublisher, commPublisher *mocks.MockPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, _ *mocks.MockPublisher, _ *mocks.MockPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4194,7 +4194,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, _ *mocks.MockPublisher, commPublisher *mocks.MockPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, _ *mocks.MockPublisher, _ *mocks.MockPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4267,7 +4267,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockPublisher, commPublisher *mocks.MockPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, _ *mocks.MockPublisher, _ *mocks.MockPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4340,7 +4340,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockPublisher, commPublisher *mocks.MockPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, _ *mocks.MockPublisher, _ *mocks.MockPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -4413,7 +4413,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 					Platform: bookingv1.Platform_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, mPublisher *mocks.MockPublisher, commPublisher *mocks.MockPublisher) {
+			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth, _ *mocks.MockPublisher, _ *mocks.MockPublisher) {
 
 				accountID := id.NewAccountID("account-number-1")
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
@@ -5332,7 +5332,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,
@@ -5373,7 +5373,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,
@@ -5414,7 +5414,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,
@@ -5455,7 +5455,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,
@@ -5496,7 +5496,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,
@@ -5537,7 +5537,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,
@@ -5645,7 +5645,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 					Postcode: "",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,
@@ -5661,7 +5661,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 					Postcode: "E2 1Z",
 				},
 			},
-			setup: func(ctx context.Context, bkDomain *mocks.MockBookingDomain, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockBookingDomain, _ *mocks.MockAuth) {
 			},
 			output: outputParams{
 				res: nil,

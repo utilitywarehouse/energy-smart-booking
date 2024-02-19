@@ -867,7 +867,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, _ *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway) {
+			setup: func(ctx context.Context, _ *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, _ *mocks.MockAccountGateway) {
 
 				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID:   "booking-id-1",
@@ -980,7 +980,7 @@ func Test_RescheduleBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, oSt *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway) {
+			setup: func(ctx context.Context, _ *mocks.MockOccupancyStore, lbGw *mocks.MockLowriBeckGateway, bSt *mocks.MockBookingStore, sSt *mocks.MockSiteStore, accGw *mocks.MockAccountGateway) {
 
 				bSt.EXPECT().GetBookingByBookingID(ctx, "booking-id-1").Return(models.Booking{
 					BookingID: "booking-id-1",
@@ -1352,7 +1352,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 					Source: bookingv1.BookingSource_BOOKING_SOURCE_PLATFORM_APP,
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, _ *mocks.MockPartialBookingStore, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, occupancySt *mocks.MockOccupancyStore, _ *mocks.MockPartialBookingStore, _ *mocks.MockPointOfSaleCustomerDetailsStore) {
 
 				customerDetailSt.EXPECT().GetByAccountNumber(ctx, "account-number-1").Return(&models.PointOfSaleCustomerDetails{
 					Details: models.AccountDetails{
@@ -1752,7 +1752,7 @@ func Test_CreatePOSBooking(t *testing.T) {
 					},
 				},
 			},
-			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, _ *mocks.MockOccupancyStore, partialBookingSt *mocks.MockPartialBookingStore, customerDetailsSt *mocks.MockPointOfSaleCustomerDetailsStore) {
+			setup: func(ctx context.Context, lbGw *mocks.MockLowriBeckGateway, _ *mocks.MockOccupancyStore, _ *mocks.MockPartialBookingStore, _ *mocks.MockPointOfSaleCustomerDetailsStore) {
 
 				customerDetailSt.EXPECT().GetByAccountNumber(ctx, "account-number-1").Return(&models.PointOfSaleCustomerDetails{
 					Details: models.AccountDetails{
