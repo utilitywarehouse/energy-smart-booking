@@ -1385,7 +1385,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 				}, nil)
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
-					"E2 1ZZ",
 					"mpan-1",
 					"",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -1401,7 +1400,25 @@ func Test_CreatePOSBooking(t *testing.T) {
 						Mobile:    "555-0147",
 					}, []lowribeckv1.Vulnerability{
 						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
+					},
+					"",
+					models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+				).Return(gateway.CreateBookingPointOfSaleResponse{
 					Success:     true,
 					ReferenceID: "test-ref",
 				}, nil)
@@ -1568,7 +1585,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 				}, nil)
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
-					"E2 1ZZ",
 					"mpan-1",
 					"",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -1584,7 +1600,25 @@ func Test_CreatePOSBooking(t *testing.T) {
 						Mobile:    "555-0147",
 					}, []lowribeckv1.Vulnerability{
 						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
+					},
+					"",
+					models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+				).Return(gateway.CreateBookingPointOfSaleResponse{
 					Success:     true,
 					ReferenceID: "test-ref",
 				}, nil)
@@ -1751,7 +1785,6 @@ func Test_CreatePOSBooking(t *testing.T) {
 				}, nil)
 
 				lbGw.EXPECT().CreateBookingPointOfSale(ctx,
-					"E2 1ZZ",
 					"mpan-1",
 					"",
 					lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
@@ -1768,7 +1801,25 @@ func Test_CreatePOSBooking(t *testing.T) {
 						Mobile:    "555-0145",
 					}, []lowribeckv1.Vulnerability{
 						lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-					}, "").Return(gateway.CreateBookingPointOfSaleResponse{
+					},
+					"",
+					models.AccountAddress{
+						UPRN: "uprn-1",
+						PAF: models.PAF{
+							Organisation:            "org",
+							Department:              "department-1",
+							SubBuilding:             "sub-1",
+							BuildingName:            "bn-1",
+							BuildingNumber:          "bnum-1",
+							DependentThoroughfare:   "dt-1",
+							Thoroughfare:            "tf-1",
+							DoubleDependentLocality: "ddl-1",
+							DependentLocality:       "dl-1",
+							PostTown:                "pt",
+							Postcode:                "E2 1ZZ",
+						},
+					},
+				).Return(gateway.CreateBookingPointOfSaleResponse{
 					Success:     false,
 					ReferenceID: "test-ref",
 				}, nil)
