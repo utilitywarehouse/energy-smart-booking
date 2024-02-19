@@ -8,6 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
@@ -690,10 +691,9 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 
 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
 
-	postcode, mpan, tariffType := "E2 1ZZ", "mpan-1", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT
+	mpan, tariffType := "mpan-1", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT
 
 	lbC.EXPECT().CreateBookingPointOfSale(ctx, &lowribeckv1.CreateBookingPointOfSaleRequest{
-		Postcode:              postcode,
 		Mpan:                  mpan,
 		ElectricityTariffType: tariffType,
 		Slot: &lowribeckv1.BookingSlot{
@@ -717,6 +717,22 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			LastName:  "Doe",
 			Phone:     "555-0777",
 		},
+		SiteAddress: &addressv1.Address{
+			Uprn: "uprn-1",
+			Paf: &addressv1.Address_PAF{
+				Organisation:            "org",
+				Department:              "department-1",
+				SubBuilding:             "sub-1",
+				BuildingName:            "bn-1",
+				BuildingNumber:          "bnum-1",
+				DependentThoroughfare:   "dt-1",
+				Thoroughfare:            "tf-1",
+				DoubleDependentLocality: "ddl-1",
+				DependentLocality:       "dl-1",
+				PostTown:                "pt",
+				Postcode:                "E2 1ZZ",
+			},
+		},
 	}).Return(&lowribeckv1.CreateBookingPointOfSaleResponse{
 		Success:   true,
 		Reference: "test-ref",
@@ -727,7 +743,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 		ReferenceID: "test-ref",
 	}
 
-	expected, err := myGw.CreateBookingPointOfSale(ctx, postcode, mpan, "", tariffType, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+	expected, err := myGw.CreateBookingPointOfSale(ctx, mpan, "", tariffType, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
 		models.BookingSlot{
 			Date:      mustDate(t, "2020-12-20"),
 			StartTime: 15,
@@ -740,7 +756,25 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 			Mobile:    "555-0777",
 		}, []lowribeckv1.Vulnerability{
 			lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-		}, "Bad Knee")
+		},
+		"Bad Knee",
+		models.AccountAddress{
+			UPRN: "uprn-1",
+			PAF: models.PAF{
+				Organisation:            "org",
+				Department:              "department-1",
+				SubBuilding:             "sub-1",
+				BuildingName:            "bn-1",
+				BuildingNumber:          "bnum-1",
+				DependentThoroughfare:   "dt-1",
+				Thoroughfare:            "tf-1",
+				DoubleDependentLocality: "ddl-1",
+				DependentLocality:       "dl-1",
+				PostTown:                "pt",
+				Postcode:                "E2 1ZZ",
+			},
+		},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -770,7 +804,6 @@ func Test_CreateBookingPointOfSale_HasErrors(t *testing.T) {
 	}
 
 	lbcreatebookingRequest := &lowribeckv1.CreateBookingPointOfSaleRequest{
-		Postcode:              "E2 1ZZ",
 		Mpan:                  "mpan-1",
 		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 		Slot: &lowribeckv1.BookingSlot{
@@ -793,6 +826,22 @@ func Test_CreateBookingPointOfSale_HasErrors(t *testing.T) {
 			FirstName: "John",
 			LastName:  "Doe",
 			Phone:     "555-0777",
+		},
+		SiteAddress: &addressv1.Address{
+			Uprn: "uprn-1",
+			Paf: &addressv1.Address_PAF{
+				Organisation:            "org",
+				Department:              "department-1",
+				SubBuilding:             "sub-1",
+				BuildingName:            "bn-1",
+				BuildingNumber:          "bnum-1",
+				DependentThoroughfare:   "dt-1",
+				Thoroughfare:            "tf-1",
+				DoubleDependentLocality: "ddl-1",
+				DependentLocality:       "dl-1",
+				PostTown:                "pt",
+				Postcode:                "E2 1ZZ",
+			},
 		},
 	}
 
@@ -934,7 +983,7 @@ func Test_CreateBookingPointOfSale_HasErrors(t *testing.T) {
 		t.Run(tc.description, func(t *testing.T) {
 			tc.setup(lbC)
 
-			expected, err := myGw.CreateBookingPointOfSale(ctx, "E2 1ZZ", "mpan-1", "", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
+			expected, err := myGw.CreateBookingPointOfSale(ctx, "mpan-1", "", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT, lowribeckv1.TariffType_TARIFF_TYPE_UNKNOWN,
 				models.BookingSlot{
 					Date:      mustDate(t, "2020-12-20"),
 					StartTime: 15,
@@ -947,7 +996,25 @@ func Test_CreateBookingPointOfSale_HasErrors(t *testing.T) {
 					Mobile:    "555-0777",
 				}, []lowribeckv1.Vulnerability{
 					lowribeckv1.Vulnerability_VULNERABILITY_FOREIGN_LANGUAGE_ONLY,
-				}, "Bad Knee")
+				},
+				"Bad Knee",
+				models.AccountAddress{
+					UPRN: "uprn-1",
+					PAF: models.PAF{
+						Organisation:            "org",
+						Department:              "department-1",
+						SubBuilding:             "sub-1",
+						BuildingName:            "bn-1",
+						BuildingNumber:          "bnum-1",
+						DependentThoroughfare:   "dt-1",
+						Thoroughfare:            "tf-1",
+						DoubleDependentLocality: "ddl-1",
+						DependentLocality:       "dl-1",
+						PostTown:                "pt",
+						Postcode:                "E2 1ZZ",
+					},
+				},
+			)
 
 			if diff := cmp.Diff(err.Error(), tc.outputErr.Error()); diff != "" {
 				t.Fatal(diff)

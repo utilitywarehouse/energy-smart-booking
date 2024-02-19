@@ -150,18 +150,26 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *lowribeckv1.Create
 	}
 
 	request := &lowribeck.CreateBookingRequest{
-		PostCode:             req.GetPostcode(),
-		Mpan:                 req.GetMpan(),
-		ElecJobTypeCode:      elecJobTypeCode,
-		AppointmentDate:      appDate,
-		AppointmentTime:      appTime,
-		Vulnerabilities:      mapVulnerabilities(req.GetVulnerabilityDetails()),
-		VulnerabilitiesOther: req.GetVulnerabilityDetails().GetOther(),
-		SiteContactName:      mapContactName(req.GetContactDetails()),
-		SiteContactNumber:    req.GetContactDetails().GetPhone(),
-		SendingSystem:        lb.sendingSystem,
-		ReceivingSystem:      lb.receivingSystem,
-		CreatedDate:          time.Now().UTC().Format(requestTimeFormat),
+		SubBuildName:            req.SiteAddress.Paf.GetSubBuilding(),
+		BuildingName:            req.SiteAddress.Paf.GetBuildingName(),
+		DependThroughfare:       req.SiteAddress.Paf.GetDependentThoroughfare(),
+		Throughfare:             req.SiteAddress.Paf.GetThoroughfare(),
+		DoubleDependantLocality: req.SiteAddress.Paf.GetDoubleDependentLocality(),
+		DependantLocality:       req.SiteAddress.Paf.GetDependentLocality(),
+		PostTown:                req.SiteAddress.Paf.GetPostTown(),
+		County:                  "", // There is no County in the PAF format
+		PostCode:                req.SiteAddress.Paf.GetPostcode(),
+		Mpan:                    req.GetMpan(),
+		ElecJobTypeCode:         elecJobTypeCode,
+		AppointmentDate:         appDate,
+		AppointmentTime:         appTime,
+		Vulnerabilities:         mapVulnerabilities(req.GetVulnerabilityDetails()),
+		VulnerabilitiesOther:    req.GetVulnerabilityDetails().GetOther(),
+		SiteContactName:         mapContactName(req.GetContactDetails()),
+		SiteContactNumber:       req.GetContactDetails().GetPhone(),
+		SendingSystem:           lb.sendingSystem,
+		ReceivingSystem:         lb.receivingSystem,
+		CreatedDate:             time.Now().UTC().Format(requestTimeFormat),
 		// An ID sent to LB which they return in the response and can be used for debugging issues with them
 		RequestID: fmt.Sprintf("%d", id),
 	}

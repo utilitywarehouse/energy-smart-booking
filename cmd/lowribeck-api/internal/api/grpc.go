@@ -178,7 +178,7 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequestPointOfSale(requestID, req)
 	if err != nil {
-		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.SiteAddress.Paf.GetPostcode(), err)
 		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
 			errors.Is(err, mapper.ErrInvalidGasTariffType) {
 			return nil, status.Errorf(codes.Internal, "error mapping point of sale booking request: %v", err)
@@ -187,13 +187,13 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	}
 	resp, err := l.client.CreateBookingPointOfSale(ctx, bookingReq)
 	if err != nil {
-		logrus.Errorf("error making booking point of sale request(%d) for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+		logrus.Errorf("error making booking point of sale request(%d) for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.SiteAddress.Paf.GetPostcode(), err)
 		return nil, status.Errorf(codes.Internal, "error making booking point of sale request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.BookingResponsePointOfSale(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error in booking point of sale response(%d) for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), mappedErr)
+		logrus.Errorf("error in booking point of sale response(%d) for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.SiteAddress.Paf.GetPostcode(), mappedErr)
 		return nil, getStatusFromError("error making booking point of sale request: %v", metrics.CreateBooking, mappedErr)
 	}
 	return mappedResp, nil
