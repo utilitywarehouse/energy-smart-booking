@@ -156,7 +156,7 @@ func TestMapAvailableSlotsResponse(t *testing.T) {
 	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "", "", "", "")
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			res, err := lbMapper.AvailableSlotsResponse(tc.lb)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
@@ -239,7 +239,7 @@ func TestMapBookingRequest(t *testing.T) {
 	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "", "", "", "")
 
 	for i, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			res, err := lbMapper.BookingRequest(uint32(i), tc.lb)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
@@ -341,7 +341,7 @@ func TestMapBookingResponse(t *testing.T) {
 	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "", "", "", "")
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			res, err := lbMapper.BookingResponse(tc.lb)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
@@ -488,7 +488,7 @@ func TestMapAvailableSlotsPointOfSaleResponse(t *testing.T) {
 	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "crElec", "ppmElec", "crGas", "ppmGas")
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			res, err := lbMapper.AvailabilityRequestPointOfSale(tc.input.id, tc.input.req)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
@@ -724,7 +724,7 @@ func TestMapBookingPointOfSaleRequest(t *testing.T) {
 	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "crElec", "ppmElec", "crGas", "ppmGas")
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			res, err := lbMapper.BookingRequestPointOfSale(tc.input.id, tc.input.req)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)
@@ -781,7 +781,7 @@ func Test_MapBookingPointOfSaleResponse(t *testing.T) {
 	lbMapper := mapper.NewLowriBeckMapper("sendingSystem", "receivingSystem", "crElec", "ppmElec", "crGas", "ppmGas")
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			res, err := lbMapper.BookingResponsePointOfSale(tc.input.req)
 			if tc.expectedError == nil {
 				assert.NoError(err, tc.desc)

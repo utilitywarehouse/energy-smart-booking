@@ -46,7 +46,7 @@ func (s *Handler) Register(ctx context.Context, router *mux.Router) {
 }
 
 func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		go func() {
 			start := time.Now()
 			jobCtx := context.Background()
@@ -64,7 +64,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 }
 
 func (s *Handler) rerunFullEvaluation(_ context.Context) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		go func() {
 			start := time.Now()
 			jobCtx := context.Background()
