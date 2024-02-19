@@ -182,7 +182,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			mapper.availabilityRequest = tc.req
 			mapper.availabilityResponse = tc.expected
 			mapper.availabilityError = tc.mapperErr
@@ -290,7 +290,7 @@ func Test_GetAvailableSlots_Unauthorised(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 
 			tc.setup(ctx, mAuth)
 
@@ -469,7 +469,7 @@ func Test_CreateBooking(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			mapper.bookingRequest = tc.req
 			mapper.bookingResponse = tc.expected
 			mapper.bookingError = tc.mapperErr
@@ -577,7 +577,7 @@ func Test_CreateBooking_Unauthorised(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			tc.setup(ctx, mAuth)
 
 			_, err := myAPIHandler.CreateBooking(ctx, &contract.CreateBookingRequest{
@@ -755,7 +755,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 	myAPIHandler := api.New(mClient, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			mapper.availabilityRequest = tc.req
 			mapper.availabilityPointOfSaleResponse = tc.expected
 			mapper.availabilityError = tc.mapperErr
@@ -870,7 +870,7 @@ func Test_GetAvailableSlots_PointOfSale_Unauthorised(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 
 			tc.setup(ctx, mAuth)
 
@@ -1347,7 +1347,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 	myAPIHandler := api.New(mClient, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			mapper.bookingRequest = tc.req
 			mapper.bookingPointOfSaleResponse = tc.expected
 			mapper.bookingError = tc.mapperErr
@@ -1462,7 +1462,7 @@ func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			tc.setup(ctx, mAuth)
 
 			_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
@@ -1591,7 +1591,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			mapper.updateContactRequest = tc.req
 			mapper.updateContactResponse = tc.expected
 			mapper.updateContactError = tc.mapperErr
@@ -1705,7 +1705,7 @@ func Test_UpdateContactDetails_Unauthorised(t *testing.T) {
 	myAPIHandler := api.New(client, mapper, mAuth)
 
 	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+		t.Run(tc.desc, func(_ *testing.T) {
 			tc.setup(ctx, mAuth)
 
 			_, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
