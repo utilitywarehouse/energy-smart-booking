@@ -13,6 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
+	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
@@ -890,6 +891,23 @@ func Test_GetAvailableSlots_PointOfSale_Unauthorised(t *testing.T) {
 func Test_CreateBooking_PointOfSale(t *testing.T) {
 	now := time.Now().UTC().Format("02/01/2006 15:04:05")
 
+	req := &lowribeck.CreateBookingRequest{
+		SubBuildName:            "sub-1",
+		BuildingName:            "bn-1",
+		DependThroughfare:       "dt-1",
+		Throughfare:             "tf-1",
+		DoubleDependantLocality: "ddl-1",
+		DependantLocality:       "dl-1",
+		PostTown:                "pt",
+		County:                  "", // There is no County in the PAF format
+		PostCode:                "postcode",
+		Mpan:                    "mpan-1",
+		Mprn:                    "mprn-1",
+		ElecJobTypeCode:         "credit",
+		GasJobTypeCode:          "credit",
+		CreatedDate:             now,
+	}
+
 	testCases := []struct {
 		desc          string
 		req           *lowribeck.CreateBookingRequest
@@ -903,23 +921,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			expected: &contract.CreateBookingPointOfSaleResponse{
 				Success: true,
 			},
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req: req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "B01",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -934,23 +938,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Invalid postcode",
 			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidPostcode),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [postcode]"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -965,23 +955,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Invalid mpan",
 			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidMPAN),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [mpan]"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -996,23 +972,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Invalid mprn",
 			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidMPRN),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [mprn]"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1027,23 +989,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Invalid electricity job type code",
 			mapperErr:     mapper.ErrInvalidElectricityJobTypeCode,
 			expectedError: status.Error(codes.Internal, "error making booking point of sale request: invalid electricity job type code"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1058,23 +1006,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Invalid gas job type code",
 			mapperErr:     mapper.ErrInvalidGasJobTypeCode,
 			expectedError: status.Error(codes.Internal, "error making booking point of sale request: invalid gas job type code"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1089,23 +1023,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Invalid (unspecified)job type code",
 			mapperErr:     mapper.ErrInvalidJobTypeCode,
 			expectedError: status.Error(codes.Internal, "error making booking point of sale request: invalid job type code"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1120,23 +1040,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Invalid site",
 			mapperErr:     mapper.NewInvalidRequestError(mapper.InvalidSite),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [site]"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1151,23 +1057,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Appointment not found",
 			mapperErr:     mapper.ErrAppointmentNotFound,
 			expectedError: status.Error(codes.NotFound, "error making booking point of sale request: no appointments found"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1182,23 +1074,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Appointment out of range",
 			mapperErr:     mapper.ErrAppointmentOutOfRange,
 			expectedError: status.Error(codes.OutOfRange, "error making booking point of sale request: appointment out of range"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1213,23 +1091,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Appointment already exists",
 			mapperErr:     mapper.ErrAppointmentAlreadyExists,
 			expectedError: status.Error(codes.AlreadyExists, "error making booking point of sale request: appointment already exists"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1244,23 +1108,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Unknown bad parameter",
 			mapperErr:     mapper.NewInvalidRequestError("something else"),
 			expectedError: status.Error(codes.InvalidArgument, "error making booking point of sale request: invalid request [something else]"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1275,23 +1125,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Internal error",
 			mapperErr:     fmt.Errorf("%w [%s]", mapper.ErrInternalError, "Insufficient notice to rearrange this appointment."),
 			expectedError: status.Error(codes.Internal, "error making booking point of sale request: internal server error [Insufficient notice to rearrange this appointment.]"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1306,23 +1142,9 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			desc:          "Unknown error",
 			mapperErr:     mapper.ErrUnknownError,
 			expectedError: status.Error(codes.Internal, "error making booking point of sale request: unknown error"),
-			req: &lowribeck.CreateBookingRequest{
-				PostCode:        "postcode",
-				Mpan:            "mpan-1",
-				Mprn:            "mprn-1",
-				ElecJobTypeCode: "credit",
-				GasJobTypeCode:  "credit",
-				CreatedDate:     now,
-			},
+			req:           req,
 			setup: func(ctx context.Context, mAuth *mocks.MockAuth, mClient *mocks.MockClient) {
-				mClient.EXPECT().CreateBookingPointOfSale(ctx, &lowribeck.CreateBookingRequest{
-					PostCode:        "postcode",
-					Mpan:            "mpan-1",
-					Mprn:            "mprn-1",
-					ElecJobTypeCode: "credit",
-					GasJobTypeCode:  "credit",
-					CreatedDate:     now,
-				}).Return(&lowribeck.CreateBookingResponse{
+				mClient.EXPECT().CreateBookingPointOfSale(ctx, req).Return(&lowribeck.CreateBookingResponse{
 					ResponseCode: "",
 				}, nil)
 				mAuth.EXPECT().Authorize(ctx,
@@ -1360,6 +1182,22 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				Mprn:                  "mprn-1",
 				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
 				GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
+				SiteAddress: &addressv1.Address{
+					Uprn: "uprn-1",
+					Paf: &addressv1.Address_PAF{
+						Organisation:            "org",
+						Department:              "department-1",
+						SubBuilding:             "sub-1",
+						BuildingName:            "bn-1",
+						BuildingNumber:          "bnum-1",
+						DependentThoroughfare:   "dt-1",
+						Thoroughfare:            "tf-1",
+						DoubleDependentLocality: "ddl-1",
+						DependentLocality:       "dl-1",
+						PostTown:                "pt",
+						Postcode:                "postcode",
+					},
+				},
 			})
 
 			if tc.expectedError == nil {
@@ -1395,12 +1233,20 @@ func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
 		}).Return(true, nil)
 
 	req := &lowribeck.CreateBookingRequest{
-		PostCode:        "postcode",
-		Mpan:            "mpan-1",
-		Mprn:            "mprn-1",
-		ElecJobTypeCode: "credit",
-		GasJobTypeCode:  "credit",
-		CreatedDate:     time.Now().UTC().Format("02/01/2006 15:04:05"),
+		SubBuildName:            "sub-1",
+		BuildingName:            "bn-1",
+		DependThroughfare:       "dt-1",
+		Throughfare:             "tf-1",
+		DoubleDependantLocality: "ddl-1",
+		DependantLocality:       "dl-1",
+		PostTown:                "pt",
+		County:                  "", // There is no County in the PAF format
+		PostCode:                "postcode",
+		Mpan:                    "mpan-1",
+		Mprn:                    "mprn-1",
+		ElecJobTypeCode:         "credit",
+		GasJobTypeCode:          "credit",
+		CreatedDate:             time.Now().UTC().Format("02/01/2006 15:04:05"),
 	}
 	mapper.bookingRequest = req
 
@@ -1412,6 +1258,22 @@ func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
 		Mprn:                  "mprn-1",
 		ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
 		GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
+		SiteAddress: &addressv1.Address{
+			Uprn: "uprn-1",
+			Paf: &addressv1.Address_PAF{
+				Organisation:            "org",
+				Department:              "department-1",
+				SubBuilding:             "sub-1",
+				BuildingName:            "bn-1",
+				BuildingNumber:          "bnum-1",
+				DependentThoroughfare:   "dt-1",
+				Thoroughfare:            "tf-1",
+				DoubleDependentLocality: "ddl-1",
+				DependentLocality:       "dl-1",
+				PostTown:                "pt",
+				Postcode:                "postcode",
+			},
+		},
 	})
 
 	assert.EqualError(err, "rpc error: code = Internal desc = error making booking point of sale request: "+errorMessage)
@@ -1471,6 +1333,22 @@ func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
 				Mprn:                  "mprn-1",
 				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
 				GasTariffType:         contract.TariffType_TARIFF_TYPE_CREDIT,
+				SiteAddress: &addressv1.Address{
+					Uprn: "uprn-1",
+					Paf: &addressv1.Address_PAF{
+						Organisation:            "org",
+						Department:              "department-1",
+						SubBuilding:             "sub-1",
+						BuildingName:            "bn-1",
+						BuildingNumber:          "bnum-1",
+						DependentThoroughfare:   "dt-1",
+						Thoroughfare:            "tf-1",
+						DoubleDependentLocality: "ddl-1",
+						DependentLocality:       "dl-1",
+						PostTown:                "pt",
+						Postcode:                "postcode",
+					},
+				},
 			})
 
 			assert.EqualError(err, tc.expectedError.Error(), tc.desc)
