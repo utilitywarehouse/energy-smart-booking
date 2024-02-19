@@ -1177,7 +1177,6 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 			tc.setup(ctx, mAuth, mClient)
 
 			result, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
-				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
 				Mprn:                  "mprn-1",
 				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
@@ -1253,7 +1252,6 @@ func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
 	client.EXPECT().CreateBookingPointOfSale(ctx, req).Return(nil, fmt.Errorf(errorMessage))
 
 	_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
-		Postcode:              "postcode",
 		Mpan:                  "mpan-1",
 		Mprn:                  "mprn-1",
 		ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,
@@ -1328,7 +1326,6 @@ func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
 			tc.setup(ctx, mAuth)
 
 			_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
-				Postcode:              "postcode",
 				Mpan:                  "mpan-1",
 				Mprn:                  "mprn-1",
 				ElectricityTariffType: contract.TariffType_TARIFF_TYPE_CREDIT,

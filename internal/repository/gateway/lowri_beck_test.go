@@ -691,10 +691,9 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 
 	myGw := gateway.NewLowriBeckGateway(mai, lbC)
 
-	postcode, mpan, tariffType := "E2 1ZZ", "mpan-1", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT
+	mpan, tariffType := "mpan-1", lowribeckv1.TariffType_TARIFF_TYPE_CREDIT
 
 	lbC.EXPECT().CreateBookingPointOfSale(ctx, &lowribeckv1.CreateBookingPointOfSaleRequest{
-		Postcode:              postcode,
 		Mpan:                  mpan,
 		ElectricityTariffType: tariffType,
 		Slot: &lowribeckv1.BookingSlot{
@@ -805,7 +804,6 @@ func Test_CreateBookingPointOfSale_HasErrors(t *testing.T) {
 	}
 
 	lbcreatebookingRequest := &lowribeckv1.CreateBookingPointOfSaleRequest{
-		Postcode:              "E2 1ZZ",
 		Mpan:                  "mpan-1",
 		ElectricityTariffType: lowribeckv1.TariffType_TARIFF_TYPE_CREDIT,
 		Slot: &lowribeckv1.BookingSlot{
