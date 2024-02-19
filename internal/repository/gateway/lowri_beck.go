@@ -195,7 +195,6 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, mpan, mp
 	}()
 
 	req := &lowribeckv1.CreateBookingPointOfSaleRequest{
-		Postcode:              siteAddress.PAF.Postcode,
 		Mpan:                  mpan,
 		ElectricityTariffType: tariffElectricity,
 		Mprn:                  mprn,

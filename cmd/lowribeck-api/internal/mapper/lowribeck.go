@@ -158,7 +158,7 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *lowribeckv1.Create
 		DependantLocality:       req.SiteAddress.Paf.GetDependentLocality(),
 		PostTown:                req.SiteAddress.Paf.GetPostTown(),
 		County:                  "", // There is no County in the PAF format
-		PostCode:                req.GetPostcode(),
+		PostCode:                req.SiteAddress.Paf.GetPostcode(),
 		Mpan:                    req.GetMpan(),
 		ElecJobTypeCode:         elecJobTypeCode,
 		AppointmentDate:         appDate,
