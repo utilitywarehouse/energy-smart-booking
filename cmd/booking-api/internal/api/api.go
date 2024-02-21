@@ -389,7 +389,11 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking")
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking", trace.WithAttributes(
+			attribute.String("account.id", req.GetAccountId()),
+			attribute.String("booking.id", req.GetBookingId()),
+		),
+		)
 		defer func() {
 			tracing.RecordSpanError(span, err)
 			span.End()
