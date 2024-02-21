@@ -2,8 +2,6 @@ module github.com/utilitywarehouse/energy-smart-booking
 
 go 1.21.0
 
-toolchain go1.22.0
-
 require (
 	cloud.google.com/go/bigquery v1.59.1
 	github.com/go-redis/redis/v8 v8.11.5
