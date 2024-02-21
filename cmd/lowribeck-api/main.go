@@ -132,7 +132,7 @@ func runServer(c *cli.Context) error {
 		return err
 	}
 
-	auth := auth.New(pdp)
+	auth := auth.New(pdp.Multi())
 
 	g, ctx := errgroup.WithContext(ctx)
 

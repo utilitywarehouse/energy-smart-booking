@@ -59,7 +59,7 @@ func runGRPCApi(c *cli.Context) error {
 		return err
 	}
 
-	auth := auth.New(pdp)
+	auth := auth.New(pdp.Multi())
 
 	pg, err := store.Setup(ctx, c.String(postgresDSN))
 	if err != nil {

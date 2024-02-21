@@ -177,7 +177,7 @@ func serverAction(c *cli.Context) error {
 	}
 	opsServer.Add("pool", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
 
-	auth := auth.New(pdp)
+	auth := auth.New(pdp.Multi())
 
 	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
