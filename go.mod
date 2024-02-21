@@ -32,8 +32,8 @@ require (
 	github.com/utilitywarehouse/energy-pkg/substratemessage/v2 v2.2.3
 	github.com/utilitywarehouse/go-ops-health-checks v1.0.1
 	github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0
+	github.com/utilitywarehouse/uwos-go/telemetry v1.26.0
 	github.com/utilitywarehouse/uwos-go/v1/iam v1.20.2
-	github.com/utilitywarehouse/uwos-go/v1/telemetry v1.21.3
 	github.com/uw-labs/substrate v0.0.0-20230324124119-dbc62c85ad0b
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
 	golang.org/x/sync v0.3.0
@@ -64,7 +64,8 @@ require (
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/utilitywarehouse/iam-contracts v0.0.0-20230927112930-d47ec01b334a // indirect
-	github.com/utilitywarehouse/uwos-go/v1/io v1.5.1 // indirect
+	github.com/utilitywarehouse/uwos-go/io v1.6.1 // indirect
+	github.com/utilitywarehouse/uwos-go/runtime/k8sruntime v1.4.2 // indirect
 	github.com/uw-labs/proximo v0.0.0-20230125153035-a4cf3926a211 // indirect
 	github.com/yusufpapurcu/wmi v1.2.3 // indirect
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.45.0 // indirect

@@ -22,8 +22,8 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/metrics"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/go-operational/op"
+	"github.com/utilitywarehouse/uwos-go/telemetry"
 	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
-	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
 )
