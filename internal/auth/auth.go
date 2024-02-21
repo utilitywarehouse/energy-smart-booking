@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/principal"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/principal/machinepr"
+	"github.com/utilitywarehouse/uwos-go/iam/pdp"
+	"github.com/utilitywarehouse/uwos-go/iam/principal"
+	"github.com/utilitywarehouse/uwos-go/iam/principal/machinepr"
 )
 
 type pdpClient interface {
