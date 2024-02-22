@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
@@ -180,9 +181,9 @@ func (g LowriBeckGateway) GetAvailableSlotsPointOfSale(ctx context.Context, post
 	}, nil
 }
 
-func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, postcode, mpan, mprn string, tariffElectricity, tariffGas lowribeckv1.TariffType, slot models.BookingSlot, contactDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (_ CreateBookingPointOfSaleResponse, err error) {
+func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, mpan, mprn string, tariffElectricity, tariffGas lowribeckv1.TariffType, slot models.BookingSlot, contactDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string, siteAddress models.AccountAddress) (_ CreateBookingPointOfSaleResponse, err error) {
 	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.CreatePOSBooking",
-		trace.WithAttributes(attribute.String("postcode", postcode)),
+		trace.WithAttributes(attribute.String("postcode", siteAddress.PAF.Postcode)),
 		trace.WithAttributes(attribute.String("lowribeck.mpan", mpan)),
 		trace.WithAttributes(attribute.String("lowribeck.mprn", mprn)),
 		trace.WithAttributes(attribute.String("lowribeck.electric.tariff", tariffElectricity.String())),
@@ -194,7 +195,6 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, postcode
 	}()
 
 	req := &lowribeckv1.CreateBookingPointOfSaleRequest{
-		Postcode:              postcode,
 		Mpan:                  mpan,
 		ElectricityTariffType: tariffElectricity,
 		Mprn:                  mprn,
@@ -217,6 +217,22 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, postcode
 			FirstName: contactDetails.FirstName,
 			LastName:  contactDetails.LastName,
 			Phone:     contactDetails.Mobile,
+		},
+		SiteAddress: &addressv1.Address{
+			Uprn: siteAddress.UPRN,
+			Paf: &addressv1.Address_PAF{
+				Organisation:            siteAddress.PAF.Organisation,
+				Department:              siteAddress.PAF.Department,
+				SubBuilding:             siteAddress.PAF.SubBuilding,
+				BuildingName:            siteAddress.PAF.BuildingName,
+				BuildingNumber:          siteAddress.PAF.BuildingNumber,
+				DependentThoroughfare:   siteAddress.PAF.DependentThoroughfare,
+				Thoroughfare:            siteAddress.PAF.Thoroughfare,
+				DoubleDependentLocality: siteAddress.PAF.DoubleDependentLocality,
+				DependentLocality:       siteAddress.PAF.DependentLocality,
+				PostTown:                siteAddress.PAF.PostTown,
+				Postcode:                siteAddress.PAF.Postcode,
+			},
 		},
 	}
 

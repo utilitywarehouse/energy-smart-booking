@@ -360,7 +360,6 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 
 	response, err := d.lowribeckGw.CreateBookingPointOfSale(
 		ctx,
-		accountHolderDetails.Address.PAF.Postcode,
 		accountHolderDetails.ElecOrderSupplies.MPXN,
 		accountHolderDetails.GasOrderSupplies.MPXN,
 		models.BookingTariffTypeToLowribeckTariffType(accountHolderDetails.ElecOrderSupplies.TariffType),
@@ -369,6 +368,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 		params.ContactDetails,
 		lbVulnerabilities,
 		params.VulnerabilityDetails.Other,
+		accountHolderDetails.Address,
 	)
 	if err != nil {
 		return CreateBookingPointOfSaleResponse{}, fmt.Errorf("failed to create POS booking, %w", err)
