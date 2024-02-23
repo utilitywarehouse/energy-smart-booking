@@ -151,7 +151,7 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *lowribeckv1.Create
 
 	request := &lowribeck.CreateBookingRequest{
 		SubBuildName:            req.SiteAddress.Paf.GetSubBuilding(),
-		BuildingName:            req.SiteAddress.Paf.GetBuildingName(),
+		BuildingName:            strings.Join([]string{req.SiteAddress.Paf.GetBuildingNumber(), req.SiteAddress.Paf.GetBuildingName()}, " "),
 		DependThroughfare:       req.SiteAddress.Paf.GetDependentThoroughfare(),
 		Throughfare:             req.SiteAddress.Paf.GetThoroughfare(),
 		DoubleDependantLocality: req.SiteAddress.Paf.GetDoubleDependentLocality(),
