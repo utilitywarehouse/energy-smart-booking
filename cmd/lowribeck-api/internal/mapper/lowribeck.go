@@ -153,7 +153,7 @@ func (lb LowriBeck) BookingRequestPointOfSale(id uint32, req *lowribeckv1.Create
 		SubBuildName:            req.SiteAddress.Paf.GetSubBuilding(),
 		BuildingName:            req.SiteAddress.Paf.GetBuildingName(),
 		DependThroughfare:       req.SiteAddress.Paf.GetDependentThoroughfare(),
-		Throughfare:             req.SiteAddress.Paf.GetThoroughfare() + req.SiteAddress.Paf.GetThoroughfare(),
+		Throughfare:             fmt.Sprintf("%s %s", req.SiteAddress.Paf.GetThoroughfare(), req.SiteAddress.Paf.GetThoroughfare()),
 		DoubleDependantLocality: req.SiteAddress.Paf.GetDoubleDependentLocality(),
 		DependantLocality:       req.SiteAddress.Paf.GetDependentLocality(),
 		PostTown:                req.SiteAddress.Paf.GetPostTown(),
