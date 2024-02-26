@@ -253,15 +253,15 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 	}
 
 	timeNow := time.Now()
-	reasonCreated := models.BookingCreated
-	reasonExpired := models.BookingExpired
+	reasonCreated := models.DeletionReason_BookingCreated
+	reasonExpired := models.DeletionReason_BookingExpired
 
 	testCases := []testSetup{
 		{
 			description: "should upsert an booking created event, mark it as deleted and retrieve it",
 			input: inputParams{
 				bookingID:      "booking-id-1",
-				deletionReason: models.BookingCreated,
+				deletionReason: reasonCreated,
 				event: &bookingv1.BookingCreatedEvent{
 					BookingId:   "booking-id-1",
 					OccupancyId: "",
@@ -293,7 +293,7 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 			description: "should upsert a booking created event, mark it as deleted due to expiration and retrieve it",
 			input: inputParams{
 				bookingID:      "booking-id-1",
-				deletionReason: models.BookingExpired,
+				deletionReason: reasonExpired,
 				event: &bookingv1.BookingCreatedEvent{
 					BookingId:   "booking-id-1",
 					OccupancyId: "",
@@ -412,10 +412,11 @@ func Test_PartialBookingStore_Insert_UpdateRetries_Get(t *testing.T) {
 							AccountId: "account-id-1",
 						},
 					},
-					CreatedAt: timeNow,
-					UpdatedAt: &timeNow,
-					DeletedAt: nil,
-					Retries:   1,
+					CreatedAt:      timeNow,
+					UpdatedAt:      &timeNow,
+					DeletedAt:      nil,
+					Retries:        1,
+					DeletionReason: nil,
 				},
 			},
 		},
@@ -513,10 +514,11 @@ func Test_PartialBookingStore_GetPendingProcessing(t *testing.T) {
 								AccountId: "account-id-1",
 							},
 						},
-						CreatedAt: timeNow,
-						UpdatedAt: nil,
-						DeletedAt: nil,
-						Retries:   0,
+						CreatedAt:      timeNow,
+						UpdatedAt:      nil,
+						DeletedAt:      nil,
+						Retries:        0,
+						DeletionReason: nil,
 					},
 				},
 			},

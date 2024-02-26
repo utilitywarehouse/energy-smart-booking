@@ -77,7 +77,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 		// If partial booking is older than three weeks, mark it as deleted stright away
 		if time.Since(elem.CreatedAt).Hours() > 21.0*24.0 {
-			err := w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.BookingExpired)
+			err := w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReason_BookingExpired)
 			if err != nil {
 				return fmt.Errorf("failed to mark bookingID: %s as deleted due to expiration, %w", elem.BookingID, err)
 			}
@@ -110,7 +110,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to publish booking %s, %w", elem.BookingID, err)
 		}
 
-		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.BookingCreated)
+		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReason_BookingCreated)
 		if err != nil {
 			return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
 		}
