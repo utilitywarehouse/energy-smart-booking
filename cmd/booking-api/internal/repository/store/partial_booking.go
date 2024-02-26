@@ -52,13 +52,14 @@ func (s *PartialBookingStore) Get(ctx context.Context, bookingID string) (*model
 	var updatedAt, deletedAt, createdAt sql.NullTime
 	var retries int
 	var event []byte
+	var deletionReason sql.NullInt32
 
 	q := `
-	SELECT booking_id, event, created_at, updated_at, deleted_at, retries
+	SELECT booking_id, event, created_at, updated_at, deleted_at, retries, deletion_reason
 	FROM partial_booking
 	WHERE booking_id = $1;`
 
-	err := s.pool.QueryRow(ctx, q, bookingID).Scan(&bID, &event, &createdAt, &updatedAt, &deletedAt, &retries)
+	err := s.pool.QueryRow(ctx, q, bookingID).Scan(&bID, &event, &createdAt, &updatedAt, &deletedAt, &retries, &deletionReason)
 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -73,12 +74,13 @@ func (s *PartialBookingStore) Get(ctx context.Context, bookingID string) (*model
 	}
 
 	partialBooking := &models.PartialBooking{
-		BookingID: bID,
-		Event:     e,
-		CreatedAt: createdAt.Time,
-		UpdatedAt: nil,
-		DeletedAt: nil,
-		Retries:   retries,
+		BookingID:      bID,
+		Event:          e,
+		CreatedAt:      createdAt.Time,
+		UpdatedAt:      nil,
+		DeletedAt:      nil,
+		Retries:        retries,
+		DeletionReason: nil,
 	}
 
 	if updatedAt.Valid {
@@ -87,6 +89,11 @@ func (s *PartialBookingStore) Get(ctx context.Context, bookingID string) (*model
 
 	if deletedAt.Valid {
 		partialBooking.DeletedAt = &deletedAt.Time
+	}
+
+	if deletionReason.Valid {
+		reason := models.MapIntToDeletionReason(deletionReason.Int32)
+		partialBooking.DeletionReason = &reason
 	}
 
 	return partialBooking, nil
@@ -98,11 +105,12 @@ func (s *PartialBookingStore) GetPending(ctx context.Context) ([]*models.Partial
 	var updatedAt, deletedAt, createdAt sql.NullTime
 	var retries int
 	var event []byte
+	var deletionReason sql.NullInt32
 
 	partialBookings := []*models.PartialBooking{}
 
 	q := `
-	SELECT booking_id, event, created_at, updated_at, deleted_at, retries
+	SELECT booking_id, event, created_at, updated_at, deleted_at, retries, deletion_reason
 	FROM partial_booking
 	WHERE deleted_at is NULL;`
 
@@ -112,7 +120,7 @@ func (s *PartialBookingStore) GetPending(ctx context.Context) ([]*models.Partial
 	}
 
 	for rows.Next() {
-		err = rows.Scan(&bID, &event, &createdAt, &updatedAt, &deletedAt, &retries)
+		err = rows.Scan(&bID, &event, &createdAt, &updatedAt, &deletedAt, &retries, &deletionReason)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row, %w", err)
 		}
@@ -138,6 +146,11 @@ func (s *PartialBookingStore) GetPending(ctx context.Context) ([]*models.Partial
 
 		if deletedAt.Valid {
 			partialBooking.DeletedAt = &deletedAt.Time
+		}
+
+		if deletionReason.Valid {
+			reason := models.MapIntToDeletionReason(deletionReason.Int32)
+			partialBooking.DeletionReason = &reason
 		}
 
 		partialBookings = append(partialBookings, partialBooking)
