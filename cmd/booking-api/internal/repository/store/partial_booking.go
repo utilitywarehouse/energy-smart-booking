@@ -123,12 +123,13 @@ func (s *PartialBookingStore) GetPending(ctx context.Context) ([]*models.Partial
 		}
 
 		partialBooking := &models.PartialBooking{
-			BookingID: bID,
-			Event:     e,
-			CreatedAt: createdAt.Time,
-			UpdatedAt: nil,
-			DeletedAt: nil,
-			Retries:   retries,
+			BookingID:      bID,
+			Event:          e,
+			CreatedAt:      createdAt.Time,
+			UpdatedAt:      nil,
+			DeletedAt:      nil,
+			Retries:        retries,
+			DeletionReason: nil,
 		}
 
 		if updatedAt.Valid {
@@ -157,10 +158,10 @@ func (s *PartialBookingStore) UpdateRetries(ctx context.Context, bookingID strin
 	return nil
 }
 
-func (s *PartialBookingStore) MarkAsDeleted(ctx context.Context, bookingID string) error {
-	q := `UPDATE partial_booking SET deleted_at = NOW() WHERE booking_id = $1;`
+func (s *PartialBookingStore) MarkAsDeleted(ctx context.Context, bookingID string, reason models.DeletionReason) error {
+	q := `UPDATE partial_booking SET deleted_at = NOW(), deletion_reason = $2 WHERE booking_id = $1;`
 
-	_, err := s.pool.Exec(ctx, q, bookingID)
+	_, err := s.pool.Exec(ctx, q, bookingID, reason)
 
 	if err != nil {
 		return fmt.Errorf("failed to mark partial booking as deleted for booking id: %s, %w", bookingID, err)
