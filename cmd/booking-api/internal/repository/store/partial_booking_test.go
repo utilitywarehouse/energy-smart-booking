@@ -253,8 +253,8 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 	}
 
 	timeNow := time.Now()
-	reasonCreated := models.DeletionReason_BookingCreated
-	reasonExpired := models.DeletionReason_BookingExpired
+	reasonCreated := models.DeletionReasonBookingCreated
+	reasonExpired := models.DeletionReasonBookingExpired
 
 	testCases := []testSetup{
 		{
