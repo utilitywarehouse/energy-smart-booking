@@ -24,6 +24,11 @@ var pendingPartialBookingsByAgeMetric = promauto.NewGaugeVec(prometheus.GaugeOpt
 	Help: "total partial bookings held by age",
 }, []string{"age"})
 
+var expiredPartialBookingsMetric = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "expired_partial_bookings",
+	Help: "the count of partial bookings that expired three weeks after creation",
+})
+
 const (
 	PendingBookings   = "pending_bookings"
 	ProcessedBookings = "processed_bookings"
@@ -41,7 +46,7 @@ type PartialBookingStore interface {
 	Upsert(ctx context.Context, bookingID string, event *bookingv1.BookingCreatedEvent) error
 	GetPending(ctx context.Context) ([]*models.PartialBooking, error)
 	UpdateRetries(ctx context.Context, bookingID string, retries int) error
-	MarkAsDeleted(ctx context.Context, bookingID string) error
+	MarkAsDeleted(ctx context.Context, bookingID string, reason models.DeletionReason) error
 }
 
 type PartialBookingWorker struct {
@@ -70,6 +75,18 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 		event := elem.Event.(*bookingv1.BookingCreatedEvent)
 
+		// If partial booking is older than three weeks, mark it as deleted stright away
+		if time.Since(elem.CreatedAt).Hours() > 21.0*24.0 {
+			err := w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.BookingExpired)
+			if err != nil {
+				return fmt.Errorf("failed to mark bookingID: %s as deleted due to expiration, %w", elem.BookingID, err)
+			}
+
+			expiredPartialBookingsMetric.Inc()
+
+			continue
+		}
+
 		occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)
 		if err != nil {
 			if errors.Is(err, store.ErrOccupancyNotFound) {
@@ -93,7 +110,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to publish booking %s, %w", elem.BookingID, err)
 		}
 
-		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID)
+		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.BookingCreated)
 		if err != nil {
 			return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
 		}
