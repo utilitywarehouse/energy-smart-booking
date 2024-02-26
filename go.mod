@@ -70,7 +70,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/utilitywarehouse/iam-contracts v0.0.0-20230927112930-d47ec01b334a // indirect
-	github.com/utilitywarehouse/protobuf-contracts v0.0.0-20240220080752-46a5f0dbf0ce // indirect
+	github.com/utilitywarehouse/protobuf-contracts v0.0.0-20240223082304-c6be78666a8c // indirect
 	github.com/utilitywarehouse/uwos-go/io v1.6.5 // indirect
 	github.com/utilitywarehouse/uwos-go/runtime/k8sruntime v1.5.0 // indirect
 	github.com/utilitywarehouse/uwos-go/time v1.4.2 // indirect
@@ -86,6 +86,7 @@ require (
 	go.opentelemetry.io/contrib/propagators/ot v1.23.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.23.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.23.1 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0 // indirect
 	go.opentelemetry.io/otel/exporters/prometheus v0.45.2 // indirect
 	go.opentelemetry.io/otel/sdk v1.23.1 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.23.1 // indirect

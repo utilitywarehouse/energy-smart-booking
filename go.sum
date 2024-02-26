@@ -688,8 +688,8 @@ github.com/utilitywarehouse/go-ops-health-checks/v3 v3.1.0/go.mod h1:a8pLW/wbp9M
 github.com/utilitywarehouse/go-pubsub v1.0.0/go.mod h1:mufghue7BugdepNAmr5iBmoqVW+jcl6DCsW1U35isEU=
 github.com/utilitywarehouse/iam-contracts v0.0.0-20230927112930-d47ec01b334a h1:R/TAqHZn4RsH8EG6AfAF8p4ad3ZuLgMNo2BrnQ6mJHY=
 github.com/utilitywarehouse/iam-contracts v0.0.0-20230927112930-d47ec01b334a/go.mod h1:NnrDEq433xdDdukZkHQfC48x9EarKDjS/Az2yknoMeQ=
-github.com/utilitywarehouse/protobuf-contracts v0.0.0-20240220080752-46a5f0dbf0ce h1:hhGCptPFLLIgAaX7nmjmOQMyPR3EYhPwWebDLbfdiI8=
-github.com/utilitywarehouse/protobuf-contracts v0.0.0-20240220080752-46a5f0dbf0ce/go.mod h1:wRj8i+4gpL8+l7QPSjwYCTomK0xsN8JIkL0y2AUV8A0=
+github.com/utilitywarehouse/protobuf-contracts v0.0.0-20240223082304-c6be78666a8c h1:+isbPIwFK1LbzJuu5pBXT8A0Byn/7Aaz2Td6zuI5epY=
+github.com/utilitywarehouse/protobuf-contracts v0.0.0-20240223082304-c6be78666a8c/go.mod h1:wRj8i+4gpL8+l7QPSjwYCTomK0xsN8JIkL0y2AUV8A0=
 github.com/utilitywarehouse/protoc-gen-uwentity v0.3.0/go.mod h1:7AEjfM/g00fXwmQE/qPkPl0VC4TzuCeYj1kwafXUhb0=
 github.com/utilitywarehouse/protoc-gen-uwentity v1.6.0 h1:AumE011gx0tw1xgUY6yurc4uvziGWslx+oSyfWqSAko=
 github.com/utilitywarehouse/protoc-gen-uwentity v1.6.0/go.mod h1:B1VzY3fXvQye1UF3+i+1Vz6FvxlS/UJ3PbdoIbxuc3k=
@@ -781,8 +781,8 @@ go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.23.1 h1:o8iWeVFa1BcLtVEV0Lz
 go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.23.1/go.mod h1:SEVfdK4IoBnbT2FXNM/k8yC08MrfbhWk3U4ljM8B3HE=
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.23.1 h1:p3A5+f5l9e/kuEBwLOrnpkIDHQFlHmbiVxMURWRK6gQ=
 go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.23.1/go.mod h1:OClrnXUjBqQbInvjJFjYSnMxBSCXBF8r3b34WqjiIrQ=
-go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.19.0 h1:IeMeyr1aBvBiPVYihXIaeIZba6b8E1bYp7lbdxK8CQg=
-go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.19.0/go.mod h1:oVdCUtjq9MK9BlS7TtucsQwUcXcymNiEDjgDD2jMtZU=
+go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0 h1:FyjCyI9jVEfqhUh2MoSkmolPjfh5fp2hnV0b0irxH4Q=
+go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0/go.mod h1:hYwym2nDEeZfG/motx0p7L7J1N1vyzIThemQsb4g2qY=
 go.opentelemetry.io/otel/exporters/prometheus v0.45.2 h1:pe2Jqk1K18As0RCw7J08QhgXNqr+6npx0a5W4IgAFA8=
 go.opentelemetry.io/otel/exporters/prometheus v0.45.2/go.mod h1:B38pscHKI6bhFS44FDw0eFU3iqG3ASNIvY+fZgR5sAc=
 go.opentelemetry.io/otel/metric v1.23.1 h1:PQJmqJ9u2QaJLBOELl1cxIdPcpbwzbkjfEyelTl2rlo=
