@@ -68,7 +68,7 @@ func Test_Run(t *testing.T) {
 		},
 	}, gomock.Any()).Return(nil)
 
-	mockPBStore.EXPECT().MarkAsDeleted(ctx, "booking-id-1", models.DeletionReason_BookingCreated).Return(nil)
+	mockPBStore.EXPECT().MarkAsDeleted(ctx, "booking-id-1", models.DeletionReasonBookingCreated).Return(nil)
 
 	mockPBStore.EXPECT().UpdateRetries(ctx, "booking-id-2", 0).Return(nil)
 

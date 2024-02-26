@@ -9,22 +9,22 @@ import (
 type DeletionReason int32
 
 const (
-	DeletionReason_Unknown DeletionReason = 0
+	DeletionReasonUnknown DeletionReason = 0
 	// BookingCreated marks that the booking was marked as deleted due to the creation of full booking
-	DeletionReason_BookingCreated DeletionReason = 1
+	DeletionReasonBookingCreated DeletionReason = 1
 	// BookingExpired marks that the booking was marked as deleted due to the lack of occupancy for more than three weeks
-	DeletionReason_BookingExpired DeletionReason = 2
+	DeletionReasonBookingExpired DeletionReason = 2
 )
 
 func MapIntToDeletionReason(reason int32) DeletionReason {
 	switch reason {
 	case 1:
-		return DeletionReason_BookingCreated
+		return DeletionReasonBookingCreated
 	case 2:
-		return DeletionReason_BookingExpired
+		return DeletionReasonBookingExpired
 	}
 
-	return DeletionReason_Unknown
+	return DeletionReasonUnknown
 }
 
 type PartialBooking struct {
