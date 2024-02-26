@@ -20,7 +20,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/indexer"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/accounts"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
-	"github.com/utilitywarehouse/uwos-go/iam/machine"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/api/option"
 )

@@ -3,7 +3,7 @@ package helpers
 import (
 	"encoding/json"
 
-	"github.com/utilitywarehouse/uwos-go/telemetry/tracing"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )

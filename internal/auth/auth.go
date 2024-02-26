@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/utilitywarehouse/uwos-go/iam/pdp"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/principal"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/principal/machinepr"
 )
 
 type pdpClient interface {
-	Authorize(ctx context.Context, action string, resource *pdp.Resource) (pdp.MultiAuthorizeResult, error)
+	Authorize(ctx context.Context, principal *principal.Model, action string, resource *pdp.Resource) (pdp.AuthorizeResult, error)
 }
 
 type Authorize struct {
@@ -41,14 +43,29 @@ const (
 )
 
 func (a *Authorize) Authorize(ctx context.Context, params *PolicyParams) (bool, error) {
+	pr := principal.FromCtx(ctx)
 	r := pdp.NewResource(params.Resource, params.ResourceID)
 	if len(params.Attributes) > 0 {
 		r.WithAttributes(params.Attributes)
 	}
 
-	res, err := a.pdpClient.Authorize(ctx, params.Action, r)
+	res, err := a.pdpClient.Authorize(ctx, pr, params.Action, r)
 	if err != nil {
 		return false, fmt.Errorf("failed to authorize, %w", err)
 	}
-	return res.AllowedAny(), nil
+
+	// sometimes we might propagate the user and the user does not have permission
+	// and in that case the machine principal should be considered for authorization purposes
+	if !res.Allowed() {
+		pr := machinepr.FromIncomingCtx(ctx)
+
+		res, err = a.pdpClient.Authorize(ctx, &principal.Model{Token: pr}, params.Action, r)
+		if err != nil {
+			return false, fmt.Errorf("failed to authorize, %w", err)
+		}
+
+		return res.Allowed(), nil
+	}
+
+	return res.Allowed(), nil
 }

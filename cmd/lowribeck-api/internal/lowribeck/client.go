@@ -12,7 +12,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/metrics"
-	"github.com/utilitywarehouse/uwos-go/telemetry/tracing"
+	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )

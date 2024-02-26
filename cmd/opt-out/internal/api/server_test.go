@@ -17,8 +17,8 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store/migrations"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
-	"github.com/utilitywarehouse/uwos-go/iam/identity"
-	"github.com/utilitywarehouse/uwos-go/iam/principal"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/identity"
+	"github.com/utilitywarehouse/uwos-go/v1/iam/principal"
 )
 
 func TestServer(t *testing.T) {
