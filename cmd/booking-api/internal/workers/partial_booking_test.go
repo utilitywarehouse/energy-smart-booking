@@ -31,6 +31,7 @@ func Test_Run(t *testing.T) {
 
 	mockPBStore.EXPECT().GetPending(ctx).Return([]*models.PartialBooking{
 		{
+			CreatedAt: time.Now(),
 			BookingID: "booking-id-1",
 			Event: &bookingv1.BookingCreatedEvent{
 				BookingId:   "booking-id-1",
@@ -42,6 +43,7 @@ func Test_Run(t *testing.T) {
 			},
 		},
 		{
+			CreatedAt: time.Now(),
 			BookingID: "booking-id-2",
 			Event: &bookingv1.BookingCreatedEvent{
 				BookingId:   "booking-id-2",
