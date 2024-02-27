@@ -121,11 +121,9 @@ func Test_ExpiredPartialBookings(t *testing.T) {
 		},
 	}, nil)
 
-	mockOccupancyStore.EXPECT().GetOccupancyByAccountID(ctx, "account-id-1").Return(nil, store.ErrOccupancyNotFound)
-	mockOccupancyStore.EXPECT().GetOccupancyByAccountID(ctx, "account-id-2").Return(nil, store.ErrOccupancyNotFound)
-
 	mockPBStore.EXPECT().MarkAsDeleted(ctx, "booking-id-1", models.DeletionReasonBookingExpired).Return(nil)
 
+	mockOccupancyStore.EXPECT().GetOccupancyByAccountID(ctx, "account-id-2").Return(nil, store.ErrOccupancyNotFound)
 	mockPBStore.EXPECT().UpdateRetries(ctx, "booking-id-2", 0).Return(nil)
 
 	err := worker.Run(ctx)
