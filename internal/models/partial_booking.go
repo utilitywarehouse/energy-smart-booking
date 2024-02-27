@@ -10,9 +10,9 @@ type DeletionReason int32
 
 const (
 	DeletionReasonUnknown DeletionReason = 0
-	// BookingCreated marks that the booking was marked as deleted due to the creation of full booking
+	// BookingCompleted marks that the booking was marked as deleted due to the creation of full booking
 	DeletionReasonBookingCompleted DeletionReason = 1
-	// BookingExpired marks that the booking was marked as deleted due to the lack of occupancy for more than three weeks
+	// BookingExpired marks that the booking was marked as deleted due to the lack of occupancy
 	DeletionReasonBookingExpired DeletionReason = 2
 )
 

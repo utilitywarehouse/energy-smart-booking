@@ -75,24 +75,22 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 		event := elem.Event.(*bookingv1.BookingCreatedEvent)
 
-		// If partial booking is older than three weeks, mark it as deleted stright away
-		if time.Since(elem.CreatedAt).Hours() > 21.0*24.0 {
-			err := w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReasonBookingExpired)
-			if err != nil {
-				return fmt.Errorf("failed to mark bookingID: %s as deleted due to expiration, %w", elem.BookingID, err)
-			}
-
-			expiredPartialBookingsMetric.Inc()
-
-			continue
-		}
-
 		occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)
 		if err != nil {
 			if errors.Is(err, store.ErrOccupancyNotFound) {
 				err = w.pbStore.UpdateRetries(ctx, elem.BookingID, elem.Retries)
 				if err != nil {
 					return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
+				}
+
+				TwentyOneDaysInHours := 504.0
+				if time.Since(elem.CreatedAt).Hours() > TwentyOneDaysInHours {
+					err := w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReasonBookingExpired)
+					if err != nil {
+						return fmt.Errorf("failed to mark bookingID: %s as deleted due to expiration, %w", elem.BookingID, err)
+					}
+
+					expiredPartialBookingsMetric.Inc()
 				}
 
 				if time.Now().Sub(elem.CreatedAt) > w.alertThreshold {
