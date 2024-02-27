@@ -14,7 +14,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const TwentyOneDaysInHours float64 = 504.0
+const twentyOneDaysInHours float64 = 504.0
 
 var pendingPartialBookingsMetric = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "pending_partial_bookings",
@@ -85,7 +85,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 					return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
 				}
 
-				if time.Since(elem.CreatedAt).Hours() > TwentyOneDaysInHours {
+				if time.Since(elem.CreatedAt).Hours() > twentyOneDaysInHours {
 					err := w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReasonBookingExpired)
 					if err != nil {
 						return fmt.Errorf("failed to mark bookingID: %s as deleted due to expiration, %w", elem.BookingID, err)
