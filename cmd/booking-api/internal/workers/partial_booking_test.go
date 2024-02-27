@@ -70,7 +70,7 @@ func Test_CompletedPartialBooking(t *testing.T) {
 		},
 	}, gomock.Any()).Return(nil)
 
-	mockPBStore.EXPECT().MarkAsDeleted(ctx, "booking-id-1", models.DeletionReasonBookingCreated).Return(nil)
+	mockPBStore.EXPECT().MarkAsDeleted(ctx, "booking-id-1", models.DeletionReasonBookingCompleted).Return(nil)
 
 	mockPBStore.EXPECT().UpdateRetries(ctx, "booking-id-2", 0).Return(nil)
 

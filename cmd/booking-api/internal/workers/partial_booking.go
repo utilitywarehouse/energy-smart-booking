@@ -110,7 +110,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to publish booking %s, %w", elem.BookingID, err)
 		}
 
-		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReasonBookingCreated)
+		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReasonBookingCompleted)
 		if err != nil {
 			return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
 		}
