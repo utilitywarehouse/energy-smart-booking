@@ -26,7 +26,7 @@ var pendingPartialBookingsByAgeMetric = promauto.NewGaugeVec(prometheus.GaugeOpt
 
 var expiredPartialBookingsMetric = promauto.NewCounter(prometheus.CounterOpts{
 	Name: "expired_partial_bookings",
-	Help: "the count of partial bookings that expired three weeks after creation",
+	Help: "the count of partial bookings marked as deleted due to the lack of occupancy",
 })
 
 const (
