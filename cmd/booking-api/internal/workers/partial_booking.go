@@ -14,6 +14,8 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const twentyOneDaysInHours float64 = 504.0
+
 var pendingPartialBookingsMetric = promauto.NewCounterVec(prometheus.CounterOpts{
 	Name: "pending_partial_bookings",
 	Help: "the count of pending partial bookings",
@@ -23,6 +25,11 @@ var pendingPartialBookingsByAgeMetric = promauto.NewGaugeVec(prometheus.GaugeOpt
 	Name: "pending_partial_bookings_age",
 	Help: "total partial bookings held by age",
 }, []string{"age"})
+
+var expiredPartialBookingsMetric = promauto.NewCounter(prometheus.CounterOpts{
+	Name: "expired_partial_bookings",
+	Help: "the count of partial bookings marked as deleted due to the lack of occupancy",
+})
 
 const (
 	PendingBookings   = "pending_bookings"
@@ -41,7 +48,7 @@ type PartialBookingStore interface {
 	Upsert(ctx context.Context, bookingID string, event *bookingv1.BookingCreatedEvent) error
 	GetPending(ctx context.Context) ([]*models.PartialBooking, error)
 	UpdateRetries(ctx context.Context, bookingID string, retries int) error
-	MarkAsDeleted(ctx context.Context, bookingID string) error
+	MarkAsDeleted(ctx context.Context, bookingID string, reason models.DeletionReason) error
 }
 
 type PartialBookingWorker struct {
@@ -78,6 +85,15 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 					return fmt.Errorf("failed to update retries for bookingID: %s, %w", elem.BookingID, err)
 				}
 
+				if time.Since(elem.CreatedAt).Hours() > twentyOneDaysInHours {
+					err := w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReasonBookingExpired)
+					if err != nil {
+						return fmt.Errorf("failed to mark bookingID: %s as deleted due to expiration, %w", elem.BookingID, err)
+					}
+
+					expiredPartialBookingsMetric.Inc()
+				}
+
 				if time.Now().Sub(elem.CreatedAt) > w.alertThreshold {
 					longRetainedBookingsNr++
 				}
@@ -93,7 +109,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to publish booking %s, %w", elem.BookingID, err)
 		}
 
-		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID)
+		err = w.pbStore.MarkAsDeleted(ctx, elem.BookingID, models.DeletionReasonBookingCompleted)
 		if err != nil {
 			return fmt.Errorf("failed to mark bookingID: %s as deleted, %w", elem.BookingID, err)
 		}

@@ -74,11 +74,12 @@ func Test_PartialBookingStore_Insert_Get(t *testing.T) {
 							AccountId: "account-id-1",
 						},
 					},
-					BookingID: "booking-id-1",
-					Retries:   0,
-					UpdatedAt: nil,
-					DeletedAt: nil,
-					CreatedAt: time.Now(),
+					BookingID:      "booking-id-1",
+					Retries:        0,
+					UpdatedAt:      nil,
+					DeletedAt:      nil,
+					CreatedAt:      time.Now(),
+					DeletionReason: nil,
 				},
 			},
 		},
@@ -176,11 +177,12 @@ func Test_PartialBookingStore_Upsert_Get(t *testing.T) {
 							ExternalReference: "LBG1002",
 						},
 					},
-					BookingID: "booking-id-1",
-					Retries:   0,
-					UpdatedAt: nil,
-					DeletedAt: nil,
-					CreatedAt: time.Now(),
+					BookingID:      "booking-id-1",
+					Retries:        0,
+					UpdatedAt:      nil,
+					DeletedAt:      nil,
+					CreatedAt:      time.Now(),
+					DeletionReason: nil,
 				},
 			},
 		},
@@ -234,8 +236,9 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 	partialBookingStore := store.NewPartialBooking(db)
 
 	type inputParams struct {
-		bookingID string
-		event     *bookingv1.BookingCreatedEvent
+		bookingID      string
+		deletionReason models.DeletionReason
+		event          *bookingv1.BookingCreatedEvent
 	}
 
 	type outputParams struct {
@@ -250,12 +253,15 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 	}
 
 	timeNow := time.Now()
+	reasonCreated := models.DeletionReasonBookingCompleted
+	reasonExpired := models.DeletionReasonBookingExpired
 
 	testCases := []testSetup{
 		{
 			description: "should upsert an booking created event, mark it as deleted and retrieve it",
 			input: inputParams{
-				bookingID: "booking-id-1",
+				bookingID:      "booking-id-1",
+				deletionReason: reasonCreated,
 				event: &bookingv1.BookingCreatedEvent{
 					BookingId:   "booking-id-1",
 					OccupancyId: "",
@@ -275,10 +281,43 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 							AccountId: "account-id-1",
 						},
 					},
-					CreatedAt: timeNow,
-					UpdatedAt: nil,
-					DeletedAt: &timeNow,
-					Retries:   0,
+					CreatedAt:      timeNow,
+					UpdatedAt:      nil,
+					DeletedAt:      &timeNow,
+					Retries:        0,
+					DeletionReason: &reasonCreated,
+				},
+			},
+		},
+		{
+			description: "should upsert a booking created event, mark it as deleted due to expiration and retrieve it",
+			input: inputParams{
+				bookingID:      "booking-id-1",
+				deletionReason: reasonExpired,
+				event: &bookingv1.BookingCreatedEvent{
+					BookingId:   "booking-id-1",
+					OccupancyId: "",
+					Details: &bookingv1.Booking{
+						AccountId: "account-id-1",
+					},
+				},
+			},
+			output: outputParams{
+				err: nil,
+				partialBooking: &models.PartialBooking{
+					BookingID: "booking-id-1",
+					Event: &bookingv1.BookingCreatedEvent{
+						BookingId:   "booking-id-1",
+						OccupancyId: "",
+						Details: &bookingv1.Booking{
+							AccountId: "account-id-1",
+						},
+					},
+					CreatedAt:      timeNow,
+					UpdatedAt:      nil,
+					DeletedAt:      &timeNow,
+					Retries:        0,
+					DeletionReason: &reasonExpired,
 				},
 			},
 		},
@@ -292,7 +331,7 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			err = partialBookingStore.MarkAsDeleted(ctx, tc.input.bookingID)
+			err = partialBookingStore.MarkAsDeleted(ctx, tc.input.bookingID, tc.input.deletionReason)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
@@ -373,10 +412,11 @@ func Test_PartialBookingStore_Insert_UpdateRetries_Get(t *testing.T) {
 							AccountId: "account-id-1",
 						},
 					},
-					CreatedAt: timeNow,
-					UpdatedAt: &timeNow,
-					DeletedAt: nil,
-					Retries:   1,
+					CreatedAt:      timeNow,
+					UpdatedAt:      &timeNow,
+					DeletedAt:      nil,
+					Retries:        1,
+					DeletionReason: nil,
 				},
 			},
 		},
@@ -474,10 +514,11 @@ func Test_PartialBookingStore_GetPendingProcessing(t *testing.T) {
 								AccountId: "account-id-1",
 							},
 						},
-						CreatedAt: timeNow,
-						UpdatedAt: nil,
-						DeletedAt: nil,
-						Retries:   0,
+						CreatedAt:      timeNow,
+						UpdatedAt:      nil,
+						DeletedAt:      nil,
+						Retries:        0,
+						DeletionReason: nil,
 					},
 				},
 			},
