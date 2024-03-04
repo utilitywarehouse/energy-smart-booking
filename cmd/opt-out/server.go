@@ -22,9 +22,9 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/accounts"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
-	"github.com/utilitywarehouse/uwos-go/v1/iam"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/identity"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
+	"github.com/utilitywarehouse/uwos-go/iam"
+	"github.com/utilitywarehouse/uwos-go/iam/identity"
+	"github.com/utilitywarehouse/uwos-go/iam/machine"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 )

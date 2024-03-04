@@ -27,9 +27,9 @@ import (
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/pkg/sqlhealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
-	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
+	"github.com/utilitywarehouse/uwos-go/iam/machine"
+	"github.com/utilitywarehouse/uwos-go/iam/pdp"
+	"github.com/utilitywarehouse/uwos-go/telemetry"
 	"github.com/uw-labs/substrate"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/reflection"
@@ -177,7 +177,7 @@ func serverAction(c *cli.Context) error {
 	}
 	opsServer.Add("pool", sqlhealth.NewCheck(stdlib.OpenDB(*pool.Config().ConnConfig), "unable to connect to the DB"))
 
-	auth := auth.New(pdp)
+	auth := auth.New(pdp.Multi())
 
 	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {

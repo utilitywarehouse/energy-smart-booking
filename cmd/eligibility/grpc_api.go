@@ -27,9 +27,9 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	grpchealth "github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/machine"
-	"github.com/utilitywarehouse/uwos-go/v1/iam/pdp"
-	"github.com/utilitywarehouse/uwos-go/v1/telemetry"
+	"github.com/utilitywarehouse/uwos-go/iam/machine"
+	"github.com/utilitywarehouse/uwos-go/iam/pdp"
+	"github.com/utilitywarehouse/uwos-go/telemetry"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -59,7 +59,7 @@ func runGRPCApi(c *cli.Context) error {
 		return err
 	}
 
-	auth := auth.New(pdp)
+	auth := auth.New(pdp.Multi())
 
 	pg, err := store.Setup(ctx, c.String(postgresDSN))
 	if err != nil {

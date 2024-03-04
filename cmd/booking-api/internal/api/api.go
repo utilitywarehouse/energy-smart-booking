@@ -15,7 +15,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/helpers"
-	"github.com/utilitywarehouse/uwos-go/v1/telemetry/tracing"
+	"github.com/utilitywarehouse/uwos-go/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/genproto/googleapis/type/date"
