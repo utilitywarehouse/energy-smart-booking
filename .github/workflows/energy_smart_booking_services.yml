@@ -30,7 +30,7 @@ jobs:
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
-    secrets: inherit
+    secrets: inherit 
 
   booking-click:
     uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
