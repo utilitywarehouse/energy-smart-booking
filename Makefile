@@ -33,7 +33,7 @@ $(LINTER):
 
 .PHONY: lint
 lint: $(LINTER)
-	./bin/$(LINTER) run $(SOURCE_FILES) $(LINT_FLAGS)
+	./bin/$(LINTER) run ./${SOURCE_FILES}/... $(LINT_FLAGS)
 
 .PHONY: clean
 clean:
