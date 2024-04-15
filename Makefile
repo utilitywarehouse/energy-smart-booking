@@ -41,20 +41,16 @@ clean:
 
 # builds our binary
 $(SERVICE): clean
-	cd $(SOURCE_FILES) && GO111MODULE=on $(BUILDENV) go build -o $(SERVICE) -a -ldflags '$(LINKFLAGS)'
+	GO111MODULE=on $(BUILDENV) go build -o $(SERVICE) -a -ldflags '$(LINKFLAGS)' $(SOURCE_FILES)
 
 build: $(SERVICE)
 
 .PHONY: test
 test:
-	cd $(SOURCE_FILES) && GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./...
-
-.PHONY: test-all
-test-all:
-	GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./...
+	GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./${SOURCE_FILES}/...
 
 .PHONY: all
-all: SOURCE_FILES=${SOURCE_FILES} clean $(LINTER) lint test build
+all: clean $(LINTER) lint test build
 
 docker-image:
 	docker build -t $(DOCKER_REPOSITORY):local . --build-arg SERVICE=$(SERVICE) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN) --build-arg SOURCE_FILES=$(SOURCE_FILES)
