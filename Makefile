@@ -33,9 +33,7 @@ $(LINTER):
 
 .PHONY: lint
 lint: $(LINTER)
-	cp ./bin/$(LINTER) $(SOURCE_FILES)
-	cd $(SOURCE_FILES) && ./$(LINTER) run
-	rm $(SOURCE_FILES)/$(LINTER)
+	./bin/$(LINTER) run $(SOURCE_FILES) $(LINT_FLAGS)
 
 .PHONY: clean
 clean:
