@@ -41,7 +41,7 @@ clean:
 
 # builds our binary
 $(SERVICE): clean
-	GO111MODULE=on $(BUILDENV) go build -o $(SERVICE) -a -ldflags '$(LINKFLAGS)' $(SOURCE_FILES)
+	GO111MODULE=on $(BUILDENV) go build -o $(SERVICE) -a -ldflags '$(LINKFLAGS)' ./$(SOURCE_FILES)
 
 build: $(SERVICE)
 
