@@ -5,42 +5,42 @@ on:
 
 jobs:
   opt-out:
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
     secrets: inherit
 
   eligibility:
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/eligibility
       service: energy-smart-booking-eligibility
     secrets: inherit
 
   lowribeck-api:
-      uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+      uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
       with:
         source_files: cmd/lowribeck-api
         service: energy-smart-booking-lowribeck-api
       secrets: inherit
 
   booking-api:
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
     secrets: inherit
 
   booking-click:
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/click-generator
       service: energy-smart-booking-click-generator
     secrets: inherit
 
   internal:
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: internal
       service: 

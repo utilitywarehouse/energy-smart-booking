@@ -54,7 +54,7 @@ jobs:
   build_opt_out:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.opt_out == 'true'
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
@@ -63,7 +63,7 @@ jobs:
   build_eligibility:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.eligibility == 'true'
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/eligibility
       service: energy-smart-booking-eligibility
@@ -72,7 +72,7 @@ jobs:
   build_lowribeck_api:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.lowribeck_api == 'true'
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/lowribeck-api
       service: energy-smart-booking-lowribeck-api
@@ -81,7 +81,7 @@ jobs:
   build_booking_api:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_api == 'true'
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
@@ -90,7 +90,7 @@ jobs:
   build_booking_click:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_click == 'true'
-    uses: utilitywarehouse/energy-smart-reusable-workflow/build_service_reusable_workflow.yml@master
+    uses: utilitywarehouse/energy-smart-reusable-workflow/.github/workflows/build_service_reusable_workflow.yml@master
     with:
       source_files: cmd/click-generator
       service: energy-smart-booking-click-generator
