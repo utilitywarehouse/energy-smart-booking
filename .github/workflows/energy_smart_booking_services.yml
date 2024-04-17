@@ -42,6 +42,6 @@ jobs:
   internal:
     uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
-      source_files: internal
+      source_files: internal/...
       service: 
     secrets: inherit

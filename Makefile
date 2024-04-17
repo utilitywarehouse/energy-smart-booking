@@ -13,6 +13,7 @@ LINKFLAGS :=-s -X main.gitHash=$(GIT_HASH) -extldflags "-static"
 TESTFLAGS := -v -cover -tags testing
 LINTER := golangci-lint
 GOTEST := gotestsum --
+SOURCE_FILES := ...
 
 BRANCH_NAME := $(shell echo $(GITHUB_REF_NAME) | sed -e 's/[^a-zA-Z0-9]/-/g')
 
@@ -33,7 +34,7 @@ $(LINTER):
 
 .PHONY: lint
 lint: $(LINTER)
-	./bin/$(LINTER) run ./${SOURCE_FILES}/...
+	./bin/$(LINTER) run ./${SOURCE_FILES}
 
 .PHONY: clean
 clean:
@@ -47,7 +48,7 @@ build: $(SERVICE)
 
 .PHONY: test
 test:
-	GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./${SOURCE_FILES}/...
+	GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./${SOURCE_FILES}
 
 .PHONY: all
 all: clean $(LINTER) lint test build
