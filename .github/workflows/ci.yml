@@ -58,9 +58,9 @@ jobs:
     with:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
-      docker_id: ${{ github.secret_source.ENERGY_SMART_DOCKER_ID }}
-      docker_password: ${{ github.secret_source.ENERGY_SMART_DOCKER_PASSWORD }}
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
 
   build_eligibility:
     needs: check
@@ -69,9 +69,9 @@ jobs:
     with:
       source_files: cmd/eligibility
       service: energy-smart-booking-eligibility
-      docker_id: ${{ github.secret_source.ENERGY_SMART_DOCKER_ID }}
-      docker_password: ${{ github.secret_source.ENERGY_SMART_DOCKER_PASSWORD }}
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
 
   build_lowribeck_api:
     needs: check
@@ -80,8 +80,9 @@ jobs:
     with:
       source_files: cmd/lowribeck-api
       service: energy-smart-booking-lowribeck-api
-      docker_id: ${{ github.secret_source.ENERGY_SMART_DOCKER_ID }}
-      docker_password: ${{ github.secret_source.ENERGY_SMART_DOCKER_PASSWORD }}
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
 
   build_booking_api:
     needs: check
@@ -90,9 +91,9 @@ jobs:
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
-      docker_id: ${{ github.secret_source.ENERGY_SMART_DOCKER_ID }}
-      docker_password: ${{ github.secret_source.ENERGY_SMART_DOCKER_PASSWORD }}
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
 
   build_booking_click:
     needs: check
@@ -101,9 +102,9 @@ jobs:
     with:
       source_files: cmd/click-generator
       service: energy-smart-booking-click-generator
-      docker_id: ${{ github.secret_source.ENERGY_SMART_DOCKER_ID }}
-      docker_password: ${{ github.secret_source.ENERGY_SMART_DOCKER_PASSWORD }}
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
 
   build_booking_services:
     needs: check
