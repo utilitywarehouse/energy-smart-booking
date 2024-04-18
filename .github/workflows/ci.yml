@@ -61,6 +61,7 @@ jobs:
     secrets: 
       docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
       docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_eligibility:
     needs: check
@@ -72,6 +73,7 @@ jobs:
     secrets: 
       docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
       docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_lowribeck_api:
     needs: check
@@ -83,6 +85,7 @@ jobs:
     secrets: 
       docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
       docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_booking_api:
     needs: check
@@ -94,6 +97,7 @@ jobs:
     secrets: 
       docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
       docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_booking_click:
     needs: check
@@ -105,6 +109,7 @@ jobs:
     secrets: 
       docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
       docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_booking_services:
     needs: check
