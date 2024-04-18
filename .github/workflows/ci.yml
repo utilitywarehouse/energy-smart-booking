@@ -32,22 +32,22 @@ jobs:
               echo "Readme modified; no need to rebuild services."
             elif [[ $file == cmd/opt-out/** ]]; then
               echo "This modified file is under the 'cmd/opt-out' folder."
-              echo "{opt_out}={true}" >> $GITHUB_OUTPUT
+              echo "opt_out=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/eligibility/** ]]; then
               echo "This modified file is under the 'cmd/eligibility' folder."
-              echo "{eligibility}={true}" >> $GITHUB_OUTPUT
+              echo "eligibility=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/lowribeck-api/** ]]; then
               echo "This modified file is under the 'cmd/lowribeck-api' folder."
-              echo "{lowribeck_api}={true}" >> $GITHUB_OUTPUT
+              echo "lowribeck_api=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/booking-api/** ]]; then
               echo "This modified file is under the 'cmd/booking-api' folder."
-              echo "{booking_api}={true}" >> $GITHUB_OUTPUT
+              echo "booking_api=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/click-generator/** ]]; then
               echo "This modified file is under the 'cmd/click-generator' folder."
-              echo "{booking_click}={true}" >> $GITHUB_OUTPUT
+              echo "booking_click=true" >> $GITHUB_OUTPUT
             elif [[ $file != cmd/** ]]; then
               echo "This modified file applies for all booking services"
-              echo "{booking_services}={true}" >> $GITHUB_OUTPUT
+              echo "booking_services=true" >> $GITHUB_OUTPUT
             fi
           done
 
