@@ -60,7 +60,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 	)
 
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -96,7 +96,7 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 		trace.WithAttributes(attribute.String("lowribeck.reference", reference)),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -148,7 +148,7 @@ func (g LowriBeckGateway) GetAvailableSlotsPointOfSale(ctx context.Context, post
 	)
 
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -190,7 +190,7 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, mpan, mp
 		trace.WithAttributes(attribute.String("lowribeck.gas.tariff", tariffGas.String())),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 

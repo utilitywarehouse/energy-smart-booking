@@ -92,7 +92,7 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -143,7 +143,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -206,7 +206,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -242,7 +242,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 		)
 		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -316,7 +316,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -395,7 +395,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 		),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -492,7 +492,7 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 		)
 		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -570,7 +570,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -664,7 +664,7 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -733,7 +733,7 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 			attribute.String("mprn", req.GetMprn()),
 		))
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}
@@ -787,7 +787,7 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 		requestAttr := helpers.CreateSpanAttribute(req, "request", span)
 		span.AddEvent("params", trace.WithAttributes(requestAttr))
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 	}

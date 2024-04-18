@@ -411,7 +411,7 @@ func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string)
 	if d.useTracing {
 		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.BookingDomain.GetSiteExternalReferenceByAccountID")
 		defer func() {
-			tracing.RecordSpanError(span, err)
+			tracing.RecordError(span, err)
 			span.End()
 		}()
 		span.AddEvent("request", trace.WithAttributes(attribute.String("account.id", accountID)))
