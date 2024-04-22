@@ -85,7 +85,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 		trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -210,7 +210,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		trace.WithAttributes(attribute.String("occupancy.id", req.GetOccupancyId())),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -297,7 +297,7 @@ func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *
 		trace.WithAttributes(attribute.String("gas.meterpoint.number", req.GetMprn())),
 		trace.WithAttributes(attribute.String("customer.postcode", req.GetPostcode())))
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 

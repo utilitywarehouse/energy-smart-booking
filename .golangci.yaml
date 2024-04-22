@@ -9,8 +9,8 @@ run:
     - testing
 
 # output configuration options
-output:
-  format: colored-line-number
+outputs:
+  formats: colored-line-number
   print-issued-lines: true
   print-linter-name: true
 
@@ -20,7 +20,7 @@ linters-settings:
     check-type-assertions: true
     check-blank: true
   govet:
-    check-shadowing: true
+    shadow: true
   gofmt:
     simplify: true
   goconst:

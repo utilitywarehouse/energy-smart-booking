@@ -11,7 +11,7 @@ import (
 func CreateSpanAttribute(v any, kind string, span trace.Span) attribute.KeyValue {
 	bytes, err := json.Marshal(v)
 	if err != nil {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		return attribute.KeyValue{}
 	}
 	return attribute.String(kind, string(bytes))

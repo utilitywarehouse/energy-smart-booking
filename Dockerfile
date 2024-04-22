@@ -16,7 +16,7 @@ RUN make clean install
 
 RUN make ${SERVICE} SERVICE=${SERVICE} SOURCE_FILES=${SOURCE_FILES}
 
-RUN mv ${SOURCE_FILES}/${SERVICE} /${SERVICE}
+RUN mv ${SERVICE} /${SERVICE}
 
 FROM alpine:latest
 

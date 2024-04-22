@@ -54,7 +54,7 @@ func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAv
 		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -86,7 +86,7 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -121,7 +121,7 @@ func (c *Client) GetCalendarAvailabilityPointOfSale(ctx context.Context, req *Ge
 		trace.WithAttributes(attribute.String("gas.job.", req.GasJobTypeCode)),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -155,7 +155,7 @@ func (c *Client) CreateBookingPointOfSale(ctx context.Context, req *CreateBookin
 		trace.WithAttributes(attribute.String("gas.job.", req.GasJobTypeCode)),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 
@@ -186,7 +186,7 @@ func (c *Client) UpdateContactDetails(ctx context.Context, req *UpdateContactDet
 		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
 	)
 	defer func() {
-		tracing.RecordSpanError(span, err)
+		tracing.RecordError(span, err)
 		span.End()
 	}()
 

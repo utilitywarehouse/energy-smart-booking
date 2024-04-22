@@ -17,7 +17,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Get changed files
@@ -32,69 +32,84 @@ jobs:
               echo "Readme modified; no need to rebuild services."
             elif [[ $file == cmd/opt-out/** ]]; then
               echo "This modified file is under the 'cmd/opt-out' folder."
-              echo "::set-output name=opt_out::true"
+              echo "opt_out=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/eligibility/** ]]; then
               echo "This modified file is under the 'cmd/eligibility' folder."
-              echo "::set-output name=eligibility::true"
+              echo "eligibility=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/lowribeck-api/** ]]; then
               echo "This modified file is under the 'cmd/lowribeck-api' folder."
-              echo "::set-output name=lowribeck_api::true"
+              echo "lowribeck_api=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/booking-api/** ]]; then
               echo "This modified file is under the 'cmd/booking-api' folder."
-              echo "::set-output name=booking_api::true"
+              echo "booking_api=true" >> $GITHUB_OUTPUT
             elif [[ $file == cmd/click-generator/** ]]; then
               echo "This modified file is under the 'cmd/click-generator' folder."
-              echo "::set-output name=booking_click::true"
+              echo "booking_click=true" >> $GITHUB_OUTPUT
             elif [[ $file != cmd/** ]]; then
               echo "This modified file applies for all booking services"
-              echo "::set-output name=booking_services::true"
+              echo "booking_services=true" >> $GITHUB_OUTPUT
             fi
           done
 
   build_opt_out:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.opt_out == 'true'
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_eligibility:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.eligibility == 'true'
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/eligibility
       service: energy-smart-booking-eligibility
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_lowribeck_api:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.lowribeck_api == 'true'
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/lowribeck-api
       service: energy-smart-booking-lowribeck-api
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_booking_api:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_api == 'true'
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_booking_click:
     needs: check
     if: needs.check.outputs.booking_services != 'true' && needs.check.outputs.booking_click == 'true'
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/click-generator
       service: energy-smart-booking-click-generator
-    secrets: inherit
+    secrets: 
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   build_booking_services:
     needs: check

@@ -5,43 +5,61 @@ on:
 
 jobs:
   opt-out:
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/opt-out
       service: energy-smart-booking-opt-out
-    secrets: inherit
+    secrets:
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   eligibility:
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/eligibility
       service: energy-smart-booking-eligibility
-    secrets: inherit
+    secrets:
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   lowribeck-api:
-      uses: ./.github/workflows/build_service_reusable_workflow.yml
+      uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
       with:
         source_files: cmd/lowribeck-api
         service: energy-smart-booking-lowribeck-api
-      secrets: inherit
+      secrets:
+        docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+        docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+        token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   booking-api:
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/booking-api
       service: energy-smart-booking-api
-    secrets: inherit
+    secrets:
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   booking-click:
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
       source_files: cmd/click-generator
       service: energy-smart-booking-click-generator
-    secrets: inherit
+    secrets:
+      docker_id: ${{ secrets.ENERGY_SMART_DOCKER_ID }}
+      docker_password: ${{ secrets.ENERGY_SMART_DOCKER_PASSWORD }}
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
 
   internal:
-    uses: ./.github/workflows/build_service_reusable_workflow.yml
+    uses: utilitywarehouse/energy-reusable-workflow/.github/workflows/reusable_monorepo_ci.yaml@master
     with:
-      source_files: internal
+      source_files: internal/...
       service: 
-    secrets: inherit
+    secrets:
+      docker_id: 
+      docker_password:
+      token: ${{ secrets.DEPLOY_GITHUB_TOKEN }}
