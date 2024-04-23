@@ -19,9 +19,9 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/utilitywarehouse/account-platform v0.0.0-20240416070355-de981e80aeb1
-	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20240307100035-6660791290a4
+	github.com/utilitywarehouse/account-platform-protobuf-model v0.0.0-20240419140925-0e4ba8af6a21
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20231012104247-b8d0609ca912
-	github.com/utilitywarehouse/energy-contracts v1.137.0
+	github.com/utilitywarehouse/energy-contracts v1.140.0
 	github.com/utilitywarehouse/energy-pkg/app v1.5.1
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.1
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.8
@@ -37,7 +37,7 @@ require (
 	github.com/uw-labs/substrate v0.0.0-20240327161656-5cd769b67f2b
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
 	golang.org/x/sync v0.7.0
-	google.golang.org/api v0.173.0
+	google.golang.org/api v0.176.0
 	google.golang.org/genproto v0.0.0-20240415180920-8c6c420018be
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0
@@ -45,10 +45,12 @@ require (
 
 require (
 	cel.dev/expr v0.15.0 // indirect
+	cloud.google.com/go/auth v0.2.2 // indirect
+	cloud.google.com/go/auth/oauth2adapt v0.2.1 // indirect
 	cloud.google.com/go/iam v1.1.7 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/IBM/sarama v1.43.1 // indirect
-	github.com/Microsoft/hcsshim v0.12.2 // indirect
+	github.com/Microsoft/hcsshim v0.12.3 // indirect
 	github.com/alvaroloes/enumer v1.1.2 // indirect
 	github.com/apache/arrow/go/v14 v14.0.2 // indirect
 	github.com/cloudflare/cfssl v1.6.5 // indirect
@@ -112,18 +114,18 @@ require (
 	cloud.google.com/go v0.112.2 // indirect
 	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
-	github.com/Microsoft/go-winio v0.6.1 // indirect
+	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.4.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575 // indirect
-	github.com/cncf/xds/go v0.0.0-20240329184929-0c46c01016dc // indirect
+	github.com/cncf/xds/go v0.0.0-20240419173441-7e7c9eab8450 // indirect
 	github.com/containerd/containerd v1.7.15 // indirect
 	github.com/cpuguy83/dockercfg v0.3.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/docker v26.0.1+incompatible // indirect
+	github.com/docker/docker v26.1.0+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/eapache/go-resiliency v1.6.0 // indirect
@@ -176,8 +178,8 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.19.0
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.52.3 // indirect
-	github.com/prometheus/procfs v0.13.0 // indirect
+	github.com/prometheus/common v0.53.0 // indirect
+	github.com/prometheus/procfs v0.14.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/testcontainers/testcontainers-go v0.30.0
