@@ -2,13 +2,10 @@ version: 2
 
 updates:
   # Go
-  - package-ecosystem: "gomod"
-    directory: "/"
+  - package-ecosystem: gomod
+    directory: /
     schedule:
-      interval: "weekly"
-    pull-request-branch-name:
-      separator: "-"
-    open-pull-requests-limit: 10
+      interval: weekly
     groups:
       all:
         patterns:
@@ -17,4 +14,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: monthly
+    groups:
+      all:
+        dependency-type: "production"
