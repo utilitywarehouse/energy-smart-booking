@@ -472,7 +472,6 @@ func Test_PartialBookingStore_GetPendingProcessing(t *testing.T) {
 
 	type inputParams struct {
 		bookingID string
-		accountID string
 		event     *bookingv1.BookingCreatedEvent
 	}
 

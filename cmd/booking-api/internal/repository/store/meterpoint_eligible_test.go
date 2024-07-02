@@ -61,9 +61,8 @@ func Test_MeterpointEligibleStore_CacheEligibility(t *testing.T) {
 	meterpointEligibleStore := store.NewMeterpointEligible(redis.NewClient(&redis.Options{Addr: containerAddr}), 6*time.Hour)
 
 	type inputParams struct {
-		mpan      string
-		eligible  bool
-		expiresAt time.Time
+		mpan     string
+		eligible bool
 	}
 
 	type testSetup struct {

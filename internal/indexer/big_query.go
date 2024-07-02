@@ -35,7 +35,6 @@ func New(ctx context.Context, table *bigquery.Table, t interface{}, sizeHint int
 
 func (b *bq) Begin() {
 	b.batch = newBatch(b.sizeHint)
-	return
 }
 
 func (b *bq) Queue(item bigquery.ValueSaver) {
