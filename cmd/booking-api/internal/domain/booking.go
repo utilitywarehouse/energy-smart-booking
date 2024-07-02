@@ -10,10 +10,6 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 )
 
-type AccountGateway interface {
-	GetAccountByAccountID(ctx context.Context, accountID string) (models.Account, error)
-}
-
 type OccupancyStore interface {
 	GetSiteExternalReferenceByAccountID(ctx context.Context, accountID string) (*models.Site, *models.OccupancyEligibility, error)
 	GetOccupancyByAccountID(context.Context, string) (*models.Occupancy, error)
@@ -34,9 +30,6 @@ type EligibilityGateway interface {
 	GetMeterpointEligibility(ctx context.Context, mpan, mprn, postcode string) (bool, error)
 }
 
-type AccountNumberGateway interface {
-	Get(ctx context.Context, accountID string) (string, error)
-}
 type ClickGateway interface {
 	GenerateAuthenticated(ctx context.Context, accountNo string, attributes map[string]string) (string, error)
 }
