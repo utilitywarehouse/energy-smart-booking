@@ -1,4 +1,4 @@
-#options for analysis running
+# options for analysis running
 run:
   tests: true
   timeout: 180s
@@ -30,7 +30,6 @@ linters-settings:
   lll:
     line-length: 150
     tab-width: 1
-    exclude: ".*go:generate.*"
   nakedret:
     max-func-lines: 30
   prealloc:
