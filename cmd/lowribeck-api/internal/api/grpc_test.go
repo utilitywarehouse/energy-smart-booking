@@ -73,7 +73,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -86,7 +86,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -99,7 +99,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -112,7 +112,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -125,7 +125,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -138,7 +138,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -151,7 +151,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -164,7 +164,7 @@ func Test_GetAvailableSlots(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -225,7 +225,7 @@ func Test_GetAvailableSlots_ClientError(t *testing.T) {
 	mAuth.EXPECT().Authorize(ctx,
 		&auth.PolicyParams{
 			Action:     "get",
-			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 			ResourceID: "lowribeck-api",
 		}).Return(true, nil)
 
@@ -260,7 +260,7 @@ func Test_GetAvailableSlots_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, nil)
 			},
@@ -272,7 +272,7 @@ func Test_GetAvailableSlots_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, errOops)
 			},
@@ -334,7 +334,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -347,7 +347,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -360,7 +360,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -373,7 +373,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -386,7 +386,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -399,7 +399,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -412,7 +412,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -425,7 +425,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -438,7 +438,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -451,7 +451,7 @@ func Test_CreateBooking(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -512,7 +512,7 @@ func Test_CreateBooking_ClientError(t *testing.T) {
 	mAuth.EXPECT().Authorize(ctx,
 		&auth.PolicyParams{
 			Action:     "create",
-			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 			ResourceID: "lowribeck-api",
 		}).Return(true, nil)
 
@@ -547,7 +547,7 @@ func Test_CreateBooking_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, nil)
 			},
@@ -559,7 +559,7 @@ func Test_CreateBooking_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, errOops)
 			},
@@ -653,7 +653,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -667,7 +667,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -681,7 +681,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -695,7 +695,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -709,7 +709,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -723,7 +723,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -737,7 +737,7 @@ func Test_GetAvailableSlots_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -799,7 +799,7 @@ func Test_GetAvailableSlots_PointOfSale_ClientError(t *testing.T) {
 	mAuth.EXPECT().Authorize(ctx,
 		&auth.PolicyParams{
 			Action:     "get",
-			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 			ResourceID: "lowribeck-api",
 		}).Return(true, nil)
 
@@ -840,7 +840,7 @@ func Test_GetAvailableSlots_PointOfSale_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, nil)
 			},
@@ -852,7 +852,7 @@ func Test_GetAvailableSlots_PointOfSale_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "get",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, errOops)
 			},
@@ -929,7 +929,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -946,7 +946,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -963,7 +963,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -980,7 +980,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -997,7 +997,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1014,7 +1014,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1031,7 +1031,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1048,7 +1048,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1065,7 +1065,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1082,7 +1082,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1099,7 +1099,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1116,7 +1116,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1133,7 +1133,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1150,7 +1150,7 @@ func Test_CreateBooking_PointOfSale(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1227,7 +1227,7 @@ func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
 	mAuth.EXPECT().Authorize(ctx,
 		&auth.PolicyParams{
 			Action:     "create",
-			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 			ResourceID: "lowribeck-api",
 		}).Return(true, nil)
 
@@ -1291,7 +1291,7 @@ func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, nil)
 			},
@@ -1303,7 +1303,7 @@ func Test_CreateBooking_PointOfSale_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "create",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, errOops)
 			},
@@ -1382,7 +1382,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1395,7 +1395,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1408,7 +1408,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1421,7 +1421,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1434,7 +1434,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1447,7 +1447,7 @@ func Test_UpdateContactDetails(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(true, nil)
 			},
@@ -1511,7 +1511,7 @@ func Test_UpdateContactDetails_ClientError(t *testing.T) {
 	mAuth.EXPECT().Authorize(ctx,
 		&auth.PolicyParams{
 			Action:     "update",
-			Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+			Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 			ResourceID: "lowribeck-api",
 		}).Return(true, nil)
 
@@ -1549,7 +1549,7 @@ func Test_UpdateContactDetails_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, nil)
 			},
@@ -1561,7 +1561,7 @@ func Test_UpdateContactDetails_Unauthorised(t *testing.T) {
 				mAuth.EXPECT().Authorize(ctx,
 					&auth.PolicyParams{
 						Action:     "update",
-						Resource:   "uw.energy-smart.v1.lowribeck-wrapper",
+						Resource:   "uw.energy.v1.lowribeck-wrapper-api",
 						ResourceID: "lowribeck-api",
 					}).Return(false, errOops)
 			},
