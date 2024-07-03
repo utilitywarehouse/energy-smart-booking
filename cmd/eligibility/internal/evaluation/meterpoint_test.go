@@ -13,14 +13,14 @@ import (
 type mockWanStore struct{ store map[string]bool }
 
 func (s *mockWanStore) GetWanCoverage(_ context.Context, postcode string) (bool, error) {
-	wan, _ := s.store[postcode]
+	wan := s.store[postcode]
 	return wan, nil
 }
 
 type mockAltHanStore struct{ store map[string]bool }
 
 func (s *mockAltHanStore) GetAltHan(_ context.Context, mpxn string) (bool, error) {
-	altHan, _ := s.store[mpxn]
+	altHan := s.store[mpxn]
 	return altHan, nil
 }
 
