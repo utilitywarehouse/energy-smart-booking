@@ -63,12 +63,12 @@ func Test_SmartMeterInterest_Insert(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.description, func(_ *testing.T) {
 			err = smartMeterInterestStore.Insert(ctx, testCase.input)
-			assert.NoError(err)
+			assert.NoError(err, testCase.description)
 
 			result, err := smartMeterInterestStore.Get(ctx, testCase.input.RegistrationID)
-			assert.NoError(err)
+			assert.NoError(err, testCase.description)
 
-			assert.EqualValues(&testCase.input, result)
+			assert.Equal(&testCase.input, result, testCase.description)
 		})
 	}
 }

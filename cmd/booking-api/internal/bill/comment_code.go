@@ -9,7 +9,7 @@ import (
 	"github.com/utilitywarehouse/uwos-go/x/bill/commentcode"
 )
 
-const unknownReason = "Wouldn't or didn't give a reason"
+const noReasonGiven = "Wouldn't or didn't give a reason"
 
 func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_contracts.InboundEvent, error) {
 	billInterested, billReason, err := MapReason(smartMeterInterest.Interested, smartMeterInterest.Reason)
@@ -34,7 +34,7 @@ func MapReason(interested bool, reason *bookingv1.Reason) (string, string, error
 	if interested {
 		billInterested = "Request smart meter"
 		if reason == nil {
-			billReason = unknownReason
+			billReason = noReasonGiven
 		} else {
 			switch *reason {
 			case bookingv1.Reason_REASON_CONTROL:
@@ -50,7 +50,7 @@ func MapReason(interested bool, reason *bookingv1.Reason) (string, string, error
 	} else {
 		billInterested = "Decline smart meter"
 		if reason == nil {
-			billReason = unknownReason
+			billReason = noReasonGiven
 		} else {
 			switch *reason {
 			case bookingv1.Reason_REASON_HEALTH:

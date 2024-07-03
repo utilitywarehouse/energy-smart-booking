@@ -10,7 +10,7 @@ import (
 
 func Test_MapReason(t *testing.T) {
 	testCases := []struct {
-		name             string
+		description      string
 		interested       bool
 		reason           *bookingv1.Reason
 		expectedInterest string
@@ -18,51 +18,51 @@ func Test_MapReason(t *testing.T) {
 		expectedError    string
 	}{
 		{
-			name:             "Valid Interest",
+			description:      "Valid Interest",
 			interested:       true,
 			reason:           bookingv1.Reason_REASON_CONTROL.Enum(),
 			expectedInterest: "Request smart meter",
 			expectedReason:   "I want an In-Home Display so I can be in control of my energy usage",
 		},
 		{
-			name:             "Valid Disinterest",
+			description:      "Valid Disinterest",
 			interested:       false,
 			reason:           bookingv1.Reason_REASON_HEALTH.Enum(),
 			expectedInterest: "Decline smart meter",
 			expectedReason:   "I have health concerns",
 		},
 		{
-			name:             "Valid Interest with no reason",
+			description:      "Valid Interest with no reason",
 			interested:       true,
 			expectedInterest: "Request smart meter",
 			expectedReason:   "Wouldn't or didn't give a reason",
 		},
 		{
-			name:             "Valid Disinterest with no reason",
+			description:      "Valid Disinterest with no reason",
 			interested:       false,
 			expectedInterest: "Decline smart meter",
 			expectedReason:   "Wouldn't or didn't give a reason",
 		},
 		{
-			name:          "Invalid Interest",
+			description:   "Invalid Interest",
 			interested:    true,
 			reason:        bookingv1.Reason_REASON_HEALTH.Enum(),
 			expectedError: "invalid reason for smart meter interest: REASON_HEALTH",
 		},
 		{
-			name:          "Invalid Disinterest",
+			description:   "Invalid Disinterest",
 			interested:    false,
 			reason:        bookingv1.Reason_REASON_CONTROL.Enum(),
 			expectedError: "invalid reason for smart meter disinterest: REASON_CONTROL",
 		},
 		{
-			name:          "Invalid Interest with unknown reason",
+			description:   "Invalid Interest with unknown reason",
 			interested:    true,
 			reason:        bookingv1.Reason_REASON_UNKNOWN.Enum(),
 			expectedError: "invalid reason for smart meter interest: REASON_UNKNOWN",
 		},
 		{
-			name:          "Invalid Disinterest with unknown reason",
+			description:   "Invalid Disinterest with unknown reason",
 			interested:    false,
 			reason:        bookingv1.Reason_REASON_UNKNOWN.Enum(),
 			expectedError: "invalid reason for smart meter disinterest: REASON_UNKNOWN",
@@ -72,13 +72,15 @@ func Test_MapReason(t *testing.T) {
 	assert := assert.New(t)
 
 	for _, testCase := range testCases {
-		interest, reason, err := bill.MapReason(testCase.interested, testCase.reason)
-		if testCase.expectedError == "" {
-			assert.NoError(err, testCase.name)
-			assert.Equal(testCase.expectedInterest, interest, testCase.name)
-			assert.Equal(testCase.expectedReason, reason, testCase.name)
-		} else {
-			assert.EqualError(err, testCase.expectedError, testCase.name)
-		}
+		t.Run(testCase.description, func(_ *testing.T) {
+			interest, reason, err := bill.MapReason(testCase.interested, testCase.reason)
+			if testCase.expectedError == "" {
+				assert.NoError(err, testCase.description)
+				assert.Equal(testCase.expectedInterest, interest, testCase.description)
+				assert.Equal(testCase.expectedReason, reason, testCase.description)
+			} else {
+				assert.EqualError(err, testCase.expectedError, testCase.description)
+			}
+		})
 	}
 }
