@@ -12,7 +12,7 @@ func Test_MapReason(t *testing.T) {
 	testCases := []struct {
 		name             string
 		interested       bool
-		reason           bookingv1.Reason
+		reason           *bookingv1.Reason
 		expectedInterest string
 		expectedReason   string
 		expectedError    string
@@ -20,42 +20,52 @@ func Test_MapReason(t *testing.T) {
 		{
 			name:             "Valid Interest",
 			interested:       true,
-			reason:           bookingv1.Reason_REASON_CONTROL,
+			reason:           bookingv1.Reason_REASON_CONTROL.Enum(),
 			expectedInterest: "Request smart meter",
 			expectedReason:   "I want an In-Home Display so I can be in control of my energy usage",
 		},
 		{
 			name:             "Valid Disinterest",
 			interested:       false,
-			reason:           bookingv1.Reason_REASON_HEALTH,
+			reason:           bookingv1.Reason_REASON_HEALTH.Enum(),
 			expectedInterest: "Decline smart meter",
 			expectedReason:   "I have health concerns",
 		},
 		{
 			name:             "Valid Interest with no reason",
 			interested:       true,
-			reason:           bookingv1.Reason_REASON_UNKNOWN,
 			expectedInterest: "Request smart meter",
 			expectedReason:   "Wouldn't or didn't give a reason",
 		},
 		{
 			name:             "Valid Disinterest with no reason",
 			interested:       false,
-			reason:           bookingv1.Reason_REASON_UNKNOWN,
 			expectedInterest: "Decline smart meter",
 			expectedReason:   "Wouldn't or didn't give a reason",
 		},
 		{
 			name:          "Invalid Interest",
 			interested:    true,
-			reason:        bookingv1.Reason_REASON_HEALTH,
-			expectedError: "invalid reason for customer interest: REASON_HEALTH",
+			reason:        bookingv1.Reason_REASON_HEALTH.Enum(),
+			expectedError: "invalid reason for smart meter interest: REASON_HEALTH",
 		},
 		{
 			name:          "Invalid Disinterest",
 			interested:    false,
-			reason:        bookingv1.Reason_REASON_CONTROL,
-			expectedError: "invalid reason for customer disinterest: REASON_CONTROL",
+			reason:        bookingv1.Reason_REASON_CONTROL.Enum(),
+			expectedError: "invalid reason for smart meter disinterest: REASON_CONTROL",
+		},
+		{
+			name:          "Invalid Interest with unknown reason",
+			interested:    true,
+			reason:        bookingv1.Reason_REASON_UNKNOWN.Enum(),
+			expectedError: "invalid reason for smart meter interest: REASON_UNKNOWN",
+		},
+		{
+			name:          "Invalid Disinterest with unknown reason",
+			interested:    false,
+			reason:        bookingv1.Reason_REASON_UNKNOWN.Enum(),
+			expectedError: "invalid reason for smart meter disinterest: REASON_UNKNOWN",
 		},
 	}
 

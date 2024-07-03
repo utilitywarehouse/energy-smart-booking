@@ -916,7 +916,7 @@ func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.Regist
 		}()
 	}
 
-	err = b.validateCredentials(ctx, auth.UpdateAction, auth.AccountBookingResource, req.AccountId)
+	err = b.validateCredentials(ctx, auth.CreateAction, auth.SmartMeterInterestResource, req.AccountId)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrUserUnauthorised):
@@ -933,9 +933,13 @@ func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.Regist
 	smartMeterInterest, err := b.smartMeterInterestDomain.RegisterInterest(ctx, domain.RegisterInterestParams{
 		AccountID:  req.GetAccountId(),
 		Interested: req.GetInterested(),
-		Reason:     req.GetReason(),
+		Reason:     req.Reason,
 	})
 	if err != nil {
+		switch {
+		case errors.Is(err, gateway.ErrAccountNotFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to register smart meter interest, %s", err))
+		}
 		return nil, status.Errorf(codes.Internal, "failed to register smart meter interest, %s", err)
 	}
 
@@ -944,7 +948,7 @@ func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.Regist
 		return nil, status.Errorf(codes.InvalidArgument, "invalid smart meter interest parameters, %s", err)
 	}
 
-	if err := b.commentCodePublisher.Sink(ctx, commentCodeEvent, time.Now()); err != nil {
+	if err := b.commentCodePublisher.Sink(ctx, commentCodeEvent, smartMeterInterest.CreatedAt); err != nil {
 		return nil, fmt.Errorf("failed to send smart meter interest event %s: %w", commentCodeEvent.GetId(), err)
 	}
 

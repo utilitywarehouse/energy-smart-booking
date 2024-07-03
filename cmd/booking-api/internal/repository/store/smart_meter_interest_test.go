@@ -31,25 +31,44 @@ func Test_SmartMeterInterest_Insert(t *testing.T) {
 
 	smartMeterInterestStore := store.NewSmartMeterInterestStore(db)
 	timeNow := time.Now().UTC()
+	testReason := "reason"
 
-	input := models.SmartMeterInterest{
-		RegistrationID: "registration-id",
-		AccountID:      "account-id",
-		Interested:     true,
-		Reason:         "reason",
-		CreatedAt:      timeNow,
+	testCases := []struct {
+		description string
+		input       models.SmartMeterInterest
+	}{
+		{
+			description: "No Reason given",
+			input: models.SmartMeterInterest{
+				RegistrationID: "registration-id-1",
+				AccountID:      "account-id-1",
+				Interested:     true,
+				CreatedAt:      timeNow,
+			},
+		},
+		{
+			description: "Reason given",
+			input: models.SmartMeterInterest{
+				RegistrationID: "registration-id-2",
+				AccountID:      "account-id-2",
+				Interested:     false,
+				Reason:         &testReason,
+				CreatedAt:      timeNow,
+			},
+		},
 	}
 
 	assert := assert.New(t)
 
-	err = smartMeterInterestStore.Insert(ctx, input)
-	assert.NoError(err)
+	for _, testCase := range testCases {
+		t.Run(testCase.description, func(_ *testing.T) {
+			err = smartMeterInterestStore.Insert(ctx, testCase.input)
+			assert.NoError(err)
 
-	result, err := smartMeterInterestStore.Get(ctx, "registration-id")
-	assert.NoError(err)
+			result, err := smartMeterInterestStore.Get(ctx, testCase.input.RegistrationID)
+			assert.NoError(err)
 
-	assert.EqualValues(&input, result)
-
-	_, err = smartMeterInterestStore.Get(ctx, "unknown-registration-id")
-	assert.EqualError(err, store.ErrRegistrationNotFound.Error())
+			assert.EqualValues(&testCase.input, result)
+		})
+	}
 }

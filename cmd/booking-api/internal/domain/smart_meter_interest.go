@@ -15,14 +15,14 @@ var ErrInvalidSmartMeterInterestRequest = errors.New("invalid smart meter intere
 type RegisterInterestParams struct {
 	AccountID  string
 	Interested bool
-	Reason     bookingv1.Reason
+	Reason     *bookingv1.Reason
 }
 
 type SmartMeterInterest struct {
 	RegistrationID string
 	AccountNumber  string
 	Interested     bool
-	Reason         bookingv1.Reason
+	Reason         *bookingv1.Reason
 	CreatedAt      time.Time
 }
 
@@ -47,16 +47,23 @@ func (s SmartMeterInterestDomain) RegisterInterest(ctx context.Context, params R
 	registrationID := uuid.New().String()
 	createdAt := time.Now().UTC()
 
+	var reason *string
+	if params.Reason != nil {
+		reasonStr := params.Reason.String()
+		reason = &reasonStr
+	}
+
 	if err := s.interestStore.Insert(ctx, models.SmartMeterInterest{
 		RegistrationID: registrationID,
 		AccountID:      params.AccountID,
 		Interested:     params.Interested,
-		Reason:         params.Reason.String(),
+		Reason:         reason,
 		CreatedAt:      createdAt,
 	}); err != nil {
 		return nil, err
 	}
 
+	// Return account number NOT ID
 	return &SmartMeterInterest{
 		RegistrationID: registrationID,
 		AccountNumber:  accountNumber,

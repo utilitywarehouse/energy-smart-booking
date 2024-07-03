@@ -28,40 +28,44 @@ func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_cont
 	return r.Build(commentcode.WithID(smartMeterInterest.RegistrationID), commentcode.WithCreatedAt(smartMeterInterest.CreatedAt))
 }
 
-func MapReason(interested bool, reason bookingv1.Reason) (string, string, error) {
+func MapReason(interested bool, reason *bookingv1.Reason) (string, string, error) {
 	var billInterested string
 	var billReason string
 	if interested {
 		billInterested = "Request smart meter"
-		switch reason {
-		case bookingv1.Reason_REASON_CONTROL:
-			billReason = "I want an In-Home Display so I can be in control of my energy usage"
-		case bookingv1.Reason_REASON_AUTOMATIC_SENDING:
-			billReason = "I don't want to worry about sending my meter readings anymore"
-		case bookingv1.Reason_REASON_ACCURACY:
-			billReason = "I want accurate bills that reflect exactly what I have used"
-		case bookingv1.Reason_REASON_UNKNOWN:
+		if reason == nil {
 			billReason = unknownReason
-		default:
-			return "", "", fmt.Errorf("invalid reason for customer interest: %s", reason)
+		} else {
+			switch *reason {
+			case bookingv1.Reason_REASON_CONTROL:
+				billReason = "I want an In-Home Display so I can be in control of my energy usage"
+			case bookingv1.Reason_REASON_AUTOMATIC_SENDING:
+				billReason = "I don't want to worry about sending my meter readings anymore"
+			case bookingv1.Reason_REASON_ACCURACY:
+				billReason = "I want accurate bills that reflect exactly what I have used"
+			default:
+				return "", "", fmt.Errorf("invalid reason for smart meter interest: %s", reason)
+			}
 		}
 	} else {
 		billInterested = "Decline smart meter"
-		switch reason {
-		case bookingv1.Reason_REASON_HEALTH:
-			billReason = "I have health concerns"
-		case bookingv1.Reason_REASON_COST:
-			billReason = "I have cost concerns"
-		case bookingv1.Reason_REASON_TECHNOLOGY:
-			billReason = "I have technology concerns"
-		case bookingv1.Reason_REASON_SECURITY_AND_PRIVACY:
-			billReason = "I have security and privacy concerns"
-		case bookingv1.Reason_REASON_INCONVENIENCE:
-			billReason = "Having my meter changed is inconvenient"
-		case bookingv1.Reason_REASON_UNKNOWN:
+		if reason == nil {
 			billReason = unknownReason
-		default:
-			return "", "", fmt.Errorf("invalid reason for customer disinterest: %s", reason)
+		} else {
+			switch *reason {
+			case bookingv1.Reason_REASON_HEALTH:
+				billReason = "I have health concerns"
+			case bookingv1.Reason_REASON_COST:
+				billReason = "I have cost concerns"
+			case bookingv1.Reason_REASON_TECHNOLOGY:
+				billReason = "I have technology concerns"
+			case bookingv1.Reason_REASON_SECURITY_AND_PRIVACY:
+				billReason = "I have security and privacy concerns"
+			case bookingv1.Reason_REASON_INCONVENIENCE:
+				billReason = "Having my meter changed is inconvenient"
+			default:
+				return "", "", fmt.Errorf("invalid reason for smart meter disinterest: %s", reason)
+			}
 		}
 	}
 

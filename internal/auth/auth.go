@@ -29,11 +29,12 @@ type PolicyParams struct {
 }
 
 const (
-	AccountResource        = "uw.energy.v1.account"
-	AccountBookingResource = "uw.energy.v1.account.smart-meter-booking"
-	LowribeckAPIResource   = "uw.energy.v1.lowribeck-wrapper-api"
-	EligibilityResource    = "uw.energy.v1.account.smart-meter-booking-eligibility"
-	POSResource            = "uw.energy.v1.point-of-sale-smart-meter-booking"
+	AccountResource            = "uw.energy.v1.account"
+	AccountBookingResource     = "uw.energy.v1.account.smart-meter-booking"
+	LowribeckAPIResource       = "uw.energy.v1.lowribeck-wrapper-api"
+	EligibilityResource        = "uw.energy.v1.account.smart-meter-booking-eligibility"
+	POSResource                = "uw.energy.v1.point-of-sale-smart-meter-booking"
+	SmartMeterInterestResource = "uw.energy.v1.smart-meter-interest"
 
 	GetAction    = "get"
 	CreateAction = "create"
