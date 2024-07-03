@@ -8,9 +8,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/account-platform/pkg/id"
-	"github.com/utilitywarehouse/bill-contracts/go/pkg/generated/bill_contracts"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/bill"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
@@ -50,7 +50,7 @@ type BookingDomain interface {
 }
 
 type SmartMeterInterestDomain interface {
-	RegisterInterest(context.Context, domain.RegisterInterestParams) (*bill_contracts.InboundEvent, error)
+	RegisterInterest(context.Context, domain.RegisterInterestParams) (*domain.SmartMeterInterest, error)
 }
 
 type Publisher interface {
@@ -905,7 +905,7 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.RegisterInterestRequest) (_ *bookingv1.RegisterInterestResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking",
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RegisterInterest",
 			trace.WithAttributes(
 				attribute.String("account.id", req.GetAccountId()),
 			),
@@ -930,16 +930,18 @@ func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.Regist
 		return nil, err
 	}
 
-	commentCodeEvent, err := b.smartMeterInterestDomain.RegisterInterest(ctx, domain.RegisterInterestParams{
+	smartMeterInterest, err := b.smartMeterInterestDomain.RegisterInterest(ctx, domain.RegisterInterestParams{
 		AccountID:  req.GetAccountId(),
 		Interested: req.GetInterested(),
 		Reason:     req.GetReason(),
 	})
 	if err != nil {
-		if !errors.Is(err, domain.ErrInvalidSmartMeterInterestRequest) {
-			return &bookingv1.RegisterInterestResponse{}, status.Errorf(codes.InvalidArgument, "invalid smart meter interest parameters, %s", err)
-		}
-		return &bookingv1.RegisterInterestResponse{}, status.Errorf(codes.Internal, "failed to register smart meter interest, %s", err)
+		return nil, status.Errorf(codes.Internal, "failed to register smart meter interest, %s", err)
+	}
+
+	commentCodeEvent, err := bill.BuildCommentCode(smartMeterInterest)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid smart meter interest parameters, %s", err)
 	}
 
 	if err := b.commentCodePublisher.Sink(ctx, commentCodeEvent, time.Now()); err != nil {

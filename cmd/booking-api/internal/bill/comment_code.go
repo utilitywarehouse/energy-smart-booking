@@ -2,30 +2,30 @@ package bill
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/utilitywarehouse/bill-contracts/go/pkg/generated/bill_contracts"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/uwos-go/x/bill/commentcode"
 )
 
 const unknownReason = "Wouldn't or didn't give a reason"
 
-func BuildCommentCode(requestID, accountNumber string, interested bool, reason bookingv1.Reason, createdAt time.Time) (*bill_contracts.InboundEvent, error) {
-	billInterested, billReason, err := MapReason(interested, reason)
+func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_contracts.InboundEvent, error) {
+	billInterested, billReason, err := MapReason(smartMeterInterest.Interested, smartMeterInterest.Reason)
 	if err != nil {
 		return nil, err
 	}
 
 	r := commentcode.Record{
-		AccountNumber:  accountNumber,
+		AccountNumber:  smartMeterInterest.AccountNumber,
 		Status:         commentcode.StatusOpenInternal,
 		CommentCode:    commentcode.CommentCodeSmartMeterInterest,
 		ComAdditional1: billInterested,
 		ComAdditional2: billReason,
 	}
 
-	return r.Build(commentcode.WithID(requestID), commentcode.WithCreatedAt(createdAt))
+	return r.Build(commentcode.WithID(smartMeterInterest.RegistrationID), commentcode.WithCreatedAt(smartMeterInterest.CreatedAt))
 }
 
 func MapReason(interested bool, reason bookingv1.Reason) (string, string, error) {
