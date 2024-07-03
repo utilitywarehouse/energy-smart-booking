@@ -22,6 +22,7 @@ func NewSyncPublisher(sink substrate.SynchronousMessageSink, appName string) Syn
 }
 
 func (p *syncPublisher) Sink(ctx context.Context, proto proto.Message, at time.Time) error {
+	//nolint: staticcheck
 	msg, err := energycontracts.
 		NewMessage(proto).
 		WithApplication(p.appName).

@@ -8,7 +8,6 @@ import (
 )
 
 type evaluation struct {
-	result bool
 	reason map[domain.IneligibleReason]struct{}
 }
 

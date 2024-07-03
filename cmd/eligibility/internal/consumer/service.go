@@ -66,7 +66,7 @@ func HandleService(s ServiceStore, occupancyStore ServiceOccupancyStore, evaluat
 				}
 
 				if !stateRebuild {
-					occupancyID := service.(servicer).GetOccupancyId()
+					occupancyID := service.GetOccupancyId()
 					if occupancyID != "" {
 						// make sure occupancy exists by the time we are informed of service
 						_, err = occupancyStore.Get(ctx, occupancyID)

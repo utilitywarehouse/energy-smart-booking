@@ -94,7 +94,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 					expiredPartialBookingsMetric.Inc()
 				}
 
-				if time.Now().Sub(elem.CreatedAt) > w.alertThreshold {
+				if time.Since(elem.CreatedAt) > w.alertThreshold {
 					longRetainedBookingsNr++
 				}
 				continue

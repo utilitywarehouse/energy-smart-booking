@@ -1,16 +1,14 @@
 # options for analysis running
 run:
-  deadline: 60s
   tests: true
-  skip-files:
-  silent: true
-  timeout: 150s
+  timeout: 180s
   build-tags:
     - testing
 
 # output configuration options
-outputs:
-  formats: colored-line-number
+output:
+  formats: 
+    - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
 
@@ -20,7 +18,8 @@ linters-settings:
     check-type-assertions: true
     check-blank: true
   govet:
-    shadow: true
+    enable: 
+      - shadow
   gofmt:
     simplify: true
   goconst:
@@ -28,14 +27,9 @@ linters-settings:
     min-occurrences: 3
   misspell:
     locale: UK
-  unused:
-    check-exported: false
-  unparam:
-    algo: cha
   lll:
     line-length: 150
     tab-width: 1
-    exclude: ".*go:generate.*"
   nakedret:
     max-func-lines: 30
   prealloc:
@@ -49,7 +43,7 @@ linters:
     - nakedret # Finds naked returns in functions greater than a specified function length [fast: true]
     - staticcheck # Staticcheck is a go vet on steroids, applying a ton of static analysis checks [fast: false]
     - unused # Checks Go code for unused constants, variables, functions and types [fast: false]
-    - gas # Inspects source code for security problems [fast: false]
+    - gosec # Inspects source code for security problems [fast: false]
     - unconvert # Remove unnecessary type conversions [fast: false]
     - unparam # Reports unused function parameters [fast: false]
     - prealloc # Finds slice declarations that could potentially be preallocated [fast: true]
@@ -59,18 +53,13 @@ linters:
     - misspell # Finds commonly misspelled English words in comments [fast: true]
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint [fast: true]
 
-
   disable:
     - lll # Reports long lines [fast: true]
     - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification [fast: true]
     - dupl # Tool for code clone detection [fast: true]
     - typecheck # Like the front-end of a Go compiler, parses and type-checks Go code [fast: false]
     - depguard # Go linter that checks if package imports are in a list of acceptable packages [fast: false]
-    - varcheck # Finds unused global variables and constants [fast: false]
-    - maligned # Tool to detect Go structs that would take less memory if their fields were sorted [fast: false]
-    - megacheck # 3 sub-linters in one: unused, gosimple and staticcheck [fast: false]
     - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases [fast: false]
-    - structcheck # Finds an unused struct fields [fast: false]
 issues:
   exclude-rules:
     - text: 'shadow: declaration of "(err|ctx)" shadows declaration at'
