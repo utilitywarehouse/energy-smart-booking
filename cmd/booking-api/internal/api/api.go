@@ -10,6 +10,7 @@ import (
 	"github.com/utilitywarehouse/account-platform/pkg/id"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/bill"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/auth"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
@@ -48,6 +49,10 @@ type BookingDomain interface {
 	GetClickLink(context.Context, domain.GetClickLinkParams) (domain.GetClickLinkResult, error)
 }
 
+type SmartMeterInterestDomain interface {
+	RegisterInterest(context.Context, domain.RegisterInterestParams) (*domain.SmartMeterInterest, error)
+}
+
 type Publisher interface {
 	Sink(ctx context.Context, proto proto.Message, at time.Time) error
 }
@@ -58,9 +63,11 @@ type Auth interface {
 
 type BookingAPI struct {
 	bookingDomain            BookingDomain
+	smartMeterInterestDomain SmartMeterInterestDomain
 	bookingPublisher         Publisher
 	commsPublisher           Publisher
 	rescheduleCommsPublisher Publisher
+	commentCodePublisher     Publisher
 	auth                     Auth
 	bookingv1.UnimplementedBookingAPIServer
 	useTracing bool
@@ -74,12 +81,20 @@ type accountNumberer interface {
 	GetAccountNumber() string
 }
 
-func New(bookingDomain BookingDomain, bookingPublisher, commsPublisher, rescheduleCommsPublisher Publisher, auth Auth, useTracing bool) *BookingAPI {
+func New(
+	bookingDomain BookingDomain,
+	smartMeterInterestDomain SmartMeterInterestDomain,
+	bookingPublisher, commsPublisher, rescheduleCommsPublisher, commentCodePublisher Publisher,
+	auth Auth,
+	useTracing bool,
+) *BookingAPI {
 	return &BookingAPI{
 		bookingDomain:            bookingDomain,
+		smartMeterInterestDomain: smartMeterInterestDomain,
 		bookingPublisher:         bookingPublisher,
 		commsPublisher:           commsPublisher,
 		rescheduleCommsPublisher: rescheduleCommsPublisher,
+		commentCodePublisher:     commentCodePublisher,
 		auth:                     auth,
 		useTracing:               useTracing,
 	}
@@ -884,6 +899,61 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 	return &bookingv1.GetClickLinkPointOfSaleJourneyResponse{
 		Eligible: result.Eligible,
 		Link:     result.Link,
+	}, nil
+}
+
+func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.RegisterInterestRequest) (_ *bookingv1.RegisterInterestResponse, err error) {
+	if b.useTracing {
+		var span trace.Span
+		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RegisterInterest",
+			trace.WithAttributes(
+				attribute.String("account.id", req.GetAccountId()),
+			),
+		)
+		defer func() {
+			tracing.RecordError(span, err)
+			span.End()
+		}()
+	}
+
+	err = b.validateCredentials(ctx, auth.CreateAction, auth.SmartMeterInterestResource, req.AccountId)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrUserUnauthorised):
+			return nil, status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", err)
+		default:
+			return nil, status.Error(codes.Internal, "failed to validate credentials")
+		}
+	}
+
+	if err := validateRequest(req); err != nil {
+		return nil, err
+	}
+
+	smartMeterInterest, err := b.smartMeterInterestDomain.RegisterInterest(ctx, domain.RegisterInterestParams{
+		AccountID:  req.GetAccountId(),
+		Interested: req.GetInterested(),
+		Reason:     req.Reason,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, gateway.ErrAccountNotFound):
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to register smart meter interest, %s", err))
+		}
+		return nil, status.Errorf(codes.Internal, "failed to register smart meter interest, %s", err)
+	}
+
+	commentCodeEvent, err := bill.BuildCommentCode(smartMeterInterest)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid smart meter interest parameters, %s", err)
+	}
+
+	if err := b.commentCodePublisher.Sink(ctx, commentCodeEvent, smartMeterInterest.CreatedAt); err != nil {
+		return nil, fmt.Errorf("failed to send smart meter interest event %s: %w", commentCodeEvent.GetId(), err)
+	}
+
+	return &bookingv1.RegisterInterestResponse{
+		RegistrationId: commentCodeEvent.GetId(),
 	}, nil
 }
 

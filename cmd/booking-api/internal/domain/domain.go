@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 
-	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
@@ -12,6 +11,10 @@ import (
 
 type AccountGateway interface {
 	GetAccountByAccountID(ctx context.Context, accountID string) (models.Account, error)
+}
+
+type AccountNumberGateway interface {
+	Get(ctx context.Context, accountID string) (string, error)
 }
 
 type OccupancyStore interface {
@@ -34,9 +37,6 @@ type EligibilityGateway interface {
 	GetMeterpointEligibility(ctx context.Context, mpan, mprn, postcode string) (bool, error)
 }
 
-type AccountNumberGateway interface {
-	Get(ctx context.Context, accountID string) (string, error)
-}
 type ClickGateway interface {
 	GenerateAuthenticated(ctx context.Context, accountNo string, attributes map[string]string) (string, error)
 }
@@ -55,62 +55,6 @@ type PointOfSaleCustomerDetailsStore interface {
 	Upsert(context.Context, string, models.PointOfSaleCustomerDetails) error
 }
 
-type BookingDomain struct {
-	accounts                        AccountGateway
-	accountNumber                   AccountNumberGateway
-	lowribeckGw                     LowriBeckGateway
-	occupancyStore                  OccupancyStore
-	siteStore                       SiteStore
-	bookingStore                    BookingStore
-	partialBookingStore             PartialBookingStore
-	pointOfSaleCustomerDetailsStore PointOfSaleCustomerDetailsStore
-	eligibilityGw                   EligibilityGateway
-	clickGw                         ClickGateway
-	useTracing                      bool
-}
-
-func NewBookingDomain(accounts AccountGateway,
-	accountNumberGateway AccountNumberGateway,
-	lowribeckGw LowriBeckGateway,
-	occupancyStore OccupancyStore,
-	siteStore SiteStore,
-	bookingStore BookingStore,
-	partialBookingStore PartialBookingStore,
-	pointOfSaleCustomerDetailsStore PointOfSaleCustomerDetailsStore,
-	eligibilityGw EligibilityGateway,
-	clickGw ClickGateway,
-	useTracing bool,
-) BookingDomain {
-	return BookingDomain{
-		accounts,
-		accountNumberGateway,
-		lowribeckGw,
-		occupancyStore,
-		siteStore,
-		bookingStore,
-		partialBookingStore,
-		pointOfSaleCustomerDetailsStore,
-		eligibilityGw,
-		clickGw,
-		useTracing,
-	}
-}
-
-func toAddress(address models.AccountAddress) *addressv1.Address {
-	return &addressv1.Address{
-		Uprn: address.UPRN,
-		Paf: &addressv1.Address_PAF{
-			Organisation:            address.PAF.Organisation,
-			Department:              address.PAF.Department,
-			SubBuilding:             address.PAF.SubBuilding,
-			BuildingName:            address.PAF.BuildingName,
-			BuildingNumber:          address.PAF.BuildingNumber,
-			DependentThoroughfare:   address.PAF.DependentThoroughfare,
-			Thoroughfare:            address.PAF.Thoroughfare,
-			DoubleDependentLocality: address.PAF.DoubleDependentLocality,
-			DependentLocality:       address.PAF.DependentLocality,
-			PostTown:                address.PAF.PostTown,
-			Postcode:                address.PAF.Postcode,
-		},
-	}
+type SmartMeterInterestStore interface {
+	Insert(ctx context.Context, smartMeterInterest models.SmartMeterInterest) error
 }

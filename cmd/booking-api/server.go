@@ -59,6 +59,8 @@ var (
 	flagSubject               = "flag-subject"
 	flagIntent                = "flag-intent"
 	flagChannel               = "flag-channel"
+
+	flagCommentCodeTopic = "comment-code-topic"
 )
 
 func init() {
@@ -148,6 +150,11 @@ func init() {
 				EnvVars:  []string{"CHANNEL"},
 				Required: true,
 			},
+			&cli.StringFlag{
+				Name:     flagCommentCodeTopic,
+				EnvVars:  []string{"COMMENT_CODE_TOPIC"},
+				Required: true,
+			},
 		),
 	})
 }
@@ -223,10 +230,17 @@ func serverAction(c *cli.Context) error {
 
 	commsRescheduleSink, err := app.GetKafkaSinkWithBroker(c.String(flagRescheduleCommsTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
 	if err != nil {
-		return fmt.Errorf("unable to connect to comms [%s] kafka sink: %w", c.String(flagBookingCommsTopic), err)
+		return fmt.Errorf("unable to connect to comms [%s] kafka sink: %w", c.String(flagRescheduleCommsTopic), err)
 	}
 	defer commsRescheduleSink.Close()
 	opsServer.Add("comms-reschedule-sink", substratehealth.NewCheck(commsRescheduleSink, "unable to sink reschedule comms events"))
+
+	billCommentCodeSink, err := app.GetKafkaSinkWithBroker(c.String(flagCommentCodeTopic), c.String(app.KafkaVersion), c.StringSlice(app.KafkaBrokers))
+	if err != nil {
+		return fmt.Errorf("unable to connect to bill comment code [%s] kafka sink: %w", c.String(flagCommentCodeTopic), err)
+	}
+	defer billCommentCodeSink.Close()
+	opsServer.Add("bill-comment-code", substratehealth.NewCheck(billCommentCodeSink, "unable to sink bill comment code events"))
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -282,12 +296,14 @@ func serverAction(c *cli.Context) error {
 	syncBookingPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingSink), c.App.Name)
 	syncCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsPoSBookingSink), c.App.Name)
 	syncRescheduleCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsRescheduleSink), c.App.Name)
+	syncBillCommentCodePublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(billCommentCodeSink), c.App.Name)
 
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
 	siteStore := store.NewSite(pool)
 	bookingStore := store.NewBooking(pool)
 	partialBookingStore := store.NewPartialBooking(pool)
+	smartMeterInterestStore := store.NewSmartMeterInterestStore(pool)
 
 	// DOMAIN //
 	bookingDomain := domain.NewBookingDomain(
@@ -304,7 +320,21 @@ func serverAction(c *cli.Context) error {
 		true,
 	)
 
-	bookingAPI := api.New(bookingDomain, syncBookingPublisher, syncCommsPublisher, syncRescheduleCommsPublisher, auth, true)
+	interestDomain := domain.NewSmartMeterInterestDomain(
+		accountNumberGw,
+		smartMeterInterestStore,
+	)
+
+	bookingAPI := api.New(
+		bookingDomain,
+		interestDomain,
+		syncBookingPublisher,
+		syncCommsPublisher,
+		syncRescheduleCommsPublisher,
+		syncBillCommentCodePublisher,
+		auth,
+		true,
+	)
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {

@@ -5,6 +5,7 @@ package api_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/account-platform/pkg/id"
+	"github.com/utilitywarehouse/bill-contracts/go/pkg/generated/bill_contracts"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	commsv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/comms/v1"
@@ -42,7 +44,7 @@ func Test_GetCustomerContactDetails(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerContactDetailsRequest
@@ -232,7 +234,7 @@ func Test_GetCustomerSiteAddress(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerSiteAddressRequest
@@ -435,7 +437,7 @@ func Test_GetCustomerBookings(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerBookingsRequest
@@ -672,7 +674,7 @@ func Test_GetAvailableSlot(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetAvailableSlotsRequest
@@ -1253,7 +1255,7 @@ func Test_CreateBooking(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.CreateBookingRequest
@@ -2272,7 +2274,7 @@ func Test_RescheduleBooking(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.RescheduleBookingRequest
@@ -3259,7 +3261,7 @@ func Test_GetAvailableSlotsPointOfSale(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetAvailableSlotsPointOfSaleRequest
@@ -3851,7 +3853,7 @@ func Test_CreateBookingPointOfSale(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, bookingPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, bookingPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.CreateBookingPointOfSaleRequest
@@ -4946,7 +4948,7 @@ func Test_GetCustomerDetailsPointOfSale(t *testing.T) {
 	commPublisher := mocks.NewMockPublisher(ctrl)
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, mockPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetCustomerDetailsPointOfSaleRequest
@@ -5139,7 +5141,7 @@ func Test_GetClickLinkPointOfSaleJourney(t *testing.T) {
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 	mockAuth := mocks.NewMockAuth(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, mockPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetClickLinkPointOfSaleJourneyRequest
@@ -5581,7 +5583,7 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 	mockAuth := mocks.NewMockAuth(ctrl)
 	commReschedulePublisher := mocks.NewMockPublisher(ctrl)
 
-	myAPIHandler := api.New(bookingDomain, mockPublisher, commPublisher, commReschedulePublisher, mockAuth, false)
+	myAPIHandler := api.New(bookingDomain, nil, mockPublisher, commPublisher, commReschedulePublisher, nil, mockAuth, false)
 
 	type inputParams struct {
 		req *bookingv1.GetEligibilityPointOfSaleJourneyRequest
@@ -5686,6 +5688,299 @@ func Test_GetEligibilityPointOfSaleJourney(t *testing.T) {
 
 			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.GetEligibilityPointOfSaleJourneyResponse{}, bookingv1.Booking{}, addressv1.Address{}, addressv1.Address_PAF{},
 				bookingv1.ContactDetails{}, bookingv1.BookingSlot{}, bookingv1.VulnerabilityDetails{})); diff != "" {
+				t.Fatal(diff)
+			}
+		})
+	}
+}
+
+func Test_RegisterInterest(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	ctx := context.Background()
+
+	defer ctrl.Finish()
+
+	smartMeterInterestDomain := mocks.NewMockSmartMeterInterestDomain(ctrl)
+	commentCodePublisher := mocks.NewMockPublisher(ctrl)
+	mockAuth := mocks.NewMockAuth(ctrl)
+
+	myAPIHandler := api.New(nil, smartMeterInterestDomain, nil, nil, nil, commentCodePublisher, mockAuth, false)
+
+	timeNow := time.Now()
+
+	type inputParams struct {
+		req *bookingv1.RegisterInterestRequest
+	}
+
+	type outputParams struct {
+		res *bookingv1.RegisterInterestResponse
+		err error
+	}
+
+	type testSetup struct {
+		description string
+		setup       func(ctx context.Context, domain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth)
+		input       inputParams
+		output      outputParams
+	}
+
+	testCases := []testSetup{
+		{
+			description: "should register interest",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_ACCURACY.Enum(),
+				},
+			},
+			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				params := domain.RegisterInterestParams{
+					AccountID:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_ACCURACY.Enum(),
+				}
+
+				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+					RegistrationID: "registration-id",
+					AccountNumber:  "account-number",
+					Interested:     true,
+					Reason:         bookingv1.Reason_REASON_ACCURACY.Enum(),
+					CreatedAt:      timeNow,
+				}, nil)
+
+				publisher.EXPECT().Sink(ctx, &bill_contracts.InboundEvent{
+					Id:            "registration-id",
+					CreatedAtDate: timeNow.Format("02-01-2006"),
+					CreatedAtTime: timeNow.Format("15:04:05"),
+					Type:          "CommentCode",
+					Domain:        "platform",
+					Payload:       []byte("account-number|2||GN3000|Request smart meter|I want accurate bills that reflect exactly what I have used||||||||||01-01-0001|00:00:00|||"),
+				}, gomock.Any()).Return(nil)
+			},
+			output: outputParams{
+				res: &bookingv1.RegisterInterestResponse{
+					RegistrationId: "registration-id",
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should register interest with no reason",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+				},
+			},
+			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				params := domain.RegisterInterestParams{
+					AccountID:  "account-id-1",
+					Interested: true,
+				}
+
+				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+					RegistrationID: "registration-id",
+					AccountNumber:  "account-number",
+					Interested:     true,
+					CreatedAt:      timeNow,
+				}, nil)
+
+				publisher.EXPECT().Sink(ctx, &bill_contracts.InboundEvent{
+					Id:            "registration-id",
+					CreatedAtDate: timeNow.Format("02-01-2006"),
+					CreatedAtTime: timeNow.Format("15:04:05"),
+					Type:          "CommentCode",
+					Domain:        "platform",
+					Payload:       []byte("account-number|2||GN3000|Request smart meter|Wouldn't or didn't give a reason||||||||||01-01-0001|00:00:00|||"),
+				}, gomock.Any()).Return(nil)
+			},
+			output: outputParams{
+				res: &bookingv1.RegisterInterestResponse{
+					RegistrationId: "registration-id",
+				},
+				err: nil,
+			},
+		},
+		{
+			description: "should fail to find account ID and return a gateway.ErrAccountNotFound",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+				},
+			},
+			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				params := domain.RegisterInterestParams{
+					AccountID:  "account-id-1",
+					Interested: true,
+				}
+
+				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(nil, gateway.ErrAccountNotFound)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.NotFound, "failed to register smart meter interest, account was not found"),
+			},
+		},
+		{
+			description: "should fail to insert registration into DB",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+				},
+			},
+			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				params := domain.RegisterInterestParams{
+					AccountID:  "account-id-1",
+					Interested: true,
+				}
+
+				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(nil, fmt.Errorf("failed to insert smart meter interest for account ID"))
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.Internal, "failed to register smart meter interest, failed to insert smart meter interest for account ID"),
+			},
+		},
+		{
+			description: "should fail due to invalid registration reason",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_HEALTH.Enum(),
+				},
+			},
+			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				params := domain.RegisterInterestParams{
+					AccountID:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_HEALTH.Enum(),
+				}
+
+				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+					RegistrationID: "registration-id",
+					AccountNumber:  "account-number",
+					Interested:     true,
+					Reason:         bookingv1.Reason_REASON_HEALTH.Enum(),
+					CreatedAt:      timeNow,
+				}, nil)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "invalid smart meter interest parameters, invalid reason for smart meter interest: REASON_HEALTH"),
+			},
+		},
+		{
+			description: "should fail due to unknown registration reason",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
+				},
+			},
+			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				params := domain.RegisterInterestParams{
+					AccountID:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
+				}
+
+				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+					RegistrationID: "registration-id",
+					AccountNumber:  "account-number",
+					Interested:     true,
+					Reason:         bookingv1.Reason_REASON_UNKNOWN.Enum(),
+					CreatedAt:      timeNow,
+				}, nil)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Error(codes.InvalidArgument, "invalid smart meter interest parameters, invalid reason for smart meter interest: REASON_UNKNOWN"),
+			},
+		},
+		{
+			description: "should fail to register interest because user is unauthorised",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+				},
+			},
+			setup: func(ctx context.Context, _ *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(false, nil)
+			},
+			output: outputParams{
+				res: nil,
+				err: status.Errorf(codes.PermissionDenied, "user does not have access to this action, %s", api.ErrUserUnauthorised),
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+
+			tc.setup(ctx, smartMeterInterestDomain, commentCodePublisher, mockAuth)
+
+			expected, err := myAPIHandler.RegisterInterest(ctx, tc.input.req)
+			if tc.output.err != nil {
+				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {
+					t.Fatal(diff)
+				}
+			}
+
+			if diff := cmp.Diff(expected, tc.output.res, cmpopts.IgnoreUnexported(date.Date{}, bookingv1.RegisterInterestResponse{})); diff != "" {
 				t.Fatal(diff)
 			}
 		})
