@@ -73,7 +73,8 @@ func Test_MapReason(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.description, func(_ *testing.T) {
-			interest, reason, err := bill.MapReason(testCase.interested, testCase.reason)
+			interest := bill.MapInterested(testCase.interested)
+			reason, err := bill.MapReason(testCase.interested, testCase.reason)
 			if testCase.expectedError == "" {
 				assert.NoError(err, testCase.description)
 				assert.Equal(testCase.expectedInterest, interest, testCase.description)

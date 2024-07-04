@@ -6,6 +6,6 @@ type SmartMeterInterest struct {
 	RegistrationID string
 	AccountID      string
 	Interested     bool
-	Reason         *string
+	Reason         string
 	CreatedAt      time.Time
 }

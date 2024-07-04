@@ -47,10 +47,9 @@ func (s SmartMeterInterestDomain) RegisterInterest(ctx context.Context, params R
 	registrationID := uuid.New().String()
 	createdAt := time.Now().UTC()
 
-	var reason *string
+	var reason string
 	if params.Reason != nil {
-		reasonStr := params.Reason.String()
-		reason = &reasonStr
+		reason = params.Reason.String()
 	}
 
 	if err := s.interestStore.Insert(ctx, models.SmartMeterInterest{

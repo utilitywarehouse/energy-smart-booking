@@ -31,15 +31,21 @@ func Test_SmartMeterInterest_Insert(t *testing.T) {
 
 	smartMeterInterestStore := store.NewSmartMeterInterestStore(db)
 	timeNow := time.Now().UTC()
-	testReason := "reason"
 
 	testCases := []struct {
 		description string
 		input       models.SmartMeterInterest
+		output      models.SmartMeterInterest
 	}{
 		{
 			description: "No Reason given",
 			input: models.SmartMeterInterest{
+				RegistrationID: "registration-id-1",
+				AccountID:      "account-id-1",
+				Interested:     true,
+				CreatedAt:      timeNow,
+			},
+			output: models.SmartMeterInterest{
 				RegistrationID: "registration-id-1",
 				AccountID:      "account-id-1",
 				Interested:     true,
@@ -52,7 +58,29 @@ func Test_SmartMeterInterest_Insert(t *testing.T) {
 				RegistrationID: "registration-id-2",
 				AccountID:      "account-id-2",
 				Interested:     false,
-				Reason:         &testReason,
+				Reason:         "reason",
+				CreatedAt:      timeNow,
+			},
+			output: models.SmartMeterInterest{
+				RegistrationID: "registration-id-2",
+				AccountID:      "account-id-2",
+				Interested:     false,
+				Reason:         "reason",
+				CreatedAt:      timeNow,
+			},
+		},
+		{
+			description: "Duplicate insert on registration ID",
+			input: models.SmartMeterInterest{
+				RegistrationID: "registration-id-1",
+				AccountID:      "account-id-3",
+				Interested:     false,
+				CreatedAt:      timeNow,
+			},
+			output: models.SmartMeterInterest{
+				RegistrationID: "registration-id-1",
+				AccountID:      "account-id-1",
+				Interested:     true,
 				CreatedAt:      timeNow,
 			},
 		},
@@ -68,7 +96,7 @@ func Test_SmartMeterInterest_Insert(t *testing.T) {
 			result, err := smartMeterInterestStore.Get(ctx, testCase.input.RegistrationID)
 			assert.NoError(err, testCase.description)
 
-			assert.Equal(&testCase.input, result, testCase.description)
+			assert.Equal(&testCase.output, result, testCase.description)
 		})
 	}
 }

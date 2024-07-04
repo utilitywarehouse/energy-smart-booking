@@ -9,10 +9,14 @@ import (
 	"github.com/utilitywarehouse/uwos-go/x/bill/commentcode"
 )
 
+const requestSmartMeter = "Request smart meter"
+const declineSmartMeter = "Decline smart meter"
 const noReasonGiven = "Wouldn't or didn't give a reason"
 
 func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_contracts.InboundEvent, error) {
-	billInterested, billReason, err := MapReason(smartMeterInterest.Interested, smartMeterInterest.Reason)
+	billInterested := MapInterested(smartMeterInterest.Interested)
+
+	billReason, err := MapReason(smartMeterInterest.Interested, smartMeterInterest.Reason)
 	if err != nil {
 		return nil, err
 	}
@@ -28,46 +32,43 @@ func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_cont
 	return r.Build(commentcode.WithID(smartMeterInterest.RegistrationID), commentcode.WithCreatedAt(smartMeterInterest.CreatedAt))
 }
 
-func MapReason(interested bool, reason *bookingv1.Reason) (string, string, error) {
-	var billInterested string
-	var billReason string
+func MapInterested(interested bool) string {
 	if interested {
-		billInterested = "Request smart meter"
-		if reason == nil {
-			billReason = noReasonGiven
-		} else {
-			switch *reason {
-			case bookingv1.Reason_REASON_CONTROL:
-				billReason = "I want an In-Home Display so I can be in control of my energy usage"
-			case bookingv1.Reason_REASON_AUTOMATIC_SENDING:
-				billReason = "I don't want to worry about sending my meter readings anymore"
-			case bookingv1.Reason_REASON_ACCURACY:
-				billReason = "I want accurate bills that reflect exactly what I have used"
-			default:
-				return "", "", fmt.Errorf("invalid reason for smart meter interest: %s", reason)
-			}
-		}
-	} else {
-		billInterested = "Decline smart meter"
-		if reason == nil {
-			billReason = noReasonGiven
-		} else {
-			switch *reason {
-			case bookingv1.Reason_REASON_HEALTH:
-				billReason = "I have health concerns"
-			case bookingv1.Reason_REASON_COST:
-				billReason = "I have cost concerns"
-			case bookingv1.Reason_REASON_TECHNOLOGY:
-				billReason = "I have technology concerns"
-			case bookingv1.Reason_REASON_SECURITY_AND_PRIVACY:
-				billReason = "I have security and privacy concerns"
-			case bookingv1.Reason_REASON_INCONVENIENCE:
-				billReason = "Having my meter changed is inconvenient"
-			default:
-				return "", "", fmt.Errorf("invalid reason for smart meter disinterest: %s", reason)
-			}
-		}
+		return requestSmartMeter
+	}
+	return declineSmartMeter
+}
+
+func MapReason(interested bool, reason *bookingv1.Reason) (string, error) {
+	if reason == nil {
+		return noReasonGiven, nil
 	}
 
-	return billInterested, billReason, nil
+	if interested {
+		switch *reason {
+		case bookingv1.Reason_REASON_CONTROL:
+			return "I want an In-Home Display so I can be in control of my energy usage", nil
+		case bookingv1.Reason_REASON_AUTOMATIC_SENDING:
+			return "I don't want to worry about sending my meter readings anymore", nil
+		case bookingv1.Reason_REASON_ACCURACY:
+			return "I want accurate bills that reflect exactly what I have used", nil
+		default:
+			return "", fmt.Errorf("invalid reason for smart meter interest: %s", reason)
+		}
+	} else {
+		switch *reason {
+		case bookingv1.Reason_REASON_HEALTH:
+			return "I have health concerns", nil
+		case bookingv1.Reason_REASON_COST:
+			return "I have cost concerns", nil
+		case bookingv1.Reason_REASON_TECHNOLOGY:
+			return "I have technology concerns", nil
+		case bookingv1.Reason_REASON_SECURITY_AND_PRIVACY:
+			return "I have security and privacy concerns", nil
+		case bookingv1.Reason_REASON_INCONVENIENCE:
+			return "Having my meter changed is inconvenient", nil
+		default:
+			return "", fmt.Errorf("invalid reason for smart meter disinterest: %s", reason)
+		}
+	}
 }
