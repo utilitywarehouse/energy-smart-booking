@@ -34,7 +34,7 @@ const (
 	LowribeckAPIResource       = "uw.energy.v1.lowribeck-wrapper-api"
 	EligibilityResource        = "uw.energy.v1.account.smart-meter-booking-eligibility"
 	POSResource                = "uw.energy.v1.point-of-sale-smart-meter-booking"
-	SmartMeterInterestResource = "uw.energy.v1.smart-meter-interest"
+	SmartMeterInterestResource = "uw.energy.v1.account.smart-meter-interest"
 
 	GetAction    = "get"
 	CreateAction = "create"
