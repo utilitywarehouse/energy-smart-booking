@@ -296,7 +296,7 @@ func serverAction(c *cli.Context) error {
 	syncBookingPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(bookingSink), c.App.Name)
 	syncCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsPoSBookingSink), c.App.Name)
 	syncRescheduleCommsPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(commsRescheduleSink), c.App.Name)
-	syncBillCommentCodePublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(billCommentCodeSink), c.App.Name)
+	syncBillCommentCodePublisher := publisher.NewBillPublisher(substrate.NewSynchronousMessageSink(billCommentCodeSink))
 
 	// STORE //
 	occupancyStore := store.NewOccupancy(pool)
