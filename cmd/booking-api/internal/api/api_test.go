@@ -5737,7 +5737,7 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
 					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
@@ -5749,7 +5749,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Reason:     bookingv1.Reason_REASON_ACCURACY.Enum(),
 				}
 
-				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(&domain.SmartMeterInterest{
 					RegistrationID: "registration-id",
 					AccountNumber:  "account-number",
 					Interested:     true,
@@ -5757,7 +5757,7 @@ func Test_RegisterInterest(t *testing.T) {
 					CreatedAt:      timeNow,
 				}, nil)
 
-				publisher.EXPECT().Sink(ctx, &bill_contracts.InboundEvent{
+				publisher.EXPECT().Sink(gomock.Any(), &bill_contracts.InboundEvent{
 					Id:            "registration-id",
 					CreatedAtDate: timeNow.Format("02-01-2006"),
 					CreatedAtTime: timeNow.Format("15:04:05"),
@@ -5783,7 +5783,7 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
 					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
@@ -5794,14 +5794,14 @@ func Test_RegisterInterest(t *testing.T) {
 					Interested: true,
 				}
 
-				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(&domain.SmartMeterInterest{
 					RegistrationID: "registration-id",
 					AccountNumber:  "account-number",
 					Interested:     true,
 					CreatedAt:      timeNow,
 				}, nil)
 
-				publisher.EXPECT().Sink(ctx, &bill_contracts.InboundEvent{
+				publisher.EXPECT().Sink(gomock.Any(), &bill_contracts.InboundEvent{
 					Id:            "registration-id",
 					CreatedAtDate: timeNow.Format("02-01-2006"),
 					CreatedAtTime: timeNow.Format("15:04:05"),
@@ -5827,7 +5827,7 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
 					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
@@ -5838,7 +5838,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Interested: true,
 				}
 
-				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(nil, gateway.ErrAccountNotFound)
+				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(nil, gateway.ErrAccountNotFound)
 			},
 			output: outputParams{
 				res: nil,
@@ -5855,7 +5855,7 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
 					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
@@ -5866,7 +5866,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Interested: true,
 				}
 
-				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(nil, fmt.Errorf("failed to insert smart meter interest for account ID"))
+				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(nil, fmt.Errorf("failed to insert smart meter interest for account ID"))
 			},
 			output: outputParams{
 				res: nil,
@@ -5884,7 +5884,7 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
 					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
@@ -5896,7 +5896,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Reason:     bookingv1.Reason_REASON_HEALTH.Enum(),
 				}
 
-				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(&domain.SmartMeterInterest{
 					RegistrationID: "registration-id",
 					AccountNumber:  "account-number",
 					Interested:     true,
@@ -5920,7 +5920,7 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
 					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
@@ -5932,7 +5932,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
 				}
 
-				smiDomain.EXPECT().RegisterInterest(ctx, params).Return(&domain.SmartMeterInterest{
+				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(&domain.SmartMeterInterest{
 					RegistrationID: "registration-id",
 					AccountNumber:  "account-number",
 					Interested:     true,
@@ -5955,7 +5955,7 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 			setup: func(ctx context.Context, _ *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
-				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
 					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
