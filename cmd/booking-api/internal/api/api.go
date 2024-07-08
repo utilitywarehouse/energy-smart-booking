@@ -903,18 +903,16 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 }
 
 func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.RegisterInterestRequest) (_ *bookingv1.RegisterInterestResponse, err error) {
-	if b.useTracing {
-		var span trace.Span
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RegisterInterest",
-			trace.WithAttributes(
-				attribute.String("account.id", req.GetAccountId()),
-			),
-		)
-		defer func() {
-			tracing.RecordError(span, err)
-			span.End()
-		}()
-	}
+	var span trace.Span
+	ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RegisterInterest",
+		trace.WithAttributes(
+			attribute.String("account.id", req.GetAccountId()),
+		),
+	)
+	defer func() {
+		tracing.RecordError(span, err)
+		span.End()
+	}()
 
 	err = b.validateCredentials(ctx, auth.CreateAction, auth.SmartMeterInterestResource, req.AccountId)
 	if err != nil {
@@ -951,6 +949,9 @@ func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.Regist
 	if err := b.commentCodePublisher.Sink(ctx, commentCodeEvent, smartMeterInterest.CreatedAt); err != nil {
 		return nil, fmt.Errorf("failed to send smart meter interest event %s: %w", commentCodeEvent.GetId(), err)
 	}
+
+	span.AddEvent("result", trace.WithAttributes(
+		attribute.String("comment.code", string(commentCodeEvent.Payload))))
 
 	return &bookingv1.RegisterInterestResponse{
 		RegistrationId: commentCodeEvent.GetId(),
