@@ -19,7 +19,7 @@ func NewBillPublisher(sink substrate.SynchronousMessageSink) SyncPublisher {
 	}
 }
 
-func (b *billPublisher) Sink(ctx context.Context, evt proto.Message, at time.Time) error {
+func (b *billPublisher) Sink(ctx context.Context, evt proto.Message, _ time.Time) error {
 	msg, err := proto.Marshal(evt)
 	if err != nil {
 		return err

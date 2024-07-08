@@ -5739,7 +5739,7 @@ func Test_RegisterInterest(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy.v1.smart-meter-interest",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -5785,7 +5785,7 @@ func Test_RegisterInterest(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy.v1.smart-meter-interest",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -5829,7 +5829,7 @@ func Test_RegisterInterest(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy.v1.smart-meter-interest",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -5857,7 +5857,7 @@ func Test_RegisterInterest(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy.v1.smart-meter-interest",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -5886,7 +5886,7 @@ func Test_RegisterInterest(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy.v1.smart-meter-interest",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -5922,7 +5922,7 @@ func Test_RegisterInterest(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy.v1.smart-meter-interest",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
 				}).Return(true, nil)
 
@@ -5957,7 +5957,7 @@ func Test_RegisterInterest(t *testing.T) {
 
 				mAuth.EXPECT().Authorize(ctx, &auth.PolicyParams{
 					Action:     "create",
-					Resource:   "uw.energy.v1.smart-meter-interest",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
 					ResourceID: "account-id-1",
 				}).Return(false, nil)
 			},
