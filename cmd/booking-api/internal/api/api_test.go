@@ -5735,7 +5735,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Reason:     bookingv1.Reason_REASON_ACCURACY.Enum(),
 				},
 			},
-			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
@@ -5781,7 +5781,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Interested: true,
 				},
 			},
-			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
@@ -5825,7 +5825,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Interested: true,
 				},
 			},
-			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
@@ -5853,7 +5853,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Interested: true,
 				},
 			},
-			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
@@ -5882,7 +5882,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Reason:     bookingv1.Reason_REASON_HEALTH.Enum(),
 				},
 			},
-			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
@@ -5918,7 +5918,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
 				},
 			},
-			setup: func(ctx context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
@@ -5953,7 +5953,7 @@ func Test_RegisterInterest(t *testing.T) {
 					Interested: true,
 				},
 			},
-			setup: func(ctx context.Context, _ *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+			setup: func(_ context.Context, _ *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
 
 				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
 					Action:     "create",
