@@ -30,21 +30,6 @@ func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_cont
 		ComAdditional2: billReason,
 	}
 
-	// payload, err := r.Marshal()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return &bill_contracts.InboundEvent{
-	// 	Id:            smartMeterInterest.RegistrationID,
-	// 	CreatedAtDate: smartMeterInterest.CreatedAt.Format(bill_constants.BillDateFormat),
-	// 	CreatedAtTime: smartMeterInterest.CreatedAt.Format(bill_constants.BillTimeFormat),
-	// 	Source:        "",
-	// 	Type:          "CommentCode", // Hardcorded as required by Bill
-	// 	Domain:        "platform",    // Hardcorded as required by Bill
-	// 	Payload:       payload,
-	// }, nil
-
 	return r.Build(commentcode.WithID(smartMeterInterest.RegistrationID), commentcode.WithCreatedAt(smartMeterInterest.CreatedAt))
 }
 

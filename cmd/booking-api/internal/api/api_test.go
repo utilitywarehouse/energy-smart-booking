@@ -5707,7 +5707,10 @@ func Test_RegisterInterest(t *testing.T) {
 
 	myAPIHandler := api.New(nil, smartMeterInterestDomain, nil, nil, nil, commentCodePublisher, mockAuth, false)
 
-	timeNow := time.Now()
+	testTime, err := time.Parse("2006-01-02T15:04:05.000Z", "2024-01-12T11:45:26.371Z")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	type inputParams struct {
 		req *bookingv1.RegisterInterestRequest
@@ -5754,16 +5757,16 @@ func Test_RegisterInterest(t *testing.T) {
 					AccountNumber:  "account-number",
 					Interested:     true,
 					Reason:         bookingv1.Reason_REASON_ACCURACY.Enum(),
-					CreatedAt:      timeNow,
+					CreatedAt:      testTime,
 				}, nil)
 
 				publisher.EXPECT().Sink(gomock.Any(), &bill_contracts.InboundEvent{
 					Id:            "registration-id",
-					CreatedAtDate: timeNow.Format("02-01-2006"),
-					CreatedAtTime: timeNow.Format("15:04:05"),
+					CreatedAtDate: testTime.Format("02-01-2006"),
+					CreatedAtTime: testTime.Format("15:04:05"),
 					Type:          "CommentCode",
 					Domain:        "platform",
-					Payload:       []byte("account-number|2||GN3000|Request smart meter|I want accurate bills that reflect exactly what I have used||||||||||01-01-0001|00:00:00|||"),
+					Payload:       []byte("account-number|2||GN3000|Request smart meter|I want accurate bills that reflect exactly what I have used||||||||||12-01-2024|11:45:26|||"),
 				}, gomock.Any()).Return(nil)
 			},
 			output: outputParams{
@@ -5798,16 +5801,16 @@ func Test_RegisterInterest(t *testing.T) {
 					RegistrationID: "registration-id",
 					AccountNumber:  "account-number",
 					Interested:     true,
-					CreatedAt:      timeNow,
+					CreatedAt:      testTime,
 				}, nil)
 
 				publisher.EXPECT().Sink(gomock.Any(), &bill_contracts.InboundEvent{
 					Id:            "registration-id",
-					CreatedAtDate: timeNow.Format("02-01-2006"),
-					CreatedAtTime: timeNow.Format("15:04:05"),
+					CreatedAtDate: testTime.Format("02-01-2006"),
+					CreatedAtTime: testTime.Format("15:04:05"),
 					Type:          "CommentCode",
 					Domain:        "platform",
-					Payload:       []byte("account-number|2||GN3000|Request smart meter|Wouldn't or didn't give a reason||||||||||01-01-0001|00:00:00|||"),
+					Payload:       []byte("account-number|2||GN3000|Request smart meter|Wouldn't or didn't give a reason||||||||||12-01-2024|11:45:26|||"),
 				}, gomock.Any()).Return(nil)
 			},
 			output: outputParams{
@@ -5901,7 +5904,7 @@ func Test_RegisterInterest(t *testing.T) {
 					AccountNumber:  "account-number",
 					Interested:     true,
 					Reason:         bookingv1.Reason_REASON_HEALTH.Enum(),
-					CreatedAt:      timeNow,
+					CreatedAt:      testTime,
 				}, nil)
 			},
 			output: outputParams{
@@ -5937,7 +5940,7 @@ func Test_RegisterInterest(t *testing.T) {
 					AccountNumber:  "account-number",
 					Interested:     true,
 					Reason:         bookingv1.Reason_REASON_UNKNOWN.Enum(),
-					CreatedAt:      timeNow,
+					CreatedAt:      testTime,
 				}, nil)
 			},
 			output: outputParams{
