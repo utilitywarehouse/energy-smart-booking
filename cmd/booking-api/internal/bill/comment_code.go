@@ -3,7 +3,6 @@ package bill
 import (
 	"fmt"
 
-	bill_constants "github.com/utilitywarehouse/bill-contracts/go"
 	"github.com/utilitywarehouse/bill-contracts/go/pkg/generated/bill_contracts"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/domain"
@@ -26,26 +25,27 @@ func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_cont
 		AccountNumber:  smartMeterInterest.AccountNumber,
 		Status:         commentcode.StatusOpenInternal,
 		CommentCode:    commentcode.CommentCodeSmartMeterInterest,
+		CreatedAt:      smartMeterInterest.CreatedAt,
 		ComAdditional1: billInterested,
 		ComAdditional2: billReason,
 	}
 
-	payload, err := r.Marshal()
-	if err != nil {
-		return nil, err
-	}
+	// payload, err := r.Marshal()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return &bill_contracts.InboundEvent{
-		Id:            smartMeterInterest.RegistrationID,
-		CreatedAtDate: smartMeterInterest.CreatedAt.Format(bill_constants.BillDateFormat),
-		CreatedAtTime: smartMeterInterest.CreatedAt.Format(bill_constants.BillTimeFormat),
-		Source:        "",
-		Type:          "CommentCode", // Hardcorded as required by Bill
-		Domain:        "platform",    // Hardcorded as required by Bill
-		Payload:       payload,
-	}, nil
+	// return &bill_contracts.InboundEvent{
+	// 	Id:            smartMeterInterest.RegistrationID,
+	// 	CreatedAtDate: smartMeterInterest.CreatedAt.Format(bill_constants.BillDateFormat),
+	// 	CreatedAtTime: smartMeterInterest.CreatedAt.Format(bill_constants.BillTimeFormat),
+	// 	Source:        "",
+	// 	Type:          "CommentCode", // Hardcorded as required by Bill
+	// 	Domain:        "platform",    // Hardcorded as required by Bill
+	// 	Payload:       payload,
+	// }, nil
 
-	// return r.Build(commentcode.WithID(smartMeterInterest.RegistrationID), commentcode.WithCreatedAt(smartMeterInterest.CreatedAt))
+	return r.Build(commentcode.WithID(smartMeterInterest.RegistrationID), commentcode.WithCreatedAt(smartMeterInterest.CreatedAt))
 }
 
 func MapInterested(interested bool) string {
