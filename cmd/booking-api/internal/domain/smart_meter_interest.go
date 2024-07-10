@@ -45,7 +45,7 @@ func (s SmartMeterInterestDomain) RegisterInterest(ctx context.Context, params R
 	}
 
 	registrationID := uuid.New().String()
-	createdAt := time.Now().UTC()
+	createdAt := time.Now().Local()
 
 	var reason string
 	if params.Reason != nil {
