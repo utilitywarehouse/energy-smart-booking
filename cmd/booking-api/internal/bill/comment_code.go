@@ -25,7 +25,7 @@ func BuildCommentCode(smartMeterInterest *domain.SmartMeterInterest) (*bill_cont
 		AccountNumber:  smartMeterInterest.AccountNumber,
 		Status:         commentcode.StatusOpenInternal,
 		CommentCode:    commentcode.CommentCodeSmartMeterInterest,
-		CreatedAt:      smartMeterInterest.CreatedAt,
+		CreatedAt:      smartMeterInterest.CreatedAt.Local(),
 		ComAdditional1: billInterested,
 		ComAdditional2: billReason,
 	}
