@@ -53,6 +53,8 @@ func MapReason(interested bool, reason *bookingv1.Reason) (string, error) {
 			return "I don't want to worry about sending my meter readings anymore", nil
 		case bookingv1.Reason_REASON_ACCURACY:
 			return "I want accurate bills that reflect exactly what I have used", nil
+		case bookingv1.Reason_REASON_UNKNOWN:
+			return noReasonGiven, nil
 		default:
 			return "", fmt.Errorf("invalid reason for smart meter interest: %s", reason)
 		}
@@ -68,6 +70,8 @@ func MapReason(interested bool, reason *bookingv1.Reason) (string, error) {
 			return "I have security and privacy concerns", nil
 		case bookingv1.Reason_REASON_INCONVENIENCE:
 			return "Having my meter changed is inconvenient", nil
+		case bookingv1.Reason_REASON_UNKNOWN:
+			return noReasonGiven, nil
 		default:
 			return "", fmt.Errorf("invalid reason for smart meter disinterest: %s", reason)
 		}
