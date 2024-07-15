@@ -56,16 +56,18 @@ func Test_MapReason(t *testing.T) {
 			expectedError: "invalid reason for smart meter disinterest: REASON_CONTROL",
 		},
 		{
-			description:   "Invalid Interest with unknown reason",
-			interested:    true,
-			reason:        bookingv1.Reason_REASON_UNKNOWN.Enum(),
-			expectedError: "invalid reason for smart meter interest: REASON_UNKNOWN",
+			description:      "Unknown reason, interested",
+			interested:       true,
+			reason:           bookingv1.Reason_REASON_UNKNOWN.Enum(),
+			expectedReason:   "Wouldn't or didn't give a reason",
+			expectedInterest: "Request smart meter",
 		},
 		{
-			description:   "Invalid Disinterest with unknown reason",
-			interested:    false,
-			reason:        bookingv1.Reason_REASON_UNKNOWN.Enum(),
-			expectedError: "invalid reason for smart meter disinterest: REASON_UNKNOWN",
+			description:      "Unknown reason, not interested",
+			interested:       false,
+			reason:           bookingv1.Reason_REASON_UNKNOWN.Enum(),
+			expectedReason:   "Wouldn't or didn't give a reason",
+			expectedInterest: "Decline smart meter",
 		},
 	}
 
