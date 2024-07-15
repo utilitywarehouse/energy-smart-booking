@@ -42,9 +42,6 @@ func MapInterested(interested bool) string {
 
 func MapReason(interested bool, reason *bookingv1.Reason) (string, error) {
 
-	fmt.Println("HEY")
-	fmt.Println(reason)
-
 	if reason == nil || *reason == bookingv1.Reason_REASON_UNKNOWN {
 		return noReasonGiven, nil
 	}
