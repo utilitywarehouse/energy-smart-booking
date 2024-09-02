@@ -105,12 +105,12 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 		Reference: reference,
 		Slot: &lowribeckv1.BookingSlot{
 			Date: &date.Date{
-				Year:  int32(slot.Date.Year()),
-				Month: int32(slot.Date.Month()),
-				Day:   int32(slot.Date.Day()),
+				Year:  int32(slot.Date.Year()),  // nolint:gosec
+				Month: int32(slot.Date.Month()), // nolint:gosec
+				Day:   int32(slot.Date.Day()),   // nolint:gosec
 			},
-			StartTime: int32(slot.StartTime),
-			EndTime:   int32(slot.EndTime),
+			StartTime: int32(slot.StartTime), // nolint:gosec
+			EndTime:   int32(slot.EndTime),   // nolint:gosec
 		},
 		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
 			Vulnerabilities: vulnerabilities,
@@ -201,12 +201,12 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, mpan, mp
 		GasTariffType:         tariffGas,
 		Slot: &lowribeckv1.BookingSlot{
 			Date: &date.Date{
-				Year:  int32(slot.Date.Year()),
-				Month: int32(slot.Date.Month()),
-				Day:   int32(slot.Date.Day()),
+				Year:  int32(slot.Date.Year()),  // nolint:gosec
+				Month: int32(slot.Date.Month()), // nolint:gosec
+				Day:   int32(slot.Date.Day()),   // nolint:gosec
 			},
-			StartTime: int32(slot.StartTime),
-			EndTime:   int32(slot.EndTime),
+			StartTime: int32(slot.StartTime), // nolint:gosec
+			EndTime:   int32(slot.EndTime),   // nolint:gosec
 		},
 		VulnerabilityDetails: &lowribeckv1.VulnerabilityDetails{
 			Vulnerabilities: vulnerabilities,
