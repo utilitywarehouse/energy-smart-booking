@@ -6,12 +6,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	eligibilityv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	mock_gateways "github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway/mocks"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_Eligibility_GetMeterpointEligibility(t *testing.T) {

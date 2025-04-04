@@ -46,7 +46,7 @@ func runProjector(c *cli.Context) error {
 	}
 	defer mn.Close()
 
-	grpcConn, err := grpc.CreateConnection(ctx, c.String(accountsAPIHost))
+	grpcConn, err := grpc.CreateConnection(c.String(accountsAPIHost))
 	if err != nil {
 		return err
 	}

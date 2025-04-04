@@ -2,14 +2,48 @@ package store_test
 
 import (
 	"context"
+	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/testcontainers/testcontainers-go"
+	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 )
 
-func setupTestContainer(ctx context.Context) (testcontainers.Container, error) {
-	return postgres.SetupTestContainer(ctx)
+var (
+	dsn  string
+	pool *pgxpool.Pool
+)
+
+func TestMain(m *testing.M) {
+	ctx := context.Background()
+
+	container, err := postgres.SetupTestContainer(ctx)
+	if err != nil {
+		logrus.WithError(err).Panic("unable to create postgres test container")
+	}
+	defer func() {
+		err := container.Terminate(ctx)
+		if err != nil {
+			logrus.WithError(err).Panic("unable to terminate test container")
+		}
+	}()
+
+	dsn, err = postgres.GetTestContainerDSN(container)
+	if err != nil {
+		logrus.WithError(err).Panic("unable to get dsn from test container")
+	}
+
+	pool, err = store.Setup(ctx, dsn)
+	if err != nil {
+		logrus.WithError(err).Panic("unable to connect to test container postgres")
+	}
+
+	m.Run()
+}
+
+func truncateDB(t *testing.T) {
+	pool.Exec(t.Context(), "TRUNCATE TABLE booking_reference, service, occupancy, site, booking, occupancy_eligible, partial_booking, smart_meter_interest CASCADE")
 }
 
 func populateDB(ctx context.Context, pool *pgxpool.Pool) error {

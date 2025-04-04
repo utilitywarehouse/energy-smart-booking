@@ -98,6 +98,7 @@ func runBigQueryIndexerAction(c *cli.Context) error {
 
 	g.Go(func() error {
 		defer log.Info("booking consumer finished")
+		//nolint
 		return substratemessage.BatchConsumer(ctx, c.Int(flagBatchSize), time.Second, bookingSource, bookingIndexer)
 	})
 

@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
+	"go.uber.org/mock/gomock"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/api/mocks"

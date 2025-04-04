@@ -6,7 +6,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
@@ -14,6 +13,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	mock_gateways "github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway/mocks"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_GetMPRNTechnicalDetails(t *testing.T) {

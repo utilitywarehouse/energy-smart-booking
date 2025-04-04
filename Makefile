@@ -10,7 +10,7 @@ ifeq ($(GIT_HASH),)
   GIT_HASH := $(shell git rev-parse HEAD)
 endif
 LINKFLAGS :=-s -X main.gitHash=$(GIT_HASH) -extldflags "-static"
-TESTFLAGS := -v -cover -tags testing
+TESTFLAGS := -v -cover -coverprofile initial_coverage.out -tags testing
 LINTER := golangci-lint
 GOTEST := gotestsum --
 SOURCE_FILES := ...
@@ -29,12 +29,18 @@ install:
 	go install github.com/golang/mock/mockgen@v1.6.0
 	go install gotest.tools/gotestsum@latest
 
-$(LINTER):
-	@ [ -e ./bin/$(LINTER) ] || wget -O - -q https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
+.PHONY: install-linter
+install-linter:
+	@ wget -O - -q https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s latest
 
 .PHONY: lint
-lint: $(LINTER)
-	./bin/$(LINTER) run ./${SOURCE_FILES}
+lint:
+	@if [ "$(LINTER)" = "" ]; then\
+		echo "No linter available.  You need to install golangci-lint";\
+		exit 1;\
+	else\
+		$(LINTER) run --timeout=120s;\
+	fi
 
 .PHONY: clean
 clean:
@@ -49,6 +55,7 @@ build: $(SERVICE)
 .PHONY: test
 test:
 	GO111MODULE=on $(BUILDENV) $(GOTEST) $(TESTFLAGS) ./${SOURCE_FILES}
+	grep -v "mocks" initial_coverage.out > coverage.out
 
 .PHONY: all
 all: clean $(LINTER) lint test build
@@ -60,9 +67,8 @@ ci-docker-auth:
 	@echo "Logging in to $(DOCKER_REGISTRY) as $(DOCKER_ID)"
 	@docker login -u $(DOCKER_ID) -p $(DOCKER_PASSWORD) $(DOCKER_REGISTRY)
 
-
 ci-docker-build: ci-docker-auth
-	docker build -t $(DOCKER_REPOSITORY):$(GITHUB_SHA) . --build-arg SERVICE=$(SERVICE) --build-arg SOURCE_FILES=$(SOURCE_FILES) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN)
-	if [ "$(GITHUB_REF_NAME)" = "$(DEFAULT_BRANCH_NAME)" ]; then docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):latest; fi
-	if [ "$(GITHUB_REF_NAME)" != "$(DEFAULT_BRANCH_NAME)" ]; then docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):$(BRANCH_NAME); fi
+	docker build -t $(DOCKER_REPOSITORY):$(GITHUB_SHA) . --build-arg SERVICE=$(SERVICE) --build-arg GITHUB_TOKEN=$(GITHUB_TOKEN)
+	docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):latest
+	docker tag $(DOCKER_REPOSITORY):$(GITHUB_SHA) $(DOCKER_REPOSITORY):$(BRANCH_NAME)
 	docker push -a $(DOCKER_REPOSITORY)

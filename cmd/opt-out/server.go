@@ -55,7 +55,7 @@ func runServer(c *cli.Context) error {
 
 	syncPublisher := publisher.NewSyncPublisher(substrate.NewSynchronousMessageSink(optOutSink), appName)
 
-	grpcConn, err := grpc.CreateConnection(ctx, c.String(accountsAPIHost))
+	grpcConn, err := grpc.CreateConnection(c.String(accountsAPIHost))
 	if err != nil {
 		return err
 	}

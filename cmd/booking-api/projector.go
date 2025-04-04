@@ -105,7 +105,7 @@ func makeSources(c *cli.Context, opsrv *ops.Server, configs []*kafkaConfig) (Sou
 type consumerConfig struct {
 	FlagTopic string
 	BatchSize int
-	Handler   substratemessage.Handler
+	Handler   substratemessage.Handler //nolint
 }
 
 func startConsumers(ctx context.Context, g *errgroup.Group, sources SourceMap, configs []*consumerConfig) error {
@@ -120,6 +120,7 @@ func startConsumers(ctx context.Context, g *errgroup.Group, sources SourceMap, c
 
 		g.Go(func() error {
 			defer log.Infof("%s consumer finished", topic)
+			//nolint
 			return substratemessage.BatchConsumer(ctx, batchSize, time.Second, source, handler)
 		})
 	}

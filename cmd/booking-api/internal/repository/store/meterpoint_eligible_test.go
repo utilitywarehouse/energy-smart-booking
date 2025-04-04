@@ -21,7 +21,7 @@ func SetupRedisTestContainer(ctx context.Context) (testcontainers.Container, err
 	}
 
 	req := testcontainers.ContainerRequest{
-		Image:        "redis:alpine",
+		Image:        "redis:7-alpine",
 		ExposedPorts: []string{"6379/tcp"},
 		WaitingFor:   wait.ForLog("Ready to accept connections"),
 	}

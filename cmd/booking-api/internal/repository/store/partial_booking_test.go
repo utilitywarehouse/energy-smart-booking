@@ -1,14 +1,12 @@
 package store_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
-	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/protobuf/testing/protocmp"
@@ -16,24 +14,8 @@ import (
 
 // This test case tests for both upsert(only insert) and get actions.
 func Test_PartialBookingStore_Insert_Get(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	partialBookingStore := store.NewPartialBooking(db)
+	partialBookingStore := store.NewPartialBooking(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		bookingID string
@@ -88,12 +70,12 @@ func Test_PartialBookingStore_Insert_Get(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			err := partialBookingStore.Upsert(ctx, tc.input.bookingID, tc.input.event)
+			err := partialBookingStore.Upsert(t.Context(), tc.input.bookingID, tc.input.event)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			actual, err := partialBookingStore.Get(ctx, "booking-id-1")
+			actual, err := partialBookingStore.Get(t.Context(), "booking-id-1")
 
 			if diff := cmp.Diff(tc.output.event, actual, cmpopts.IgnoreUnexported(), protocmp.Transform(), cmpopts.EquateApproxTime(time.Second)); diff != "" {
 				t.Fatal(diff)
@@ -108,24 +90,8 @@ func Test_PartialBookingStore_Insert_Get(t *testing.T) {
 }
 
 func Test_PartialBookingStore_Upsert_Get(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	partialBookingStore := store.NewPartialBooking(db)
+	partialBookingStore := store.NewPartialBooking(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		bookingID string
@@ -191,17 +157,17 @@ func Test_PartialBookingStore_Upsert_Get(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			err := partialBookingStore.Upsert(ctx, tc.input.bookingID, tc.input.event)
+			err := partialBookingStore.Upsert(t.Context(), tc.input.bookingID, tc.input.event)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			err = partialBookingStore.Upsert(ctx, tc.input.bookingID, tc.input.event2)
+			err = partialBookingStore.Upsert(t.Context(), tc.input.bookingID, tc.input.event2)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			actual, err := partialBookingStore.Get(ctx, "booking-id-1")
+			actual, err := partialBookingStore.Get(t.Context(), "booking-id-1")
 
 			if diff := cmp.Diff(tc.output.event, actual, cmpopts.IgnoreUnexported(), protocmp.Transform(), cmpopts.EquateApproxTime(time.Second)); diff != "" {
 				t.Fatal(diff)
@@ -216,24 +182,8 @@ func Test_PartialBookingStore_Upsert_Get(t *testing.T) {
 }
 
 func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	partialBookingStore := store.NewPartialBooking(db)
+	partialBookingStore := store.NewPartialBooking(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		bookingID      string
@@ -326,17 +276,17 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			err := partialBookingStore.Upsert(ctx, tc.input.bookingID, tc.input.event)
+			err := partialBookingStore.Upsert(t.Context(), tc.input.bookingID, tc.input.event)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			err = partialBookingStore.MarkAsDeleted(ctx, tc.input.bookingID, tc.input.deletionReason)
+			err = partialBookingStore.MarkAsDeleted(t.Context(), tc.input.bookingID, tc.input.deletionReason)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			actual, err := partialBookingStore.Get(ctx, tc.input.bookingID)
+			actual, err := partialBookingStore.Get(t.Context(), tc.input.bookingID)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
@@ -351,24 +301,8 @@ func Test_PartialBookingStore_Insert_Delete_Get(t *testing.T) {
 }
 
 func Test_PartialBookingStore_Insert_UpdateRetries_Get(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	partialBookingStore := store.NewPartialBooking(db)
+	partialBookingStore := store.NewPartialBooking(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		bookingID string
@@ -425,17 +359,17 @@ func Test_PartialBookingStore_Insert_UpdateRetries_Get(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			err := partialBookingStore.Upsert(ctx, tc.input.bookingID, tc.input.event)
+			err := partialBookingStore.Upsert(t.Context(), tc.input.bookingID, tc.input.event)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			err = partialBookingStore.UpdateRetries(ctx, tc.input.bookingID, 0)
+			err = partialBookingStore.UpdateRetries(t.Context(), tc.input.bookingID, 0)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			actual, err := partialBookingStore.Get(ctx, tc.input.bookingID)
+			actual, err := partialBookingStore.Get(t.Context(), tc.input.bookingID)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
@@ -451,24 +385,8 @@ func Test_PartialBookingStore_Insert_UpdateRetries_Get(t *testing.T) {
 
 // tests the GetPending
 func Test_PartialBookingStore_GetPendingProcessing(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	partialBookingStore := store.NewPartialBooking(db)
+	partialBookingStore := store.NewPartialBooking(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		bookingID string
@@ -527,12 +445,12 @@ func Test_PartialBookingStore_GetPendingProcessing(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			err := partialBookingStore.Upsert(ctx, tc.input.bookingID, tc.input.event)
+			err := partialBookingStore.Upsert(t.Context(), tc.input.bookingID, tc.input.event)
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
 
-			actual, err := partialBookingStore.GetPending(ctx)
+			actual, err := partialBookingStore.GetPending(t.Context())
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}

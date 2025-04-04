@@ -11,7 +11,6 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 	"github.com/uw-labs/substrate-tools/message"
 	"google.golang.org/protobuf/proto"
@@ -50,12 +49,12 @@ func TestOptOutConsumer(t *testing.T) {
 	handler := Handle(s, accountRepo)
 
 	msgs := []substrate.Message{}
-	optOutEv1, err := testcommon.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
+	optOutEv1, err := makeMessage(&smart.AccountBookingOptOutAddedEvent{
 		AccountId: "accountId1",
 	})
 	assert.NoError(t, err)
 
-	optOutEv2, err := testcommon.MakeMessage(&smart.AccountBookingOptOutAddedEvent{
+	optOutEv2, err := makeMessage(&smart.AccountBookingOptOutAddedEvent{
 		AccountId: "accountId2",
 		AddedBy:   "user",
 	})
@@ -68,7 +67,7 @@ func TestOptOutConsumer(t *testing.T) {
 	assert.NoError(t, err, "failed to list opt out accounts")
 	assert.Equal(t, 2, len(optOutAccounts))
 
-	optOutRemovedEv, err := testcommon.MakeMessage(&smart.AccountBookingOptOutRemovedEvent{
+	optOutRemovedEv, err := makeMessage(&smart.AccountBookingOptOutRemovedEvent{
 		AccountId: "accountId1",
 	})
 
@@ -111,4 +110,30 @@ type accountRepoMock struct {
 
 func (a *accountRepoMock) AccountNumber(_ context.Context, accountNumber string) (string, error) {
 	return a.accountIDNumber[accountNumber], nil
+}
+
+func makeMessage(msg proto.Message) (substrate.Message, error) {
+	ts := timestamppb.Now()
+
+	payload, err := anypb.New(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	env := &envelope.Envelope{
+		Uuid:       uuid.New().String(),
+		CreatedAt:  timestamppb.Now(),
+		Message:    payload,
+		OccurredAt: ts,
+		Sender: &envelope.Sender{
+			Application: "smart-scheduler",
+		},
+	}
+
+	bytes, err := proto.Marshal(env)
+	if err != nil {
+		return nil, err
+	}
+
+	return message.NewMessage(bytes), nil
 }

@@ -1,34 +1,16 @@
 package store_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/utilitywarehouse/energy-pkg/domain"
-	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
 func Test_ServiceStore_Upsert(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	serviceStore := store.NewService(db)
+	serviceStore := store.NewService(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		service models.Service
@@ -67,8 +49,7 @@ func Test_ServiceStore_Upsert(t *testing.T) {
 
 			serviceStore.Upsert(tc.input.service)
 
-			serviceStore.Commit(ctx)
-
+			err := serviceStore.Commit(t.Context())
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}

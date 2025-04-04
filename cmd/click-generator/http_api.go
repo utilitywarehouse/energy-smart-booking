@@ -30,7 +30,7 @@ func runHTTPApi(c *cli.Context) error {
 		WithHash(gitHash).
 		WithDetails(appName, appDesc)
 
-	clickGRPCConn, err := grpc.CreateConnection(ctx, c.String(clickAPIHost))
+	clickGRPCConn, err := grpc.CreateConnection(c.String(clickAPIHost))
 	if err != nil {
 		return err
 	}

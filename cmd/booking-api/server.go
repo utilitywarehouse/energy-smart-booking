@@ -186,27 +186,27 @@ func serverAction(c *cli.Context) error {
 
 	auth := auth.New(pdp.Multi())
 
-	accountsConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
+	accountsConn, err := grpc.CreateConnectionWithLogLvl(c.String(accountsAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to accounts-api host [%s]: %w", c.String(accountsAPIHost), err)
 	}
 	defer accountsConn.Close()
 
-	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
+	lowribeckConn, err := grpc.CreateConnectionWithLogLvl(c.String(lowribeckAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to lowribeck-api host [%s]: %w", c.String(lowribeckAPIHost), err)
 	}
 	opsServer.Add("lowribeck-api", grpchealth.NewCheck(c.String(lowribeckAPIHost), "", "cannot connect to lowribeck-api"))
 	defer lowribeckConn.Close()
 
-	eligibilityConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(eligibilityAPIHost), c.String(app.GrpcLogLevel))
+	eligibilityConn, err := grpc.CreateConnectionWithLogLvl(c.String(eligibilityAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to eligibility-grpc-api host [%s]: %w", c.String(eligibilityAPIHost), err)
 	}
 	opsServer.Add("eligibility-grpc-api", grpchealth.NewCheck(c.String(eligibilityAPIHost), "", "cannot connect to eligibility-grpc-api"))
 	defer eligibilityConn.Close()
 
-	clickUwConn, err := grpc.CreateConnectionWithLogLvl(ctx, c.String(clickAPIHost), c.String(app.GrpcLogLevel))
+	clickUwConn, err := grpc.CreateConnectionWithLogLvl(c.String(clickAPIHost), c.String(app.GrpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("error connecting to click-uw-api host [%s]: %w", c.String(clickAPIHost), err)
 	}

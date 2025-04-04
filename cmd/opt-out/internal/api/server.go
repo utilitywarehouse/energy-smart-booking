@@ -11,10 +11,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	smart "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/uwos-go/iam/identity"
 	"github.com/utilitywarehouse/uwos-go/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/iam/principal"
+	"google.golang.org/protobuf/proto"
 )
 
 type Account struct {
@@ -37,14 +37,18 @@ type IDClient interface {
 	WhoAmI(ctx context.Context, in *principal.Model) (identity.WhoAmIResult, error)
 }
 
+type SyncPublisher interface {
+	Sink(ctx context.Context, payload proto.Message, occurredAt time.Time) error
+}
+
 type Handler struct {
 	store        AccountOptOutStore
-	publisher    publisher.SyncPublisher
+	publisher    SyncPublisher
 	accountsRepo AccountsRepository
 	idClient     IDClient
 }
 
-func NewHandler(store AccountOptOutStore, sink publisher.SyncPublisher, accountsRepo AccountsRepository, idClient IDClient) *Handler {
+func NewHandler(store AccountOptOutStore, sink SyncPublisher, accountsRepo AccountsRepository, idClient IDClient) *Handler {
 	return &Handler{
 		store:        store,
 		publisher:    sink,

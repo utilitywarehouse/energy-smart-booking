@@ -2,10 +2,11 @@ package evaluation
 
 import (
 	"context"
+	"time"
 
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
+	"google.golang.org/protobuf/proto"
 )
 
 type OccupancyStore interface {
@@ -21,19 +22,23 @@ type MeterStore interface {
 	Get(ctx context.Context, mpxn string) (domain.Meter, error)
 }
 
+type SyncPublisher interface {
+	Sink(ctx context.Context, payload proto.Message, occurredAt time.Time) error
+}
+
 type Evaluator struct {
 	occupancyStore         OccupancyStore
 	serviceStore           ServiceStore
 	meterStore             MeterStore
-	eligibilitySync        publisher.SyncPublisher
-	suppliabilitySync      publisher.SyncPublisher
-	campaignabilitySync    publisher.SyncPublisher
-	bookingEligibilitySync publisher.SyncPublisher
+	eligibilitySync        SyncPublisher
+	suppliabilitySync      SyncPublisher
+	campaignabilitySync    SyncPublisher
+	bookingEligibilitySync SyncPublisher
 }
 
 func NewEvaluator(occupanciesStore OccupancyStore, serviceStore ServiceStore, meterStore MeterStore,
-	eligibilitySync publisher.SyncPublisher, suppliabilitySync publisher.SyncPublisher, campaignabilitySync publisher.SyncPublisher,
-	bookingEligibilitySync publisher.SyncPublisher) *Evaluator {
+	eligibilitySync SyncPublisher, suppliabilitySync SyncPublisher, campaignabilitySync SyncPublisher,
+	bookingEligibilitySync SyncPublisher) *Evaluator {
 	return &Evaluator{
 		occupancyStore:         occupanciesStore,
 		serviceStore:           serviceStore,

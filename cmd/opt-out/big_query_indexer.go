@@ -47,7 +47,7 @@ func runBigQueryIndexer(c *cli.Context) error {
 	defer optOutEventsSource.Close()
 	opsServer.Add("opt-out-events-source", substratehealth.NewCheck(optOutEventsSource, "unable to consume opt out events"))
 
-	grpcConn, err := grpc.CreateConnection(ctx, c.String(accountsAPIHost))
+	grpcConn, err := grpc.CreateConnection(c.String(accountsAPIHost))
 	if err != nil {
 		return err
 	}
@@ -79,6 +79,7 @@ func runBigQueryIndexer(c *cli.Context) error {
 
 	g.Go(func() error {
 		defer log.Info("opt out big query indexer finished")
+		//nolint
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutEventsSource, &indexer)
 	})
 

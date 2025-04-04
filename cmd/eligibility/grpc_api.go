@@ -68,14 +68,14 @@ func runGRPCApi(c *cli.Context) error {
 	defer pg.Close()
 	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 
-	ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(ecoesHost), c.String(grpcLogLevel))
+	ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(c.String(ecoesHost), c.String(grpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("could not connect to ecoes gRPC integration: %w", err)
 	}
 	opsServer.Add("ecoes-api", grpchealth.NewCheck(c.String(ecoesHost), "", "cannot find mpans address"))
 	defer ecoesConn.Close()
 
-	xoserveConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(xoserveHost), c.String(grpcLogLevel))
+	xoserveConn, err := grpcHelper.CreateConnectionWithLogLvl(c.String(xoserveHost), c.String(grpcLogLevel))
 	if err != nil {
 		return fmt.Errorf("could not connect to xoserve gRPC integration: %w", err)
 	}

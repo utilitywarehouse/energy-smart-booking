@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/workers"
 	mocks "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/workers/mocks"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func Test_CompletedPartialBooking(t *testing.T) {

@@ -7,30 +7,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
 func Test_SiteStore_Upsert(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	store := store.NewSite(db)
+	store := store.NewSite(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		site models.Site
@@ -124,7 +107,7 @@ func Test_SiteStore_Upsert(t *testing.T) {
 
 			store.Upsert(tc.input.site)
 
-			err := store.Commit(ctx)
+			err := store.Commit(t.Context())
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
@@ -138,30 +121,13 @@ type batcher interface {
 	Commit(context.Context) error
 }
 
-func withBatch[T batcher](ctx context.Context, b T, callable func(T)) {
+func withBatch[T batcher](ctx context.Context, b T, callable func(T)) error {
 	b.Begin()
 	callable(b)
-	b.Commit(ctx)
+	return b.Commit(ctx)
 }
 
 func Test_SiteStore_GetSiteByOccupancyID(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	site1 := models.Site{
 		SiteID:                  "site-id-1",
 		Postcode:                "postcode-1",
@@ -180,13 +146,17 @@ func Test_SiteStore_GetSiteByOccupancyID(t *testing.T) {
 		PoBox:                   "pobox-1",
 		DeliveryPointSuffix:     "dps-1",
 	}
-	siteStore := store.NewSite(db)
-	withBatch(ctx, siteStore, func(ss *store.SiteStore) {
+	siteStore := store.NewSite(pool)
+	defer truncateDB(t)
+	err := withBatch(t.Context(), siteStore, func(ss *store.SiteStore) {
 		ss.Upsert(site1)
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	occuStore := store.NewOccupancy(db)
-	withBatch(ctx, occuStore, func(os *store.OccupancyStore) {
+	occuStore := store.NewOccupancy(pool)
+	err = withBatch(t.Context(), occuStore, func(os *store.OccupancyStore) {
 		os.Insert(models.Occupancy{
 			OccupancyID: "occupancy-id-1",
 			SiteID:      "site-id-1",
@@ -194,6 +164,9 @@ func Test_SiteStore_GetSiteByOccupancyID(t *testing.T) {
 			CreatedAt:   time.Now(),
 		})
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	type TestCase[I any, O comparable] struct {
 		description string
@@ -215,7 +188,7 @@ func Test_SiteStore_GetSiteByOccupancyID(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			site, err := siteStore.GetSiteByOccupancyID(ctx, tc.Input)
+			site, err := siteStore.GetSiteByOccupancyID(t.Context(), tc.Input)
 
 			if diff := cmp.Diff(err, tc.Error, cmpopts.EquateErrors()); diff != "" {
 				t.Fatal(err)

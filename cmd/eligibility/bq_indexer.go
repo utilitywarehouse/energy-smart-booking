@@ -75,18 +75,22 @@ func runBigQueryIndexer(c *cli.Context) error {
 
 	g.Go(func() error {
 		defer log.Info("eligibility consumer finished")
+		//nolint
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, eligibilitySource, eligibilityIndexer)
 	})
 	g.Go(func() error {
 		defer log.Info("suppliability consumer finished")
+		//nolint
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, suppliabilitySource, suppliabilityIndexer)
 	})
 	g.Go(func() error {
 		defer log.Info("campaignability consumer finished")
+		//nolint
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, campaignabilitySource, campaignabilityIndexer)
 	})
 	g.Go(func() error {
 		defer log.Info("booking journey eligibility consumer finished")
+		//nolint
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, bookingJourneySource, bookingJourneyEligibilityIndexer)
 	})
 

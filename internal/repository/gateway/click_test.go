@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	"github.com/gogo/protobuf/types"
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	click "github.com/utilitywarehouse/click.uw.co.uk/generated/contract"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	mock_gateways "github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway/mocks"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_GenerateAuthenticated(t *testing.T) {

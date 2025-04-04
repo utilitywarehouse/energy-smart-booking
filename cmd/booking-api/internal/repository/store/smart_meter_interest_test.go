@@ -1,35 +1,18 @@
 package store_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
 func Test_SmartMeterInterest_Insert(t *testing.T) {
-	ctx := context.Background()
+	smartMeterInterestStore := store.NewSmartMeterInterestStore(pool)
+	defer truncateDB(t)
 
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	smartMeterInterestStore := store.NewSmartMeterInterestStore(db)
 	timeNow := time.Now().UTC()
 
 	testCases := []struct {
@@ -90,10 +73,10 @@ func Test_SmartMeterInterest_Insert(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.description, func(_ *testing.T) {
-			err = smartMeterInterestStore.Insert(ctx, testCase.input)
+			err := smartMeterInterestStore.Insert(t.Context(), testCase.input)
 			assert.NoError(err, testCase.description)
 
-			result, err := smartMeterInterestStore.Get(ctx, testCase.input.RegistrationID)
+			result, err := smartMeterInterestStore.Get(t.Context(), testCase.input.RegistrationID)
 			assert.NoError(err, testCase.description)
 
 			assert.Equal(&testCase.output, result, testCase.description)

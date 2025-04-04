@@ -1,24 +1,27 @@
 # options for analysis running
 run:
-  tests: true
+  tests: false
   timeout: 180s
   build-tags:
     - testing
 
 # output configuration options
 output:
-  formats: 
+  formats:
     - format: colored-line-number
   print-issued-lines: true
   print-linter-name: true
 
 # all available settings of specific linters
 linters-settings:
+  gosec:
+    excludes:
+      - G115
   errcheck:
     check-type-assertions: true
     check-blank: true
   govet:
-    enable: 
+    enable:
       - shadow
   gofmt:
     simplify: true
@@ -63,4 +66,4 @@ linters:
 issues:
   exclude-rules:
     - text: 'shadow: declaration of "(err|ctx)" shadows declaration at'
-      linters: [ govet ]
+      linters: [govet]

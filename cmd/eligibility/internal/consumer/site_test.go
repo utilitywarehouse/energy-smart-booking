@@ -1,61 +1,37 @@
-package consumer
+package consumer_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
-	"github.com/utilitywarehouse/energy-pkg/postgres"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/consumer"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
-	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/uw-labs/substrate"
 )
 
 func TestSiteConsumer(t *testing.T) {
-	ctx := context.Background()
-	assert := assert.New(t)
-	container, err := postgres.SetupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer container.Terminate(ctx)
-
-	postgresURL, err := postgres.GetTestContainerDSN(container)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pool, err := postgres.Setup(ctx, postgresURL, migrations.Source)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() {
-		if err = postgres.Teardown(pool, migrations.Source); err != nil {
-			t.Fatal(err)
-		}
-	}()
 	s := store.NewSite(pool)
+	defer truncateDB(t)
 
-	handler := HandleSite(s, nil, nil, true)
+	handler := consumer.HandleSite(s, nil, nil, true)
 
-	siteEv1, err := testcommon.MakeMessage(&platform.SiteDiscoveredEvent{
+	siteEv1, err := makeMessage(&platform.SiteDiscoveredEvent{
 		SiteId: "siteID",
 		Address: &platform.SiteAddress{
 			Postcode: "postCode",
 		},
 	})
-	assert.NoError(err)
+	assert.NoError(t, err)
 
-	err = handler(ctx, []substrate.Message{siteEv1})
-	assert.NoError(err, "failed to handle site discovered event")
+	err = handler(t.Context(), []substrate.Message{siteEv1})
+	assert.NoError(t, err, "failed to handle site discovered event")
 
-	site, err := s.Get(ctx, "siteID")
-	assert.NoError(err, "failed to get site")
+	site, err := s.Get(t.Context(), "siteID")
+	assert.NoError(t, err, "failed to get site")
 	expected := store.Site{
 		ID:       "siteID",
 		PostCode: "postCode",
 	}
-	assert.Equal(expected, site, "site mismatch")
+	assert.Equal(t, expected, site, "site mismatch")
 }

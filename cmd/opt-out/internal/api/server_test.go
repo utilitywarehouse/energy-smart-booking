@@ -16,9 +16,9 @@ import (
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store/migrations"
-	"github.com/utilitywarehouse/energy-smart-booking/internal/testcommon"
 	"github.com/utilitywarehouse/uwos-go/iam/identity"
 	"github.com/utilitywarehouse/uwos-go/iam/principal"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestServer(t *testing.T) {
@@ -48,7 +48,7 @@ func TestServer(t *testing.T) {
 	}()
 
 	s := store.NewAccountOptOut(pool)
-	mockPublisher := testcommon.MockSink{}
+	mockPublisher := MockSink{}
 	mockAccountsRepo := accountRepoMock{
 		accountNumberID: map[string]string{
 			testAccountNumber: testAccountID,
@@ -155,4 +155,13 @@ func (i *identityClientMock) WhoAmI(_ context.Context, _ *principal.Model) (iden
 	principalResult := identity.PrincipalResult{Staff: &staff}
 
 	return identity.WhoAmIResult{Principal: &principalResult}, nil
+}
+
+type MockSink struct {
+	Msgs []proto.Message
+}
+
+func (m *MockSink) Sink(_ context.Context, payload proto.Message, _ time.Time) error {
+	m.Msgs = append(m.Msgs, payload)
+	return nil
 }

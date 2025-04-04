@@ -1,36 +1,18 @@
 package store_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
 
 func Test_OccupancyStore_Insert(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	occupancyStore := store.NewOccupancy(db)
+	occupancyStore := store.NewOccupancy(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		occupancy models.Occupancy
@@ -64,7 +46,7 @@ func Test_OccupancyStore_Insert(t *testing.T) {
 
 			occupancyStore.Insert(tc.input.occupancy)
 
-			err := occupancyStore.Commit(ctx)
+			err := occupancyStore.Commit(t.Context())
 
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
@@ -75,29 +57,13 @@ func Test_OccupancyStore_Insert(t *testing.T) {
 }
 
 func Test_OccupancyStore_UpdateSiteID(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
+	err := populateDB(t.Context(), pool)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = populateDB(ctx, db)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	occupancyStore := store.NewOccupancy(db)
+	occupancyStore := store.NewOccupancy(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		occupancyID string
@@ -128,7 +94,7 @@ func Test_OccupancyStore_UpdateSiteID(t *testing.T) {
 
 			occupancyStore.UpdateSiteID(tc.input.occupancyID, tc.input.siteID)
 
-			err = occupancyStore.Commit(ctx)
+			err = occupancyStore.Commit(t.Context())
 
 			if err != nil {
 				if tc.output != nil {
@@ -145,29 +111,13 @@ func Test_OccupancyStore_UpdateSiteID(t *testing.T) {
 }
 
 func Test_OccupancyStore_GetOccupancyByID(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
+	err := populateDB(t.Context(), pool)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = populateDB(ctx, db)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	occupancyStore := store.NewOccupancy(db)
+	occupancyStore := store.NewOccupancy(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		occupancyID string
@@ -214,7 +164,7 @@ func Test_OccupancyStore_GetOccupancyByID(t *testing.T) {
 	for _, tc := range testCases {
 
 		t.Run(tc.description, func(t *testing.T) {
-			occupancy, err := occupancyStore.GetOccupancyByID(ctx, tc.input.occupancyID)
+			occupancy, err := occupancyStore.GetOccupancyByID(t.Context(), tc.input.occupancyID)
 
 			if err != nil {
 				if tc.output.err != nil {
@@ -235,29 +185,13 @@ func Test_OccupancyStore_GetOccupancyByID(t *testing.T) {
 }
 
 func Test_OccupancyStore_GetSiteExternalReferenceByAccountID(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
+	err := populateDB(t.Context(), pool)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = populateDB(ctx, db)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	occupancyStore := store.NewOccupancy(db)
+	occupancyStore := store.NewOccupancy(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		accountID string
@@ -312,7 +246,7 @@ func Test_OccupancyStore_GetSiteExternalReferenceByAccountID(t *testing.T) {
 	for _, tc := range testCases {
 
 		t.Run(tc.description, func(t *testing.T) {
-			actualSite, actualOccupancyEligibility, err := occupancyStore.GetSiteExternalReferenceByAccountID(ctx, tc.input.accountID)
+			actualSite, actualOccupancyEligibility, err := occupancyStore.GetSiteExternalReferenceByAccountID(t.Context(), tc.input.accountID)
 
 			if err != nil {
 				if tc.output.err != nil {

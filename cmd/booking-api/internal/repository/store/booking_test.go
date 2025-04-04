@@ -1,14 +1,12 @@
 package store_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
-	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 )
@@ -25,24 +23,6 @@ func mustDateFromString(t *testing.T, value string) time.Time {
 	date, err := models.DateFromString(value)
 	must(t, err)
 	return date
-}
-
-func storeInit(t *testing.T) (context.Context, *store.BookingStore) {
-	t.Helper()
-	ctx := context.Background()
-
-	testContainer, err := postgres.SetupTestContainer(ctx)
-	must(t, err)
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	must(t, err)
-
-	db, err := store.Setup(ctx, dsn)
-	must(t, err)
-
-	store := store.NewBooking(db)
-
-	return ctx, store
 }
 
 type TestCaseBase[Input any, Expected any] struct {
@@ -89,7 +69,8 @@ func makeBookingSlot(t *testing.T, datestr string, start, end int) models.Bookin
 }
 
 func Test_BookingStore_Upsert(t *testing.T) {
-	ctx, store := storeInit(t)
+	bookingStore := store.NewBooking(pool)
+	defer truncateDB(t)
 
 	type upsertTestCase TestCaseBase[models.Booking, error]
 
@@ -111,9 +92,9 @@ func Test_BookingStore_Upsert(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			store.Begin()
-			store.Upsert(tc.I)
-			err := store.Commit(ctx)
+			bookingStore.Begin()
+			bookingStore.Upsert(tc.I)
+			err := bookingStore.Commit(t.Context())
 			if !errors.Is(err, tc.E) {
 				t.Fatalf("expected error: %s, actual returned error: %s", tc.E, err)
 			}
@@ -122,7 +103,8 @@ func Test_BookingStore_Upsert(t *testing.T) {
 }
 
 func Test_BookingStore_UpsertAndQuery(t *testing.T) {
-	ctx, store := storeInit(t)
+	bookingStore := store.NewBooking(pool)
+	defer truncateDB(t)
 
 	type upsertAndQueryInput struct {
 		QueriedAccountID string
@@ -188,13 +170,13 @@ func Test_BookingStore_UpsertAndQuery(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Description, func(t *testing.T) {
-			store.Begin()
+			bookingStore.Begin()
 			for _, b := range tc.I.Insertions {
-				store.Upsert(b)
+				bookingStore.Upsert(b)
 			}
-			store.Commit(ctx)
+			bookingStore.Commit(t.Context())
 
-			retrieved, err := store.GetBookingsByAccountID(ctx, tc.I.QueriedAccountID)
+			retrieved, err := bookingStore.GetBookingsByAccountID(t.Context(), tc.I.QueriedAccountID)
 			must(t, err)
 
 			if diff := cmp.Diff(tc.E, retrieved); diff != "" {
@@ -205,24 +187,8 @@ func Test_BookingStore_UpsertAndQuery(t *testing.T) {
 }
 
 func Test_BookingStore_UpdateBookingOnReschedule(t *testing.T) {
-	ctx := context.Background()
-
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bookingStore := store.NewBooking(db)
+	bookingStore := store.NewBooking(pool)
+	defer truncateDB(t)
 
 	type inputParams struct {
 		bookingID            string
@@ -269,8 +235,7 @@ func Test_BookingStore_UpdateBookingOnReschedule(t *testing.T) {
 
 			bookingStore.UpdateBookingOnReschedule(tc.input.bookingID, tc.input.contactDetails, tc.input.bookingSlot, tc.input.vulnerabilityDetails)
 
-			err := bookingStore.Commit(ctx)
-
+			err := bookingStore.Commit(t.Context())
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
 			}
@@ -279,26 +244,10 @@ func Test_BookingStore_UpdateBookingOnReschedule(t *testing.T) {
 }
 
 func Test_BookingStore_GetBookingByBookinID(t *testing.T) {
-	ctx := context.Background()
+	bookingStore := store.NewBooking(pool)
+	defer truncateDB(t)
 
-	testContainer, err := setupTestContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dsn, err := postgres.GetTestContainerDSN(testContainer)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	db, err := store.Setup(ctx, dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	bookingStore := store.NewBooking(db)
-
-	err = populateDB(ctx, db)
+	err := populateDB(t.Context(), pool)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -357,7 +306,7 @@ func Test_BookingStore_GetBookingByBookinID(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
-			bookingStore.GetBookingByBookingID(ctx, tc.input.bookingID)
+			bookingStore.GetBookingByBookingID(t.Context(), tc.input.bookingID)
 
 			if err != nil {
 				t.Fatalf("should not have errored, %s", err)
