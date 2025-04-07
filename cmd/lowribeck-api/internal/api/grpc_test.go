@@ -236,7 +236,7 @@ func Test_GetAvailableSlots_ClientError(t *testing.T) {
 	}
 	mapper.availabilityRequest = req
 
-	client.EXPECT().GetCalendarAvailability(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+	client.EXPECT().GetCalendarAvailability(ctx, req).Return(nil, errors.New(errorMessage))
 
 	_, err := myAPIHandler.GetAvailableSlots(ctx, &contract.GetAvailableSlotsRequest{
 		Postcode:  "postcode",
@@ -523,7 +523,7 @@ func Test_CreateBooking_ClientError(t *testing.T) {
 	}
 	mapper.bookingRequest = req
 
-	client.EXPECT().CreateBooking(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+	client.EXPECT().CreateBooking(ctx, req).Return(nil, errors.New(errorMessage))
 
 	_, err := myAPIHandler.CreateBooking(ctx, &contract.CreateBookingRequest{
 		Postcode:  "postcode",
@@ -813,7 +813,7 @@ func Test_GetAvailableSlots_PointOfSale_ClientError(t *testing.T) {
 	}
 	mapper.availabilityRequest = req
 
-	client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+	client.EXPECT().GetCalendarAvailabilityPointOfSale(ctx, req).Return(nil, errors.New(errorMessage))
 
 	_, err := myAPIHandler.GetAvailableSlotsPointOfSale(ctx, &contract.GetAvailableSlotsPointOfSaleRequest{
 		Postcode:              "postcode",
@@ -1249,7 +1249,7 @@ func Test_CreateBooking_PointOfSale_ClientError(t *testing.T) {
 	}
 	mapper.bookingRequest = req
 
-	client.EXPECT().CreateBookingPointOfSale(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+	client.EXPECT().CreateBookingPointOfSale(ctx, req).Return(nil, errors.New(errorMessage))
 
 	_, err := myAPIHandler.CreateBookingPointOfSale(ctx, &contract.CreateBookingPointOfSaleRequest{
 		Mpan:                  "mpan-1",
@@ -1522,7 +1522,7 @@ func Test_UpdateContactDetails_ClientError(t *testing.T) {
 	}
 	mapper.updateContactRequest = req
 
-	client.EXPECT().UpdateContactDetails(ctx, req).Return(nil, fmt.Errorf(errorMessage))
+	client.EXPECT().UpdateContactDetails(ctx, req).Return(nil, errors.New(errorMessage))
 
 	_, err := myAPIHandler.UpdateContactDetails(ctx, &contract.UpdateContactDetailsRequest{
 		ContactDetails: &contract.ContactDetails{

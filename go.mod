@@ -51,7 +51,6 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.5-20250219170025-d39267d9df8f.1 // indirect
 	cel.dev/expr v0.23.0 // indirect
 	cloud.google.com/go/auth v0.15.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
@@ -59,9 +58,7 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/IBM/sarama v1.45.1 // indirect
 	github.com/alvaroloes/enumer v1.1.2 // indirect
-	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/apache/arrow/go/v15 v15.0.2 // indirect
-	github.com/bufbuild/protovalidate-go v0.9.2 // indirect
 	github.com/cloudflare/cfssl v1.6.5 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
@@ -71,7 +68,6 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.32.4 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/google/cel-go v0.23.2 // indirect
 	github.com/google/certificate-transparency-go v1.3.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.1 // indirect
@@ -92,7 +88,6 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/shirou/gopsutil/v4 v4.25.1 // indirect
-	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.14 // indirect
 	github.com/tklauser/numcpus v0.8.0 // indirect
 	github.com/twmb/franz-go v1.18.1 // indirect
@@ -101,7 +96,6 @@ require (
 	github.com/twmb/franz-go/plugin/kslog v1.0.0 // indirect
 	github.com/utilitywarehouse/protobuf-contracts v0.0.0-20250404083004-f2d11cb9368c // indirect
 	github.com/utilitywarehouse/uwos-go/crypto/tlsconfig v1.4.4 // indirect
-	github.com/utilitywarehouse/uwos-go/grpc v1.9.0 // indirect
 	github.com/utilitywarehouse/uwos-go/io v1.6.22 // indirect
 	github.com/utilitywarehouse/uwos-go/pubsub/kafka v1.6.9 // indirect
 	github.com/utilitywarehouse/uwos-go/runtime/k8sruntime v1.5.3 // indirect
