@@ -1983,11 +1983,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2049,11 +2049,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2120,11 +2120,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2176,11 +2176,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2241,11 +2241,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2312,11 +2312,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2375,11 +2375,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2446,11 +2446,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2517,11 +2517,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 1)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 1)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2591,13 +2591,12 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(cMockSync.Msgs) == 0)
-				assert.True(len(sMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
 				// evaluation result is same as previous evaluation
-				assert.True(len(eMockSync.Msgs) == 0)
-
-				assert.True(len(bMockSync.Msgs) == 1)
+				assert.Len(eMockSync.Msgs, 0)
+				assert.Len(bMockSync.Msgs, 1)
 
 				assert.Equal(&smart.SmartBookingJourneyOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2662,11 +2661,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 1)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 1)
 
 				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
 					OccupancyId: "occupancy-id",
@@ -2736,11 +2735,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 1)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 1)
 
 				assert.Equal(&smart.EligibleOccupancyAddedEvent{
 					OccupancyId: "occupancy-id",
@@ -2809,11 +2808,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 1)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 1)
 
 				assert.Equal(&smart.EligibleOccupancyAddedEvent{
 					OccupancyId: "occupancy-id",
@@ -2883,11 +2882,11 @@ func TestRunEligibility(t *testing.T) {
 			},
 			checkOutput: func() {
 				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
+				assert.Len(sMockSync.Msgs, 0)
+				assert.Len(cMockSync.Msgs, 0)
 
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
+				assert.Len(eMockSync.Msgs, 1)
+				assert.Len(bMockSync.Msgs, 0)
 
 				assert.Equal(&smart.EligibleOccupancyAddedEvent{
 					OccupancyId: "occupancy-id",

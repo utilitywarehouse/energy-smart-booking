@@ -43,7 +43,10 @@ func TestMain(m *testing.M) {
 }
 
 func truncateDB(t *testing.T) {
-	pool.Exec(t.Context(), "TRUNCATE TABLE booking_reference, service, occupancy, site, booking, occupancy_eligible, partial_booking, smart_meter_interest CASCADE")
+	_, err := pool.Exec(t.Context(), "TRUNCATE TABLE service, occupancy, site, booking, occupancy_eligible, partial_booking, smart_meter_interest CASCADE")
+	if err != nil {
+		t.Fatalf("unable to truncate seeded data: %s", err)
+	}
 }
 
 func populateDB(ctx context.Context, pool *pgxpool.Pool) error {
