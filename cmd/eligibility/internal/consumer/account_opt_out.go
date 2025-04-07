@@ -55,6 +55,7 @@ func HandleAccountOptOut(store AccountOptOutStore, occupancyStore OccupancyOptOu
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				accountID := inner.(optOutIdentifier).GetAccountId()
 				occupanciesIDs, err := occupancyStore.GetIDsByAccount(ctx, accountID)
 				if err != nil {

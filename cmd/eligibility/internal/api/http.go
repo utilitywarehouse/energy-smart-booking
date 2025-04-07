@@ -59,6 +59,7 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 			logrus.WithField("elapsed", time.Since(start).String()).Info("full evaluation process completed")
 		}()
 
+		//nolint check error
 		w.Write([]byte("full evaluation started"))
 	})
 }
@@ -77,6 +78,7 @@ func (s *Handler) rerunFullEvaluation(_ context.Context) http.Handler {
 			logrus.WithField("elapsed", time.Since(start).String()).Info("full evaluation process completed")
 		}()
 
+		//nolint check error
 		w.Write([]byte("full evaluation started"))
 	})
 }

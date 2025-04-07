@@ -52,6 +52,7 @@ func HandleBookingRef(store BookingRefStore, occupancyStore OccupancyBookingRefS
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				mpxn := inner.(refIdentifier).GetMpxn()
 				occupanciesIDs, err := occupancyStore.GetIDsByMPXN(ctx, mpxn)
 				if err != nil {

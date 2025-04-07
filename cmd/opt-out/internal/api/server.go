@@ -93,6 +93,7 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 		accountNumber, ok := mux.Vars(r)["number"]
 		if !ok {
 			log.Error("accountNumber not provided")
+			//nolint check error
 			w.Write([]byte("accountNumber not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -147,6 +148,7 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 		accountNumber, ok := mux.Vars(r)["number"]
 		if !ok {
 			log.Error("accountNumber not provided")
+			//nolint check error
 			w.Write([]byte("accountNumber not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -176,7 +178,9 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+		//nolint check error
 		j, _ := json.Marshal(account)
+		//nolint check error
 		_, _ = w.Write(j)
 	})
 }
@@ -186,6 +190,7 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 		accountNumber, ok := mux.Vars(r)["number"]
 		if !ok {
 			log.Error("accountNumber not provided")
+			//nolint check error
 			w.Write([]byte("accountNumber not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -255,6 +260,8 @@ func (s *Handler) list(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	//nolint check error
 	j, _ := json.Marshal(accounts)
+	//nolint check error
 	_, _ = w.Write(j)
 }

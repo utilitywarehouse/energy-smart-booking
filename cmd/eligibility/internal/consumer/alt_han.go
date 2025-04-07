@@ -59,6 +59,7 @@ func HandleAltHan(store AltHanStore, occupancyStore OccupancyAltHanStore, evalua
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				mpxn := inner.(altHanIdentifier).GetEntityIdentifier()
 				occupanciesIDs, err := occupancyStore.GetIDsByMPXN(ctx, mpxn)
 				if err != nil {

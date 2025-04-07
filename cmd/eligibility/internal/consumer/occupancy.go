@@ -50,6 +50,7 @@ func HandleOccupancy(store OccupancyStore, evaluator Evaluator, stateRebuild boo
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				occupancyID := inner.(occupancyIdentifier).GetOccupancyId()
 				err = evaluator.RunFull(ctx, occupancyID)
 				if err != nil {

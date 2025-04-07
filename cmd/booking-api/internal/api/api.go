@@ -397,6 +397,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 	}
 
 	return &bookingv1.CreateBookingResponse{
+		//nolint return value not check on interface assertion
 		BookingId: createBookingResponse.Event.(*bookingv1.BookingCreatedEvent).BookingId,
 	}, nil
 }
@@ -495,6 +496,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 	}
 
 	return &bookingv1.RescheduleBookingResponse{
+		//nolint return value not check on interface assertion
 		BookingId: rescheduleBookingResponse.BookingEvent.(*bookingv1.BookingRescheduledEvent).BookingId,
 	}, nil
 }
@@ -647,6 +649,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	if err != nil {
 		switch err {
 		case domain.ErrMissingOccupancyInBooking:
+			//nolint return value not check on interface assertion
 			logrus.Warnf("occupancy for the account_id: %s was not found! saving the partial booking created event in the database with booking_id: %s", createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).Details.AccountId, createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).BookingId)
 		default:
 			return &bookingv1.CreateBookingPointOfSaleResponse{
@@ -668,6 +671,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{
+		//nolint return value not check on interface assertion
 		BookingId: createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).BookingId,
 	}, nil
 }

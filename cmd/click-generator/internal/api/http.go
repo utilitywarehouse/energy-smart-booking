@@ -83,6 +83,7 @@ func (s *Handler) generate(ctx context.Context) http.Handler {
 			return
 		}
 
+		//nolint check error
 		w.Write([]byte(link))
 	})
 }

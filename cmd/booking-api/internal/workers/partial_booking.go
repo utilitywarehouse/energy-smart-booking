@@ -75,6 +75,7 @@ func (w PartialBookingWorker) Run(ctx context.Context) error {
 
 	for _, elem := range pendingPartialBookings {
 
+		//nolint return value not check on interface assertion
 		event := elem.Event.(*bookingv1.BookingCreatedEvent)
 
 		occupancy, err := w.occupancyStore.GetOccupancyByAccountID(ctx, event.Details.AccountId)

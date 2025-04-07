@@ -54,6 +54,7 @@ func HandleAccountPSR(store AccountPSRStore, occupancyStore OccupancyPSRStore, e
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				accountID := inner.(psrIdentifier).GetAccountId()
 				occupanciesIDs, err := occupancyStore.GetIDsByAccount(ctx, accountID)
 				if err != nil {

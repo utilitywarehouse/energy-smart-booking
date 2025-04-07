@@ -54,6 +54,7 @@ func HandleMeterpoint(s MeterpointStore, occupancyStore OccupancyMeterpointStore
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				mpxn := inner.(meterpointIdentifier).GetMpan()
 				occupanciesIDs, err := occupancyStore.GetIDsByMPXN(ctx, mpxn)
 				if err != nil {

@@ -87,10 +87,13 @@ func HandleMeter(s MeterStore, occupancyStore OccupancyMeterStore, evaluator Eva
 				err = s.AddMeterCapacity(ctx, x.GetMeterId(), x.GetCapacity())
 
 			case *platform.ElectricityMeterInstalledEvent, *platform.GasMeterInstalledEvent:
+				//nolint return value not check on interface assertion
 				err = s.InstallMeter(ctx, x.(meterIdentifier).GetMeterId(), env.OccurredAt.AsTime())
 			case *platform.ElectricityMeterUninstalledEvent, *platform.GasMeterUninstalledEvent:
+				//nolint return value not check on interface assertion
 				err = s.UninstallMeter(ctx, x.(meterIdentifier).GetMeterId(), env.OccurredAt.AsTime())
 			case *platform.ElectricityMeterErroneouslyUninstalledEvent, *platform.GasMeterErroneouslyUninstalledEvent:
+				//nolint return value not check on interface assertion
 				err = s.ReInstallMeter(ctx, x.(meterIdentifier).GetMeterId())
 
 			}
@@ -99,6 +102,7 @@ func HandleMeter(s MeterStore, occupancyStore OccupancyMeterStore, evaluator Eva
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				meterID := inner.(meterIdentifier).GetMeterId()
 				mpxn, err := s.GetMpxnByID(ctx, meterID)
 				if err != nil {

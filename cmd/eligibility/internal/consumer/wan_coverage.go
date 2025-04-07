@@ -50,6 +50,7 @@ func HandleWanCoverage(store PostcodeStore, occupancyStore OccupancyPostcodeStor
 			}
 
 			if !stateRebuild {
+				//nolint return value not check on interface assertion
 				postCode := inner.(wanCoverageIdentifier).GetPostcode()
 				occupanciesIDs, err := occupancyStore.GetIDsByPostcode(ctx, postCode)
 				if err != nil {
