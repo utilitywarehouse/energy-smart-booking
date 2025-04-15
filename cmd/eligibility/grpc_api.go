@@ -15,7 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
-	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
+	ecoesv2 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v2"
 	xoservev1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/xoserve/v1"
 	pkgapp "github.com/utilitywarehouse/energy-pkg/app"
 	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
@@ -83,7 +83,7 @@ func runGRPCApi(c *cli.Context) error {
 	defer xoserveConn.Close()
 
 	// GATEWAYS //
-	ecoesGateway := gateway.NewEcoesGateway(mn, ecoesv1.NewEcoesAPIClient(ecoesConn))
+	ecoesGateway := gateway.NewEcoesGateway(mn, ecoesv2.NewEcoesServiceClient(ecoesConn))
 	xoserveGateway := gateway.NewXOServeGateway(mn, xoservev1.NewXoserveAPIClient(xoserveConn))
 
 	eligibilityStore := store.NewEligibility(pg)
