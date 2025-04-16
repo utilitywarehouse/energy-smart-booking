@@ -33,8 +33,8 @@ func (s *MeterStore) Add(ctx context.Context, meter *domain.Meter) error {
 	return err
 }
 
-func (s *MeterStore) AddMeterCapacity(ctx context.Context, meterID string, cap float32) error {
-	_, err := s.pool.Exec(ctx, `UPDATE meters SET capacity = $2 WHERE id = $1;`, meterID, cap)
+func (s *MeterStore) AddMeterCapacity(ctx context.Context, meterID string, capacity float32) error {
+	_, err := s.pool.Exec(ctx, `UPDATE meters SET capacity = $2 WHERE id = $1;`, meterID, capacity)
 
 	return err
 }
