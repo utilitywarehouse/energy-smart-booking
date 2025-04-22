@@ -207,9 +207,10 @@ func (e *Evaluator) publishEligibilityIfChanged(ctx context.Context, occupancy *
 
 func (e *Evaluator) publishSmartBookingJourneyEligibilityIfNeeded(ctx context.Context, occupancy *domain.Occupancy) error {
 
-	if !(occupancy.EvaluationResult.CampaignabilityEvaluated &&
-		occupancy.EvaluationResult.SuppliabilityEvaluated &&
-		occupancy.EvaluationResult.EligibilityEvaluated) {
+	if !occupancy.EvaluationResult.CampaignabilityEvaluated ||
+		!occupancy.EvaluationResult.SuppliabilityEvaluated ||
+		!occupancy.EvaluationResult.EligibilityEvaluated {
+
 		return nil
 	}
 

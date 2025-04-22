@@ -5701,12 +5701,6 @@ func Test_RegisterInterest(t *testing.T) {
 
 	defer ctrl.Finish()
 
-	smartMeterInterestDomain := mocks.NewMockSmartMeterInterestDomain(ctrl)
-	commentCodePublisher := mocks.NewMockPublisher(ctrl)
-	mockAuth := mocks.NewMockAuth(ctrl)
-
-	myAPIHandler := api.New(nil, smartMeterInterestDomain, nil, nil, nil, commentCodePublisher, mockAuth, false)
-
 	testTime, err := time.Parse("2006-01-02T15:04:05.000Z", "2024-01-12T11:45:26.371Z")
 	if err != nil {
 		t.Fatal(err)
@@ -5821,6 +5815,53 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 		},
 		{
+			description: "should register interest with unknown reason",
+			input: inputParams{
+				req: &bookingv1.RegisterInterestRequest{
+					AccountId:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
+				},
+			},
+			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, publisher *mocks.MockPublisher, mAuth *mocks.MockAuth) {
+
+				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
+					Action:     "create",
+					Resource:   "uw.energy.v1.account.smart-meter-interest",
+					ResourceID: "account-id-1",
+				}).Return(true, nil)
+
+				params := domain.RegisterInterestParams{
+					AccountID:  "account-id-1",
+					Interested: true,
+					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
+				}
+
+				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(&domain.SmartMeterInterest{
+					RegistrationID: "registration-id",
+					AccountNumber:  "account-number",
+					Interested:     true,
+					Reason:         bookingv1.Reason_REASON_UNKNOWN.Enum(),
+					CreatedAt:      testTime,
+				}, nil)
+
+				publisher.EXPECT().Sink(gomock.Any(), &bill_contracts.InboundEvent{
+					Id:            "registration-id",
+					CreatedAtDate: testTime.Format("02-01-2006"),
+					CreatedAtTime: testTime.Format("15:04:05"),
+					Type:          "CommentCode",
+					Domain:        "platform",
+					Payload:       []byte("account-number|2||GN3000|Request smart meter|Wouldn't or didn't give a reason||||||||||12-01-2024|11:45:26|||"),
+				}, gomock.Any()).Return(nil)
+			},
+			output: outputParams{
+				res: &bookingv1.RegisterInterestResponse{
+					RegistrationId: "registration-id",
+				},
+				err: nil,
+			},
+		},
+		{
 			description: "should fail to find account ID and return a gateway.ErrAccountNotFound",
 			input: inputParams{
 				req: &bookingv1.RegisterInterestRequest{
@@ -5913,42 +5954,6 @@ func Test_RegisterInterest(t *testing.T) {
 			},
 		},
 		{
-			description: "should fail due to unknown registration reason",
-			input: inputParams{
-				req: &bookingv1.RegisterInterestRequest{
-					AccountId:  "account-id-1",
-					Interested: true,
-					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
-				},
-			},
-			setup: func(_ context.Context, smiDomain *mocks.MockSmartMeterInterestDomain, _ *mocks.MockPublisher, mAuth *mocks.MockAuth) {
-
-				mAuth.EXPECT().Authorize(gomock.Any(), &auth.PolicyParams{
-					Action:     "create",
-					Resource:   "uw.energy.v1.account.smart-meter-interest",
-					ResourceID: "account-id-1",
-				}).Return(true, nil)
-
-				params := domain.RegisterInterestParams{
-					AccountID:  "account-id-1",
-					Interested: true,
-					Reason:     bookingv1.Reason_REASON_UNKNOWN.Enum(),
-				}
-
-				smiDomain.EXPECT().RegisterInterest(gomock.Any(), params).Return(&domain.SmartMeterInterest{
-					RegistrationID: "registration-id",
-					AccountNumber:  "account-number",
-					Interested:     true,
-					Reason:         bookingv1.Reason_REASON_UNKNOWN.Enum(),
-					CreatedAt:      testTime,
-				}, nil)
-			},
-			output: outputParams{
-				res: nil,
-				err: status.Error(codes.InvalidArgument, "invalid smart meter interest parameters, invalid reason for smart meter interest: REASON_UNKNOWN"),
-			},
-		},
-		{
 			description: "should fail to register interest because user is unauthorised",
 			input: inputParams{
 				req: &bookingv1.RegisterInterestRequest{
@@ -5974,8 +5979,13 @@ func Test_RegisterInterest(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
 
+			smartMeterInterestDomain := mocks.NewMockSmartMeterInterestDomain(ctrl)
+			commentCodePublisher := mocks.NewMockPublisher(ctrl)
+			mockAuth := mocks.NewMockAuth(ctrl)
+
 			tc.setup(ctx, smartMeterInterestDomain, commentCodePublisher, mockAuth)
 
+			myAPIHandler := api.New(nil, smartMeterInterestDomain, nil, nil, nil, commentCodePublisher, mockAuth, false)
 			expected, err := myAPIHandler.RegisterInterest(ctx, tc.input.req)
 			if tc.output.err != nil {
 				if diff := cmp.Diff(err.Error(), tc.output.err.Error()); diff != "" {

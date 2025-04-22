@@ -1,6 +1,6 @@
 module github.com/utilitywarehouse/energy-smart-booking
 
-go 1.22.5
+go 1.24.2
 
 require (
 	cloud.google.com/go/bigquery v1.61.0
@@ -36,7 +36,7 @@ require (
 	github.com/utilitywarehouse/uwos-go/x/bill v1.1.0
 	github.com/uw-labs/substrate v0.0.0-20240327161656-5cd769b67f2b
 	github.com/uw-labs/substrate-tools v0.0.0-20210726101027-7ea25c77a95e
-	golang.org/x/sync v0.8.0
+	golang.org/x/sync v0.13.0
 	google.golang.org/api v0.186.0
 	google.golang.org/genproto v0.0.0-20240624140628-dc46fd24d27d
 	google.golang.org/grpc v1.66.0
@@ -207,13 +207,13 @@ require (
 	go.opentelemetry.io/otel v1.29.0
 	go.opentelemetry.io/otel/metric v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0
-	golang.org/x/crypto v0.26.0 // indirect
+	golang.org/x/crypto v0.37.0 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/mod v0.18.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

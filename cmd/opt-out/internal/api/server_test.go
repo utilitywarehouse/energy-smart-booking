@@ -63,7 +63,7 @@ func TestServer(t *testing.T) {
 	assert.NoError(t, err, "failed to add account")
 
 	// test get account
-	path := strings.Replace(endpointAccount, "{number}", testAccountNumber, -1)
+	path := strings.ReplaceAll(endpointAccount, "{number}", testAccountNumber)
 	r := httptest.NewRequest(http.MethodGet, path, nil)
 	r.Header.Add("authorization", "Bearer token")
 	w := httptest.NewRecorder()

@@ -22,7 +22,7 @@ type MeterStore interface {
 	AddMeterType(ctx context.Context, meterID string, meterType string) error
 	UninstallMeter(ctx context.Context, meterID string, at time.Time) error
 	ReInstallMeter(ctx context.Context, meterID string) error
-	AddMeterCapacity(ctx context.Context, meterID string, cap float32) error
+	AddMeterCapacity(ctx context.Context, meterID string, capacity float32) error
 	GetMpxnByID(ctx context.Context, meterID string) (string, error)
 }
 

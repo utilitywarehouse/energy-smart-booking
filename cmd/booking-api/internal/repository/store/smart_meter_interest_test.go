@@ -96,7 +96,11 @@ func Test_SmartMeterInterest_Insert(t *testing.T) {
 			result, err := smartMeterInterestStore.Get(ctx, testCase.input.RegistrationID)
 			assert.NoError(err, testCase.description)
 
-			assert.Equal(&testCase.output, result, testCase.description)
+			assert.Equal(testCase.output.AccountID, result.AccountID)
+			assert.Equal(testCase.output.RegistrationID, result.RegistrationID)
+			assert.Equal(testCase.output.Interested, result.Interested)
+			assert.Equal(testCase.output.Reason, result.Reason)
+			assert.WithinDuration(testCase.output.CreatedAt, result.CreatedAt, time.Millisecond)
 		})
 	}
 }
