@@ -108,7 +108,7 @@ func Test_GetRelatedMPANs(t *testing.T) {
 
 	myGw := gateway.NewEcoesGateway(mai, mEcoes)
 
-	mEcoes.EXPECT().GetRelatedMPANs(ctx, &ecoesv2.GetTechnicalDetailsByMPANRequest{
+	mEcoes.EXPECT().GetRelatedMPANs(ctx, &ecoesv2.GetRelatedMPANsRequest{
 		Mpan: "mpan-1",
 	}).Return(&ecoesv2.GetRelatedMPANsResponse{
 		Relationships: []*ecoesv2.GetRelatedMPANsResponse_Relationship{
