@@ -38,10 +38,9 @@ const (
 	stateRebuild = "state-rebuild"
 
 	// gRPC
-	grpcPort     = "grpc-port"
-	grpcLogLevel = "grpc-log-level"
-	xoserveHost  = "xoserve-host"
-	ecoesHost    = "ecoes-host"
+	grpcPort    = "grpc-port"
+	xoserveHost = "xoserve-host"
+	ecoesHost   = "ecoes-host"
 
 	// http
 	httpPort = "http-port"
@@ -73,12 +72,6 @@ func main() {
 						Usage:   "The port to listen on for API GRPC connections",
 						EnvVars: []string{"GRPC_PORT"},
 						Value:   8090,
-					},
-					&cli.StringFlag{
-						Name:    grpcLogLevel,
-						Usage:   "gRPC log level [debug|info|warn|error]",
-						EnvVars: []string{"UW_LOG_LEVEL"},
-						Value:   "error",
 					},
 					&cli.StringFlag{
 						Name:     postgresDSN,

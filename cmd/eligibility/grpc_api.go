@@ -106,7 +106,6 @@ func runGRPCApi(c *cli.Context) error {
 
 	g.Go(func() error {
 		grpcServer := uwgrpc.NewServer(
-			uwgrpc.WithServerNetwork("tcp"),
 			uwgrpc.WithServerAddress(fmt.Sprintf(":%d", c.Int(grpcPort))),
 		)
 
