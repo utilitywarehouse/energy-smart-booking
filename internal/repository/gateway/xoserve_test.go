@@ -24,10 +24,7 @@ func Test_GetMPRNTechnicalDetails(t *testing.T) {
 	defer ctrl.Finish()
 
 	mXOServe := mock_gateways.NewMockXOServeClient(ctrl)
-	mai := fakeMachineAuthInjector{}
-	mai.ctx = ctx
-
-	myGw := gateway.NewXOServeGateway(mai, mXOServe)
+	myGw := gateway.NewXOServeGateway(mXOServe)
 
 	mXOServe.EXPECT().GetSwitchDataByMPRN(ctx, &xoservev1.SearchByMPRNRequest{
 		Mprn: "mprn-1",

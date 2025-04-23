@@ -26,10 +26,7 @@ func Test_GetMPANTechnicalDetails(t *testing.T) {
 	defer ctrl.Finish()
 
 	mEcoes := mock_gateways.NewMockEcoesClient(ctrl)
-	mai := fakeMachineAuthInjector{}
-	mai.ctx = ctx
-
-	myGw := gateway.NewEcoesGateway(mai, mEcoes)
+	myGw := gateway.NewEcoesGateway(mEcoes)
 
 	ssc := "ssc-1"
 	profileClass := platform.ProfileClass_PROFILE_CLASS_01
@@ -103,10 +100,7 @@ func Test_GetRelatedMPANs(t *testing.T) {
 	defer ctrl.Finish()
 
 	mEcoes := mock_gateways.NewMockEcoesClient(ctrl)
-	mai := fakeMachineAuthInjector{}
-	mai.ctx = ctx
-
-	myGw := gateway.NewEcoesGateway(mai, mEcoes)
+	myGw := gateway.NewEcoesGateway(mEcoes)
 
 	mEcoes.EXPECT().GetRelatedMPANs(ctx, &ecoesv2.GetRelatedMPANsRequest{
 		Mpan: "mpan-1",
