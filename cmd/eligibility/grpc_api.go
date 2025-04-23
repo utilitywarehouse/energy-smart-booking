@@ -18,7 +18,6 @@ import (
 	ecoesv2 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v2"
 	xoservev1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/xoserve/v1"
 	pkgapp "github.com/utilitywarehouse/energy-pkg/app"
-	grpcHelper "github.com/utilitywarehouse/energy-pkg/grpc"
 	"github.com/utilitywarehouse/energy-pkg/ops"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
@@ -27,13 +26,14 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	grpchealth "github.com/utilitywarehouse/go-ops-health-checks/pkg/grpchealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
+	uwgrpc "github.com/utilitywarehouse/uwos-go/grpc"
+	"github.com/utilitywarehouse/uwos-go/iam"
 	"github.com/utilitywarehouse/uwos-go/iam/machine"
 	"github.com/utilitywarehouse/uwos-go/iam/pdp"
 	"github.com/utilitywarehouse/uwos-go/telemetry"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -68,14 +68,14 @@ func runGRPCApi(c *cli.Context) error {
 	defer pg.Close()
 	opsServer.Add("db", sqlhealth.NewCheck(stdlib.OpenDB(*pg.Config().ConnConfig), "unable to connect to the DB"))
 
-	ecoesConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(ecoesHost), c.String(grpcLogLevel))
+	ecoesConn, err := uwgrpc.NewClient(c.String(ecoesHost), uwgrpc.WithDialIAM(iam.WithMachine(mn)))
 	if err != nil {
 		return fmt.Errorf("could not connect to ecoes gRPC integration: %w", err)
 	}
 	opsServer.Add("ecoes-api", grpchealth.NewCheck(c.String(ecoesHost), "", "cannot find mpans address"))
 	defer ecoesConn.Close()
 
-	xoserveConn, err := grpcHelper.CreateConnectionWithLogLvl(ctx, c.String(xoserveHost), c.String(grpcLogLevel))
+	xoserveConn, err := uwgrpc.NewClient(c.String(xoserveHost), uwgrpc.WithDialIAM(iam.WithMachine(mn)))
 	if err != nil {
 		return fmt.Errorf("could not connect to xoserve gRPC integration: %w", err)
 	}
@@ -83,8 +83,8 @@ func runGRPCApi(c *cli.Context) error {
 	defer xoserveConn.Close()
 
 	// GATEWAYS //
-	ecoesGateway := gateway.NewEcoesGateway(mn, ecoesv2.NewEcoesServiceClient(ecoesConn))
-	xoserveGateway := gateway.NewXOServeGateway(mn, xoservev1.NewXoserveAPIClient(xoserveConn))
+	ecoesGateway := gateway.NewEcoesGateway(ecoesv2.NewEcoesServiceClient(ecoesConn))
+	xoserveGateway := gateway.NewXOServeGateway(xoservev1.NewXoserveAPIClient(xoserveConn))
 
 	eligibilityStore := store.NewEligibility(pg)
 	suppliabilityStore := store.NewSuppliability(pg)
@@ -105,14 +105,10 @@ func runGRPCApi(c *cli.Context) error {
 	defer closer.Close()
 
 	g.Go(func() error {
-		grpcServer := grpcHelper.CreateServerWithLogLvl(c.String(grpcLogLevel))
-		reflection.Register(grpcServer)
-
-		listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(grpcPort)))
-		if err != nil {
-			return err
-		}
-		defer listen.Close()
+		grpcServer := uwgrpc.NewServer(
+			uwgrpc.WithServerNetwork("tcp"),
+			uwgrpc.WithServerAddress(fmt.Sprintf(":%d", c.Int(grpcPort))),
+		)
 
 		eligibilityAPI := api.NewEligibilityGRPCApi(
 			eligibilityStore,
@@ -130,7 +126,7 @@ func runGRPCApi(c *cli.Context) error {
 		)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 
-		return grpcServer.Serve(listen)
+		return grpcServer.Serve()
 	})
 
 	// register http gw

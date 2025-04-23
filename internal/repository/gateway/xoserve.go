@@ -22,16 +22,15 @@ var xoserveAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
 }, []string{"status"})
 
 type XOServeGateway struct {
-	mai    MachineAuthInjector
 	client XOServeClient
 }
 
-func NewXOServeGateway(mai MachineAuthInjector, client XOServeClient) *XOServeGateway {
-	return &XOServeGateway{mai, client}
+func NewXOServeGateway(client XOServeClient) *XOServeGateway {
+	return &XOServeGateway{client}
 }
 
 func (gw *XOServeGateway) GetMPRNTechnicalDetails(ctx context.Context, mprn string) (*models.GasMeterTechnicalDetails, error) {
-	technicalDetails, err := gw.client.GetSwitchDataByMPRN(gw.mai.ToCtx(ctx), &xoservev1.SearchByMPRNRequest{
+	technicalDetails, err := gw.client.GetSwitchDataByMPRN(ctx, &xoservev1.SearchByMPRNRequest{
 		Mprn: mprn,
 	})
 	if err != nil {

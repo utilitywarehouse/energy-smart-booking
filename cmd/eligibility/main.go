@@ -77,7 +77,7 @@ func main() {
 					&cli.StringFlag{
 						Name:    grpcLogLevel,
 						Usage:   "gRPC log level [debug|info|warn|error]",
-						EnvVars: []string{"GRPC_LOG_LEVEL"},
+						EnvVars: []string{"UW_LOG_LEVEL"},
 						Value:   "error",
 					},
 					&cli.StringFlag{
