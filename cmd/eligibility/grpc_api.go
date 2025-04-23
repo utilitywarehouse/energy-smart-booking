@@ -126,7 +126,7 @@ func runGRPCApi(c *cli.Context) error {
 		)
 		smart_booking.RegisterEligiblityAPIServer(grpcServer, eligibilityAPI)
 
-		return grpcServer.Serve()
+		return grpcServer.ServeContext(ctx)
 	})
 
 	// register http gw
