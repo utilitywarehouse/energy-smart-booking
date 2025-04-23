@@ -74,7 +74,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0 // indirect
 	github.com/johanbrandhorst/certify v1.9.0 // indirect
 	github.com/lmittmann/tint v1.0.7 // indirect
-	github.com/lufia/plan9stats v0.0.0-20240819163618-b1d8f4d146e7 // indirect
+	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
@@ -89,19 +89,19 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
-	github.com/shirou/gopsutil/v4 v4.25.1 // indirect
+	github.com/shirou/gopsutil/v4 v4.25.3 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
-	github.com/tklauser/go-sysconf v0.3.14 // indirect
-	github.com/tklauser/numcpus v0.8.0 // indirect
+	github.com/tklauser/go-sysconf v0.3.15 // indirect
+	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/twmb/franz-go v1.18.1 // indirect
-	github.com/twmb/franz-go/pkg/kmsg v1.9.0 // indirect
-	github.com/twmb/franz-go/plugin/kotel v1.4.1 // indirect
+	github.com/twmb/franz-go/pkg/kmsg v1.11.2 // indirect
+	github.com/twmb/franz-go/plugin/kotel v1.6.0 // indirect
 	github.com/twmb/franz-go/plugin/kslog v1.0.0 // indirect
 	github.com/utilitywarehouse/protobuf-contracts v0.0.0-20250416161512-9a7cc93493a1 // indirect
-	github.com/utilitywarehouse/uwos-go/crypto/tlsconfig v1.4.1 // indirect
+	github.com/utilitywarehouse/uwos-go/crypto/tlsconfig v1.4.4 // indirect
 	github.com/utilitywarehouse/uwos-go/io v1.6.23 // indirect
-	github.com/utilitywarehouse/uwos-go/pubsub/kafka v1.3.3 // indirect
+	github.com/utilitywarehouse/uwos-go/pubsub/kafka v1.6.10 // indirect
 	github.com/utilitywarehouse/uwos-go/runtime/k8sruntime v1.5.3 // indirect
 	github.com/utilitywarehouse/uwos-go/storage/postgres v1.11.3 // indirect
 	github.com/utilitywarehouse/uwos-go/time v1.4.13 // indirect
@@ -139,7 +139,7 @@ require (
 require (
 	cloud.google.com/go v0.115.0 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
-	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
+	github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
@@ -149,7 +149,7 @@ require (
 	github.com/cpuguy83/dockercfg v0.3.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/docker v28.0.1+incompatible // indirect
+	github.com/docker/docker v28.0.4+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/eapache/go-resiliency v1.6.0 // indirect
@@ -191,7 +191,7 @@ require (
 	github.com/magiconair/properties v1.8.9 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/sys/sequential v0.6.0 // indirect
-	github.com/moby/term v0.5.0 // indirect
+	github.com/moby/term v0.5.2 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
