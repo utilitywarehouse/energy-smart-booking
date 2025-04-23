@@ -103,7 +103,7 @@ func New(
 func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *bookingv1.GetCustomerContactDetailsRequest) (_ *bookingv1.GetCustomerContactDetailsResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerContactDetails",
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetCustomerContactDetails",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
@@ -154,7 +154,7 @@ func (b *BookingAPI) GetCustomerContactDetails(ctx context.Context, req *booking
 func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.GetCustomerSiteAddressRequest) (_ *bookingv1.GetCustomerSiteAddressResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerSiteAddress",
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetCustomerSiteAddress",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
@@ -217,7 +217,7 @@ func (b *BookingAPI) GetCustomerSiteAddress(ctx context.Context, req *bookingv1.
 func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.GetCustomerBookingsRequest) (_ *bookingv1.GetCustomerBookingsResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerBookings",
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetCustomerBookings",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
@@ -252,7 +252,7 @@ func (b *BookingAPI) GetCustomerBookings(ctx context.Context, req *bookingv1.Get
 func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAvailableSlotsRequest) (_ *bookingv1.GetAvailableSlotsResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlots",
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetAvailableSlots",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
@@ -327,7 +327,7 @@ func (b *BookingAPI) GetAvailableSlots(ctx context.Context, req *bookingv1.GetAv
 func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBookingRequest) (_ *bookingv1.CreateBookingResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking",
+		ctx, span = tracing.Start(ctx, "BookingAPI.CreateBooking",
 			trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		)
 		defer func() {
@@ -404,7 +404,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.RescheduleBookingRequest) (_ *bookingv1.RescheduleBookingResponse, err error) {
 	if b.useTracing {
 		var span trace.Span
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RescheduleBooking", trace.WithAttributes(
+		ctx, span = tracing.Start(ctx, "BookingAPI.RescheduleBooking", trace.WithAttributes(
 			attribute.String("account.id", req.GetAccountId()),
 			attribute.String("booking.id", req.GetBookingId()),
 		),
@@ -502,7 +502,7 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *bookingv1.GetAvailableSlotsPointOfSaleRequest) (_ *bookingv1.GetAvailableSlotsPointOfSaleResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetAvailableSlotsPointOfSale",
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetAvailableSlotsPointOfSale",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		span.AddEvent("request", trace.WithAttributes(attribute.String("from", req.GetFrom().String()), attribute.String("to", req.GetTo().String())))
@@ -581,7 +581,7 @@ func (b *BookingAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *book
 func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv1.CreateBookingPointOfSaleRequest) (_ *bookingv1.CreateBookingPointOfSaleResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.CreateBookingPointOfSale",
+		ctx, span = tracing.Start(ctx, "BookingAPI.CreateBookingPointOfSale",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		defer func() {
@@ -675,7 +675,7 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *bookingv1.GetCustomerDetailsPointOfSaleRequest) (_ *bookingv1.GetCustomerDetailsPointOfSaleResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetCustomerDetailsPointOfSale",
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetCustomerDetailsPointOfSale",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		defer func() {
@@ -741,7 +741,7 @@ func (b *BookingAPI) GetCustomerDetailsPointOfSale(ctx context.Context, req *boo
 func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *bookingv1.GetEligibilityPointOfSaleJourneyRequest) (_ *bookingv1.GetEligibilityPointOfSaleJourneyResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetEligibilityPointOfSaleJourney")
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetEligibilityPointOfSaleJourney")
 		span.AddEvent("request", trace.WithAttributes(
 			attribute.String("postcode", req.GetPostcode()),
 			attribute.String("mpan", req.GetMpan()),
@@ -796,7 +796,7 @@ func (b *BookingAPI) GetEligibilityPointOfSaleJourney(ctx context.Context, req *
 func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bookingv1.GetClickLinkPointOfSaleJourneyRequest) (_ *bookingv1.GetClickLinkPointOfSaleJourneyResponse, err error) {
 	var span trace.Span
 	if b.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.GetClickLinkPointOfSaleJourney",
+		ctx, span = tracing.Start(ctx, "BookingAPI.GetClickLinkPointOfSaleJourney",
 			trace.WithAttributes(attribute.String("account.number", req.AccountNumber)),
 		)
 		requestAttr := helpers.CreateSpanAttribute(req, "request", span)
@@ -904,7 +904,7 @@ func (b *BookingAPI) GetClickLinkPointOfSaleJourney(ctx context.Context, req *bo
 
 func (b *BookingAPI) RegisterInterest(ctx context.Context, req *bookingv1.RegisterInterestRequest) (_ *bookingv1.RegisterInterestResponse, err error) {
 	var span trace.Span
-	ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.RegisterInterest",
+	ctx, span = tracing.Start(ctx, "BookingAPI.RegisterInterest",
 		trace.WithAttributes(
 			attribute.String("account.id", req.GetAccountId()),
 		),

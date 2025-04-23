@@ -81,7 +81,7 @@ func NewEligibilityGRPCApi(
 }
 
 func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountEligibleForSmartBookingRequest) (_ *smart_booking.GetAccountEligibleForSmartBookingResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountEligibleForSmartBooking",
+	ctx, span := tracing.Start(ctx, "EligibilityAPI.GetAccountEligibleForSmartBooking",
 		trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 	)
 	defer func() {
@@ -205,7 +205,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 }
 
 func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx context.Context, req *smart_booking.GetAccountOccupancyEligibleForSmartBookingRequest) (_ *smart_booking.GetAccountOccupancyEligibleForSmartBookingResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetAccountOccupancyEligibleForSmartBooking",
+	ctx, span := tracing.Start(ctx, "EligibilityAPI.GetAccountOccupancyEligibleForSmartBooking",
 		trace.WithAttributes(attribute.String("account.id", req.GetAccountId())),
 		trace.WithAttributes(attribute.String("occupancy.id", req.GetOccupancyId())),
 	)
@@ -292,7 +292,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 }
 
 func (a *EligibilityGRPCApi) GetMeterpointEligibility(ctx context.Context, req *smart_booking.GetMeterpointEligibilityRequest) (_ *smart_booking.GetMeterpointEligibilityResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "EligibilityAPI.GetMeterpointEligibility",
+	ctx, span := tracing.Start(ctx, "EligibilityAPI.GetMeterpointEligibility",
 		trace.WithAttributes(attribute.String("electricity.meterpoint.number", req.GetMpan())),
 		trace.WithAttributes(attribute.String("gas.meterpoint.number", req.GetMprn())),
 		trace.WithAttributes(attribute.String("customer.postcode", req.GetPostcode())))

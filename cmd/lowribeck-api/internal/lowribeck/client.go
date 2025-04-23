@@ -49,7 +49,7 @@ func New(c *http.Client, user, password, url string) *Client {
 }
 
 func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAvailabilityRequest) (_ *GetCalendarAvailabilityResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", availabilityURL),
+	ctx, span := tracing.Start(ctx, fmt.Sprintf("LowriBeck.%s", availabilityURL),
 		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
 		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
 	)
@@ -81,7 +81,7 @@ func (c *Client) GetCalendarAvailability(ctx context.Context, req *GetCalendarAv
 }
 
 func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (_ *CreateBookingResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", bookingURL),
+	ctx, span := tracing.Start(ctx, fmt.Sprintf("LowriBeck.%s", bookingURL),
 		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
 		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
 	)
@@ -113,7 +113,7 @@ func (c *Client) CreateBooking(ctx context.Context, req *CreateBookingRequest) (
 }
 
 func (c *Client) GetCalendarAvailabilityPointOfSale(ctx context.Context, req *GetCalendarAvailabilityRequest) (_ *GetCalendarAvailabilityResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.POS.%s", availabilityURL),
+	ctx, span := tracing.Start(ctx, fmt.Sprintf("LowriBeck.POS.%s", availabilityURL),
 		trace.WithAttributes(attribute.String("postcode", req.PostCode)),
 		trace.WithAttributes(attribute.String("mpan", req.Mpan)),
 		trace.WithAttributes(attribute.String("mprn", req.Mprn)),
@@ -148,7 +148,7 @@ func (c *Client) GetCalendarAvailabilityPointOfSale(ctx context.Context, req *Ge
 }
 
 func (c *Client) CreateBookingPointOfSale(ctx context.Context, req *CreateBookingRequest) (_ *CreateBookingResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.POS.%s", bookingURL),
+	ctx, span := tracing.Start(ctx, fmt.Sprintf("LowriBeck.POS.%s", bookingURL),
 		trace.WithAttributes(attribute.String("mpan", req.Mpan)),
 		trace.WithAttributes(attribute.String("mprn", req.Mprn)),
 		trace.WithAttributes(attribute.String("elec.job", req.ElecJobTypeCode)),
@@ -182,7 +182,7 @@ func (c *Client) CreateBookingPointOfSale(ctx context.Context, req *CreateBookin
 }
 
 func (c *Client) UpdateContactDetails(ctx context.Context, req *UpdateContactDetailsRequest) (_ *UpdateContactDetailsResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, fmt.Sprintf("LowriBeck.%s", updateContactURL),
+	ctx, span := tracing.Start(ctx, fmt.Sprintf("LowriBeck.%s", updateContactURL),
 		trace.WithAttributes(attribute.String("lowribeck.reference", req.ReferenceID)),
 	)
 	defer func() {

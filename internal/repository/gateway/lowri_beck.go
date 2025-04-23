@@ -54,7 +54,7 @@ type CreateBookingPointOfSaleResponse struct {
 }
 
 func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, reference string) (_ AvailableSlotsResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.LowriBeckGateway.GetAvailableSlots",
+	ctx, span := tracing.Start(ctx, "BookingAPI.LowriBeckGateway.GetAvailableSlots",
 		trace.WithAttributes(attribute.String("postcode", postcode)),
 		trace.WithAttributes(attribute.String("lowribeck.reference", reference)),
 	)
@@ -91,7 +91,7 @@ func (g LowriBeckGateway) GetAvailableSlots(ctx context.Context, postcode, refer
 }
 
 func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference string, slot models.BookingSlot, contactDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string) (_ CreateBookingResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.CreateBooking",
+	ctx, span := tracing.Start(ctx, "BookingAPI.CreateBooking",
 		trace.WithAttributes(attribute.String("postcode", postcode)),
 		trace.WithAttributes(attribute.String("lowribeck.reference", reference)),
 	)
@@ -139,7 +139,7 @@ func (g LowriBeckGateway) CreateBooking(ctx context.Context, postcode, reference
 }
 
 func (g LowriBeckGateway) GetAvailableSlotsPointOfSale(ctx context.Context, postcode, mpan, mprn string, tariffElectricity, tariffGas lowribeckv1.TariffType) (_ AvailableSlotsResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.LowriBeckGateway.GetPOSAvailableSlots",
+	ctx, span := tracing.Start(ctx, "BookingAPI.LowriBeckGateway.GetPOSAvailableSlots",
 		trace.WithAttributes(attribute.String("postcode", postcode)),
 		trace.WithAttributes(attribute.String("lowribeck.mpan", mpan)),
 		trace.WithAttributes(attribute.String("lowribeck.mprn", mprn)),
@@ -182,7 +182,7 @@ func (g LowriBeckGateway) GetAvailableSlotsPointOfSale(ctx context.Context, post
 }
 
 func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, mpan, mprn string, tariffElectricity, tariffGas lowribeckv1.TariffType, slot models.BookingSlot, contactDetails models.AccountDetails, vulnerabilities []lowribeckv1.Vulnerability, other string, siteAddress models.AccountAddress) (_ CreateBookingPointOfSaleResponse, err error) {
-	ctx, span := tracing.Tracer().Start(ctx, "BookingAPI.CreatePOSBooking",
+	ctx, span := tracing.Start(ctx, "BookingAPI.CreatePOSBooking",
 		trace.WithAttributes(attribute.String("postcode", siteAddress.PAF.Postcode)),
 		trace.WithAttributes(attribute.String("lowribeck.mpan", mpan)),
 		trace.WithAttributes(attribute.String("lowribeck.mprn", mprn)),
