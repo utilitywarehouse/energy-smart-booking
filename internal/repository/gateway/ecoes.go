@@ -8,7 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
+	ecoesv2 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v2"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -16,8 +16,8 @@ import (
 )
 
 type EcoesClient interface {
-	GetTechnicalDetailsByMPAN(context.Context, *ecoesv1.SearchByMPANRequest, ...grpc.CallOption) (*ecoesv1.TechnicalDetailsResponse, error)
-	GetRelatedMPANs(context.Context, *ecoesv1.SearchByMPANRequest, ...grpc.CallOption) (*ecoesv1.GetRelatedMPANsResponse, error)
+	GetTechnicalDetailsByMPAN(context.Context, *ecoesv2.GetTechnicalDetailsByMPANRequest, ...grpc.CallOption) (*ecoesv2.GetTechnicalDetailsByMPANResponse, error)
+	GetRelatedMPANs(context.Context, *ecoesv2.GetRelatedMPANsRequest, ...grpc.CallOption) (*ecoesv2.GetRelatedMPANsResponse, error)
 }
 
 var ecoesAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
@@ -26,17 +26,16 @@ var ecoesAPIResponses = promauto.NewCounterVec(prometheus.CounterOpts{
 }, []string{"status"})
 
 type EcoesGateway struct {
-	mai    MachineAuthInjector
 	client EcoesClient
 }
 
-func NewEcoesGateway(mai MachineAuthInjector, client EcoesClient) *EcoesGateway {
-	return &EcoesGateway{mai, client}
+func NewEcoesGateway(client EcoesClient) *EcoesGateway {
+	return &EcoesGateway{client}
 }
 
 func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string) (*models.ElectricityMeterTechnicalDetails, error) {
 
-	technicalDetails, err := gw.client.GetTechnicalDetailsByMPAN(gw.mai.ToCtx(ctx), &ecoesv1.SearchByMPANRequest{
+	res, err := gw.client.GetTechnicalDetailsByMPAN(ctx, &ecoesv2.GetTechnicalDetailsByMPANRequest{
 		Mpan: mpan,
 	})
 	if err != nil {
@@ -44,6 +43,7 @@ func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string
 		ecoesAPIResponses.WithLabelValues(code.String()).Inc()
 		return nil, fmt.Errorf("failed to get technical details by mpan: %s, %w", mpan, err)
 	}
+	technicalDetails := res.GetTechnicalDetails()
 
 	meters := []models.ElectricityMeter{}
 
@@ -67,7 +67,7 @@ func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string
 
 func (gw *EcoesGateway) HasRelatedMPAN(ctx context.Context, mpan string) (bool, error) {
 
-	relatedMPAN, err := gw.client.GetRelatedMPANs(gw.mai.ToCtx(ctx), &ecoesv1.SearchByMPANRequest{
+	relatedMPAN, err := gw.client.GetRelatedMPANs(ctx, &ecoesv2.GetRelatedMPANsRequest{
 		Mpan: mpan,
 	})
 	if err != nil {

@@ -409,7 +409,7 @@ func (d BookingDomain) CreateBookingPointOfSale(ctx context.Context, params Crea
 func (d *BookingDomain) findLowriBeckKeys(ctx context.Context, accountID string) (_ models.Site, _ models.OccupancyEligibility, err error) {
 	var span trace.Span
 	if d.useTracing {
-		ctx, span = tracing.Tracer().Start(ctx, "BookingAPI.BookingDomain.GetSiteExternalReferenceByAccountID")
+		ctx, span = tracing.Start(ctx, "BookingAPI.BookingDomain.GetSiteExternalReferenceByAccountID")
 		defer func() {
 			tracing.RecordError(span, err)
 			span.End()

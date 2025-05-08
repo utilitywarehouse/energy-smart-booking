@@ -11,7 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
-	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
+	ecoesv2 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v2"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway"
 	mock_gateways "github.com/utilitywarehouse/energy-smart-booking/internal/repository/gateway/mocks"
@@ -26,17 +26,16 @@ func Test_GetMPANTechnicalDetails(t *testing.T) {
 	defer ctrl.Finish()
 
 	mEcoes := mock_gateways.NewMockEcoesClient(ctrl)
-	mai := fakeMachineAuthInjector{}
-	mai.ctx = ctx
+	myGw := gateway.NewEcoesGateway(mEcoes)
 
-	myGw := gateway.NewEcoesGateway(mai, mEcoes)
-
-	mEcoes.EXPECT().GetTechnicalDetailsByMPAN(ctx, &ecoesv1.SearchByMPANRequest{
+	ssc := "ssc-1"
+	profileClass := platform.ProfileClass_PROFILE_CLASS_01
+	mEcoes.EXPECT().GetTechnicalDetailsByMPAN(ctx, &ecoesv2.GetTechnicalDetailsByMPANRequest{
 		Mpan: "mpan-1",
-	}).Return(&ecoesv1.TechnicalDetailsResponse{
-		StandardSettlementConfiguration: "ssc-1",
-		ProfileClass:                    platform.ProfileClass_PROFILE_CLASS_01,
-		Meters: []*ecoesv1.MeterDetails{
+	}).Return(&ecoesv2.GetTechnicalDetailsByMPANResponse{TechnicalDetails: &ecoesv2.TechnicalDetails{
+		StandardSettlementConfiguration: &ssc,
+		ProfileClass:                    &profileClass,
+		Meters: []*ecoesv2.MeterDetails{
 			{
 				MeterType: platform.MeterTypeElec_METER_TYPE_ELEC_CHECK,
 				MeterInstalledDate: &date.Date{
@@ -62,7 +61,7 @@ func Test_GetMPANTechnicalDetails(t *testing.T) {
 				},
 			},
 		},
-	}, nil)
+	}}, nil)
 
 	actual := &models.ElectricityMeterTechnicalDetails{
 		Meters: []models.ElectricityMeter{
@@ -101,20 +100,17 @@ func Test_GetRelatedMPANs(t *testing.T) {
 	defer ctrl.Finish()
 
 	mEcoes := mock_gateways.NewMockEcoesClient(ctrl)
-	mai := fakeMachineAuthInjector{}
-	mai.ctx = ctx
+	myGw := gateway.NewEcoesGateway(mEcoes)
 
-	myGw := gateway.NewEcoesGateway(mai, mEcoes)
-
-	mEcoes.EXPECT().GetRelatedMPANs(ctx, &ecoesv1.SearchByMPANRequest{
+	mEcoes.EXPECT().GetRelatedMPANs(ctx, &ecoesv2.GetRelatedMPANsRequest{
 		Mpan: "mpan-1",
-	}).Return(&ecoesv1.GetRelatedMPANsResponse{
-		Relationships: []*ecoesv1.GetRelatedMPANsResponse_Relationship{
+	}).Return(&ecoesv2.GetRelatedMPANsResponse{
+		Relationships: []*ecoesv2.GetRelatedMPANsResponse_Relationship{
 			{
-				PrimaryMpan: &ecoesv1.RelatedMpan{
+				PrimaryMpan: &ecoesv2.RelatedMpan{
 					Mpan: "mpan-1",
 				},
-				SecondaryMpan: &ecoesv1.RelatedMpan{
+				SecondaryMpan: &ecoesv2.RelatedMpan{
 					Mpan: "mpan-2",
 				},
 			},

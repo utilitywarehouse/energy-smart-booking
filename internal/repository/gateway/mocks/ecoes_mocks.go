@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	ecoesv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v1"
+	ecoesv2 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v2"
 	grpc "google.golang.org/grpc"
 )
 
@@ -37,14 +37,14 @@ func (m *MockEcoesClient) EXPECT() *MockEcoesClientMockRecorder {
 }
 
 // GetRelatedMPANs mocks base method.
-func (m *MockEcoesClient) GetRelatedMPANs(arg0 context.Context, arg1 *ecoesv1.SearchByMPANRequest, arg2 ...grpc.CallOption) (*ecoesv1.GetRelatedMPANsResponse, error) {
+func (m *MockEcoesClient) GetRelatedMPANs(arg0 context.Context, arg1 *ecoesv2.GetRelatedMPANsRequest, arg2 ...grpc.CallOption) (*ecoesv2.GetRelatedMPANsResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetRelatedMPANs", varargs...)
-	ret0, _ := ret[0].(*ecoesv1.GetRelatedMPANsResponse)
+	ret0, _ := ret[0].(*ecoesv2.GetRelatedMPANsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -57,14 +57,14 @@ func (mr *MockEcoesClientMockRecorder) GetRelatedMPANs(arg0, arg1 interface{}, a
 }
 
 // GetTechnicalDetailsByMPAN mocks base method.
-func (m *MockEcoesClient) GetTechnicalDetailsByMPAN(arg0 context.Context, arg1 *ecoesv1.SearchByMPANRequest, arg2 ...grpc.CallOption) (*ecoesv1.TechnicalDetailsResponse, error) {
+func (m *MockEcoesClient) GetTechnicalDetailsByMPAN(arg0 context.Context, arg1 *ecoesv2.GetTechnicalDetailsByMPANRequest, arg2 ...grpc.CallOption) (*ecoesv2.GetTechnicalDetailsByMPANResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "GetTechnicalDetailsByMPAN", varargs...)
-	ret0, _ := ret[0].(*ecoesv1.TechnicalDetailsResponse)
+	ret0, _ := ret[0].(*ecoesv2.GetTechnicalDetailsByMPANResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
