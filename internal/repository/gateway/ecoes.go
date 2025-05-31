@@ -48,6 +48,10 @@ func (gw *EcoesGateway) GetMPANTechnicalDetails(ctx context.Context, mpan string
 	meters := []models.ElectricityMeter{}
 
 	for _, elem := range technicalDetails.GetMeters() {
+		// skip meters that have not been installed
+		if elem.GetMeterInstalledDate() == nil {
+			continue
+		}
 		meters = append(meters, models.ElectricityMeter{
 			MeterType:   elem.MeterType,
 			InstalledAt: time.Date(int(elem.GetMeterInstalledDate().GetYear()), time.Month(elem.GetMeterInstalledDate().Month), int(elem.GetMeterInstalledDate().GetDay()), 0, 0, 0, 0, time.UTC),

@@ -60,6 +60,10 @@ func Test_GetMPANTechnicalDetails(t *testing.T) {
 					Day:   3,
 				},
 			},
+			{
+				MeterType:          platform.MeterTypeElec_METER_TYPE_ELEC_2ADEF,
+				MeterInstalledDate: nil,
+			},
 		},
 	}}, nil)
 
@@ -87,8 +91,8 @@ func Test_GetMPANTechnicalDetails(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !cmp.Equal(expected, actual, cmpopts.IgnoreUnexported()) {
-		t.Fatalf("expected: %+v, actual: %+v", expected, actual)
+	if diff := cmp.Diff(expected, actual, cmpopts.IgnoreUnexported()); diff != "" {
+		t.Fatal(diff)
 	}
 }
 
