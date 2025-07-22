@@ -160,10 +160,7 @@ func runServer(c *cli.Context) error {
 	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(app.GrpcPort)))
 	if err != nil {
 		slog.Error("failed to listen on grpc port", "error", err)
-		return err
 	}
-	defer listen.Close()
-
 	mapper := mapper.NewLowriBeckMapper(c.String(sendingSystem),
 		c.String(receivingSystem),
 		c.String(electricityJobTypeCodeCredit),
