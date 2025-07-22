@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 type ClickLinkGateway interface {
@@ -41,26 +41,26 @@ func (s *Handler) generate(ctx context.Context) http.Handler {
 		var req GenerateLinkRequest
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
-			logrus.Errorf("Failed to read body content: %s", err.Error())
+			slog.Error("failed to read body content", "error", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		err = json.Unmarshal(b, &req)
 		if err != nil {
-			logrus.Errorf("Failed to unmarshall body content: %s", err.Error())
+			slog.Error("failed to unmarshall body content", "error", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 		if req.AccountNumber == "" {
-			logrus.Error("account number not provided")
+			slog.Error("account number not provided")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		linkType := r.URL.Query().Get("type")
 		if linkType == "" {
-			logrus.Error("link type not specified")
+			slog.Error("link type not specified")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -68,7 +68,7 @@ func (s *Handler) generate(ctx context.Context) http.Handler {
 		var link string
 		switch linkType {
 		default:
-			logrus.Errorf("unknown link type requested: %s", linkType)
+			slog.Error("unknown link type requested", "link_type", linkType)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		case "auth":
@@ -78,7 +78,7 @@ func (s *Handler) generate(ctx context.Context) http.Handler {
 		}
 
 		if err != nil {
-			logrus.WithField("account_number", req.AccountNumber).Error(err)
+			slog.Error(err.Error(), "account_number", req.AccountNumber)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

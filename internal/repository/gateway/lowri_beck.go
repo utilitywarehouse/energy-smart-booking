@@ -3,9 +3,9 @@ package gateway
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	lowribeckv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/models"
@@ -253,7 +253,7 @@ func (g LowriBeckGateway) CreateBookingPointOfSale(ctx context.Context, mpan, mp
 }
 
 func mapAvailableSlotsError(err error) error {
-	logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
+	slog.Error("failed to get available slotes", "error", ErrInternal, "error", err)
 
 	switch status.Convert(err).Code() {
 	case codes.Internal:
@@ -269,7 +269,7 @@ func mapAvailableSlotsError(err error) error {
 		for _, detail := range details {
 			switch x := detail.(type) {
 			case *lowribeckv1.InvalidParameterResponse:
-				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+				slog.Debug("found details in invalid argument error code", "parameters", x.GetParameters().String())
 
 				switch x.GetParameters() {
 				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
@@ -298,7 +298,7 @@ func mapCreateBookingError(err error) error {
 
 			switch x := detail.(type) {
 			case *lowribeckv1.InvalidParameterResponse:
-				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+				slog.Debug("found details in invalid argument error code", "parameters", x.GetParameters().String())
 
 				switch x.GetParameters() {
 				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
@@ -328,7 +328,7 @@ func mapCreateBookingError(err error) error {
 
 func mapAvailableSlotsPointOfSaleError(err error) error {
 
-	logrus.Errorf("failed to get available slots, %s, %s", ErrInternal, err)
+	slog.Error("failed to get available slots", "error_1", ErrInternal, "error_2", err)
 
 	switch status.Convert(err).Code() {
 	case codes.Internal:
@@ -344,7 +344,7 @@ func mapAvailableSlotsPointOfSaleError(err error) error {
 		for _, detail := range details {
 			switch x := detail.(type) {
 			case *lowribeckv1.InvalidParameterResponse:
-				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+				slog.Debug("found details in invalid argument error code", "parameters", x.GetParameters().String())
 
 				switch x.GetParameters() {
 				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,
@@ -377,7 +377,7 @@ func mapCreateBookingPointOfSaleError(err error) error {
 
 			switch x := detail.(type) {
 			case *lowribeckv1.InvalidParameterResponse:
-				logrus.Debugf("Found details in invalid argument error code, %s", x.GetParameters().String())
+				slog.Debug("found details in invalid argument error code", "parameters", x.GetParameters().String())
 
 				switch x.GetParameters() {
 				case lowribeckv1.Parameters_PARAMETERS_POSTCODE,

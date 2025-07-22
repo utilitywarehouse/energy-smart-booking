@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	envelope "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -162,50 +162,50 @@ func runEvaluator(c *cli.Context) error {
 	)
 
 	g.Go(func() error {
-		defer logrus.Info("alt han events consumer finished")
+		defer slog.Info("alt han events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, altHanSource, consumer.HandleAltHan(meterpointStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("opt out events consumer finished")
+		defer slog.Info("opt out events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutSource, consumer.HandleAccountOptOut(accountStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("account psr events consumer finished")
+		defer slog.Info("account psr events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, accountPSRSource, consumer.HandleAccountPSR(accountStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("booking ref events consumer finished")
+		defer slog.Info("booking ref events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, bookingRefSource, consumer.HandleBookingRef(bookingRefStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("meter events consumer finished")
+		defer slog.Info("meter events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, meterSource, consumer.HandleMeter(meterStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("meterpoint events consumer finished")
+		defer slog.Info("meterpoint events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, meterpointSource, consumer.HandleMeterpoint(meterpointStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("occupancy events consumer finished")
+		defer slog.Info("occupancy events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, occupancySource, consumer.HandleOccupancy(occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("service state events consumer finished")
+		defer slog.Info("service state events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, serviceSource, consumer.HandleService(serviceStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("site events consumer finished")
+		defer slog.Info("site events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, siteSource, consumer.HandleSite(siteStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
-		defer logrus.Info("wan coverage events consumer finished")
+		defer slog.Info("wan coverage events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, wanCoverageSource, consumer.HandleWanCoverage(postCodeStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer logrus.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
@@ -226,12 +226,12 @@ func keyFunc(m substrate.Message) []byte {
 
 	inner, err := env.Message.UnmarshalNew()
 	if err != nil {
-		logrus.WithError(err).Warn("error unmarshalling inner for key function")
+		slog.Warn("error unmarshalling inner for key function", "error", err)
 		return nil
 	}
 	e, ok := inner.(occupancyEligibility)
 	if !ok {
-		logrus.Warnf("message in event [%s] does not have an occupancy ID", env.Uuid)
+		slog.Warn("message in event does not have an occupancy ID", "event_uuid", env.Uuid)
 		return nil
 	}
 

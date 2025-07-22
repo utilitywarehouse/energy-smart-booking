@@ -3,10 +3,10 @@ package bq
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	smart "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -57,7 +57,7 @@ func (i *BookingJourneyEligibilityIndexer) Handle(_ context.Context, message sub
 	}
 
 	if env.Message == nil {
-		logrus.Info("skipping empty message")
+		slog.Info("skipping empty message")
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}

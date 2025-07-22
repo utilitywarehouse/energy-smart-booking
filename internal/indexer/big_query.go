@@ -2,10 +2,10 @@ package indexer
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 
 	"cloud.google.com/go/bigquery"
-	"github.com/sirupsen/logrus"
 	"google.golang.org/api/googleapi"
 )
 
@@ -24,7 +24,7 @@ type bq struct {
 func New(ctx context.Context, table *bigquery.Table, t interface{}, sizeHint int) BigQuery {
 	schema := mustSchema(t)
 	if err := ensureTable(ctx, table, schema); err != nil {
-		logrus.WithError(err).Panicf("unable to create table %s", table.TableID)
+		slog.Error("unable to create table", "table_id", table.TableID, "error", err)
 	}
 
 	return &bq{
@@ -85,7 +85,7 @@ func (b *batch) queue(item bigquery.ValueSaver) {
 func mustSchema(t interface{}) bigquery.Schema {
 	schema, err := bigquery.InferSchema(t)
 	if err != nil {
-		logrus.WithError(err).Panicf("unable to parse schema for %+v", t)
+		slog.Error("unable to parse schema", "schema", t, "error", err)
 	}
 	return schema
 }

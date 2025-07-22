@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -69,14 +69,14 @@ func runProjector(c *cli.Context) error {
 	opsServer.Add("opt-out-events-source", substratehealth.NewCheck(optOutEventsSource, "unable to consume opt out events"))
 
 	g.Go(func() error {
-		defer logrus.Info("opt out events consumer finished")
+		defer slog.Info("opt out events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutEventsSource, consumer.Handle(db, accountsRepo))
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer logrus.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

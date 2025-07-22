@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
@@ -69,22 +69,22 @@ func runProjector(c *cli.Context) error {
 	opsServer.Add("campaignability-events-source", substratehealth.NewCheck(campaignabilitySource, "unable to consume campaignability events"))
 
 	g.Go(func() error {
-		defer logrus.Info("eligibility events consumer finished")
+		defer slog.Info("eligibility events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, eligibilitySource, consumer.HandleEligibility(eligibilityDB))
 	})
 	g.Go(func() error {
-		defer logrus.Info("suppliability events consumer finished")
+		defer slog.Info("suppliability events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, suppliabilitySource, consumer.HandleSuppliability(suppliabilityDB))
 	})
 	g.Go(func() error {
-		defer logrus.Info("campaignability events consumer finished")
+		defer slog.Info("campaignability events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, campaignabilitySource, consumer.HandleCampaignability(campaignabilityDB))
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer logrus.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

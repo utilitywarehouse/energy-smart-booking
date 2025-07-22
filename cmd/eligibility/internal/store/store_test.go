@@ -2,10 +2,10 @@ package store
 
 import (
 	"context"
+	"log/slog"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-pkg/postgres"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/migrations"
 )
@@ -17,26 +17,26 @@ func TestMain(m *testing.M) {
 
 	container, err := postgres.SetupTestContainer(ctx)
 	if err != nil {
-		logrus.Fatal(err)
+		slog.Error("failed to setup test contaienr", "error", err)
 	}
 	defer func() {
 		if err := container.Terminate(ctx); err != nil {
-			logrus.Fatal(err)
+			slog.Error("failed to terminate container", "error", err)
 		}
 	}()
 
 	pgDSN, err = postgres.GetTestContainerDSN(container)
 	if err != nil {
-		logrus.Fatal(err)
+		slog.Error("failed to get test container dsn", "error", err)
 	}
 
 	pool, err := postgres.Setup(ctx, pgDSN, migrations.Source)
 	if err != nil {
-		logrus.Fatal(err)
+		slog.Error("failed to setup postgres", "error", err)
 	}
 	defer func() {
 		if err := postgres.Teardown(pool, migrations.Source); err != nil {
-			logrus.Fatal(err)
+			slog.Error("failed to teardown(migrate down)", "error", err)
 		}
 	}()
 
@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 func connect(ctx context.Context) *pgxpool.Pool {
 	pool, err := postgres.Connect(ctx, pgDSN)
 	if err != nil {
-		logrus.Fatal(err)
+		slog.Error("failed to connect to postgres", "error", err)
 	}
 	return pool
 }
