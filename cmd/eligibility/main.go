@@ -1,9 +1,9 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 )
@@ -344,6 +344,6 @@ func main() {
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
-		log.WithError(err).Panic("unable to run app")
+		slog.Error("unable to run app", "error", err)
 	}
 }

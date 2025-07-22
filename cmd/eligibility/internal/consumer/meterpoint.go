@@ -3,8 +3,8 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	"github.com/utilitywarehouse/energy-pkg/domain"
@@ -32,7 +32,7 @@ func HandleMeterpoint(s MeterpointStore, occupancyStore OccupancyMeterpointStore
 			}
 
 			if env.Message == nil {
-				log.Info("skipping empty meterpoint message")
+				slog.Info("skipping empty meterpoint message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}

@@ -3,9 +3,9 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	energy_entities "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/service/v1"
 	"github.com/utilitywarehouse/energy-pkg/domain"
@@ -48,7 +48,7 @@ func (h *ServiceStateHandler) Handle(_ context.Context, message substrate.Messag
 
 	eventUUID := env.Uuid
 	if env.Message == nil {
-		log.Infof("skipping empty message [%s]", eventUUID)
+		slog.Info("skipping empty message", "event_uuid", eventUUID)
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}
@@ -62,7 +62,7 @@ func (h *ServiceStateHandler) Handle(_ context.Context, message substrate.Messag
 	case *energy_entities.EnergyServiceEvent:
 		svc, err := extractService(ev)
 		if err != nil {
-			log.Infof("skipping service event, missing gas and electricity. event uuid: %s, service id: %s", eventUUID, ev.GetServiceId())
+			slog.Info("skipping service event, missing gas and electricity", "event_uuid", eventUUID, "service_id", ev.GetServiceId())
 			return nil
 		}
 

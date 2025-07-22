@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	energy_entities "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/service/v1"
 	"github.com/utilitywarehouse/energy-pkg/domain"
@@ -38,7 +38,7 @@ func HandleService(s ServiceStore, occupancyStore ServiceOccupancyStore, evaluat
 			}
 
 			if env.Message == nil {
-				log.Info("skipping empty service message")
+				slog.Info("skipping empty service message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}

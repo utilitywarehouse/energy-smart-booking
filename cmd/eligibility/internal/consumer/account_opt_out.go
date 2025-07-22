@@ -3,8 +3,8 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	smart "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -34,7 +34,7 @@ func HandleAccountOptOut(store AccountOptOutStore, occupancyStore OccupancyOptOu
 			}
 
 			if env.Message == nil {
-				log.Info("skipping empty account opt out message")
+				slog.Info("skipping empty account opt out message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}

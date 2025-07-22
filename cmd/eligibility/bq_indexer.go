@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
@@ -74,26 +74,26 @@ func runBigQueryIndexer(c *cli.Context) error {
 	bookingJourneyEligibilityIndexer := bq.NewBookingJourneyEligibilityIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryBookingJourneyEligibilityRefTable))
 
 	g.Go(func() error {
-		defer log.Info("eligibility consumer finished")
+		defer slog.Info("eligibility consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, eligibilitySource, eligibilityIndexer)
 	})
 	g.Go(func() error {
-		defer log.Info("suppliability consumer finished")
+		defer slog.Info("suppliability consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, suppliabilitySource, suppliabilityIndexer)
 	})
 	g.Go(func() error {
-		defer log.Info("campaignability consumer finished")
+		defer slog.Info("campaignability consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, campaignabilitySource, campaignabilityIndexer)
 	})
 	g.Go(func() error {
-		defer log.Info("booking journey eligibility consumer finished")
+		defer slog.Info("booking journey eligibility consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, bookingJourneySource, bookingJourneyEligibilityIndexer)
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer log.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

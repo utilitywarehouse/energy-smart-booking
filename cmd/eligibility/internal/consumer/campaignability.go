@@ -3,8 +3,8 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	smart "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -27,7 +27,7 @@ func HandleCampaignability(store SuppliabilityStore) substratemessage.BatchHandl
 			}
 
 			if env.Message == nil {
-				log.Info("skipping empty campaignability message")
+				slog.Info("skipping empty campaignability message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}

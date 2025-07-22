@@ -3,9 +3,9 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -31,7 +31,7 @@ func HandleSite(store SiteStore, occupancyStore OccupancySiteStore, evaluator Ev
 			}
 
 			if env.Message == nil {
-				log.Info("skipping empty site message")
+				slog.Info("skipping empty site message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}
@@ -45,11 +45,11 @@ func HandleSite(store SiteStore, occupancyStore OccupancySiteStore, evaluator Ev
 				return nil
 			case *platform.SiteDiscoveredEvent:
 				if x.GetAddress() == nil {
-					log.Infof("skip site event %s: empty address", x.GetSiteId())
+					slog.Info("skipping site event", "site_id", x.GetSiteId())
 					continue
 				}
 				if x.GetAddress().GetPostcode() == "" {
-					log.Infof("skip site event %s: empty post code", x.GetSiteId())
+					slog.Info("skipping site event", "site_id", x.GetSiteId())
 					continue
 				}
 				err = store.Add(ctx, x.GetSiteId(), x.GetAddress().GetPostcode(), env.OccurredAt.AsTime())

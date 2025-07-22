@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -10,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -114,7 +114,7 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		log.WithError(err).Panic("unable to run app")
+		slog.Error("unable to run app", "error", err)
 	}
 }
 
@@ -142,7 +142,7 @@ func runServer(c *cli.Context) error {
 		telemetry.WithServiceVersion(gitHash),
 	)
 	if err != nil {
-		log.Errorf("Telemetry cannot be registered: %v", err)
+		slog.Error("telemetry cannot be registered", "error", err)
 	}
 	defer closer.Close()
 
@@ -158,7 +158,7 @@ func runServer(c *cli.Context) error {
 
 	listen, err := net.Listen("tcp", fmt.Sprintf(":%d", c.Int(app.GrpcPort)))
 	if err != nil {
-		log.WithError(err).Panic("failed to listen on GRPC port")
+		slog.Error("failed to listen on grpc port", "error", err)
 	}
 	defer listen.Close()
 
@@ -173,26 +173,26 @@ func runServer(c *cli.Context) error {
 	contracts.RegisterLowriBeckAPIServer(grpcServer, lowribeckAPI)
 
 	g.Go(func() error {
-		defer log.Info("ops server finished")
+		defer slog.Info("ops server finished")
 		return opsServer.Start(ctx)
 	})
 
 	g.Go(func() error {
-		defer log.Info("grpc server finished")
+		defer slog.Info("grpc server finished")
 		return grpcServer.Serve(listen)
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
 	g.Go(func() error {
-		defer log.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case sig := <-sigChan:
 			switch sig {
 			case syscall.SIGTERM:
-				log.Info("cancelling context")
+				slog.Info("cancelling context")
 				cancel()
 			}
 		}
@@ -207,7 +207,7 @@ func lowribeckChecker(ctx context.Context, healthCheckFn func(context.Context) e
 		err := healthCheckFn(ctx)
 		if err != nil {
 			metrics.LBAPIRunning.Set(0.0)
-			log.Debugf("health check got error: %s", err)
+			slog.Debug("health check got error", "error", err)
 			cr.Degraded("health check failed "+err.Error(), "Check LowriBeck VPN connection/Third Party service provider")
 			return
 		}

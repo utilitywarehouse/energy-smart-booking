@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
 	smart "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/opt-out/internal/store"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
@@ -69,7 +69,7 @@ func (s *Handler) Register(ctx context.Context, router *mux.Router) {
 // EnableCORS enables adding CORS headers.
 func EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info("enable cors middlware")
+		slog.Info("enable cors middlware")
 		if origin := r.Header.Get("Origin"); origin != "" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
@@ -88,7 +88,7 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accountNumber, ok := mux.Vars(r)["number"]
 		if !ok {
-			log.Error("accountNumber not provided")
+			slog.Error("accountNumber not provided")
 			w.Write([]byte("accountNumber not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -96,7 +96,7 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 
 		accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
 		if err != nil {
-			log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
+			slog.Error("failed to find account id for accountNumber", "account_number", accountNumber, "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -104,7 +104,7 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 		// retrieve account from database to avoid sending duplicate events.
 		_, err = s.store.Get(ctx, accountID)
 		if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-			log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
+			slog.Error("failed to check opt out status for account accountNumber", "account_number", accountNumber, "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -115,7 +115,7 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 
 			id, err := s.idClient.WhoAmI(ctx, pdp.PrincipalFromCtx(r.Context()))
 			if err != nil {
-				log.WithError(err).Error("failed to check principal identity from context")
+				slog.Error("failed to check principal identity from context", "error", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -128,7 +128,7 @@ func (s *Handler) add(ctx context.Context) http.Handler {
 				AddedBy:   addedBy,
 			}, time.Now().UTC())
 			if err != nil {
-				log.WithError(err).Errorf("failed to publish opt out added event for account %s", accountNumber)
+				slog.Error("failed to publish opt out added event for account", "account_number", accountNumber, "error", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
@@ -142,7 +142,7 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accountNumber, ok := mux.Vars(r)["number"]
 		if !ok {
-			log.Error("accountNumber not provided")
+			slog.Error("accountNumber not provided")
 			w.Write([]byte("accountNumber not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -150,7 +150,7 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 
 		accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
 		if err != nil {
-			log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
+			slog.Error("failed to find account id for accountNumber", "account_number", accountNumber, "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -158,7 +158,7 @@ func (s *Handler) get(ctx context.Context) http.Handler {
 		// retrieve account from database to avoid sending duplicate events.
 		acc, err := s.store.Get(ctx, accountID)
 		if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-			log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
+			slog.Error("failed to check opt out status for accountNumber", "account_number", accountNumber, "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -181,7 +181,7 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accountNumber, ok := mux.Vars(r)["number"]
 		if !ok {
-			log.Error("accountNumber not provided")
+			slog.Error("accountNumber not provided")
 			w.Write([]byte("accountNumber not provided"))
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -189,7 +189,7 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 
 		accountID, err := s.accountsRepo.AccountID(ctx, accountNumber)
 		if err != nil {
-			log.WithError(err).Errorf("failed to find account id for accountNumber %s", accountNumber)
+			slog.Error("failed to find account id for accountNumber", "account_number", accountNumber, "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -197,7 +197,7 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 		// retrieve account from database to avoid sending duplicate events.
 		_, err = s.store.Get(ctx, accountID)
 		if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-			log.WithError(err).Errorf("failed to check opt out status for account accountNumber %s", accountNumber)
+			slog.Error("failed to check opt out status for accountNumber", "account_number", accountNumber, "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -211,6 +211,7 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 		id, err := s.idClient.WhoAmI(r.Context(), pdp.PrincipalFromCtx(r.Context()))
 		if err != nil {
 			log.WithError(err).Error("failed to check principal identity from context")
+			slog.Error("failed to check principal identity from context", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -223,7 +224,7 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 			RemovedBy: removedBy,
 		}, time.Now())
 		if err != nil {
-			log.WithError(err).Errorf("failed to publish opt out removed event for account %s", accountNumber)
+			slog.Error("failed to publish opt out removed event for account", "account_number", accountNumber, "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -236,6 +237,7 @@ func (s *Handler) list(w http.ResponseWriter, r *http.Request) {
 	list, err := s.store.List(ctx)
 	if err != nil {
 		log.WithError(err).Error("failed to list all accounts")
+		slog.Error("failed to list all accounts", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

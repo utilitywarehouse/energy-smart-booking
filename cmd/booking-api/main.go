@@ -1,9 +1,9 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
@@ -55,7 +55,7 @@ func makeOps(c *cli.Context) *ops.Server {
 
 func main() {
 	if err := application.Run(os.Args); err != nil {
-		log.WithError(err).Fatalln("service terminated unexpectedly")
+		slog.Error("service terminated unexpectadly", "error", err)
 		os.Exit(1)
 	}
 }

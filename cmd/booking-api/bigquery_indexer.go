@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,7 +12,6 @@ import (
 	bq "github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/big_query"
 
 	"cloud.google.com/go/bigquery"
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
@@ -97,14 +97,14 @@ func runBigQueryIndexerAction(c *cli.Context) error {
 	bookingIndexer := bq.NewRescheduledBookingIndexer(bqClient, c.String(bigQueryDatasetID), c.String(bigQueryBookingTable), c.String(bigQueryRescheduledBookingTable))
 
 	g.Go(func() error {
-		defer log.Info("booking consumer finished")
+		defer slog.Info("booking consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(flagBatchSize), time.Second, bookingSource, bookingIndexer)
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer log.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
