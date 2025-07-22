@@ -18,6 +18,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/api"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/inmemory"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"github.com/uw-labs/substrate"
@@ -43,6 +44,11 @@ func runHTTPApi(c *cli.Context) error {
 	meterStore := store.NewMeter(pool)
 	occupancyStore := store.NewOccupancy(pool)
 	serviceStore := store.NewService(pool)
+
+	msnExceptionStore, err := inmemory.NewMeterSerialNumber(c.String(msnExceptionFilePath))
+	if err != nil {
+		return fmt.Errorf("failed to load file with meter serial number with smart meter exclusion, %w", err)
+	}
 
 	eligibilitySink, err := app.GetKafkaSink(c, c.String(eligibilityTopic))
 	if err != nil {
@@ -76,6 +82,7 @@ func runHTTPApi(c *cli.Context) error {
 		suppliabilitySyncPublisher,
 		campaignabilitySyncPublisher,
 		bookingEligibilitySyncPublisher,
+		msnExceptionStore,
 	)
 
 	router := mux.NewRouter()

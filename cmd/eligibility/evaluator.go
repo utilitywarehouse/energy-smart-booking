@@ -18,6 +18,7 @@ import (
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/consumer"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store"
+	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/store/inmemory"
 	"github.com/utilitywarehouse/energy-smart-booking/internal/publisher"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/sqlhealth"
 	"github.com/utilitywarehouse/go-ops-health-checks/v3/pkg/substratehealth"
@@ -57,6 +58,11 @@ func runEvaluator(c *cli.Context) error {
 	siteStore := store.NewSite(pool)
 	postCodeStore := store.NewPostCode(pool)
 
+	msnExceptionStore, err := inmemory.NewMeterSerialNumber(c.String(msnExceptionFilePath))
+	if err != nil {
+		return fmt.Errorf("failed to load file with meter serial number with smart meter exclusion, %w", err)
+	}
+
 	altHanSource, err := app.GetKafkaSource(c, c.String(app.KafkaConsumerGroup), c.String(altHanTopic))
 	if err != nil {
 		return fmt.Errorf("unable to create alt han events source [%s]: %w", c.String(altHanTopic), err)
@@ -70,13 +76,6 @@ func runEvaluator(c *cli.Context) error {
 	}
 	defer optOutSource.Close()
 	opsServer.Add("opt-out-source", substratehealth.NewCheck(optOutSource, "unable to consume opt out events"))
-
-	accountPSRSource, err := app.GetKafkaSource(c, c.String(app.KafkaConsumerGroup), c.String(accountPsrTopic))
-	if err != nil {
-		return fmt.Errorf("unable to create account PSR events source [%s]: %w", c.String(accountPsrTopic), err)
-	}
-	defer accountPSRSource.Close()
-	opsServer.Add("account-psr-source", substratehealth.NewCheck(accountPSRSource, "unable to consume account PSR events"))
 
 	bookingRefSource, err := app.GetKafkaSource(c, c.String(app.KafkaConsumerGroup), c.String(bookingRefTopic))
 	if err != nil {
@@ -159,6 +158,7 @@ func runEvaluator(c *cli.Context) error {
 		suppliabilitySyncPublisher,
 		campaignabilitySyncPublisher,
 		bookingEligibilitySyncPublisher,
+		msnExceptionStore,
 	)
 
 	g.Go(func() error {
@@ -168,10 +168,6 @@ func runEvaluator(c *cli.Context) error {
 	g.Go(func() error {
 		defer slog.Info("opt out events consumer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutSource, consumer.HandleAccountOptOut(accountStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
-	})
-	g.Go(func() error {
-		defer slog.Info("account psr events consumer finished")
-		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, accountPSRSource, consumer.HandleAccountPSR(accountStore, occupancyStore, evaluator, c.Bool(stateRebuild)))
 	})
 	g.Go(func() error {
 		defer slog.Info("booking ref events consumer finished")

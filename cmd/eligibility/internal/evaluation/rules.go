@@ -1,8 +1,6 @@
 package evaluation
 
 import (
-	"strings"
-
 	energy_domain "github.com/utilitywarehouse/energy-pkg/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 )
@@ -60,17 +58,8 @@ func evaluateSuppliability(o *domain.Occupancy) domain.IneligibleReasons {
 	return result.status()
 }
 
-func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
+func (e *Evaluator) evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
 	result := evaluation{reason: make(map[domain.IneligibleReason]struct{}, 0)}
-
-	if len(o.Account.PSRCodes) != 0 {
-		psrCodes := strings.Join(o.Account.PSRCodes, ",")
-		if strings.Contains(psrCodes, "10") ||
-			strings.Contains(psrCodes, "35") ||
-			strings.Contains(psrCodes, "36") {
-			result.addReason(domain.IneligibleReasonPSRVulnerabilities)
-		}
-	}
 
 	if o.Site == nil {
 		result.addReason(domain.IneligibleReasonMissingSiteData)
@@ -94,7 +83,7 @@ func evaluateEligibility(o *domain.Occupancy) domain.IneligibleReasons {
 
 		if s.Meter == nil {
 			result.addReason(domain.IneligibleReasonMissingMeterData)
-		} else if s.Meter.IsSmart() {
+		} else if s.Meter.IsSmart() && !e.meterSerialNumberStore.FindMeterSerialNumber(s.Meter.MSN) {
 			result.addReason(domain.IneligibleReasonAlreadySmart)
 		}
 	}

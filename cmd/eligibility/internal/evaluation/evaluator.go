@@ -21,10 +21,15 @@ type MeterStore interface {
 	Get(ctx context.Context, mpxn string) (domain.Meter, error)
 }
 
+type MeterSerialNumberStore interface {
+	FindMeterSerialNumber(msn string) bool
+}
+
 type Evaluator struct {
 	occupancyStore         OccupancyStore
 	serviceStore           ServiceStore
 	meterStore             MeterStore
+	meterSerialNumberStore MeterSerialNumberStore
 	eligibilitySync        publisher.SyncPublisher
 	suppliabilitySync      publisher.SyncPublisher
 	campaignabilitySync    publisher.SyncPublisher
@@ -33,7 +38,7 @@ type Evaluator struct {
 
 func NewEvaluator(occupanciesStore OccupancyStore, serviceStore ServiceStore, meterStore MeterStore,
 	eligibilitySync publisher.SyncPublisher, suppliabilitySync publisher.SyncPublisher, campaignabilitySync publisher.SyncPublisher,
-	bookingEligibilitySync publisher.SyncPublisher) *Evaluator {
+	bookingEligibilitySync publisher.SyncPublisher, meterSerialNumberStore MeterSerialNumberStore) *Evaluator {
 	return &Evaluator{
 		occupancyStore:         occupanciesStore,
 		serviceStore:           serviceStore,
@@ -42,5 +47,6 @@ func NewEvaluator(occupanciesStore OccupancyStore, serviceStore ServiceStore, me
 		suppliabilitySync:      suppliabilitySync,
 		campaignabilitySync:    campaignabilitySync,
 		bookingEligibilitySync: bookingEligibilitySync,
+		meterSerialNumberStore: meterSerialNumberStore,
 	}
 }
