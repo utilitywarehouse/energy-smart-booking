@@ -28,7 +28,7 @@ var (
 	application = &cli.App{
 		Name:   appName,
 		Usage:  appDesc,
-		Before: app.Before,
+		Before: app.SetupLogger,
 		Flags: app.DefaultFlags().WithKafka().WithCustom(
 			&cli.StringFlag{
 				Name:    flagBookingTopic,

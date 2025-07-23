@@ -13,6 +13,7 @@ require (
 	github.com/justinas/alice v1.2.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rubenv/sql-migrate v1.6.1
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.10.0
 	github.com/urfave/cli/v2 v2.27.2
 	github.com/utilitywarehouse/account-platform v0.0.0-20240628100802-6d32fdcabcc6
@@ -20,7 +21,7 @@ require (
 	github.com/utilitywarehouse/bill-contracts v1.0.1
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20231012104247-b8d0609ca912
 	github.com/utilitywarehouse/energy-contracts v1.229.0
-	github.com/utilitywarehouse/energy-pkg/app v1.5.1
+	github.com/utilitywarehouse/energy-pkg/app v1.7.0
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.1
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.8
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.6
@@ -89,7 +90,6 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/shirou/gopsutil/v4 v4.25.3 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
