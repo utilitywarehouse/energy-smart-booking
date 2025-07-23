@@ -210,7 +210,6 @@ func (s *Handler) remove(ctx context.Context) http.Handler {
 
 		id, err := s.idClient.WhoAmI(r.Context(), pdp.PrincipalFromCtx(r.Context()))
 		if err != nil {
-			log.WithError(err).Error("failed to check principal identity from context")
 			slog.Error("failed to check principal identity from context", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -236,7 +235,6 @@ func (s *Handler) list(w http.ResponseWriter, r *http.Request) {
 
 	list, err := s.store.List(ctx)
 	if err != nil {
-		log.WithError(err).Error("failed to list all accounts")
 		slog.Error("failed to list all accounts", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return

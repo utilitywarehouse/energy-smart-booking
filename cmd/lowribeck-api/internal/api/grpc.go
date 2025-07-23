@@ -187,13 +187,13 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	}
 	resp, err := l.client.CreateBookingPointOfSale(ctx, bookingReq)
 	if err != nil {
-		slog.Error("error making booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", err)
+		slog.Error("error making booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "elec_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", err)
 		return nil, status.Errorf(codes.Internal, "error making booking point of sale request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.BookingResponsePointOfSale(resp)
 	if mappedErr != nil {
-		slog.Error("error in booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", err)
+		slog.Error("error in booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "elec_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", err)
 		return nil, getStatusFromError("error making booking point of sale request: %v", metrics.CreateBooking, mappedErr)
 	}
 	return mappedResp, nil
