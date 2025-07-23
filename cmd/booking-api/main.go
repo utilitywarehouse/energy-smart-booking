@@ -55,7 +55,7 @@ func makeOps(c *cli.Context) *ops.Server {
 
 func main() {
 	if err := application.Run(os.Args); err != nil {
-		slog.Error("service terminated unexpectadly", "error", err)
+		slog.Error("service terminated unexpectedly", "error", err)
 		os.Exit(1)
 	}
 }
