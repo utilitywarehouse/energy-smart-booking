@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/account-platform/pkg/id"
 	addressv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/energy_entities/address/v1"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
@@ -393,7 +393,7 @@ func (b *BookingAPI) CreateBooking(ctx context.Context, req *bookingv1.CreateBoo
 
 	err = b.bookingPublisher.Sink(ctx, createBookingResponse.Event, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink create booking event: %+v", createBookingResponse.Event)
+		slog.Error("failed to sink create booking event", "booking_event", createBookingResponse.Event)
 	}
 
 	return &bookingv1.CreateBookingResponse{
@@ -484,13 +484,13 @@ func (b *BookingAPI) RescheduleBooking(ctx context.Context, req *bookingv1.Resch
 
 	err = b.bookingPublisher.Sink(ctx, rescheduleBookingResponse.BookingEvent, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink reschedule booking event: %+v", rescheduleBookingResponse.BookingEvent)
+		slog.Error("failed to sink reschedule booking event", "booking_event", rescheduleBookingResponse.BookingEvent)
 	}
 
 	if rescheduleBookingResponse.CommsEvent != nil {
 		err = b.rescheduleCommsPublisher.Sink(ctx, rescheduleBookingResponse.CommsEvent, time.Now())
 		if err != nil {
-			logrus.Errorf("failed to sink reschedule booking comms event: %+v", rescheduleBookingResponse.CommsEvent)
+			slog.Error("failed to sink comms event", "comms_event", rescheduleBookingResponse.BookingEvent)
 		}
 	}
 
@@ -647,7 +647,9 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	if err != nil {
 		switch err {
 		case domain.ErrMissingOccupancyInBooking:
-			logrus.Warnf("occupancy for the account_id: %s was not found! saving the partial booking created event in the database with booking_id: %s", createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).Details.AccountId, createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).BookingId)
+			slog.Warn("occupancy for account was not found, saving the partial booking created event in the database with booking_id",
+				"account_id", createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).Details.AccountId,
+				"booking_id", createBookingResponse.BookingEvent.(*bookingv1.BookingCreatedEvent).BookingId)
 		default:
 			return &bookingv1.CreateBookingPointOfSaleResponse{
 				BookingId: "",
@@ -658,13 +660,13 @@ func (b *BookingAPI) CreateBookingPointOfSale(ctx context.Context, req *bookingv
 	if !errors.Is(err, domain.ErrMissingOccupancyInBooking) {
 		err = b.bookingPublisher.Sink(ctx, createBookingResponse.BookingEvent, time.Now())
 		if err != nil {
-			logrus.Errorf("failed to sink create booking event: %+v, %s", createBookingResponse.BookingEvent, err)
+			slog.Error("failed to sink create booking event", "error", err, "booking_event", createBookingResponse.BookingEvent)
 		}
 	}
 
 	err = b.commsPublisher.Sink(ctx, createBookingResponse.CommsEvent, time.Now())
 	if err != nil {
-		logrus.Errorf("failed to sink comm point of sale booking confirmation event: %+v, %s", createBookingResponse.CommsEvent, err)
+		slog.Error("failed to sink comm point of sale booking confirmation event", "error", err, "pos_confirmation_event", createBookingResponse.CommsEvent)
 	}
 
 	return &bookingv1.CreateBookingPointOfSaleResponse{
@@ -990,10 +992,7 @@ func (b *BookingAPI) validateCredentials(ctx context.Context, action, resource, 
 		ResourceID: requestAccountID,
 	})
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"action":   action,
-			"resource": resource,
-		}).Error("Authorize error: ", err)
+		slog.Error("authorise error", "action", action, "resource", resource, "error", err)
 		return err
 	}
 	if !authorised {

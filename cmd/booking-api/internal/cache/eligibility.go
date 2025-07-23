@@ -3,8 +3,7 @@ package cache
 import (
 	"context"
 	"errors"
-
-	log "github.com/sirupsen/logrus"
+	"log/slog"
 )
 
 var ErrNotFound = errors.New("not cached")
@@ -47,7 +46,7 @@ func (c *MeterpointEligibilityCacheWrapper) GetMeterpointEligibility(ctx context
 
 	err = c.cache.SetEligibilityForMpxn(ctx, mpan, mprn, eligible)
 	if err != nil {
-		log.WithField("mpan", mpan).Warn("unable to write to cache")
+		slog.Warn("unable to write to cache", "mpan", mpan, "error", err)
 	}
 	return eligible, nil
 }

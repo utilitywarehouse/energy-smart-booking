@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/robfig/cron/v3"
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/booking-api/internal/repository/store"
@@ -53,7 +53,7 @@ func init() {
 }
 
 func partialBookingWorkerAction(c *cli.Context) error {
-	log.WithField("git_hash", gitHash).WithField("command", commandNameServer).Info("starting app")
+	slog.Info("starting app", "git_hash", gitHash, "command", commandNameServer)
 
 	opsServer := makeOps(c)
 
@@ -85,12 +85,12 @@ func partialBookingWorkerAction(c *cli.Context) error {
 	partialBookingWorker := workers.NewPartialBookingWorker(partialBookingStore, occupancyStore, syncBookingPublisher, c.Duration(flagRetainedBookingPeriodAlertThreshold))
 
 	g.Go(func() error {
-		defer log.Info("ops server finished")
+		defer slog.Info("ops server finished")
 		return opsServer.Start(ctx)
 	})
 
 	g.Go(func() error {
-		defer log.Info("partial booking cron job finished")
+		defer slog.Info("partial booking cron job finished")
 		cron := cron.New()
 
 		cron.Start()
@@ -98,7 +98,8 @@ func partialBookingWorkerAction(c *cli.Context) error {
 
 		if _, err := cron.AddFunc(c.String(flagPartialBookingCron), func() {
 			if err := partialBookingWorker.Run(ctx); err != nil {
-				log.WithError(err).Panic("failed to run partial booking cron")
+				slog.Error("failed to run partial booking cron", "error", err)
+				os.Exit(1)
 			}
 		}); err != nil {
 			return fmt.Errorf("cron job failed for partial booking cron, %w", err)
@@ -111,7 +112,7 @@ func partialBookingWorkerAction(c *cli.Context) error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer log.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

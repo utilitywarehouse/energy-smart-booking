@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
@@ -96,7 +96,7 @@ func runHTTPApi(c *cli.Context) error {
 	})
 
 	g.Go(func() error {
-		defer logrus.Info("server exited")
+		defer slog.Info("server exited")
 		return httpServer.ListenAndServe()
 	})
 
@@ -106,7 +106,7 @@ func runHTTPApi(c *cli.Context) error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer logrus.Debug("signal handler finished")
+		defer slog.Debug("signal handler finished")
 		select {
 		case <-ctx.Done():
 			httpServer.Close()

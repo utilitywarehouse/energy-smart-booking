@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	contract "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/lowribeck/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/lowribeck"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/mapper"
@@ -83,13 +83,13 @@ func (l *LowriBeckAPI) GetAvailableSlots(ctx context.Context, req *contract.GetA
 	availabilityReq := l.mapper.AvailabilityRequest(requestID, req)
 	resp, err := l.client.GetCalendarAvailability(ctx, availabilityReq)
 	if err != nil {
-		logrus.Errorf("error making get available slots request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
+		slog.Error("error making get available slots request", "error", err, "request_id", requestID, "reference", req.GetReference(), "postcode", req.GetPostcode())
 		return nil, status.Errorf(codes.Internal, "error making get available slots request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.AvailableSlotsResponse(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error in get available slots response(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
+		slog.Error("error in get available slots response", "error", mappedErr, "request_id", requestID, "reference", req.GetReference(), "postcode", req.GetPostcode())
 		return nil, getStatusFromError("error making get available slots request: %v", metrics.GetAvailableSlots, mappedErr)
 	}
 	return mappedResp, nil
@@ -110,18 +110,18 @@ func (l *LowriBeckAPI) CreateBooking(ctx context.Context, req *contract.CreateBo
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequest(requestID, req)
 	if err != nil {
-		logrus.Errorf("error mapping booking request for reference(%s) and postcode(%s): %v", req.GetReference(), req.GetPostcode(), err)
+		slog.Error("error mapping booking request", "error", err, "reference", req.GetReference(), "postcode", req.GetPostcode())
 		return nil, status.Errorf(codes.InvalidArgument, "error mapping booking request: %v", err)
 	}
 	resp, err := l.client.CreateBooking(ctx, bookingReq)
 	if err != nil {
-		logrus.Errorf("error making booking request(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), err)
+		slog.Error("error making booking request", "error", err, "request_id", requestID, "reference", req.GetReference(), "postcode", req.GetPostcode())
 		return nil, status.Errorf(codes.Internal, "error making booking request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.BookingResponse(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error in booking response(%d) for reference(%s) and postcode(%s): %v", requestID, req.GetReference(), req.GetPostcode(), mappedErr)
+		slog.Error("error in booking response", "request_id", requestID, "reference", req.GetReference(), "postcode", req.GetPostcode(), "error", mappedErr)
 		return nil, getStatusFromError("error making booking request: %v", metrics.CreateBooking, mappedErr)
 	}
 	return mappedResp, nil
@@ -144,20 +144,20 @@ func (l *LowriBeckAPI) GetAvailableSlotsPointOfSale(ctx context.Context, req *co
 	if err != nil {
 		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
 			errors.Is(err, mapper.ErrInvalidGasTariffType) {
-			logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+			slog.Error("error mapping booking point of sale request", "mpan", req.Mpan, "mprn", req.Mprn, "electricity_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.GetPostcode(), "error", err)
 			return nil, status.Errorf(codes.Internal, "error making get available slots point of sale: %v", err)
 		}
 	}
 
 	resp, err := l.client.GetCalendarAvailabilityPointOfSale(ctx, availableSlotsRequest)
 	if err != nil {
-		logrus.Errorf("error making get available slots for point of sale, response(%d) for mpan/mprn(%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), err)
+		slog.Error("error making get available slots for point of sale", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "electricity_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.GetPostcode(), "error", err)
 		return nil, status.Errorf(codes.Internal, "error making get available slots point of sale request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.AvailableSlotsPointOfSaleResponse(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error in get available slots for point of sale, response(%d) for mpan/mprn(%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.GetPostcode(), mappedErr)
+		slog.Error("error in get available slots for point of sale", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "electricity_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.GetPostcode(), "error", mappedErr)
 		return nil, getStatusFromError("error making get available slots point of sale request: %v", metrics.GetAvailableSlots, mappedErr)
 	}
 	return mappedResp, nil
@@ -178,7 +178,7 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	requestID := uuid.New().ID()
 	bookingReq, err := l.mapper.BookingRequestPointOfSale(requestID, req)
 	if err != nil {
-		logrus.Errorf("error mapping booking point of sale request for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.SiteAddress.Paf.GetPostcode(), err)
+		slog.Error("error mapping booking point of sale request", "mpan", req.Mpan, "mprn", req.Mprn, "electricity_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", err)
 		if errors.Is(err, mapper.ErrInvalidElectricityTariffType) ||
 			errors.Is(err, mapper.ErrInvalidGasTariffType) {
 			return nil, status.Errorf(codes.Internal, "error mapping point of sale booking request: %v", err)
@@ -187,13 +187,13 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 	}
 	resp, err := l.client.CreateBookingPointOfSale(ctx, bookingReq)
 	if err != nil {
-		logrus.Errorf("error making booking point of sale request(%d) for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.SiteAddress.Paf.GetPostcode(), err)
+		slog.Error("error making booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "elec_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", err)
 		return nil, status.Errorf(codes.Internal, "error making booking point of sale request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.BookingResponsePointOfSale(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error in booking point of sale response(%d) for mpan/mprn: (%s/%s) and tariffs (electricity/gas): (%s/%s) and postcode(%s): %v", requestID, req.Mpan, req.Mprn, req.ElectricityTariffType.String(), req.GasTariffType.String(), req.SiteAddress.Paf.GetPostcode(), mappedErr)
+		slog.Error("error in booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "elec_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", mappedErr)
 		return nil, getStatusFromError("error making booking point of sale request: %v", metrics.CreateBooking, mappedErr)
 	}
 	return mappedResp, nil
@@ -216,13 +216,13 @@ func (l *LowriBeckAPI) UpdateContactDetails(ctx context.Context, req *contract.U
 
 	resp, err := l.client.UpdateContactDetails(ctx, updateContactReq)
 	if err != nil {
-		logrus.Errorf("error making update contact details request(%d) for reference(%s): %v", requestID, req.GetReference(), err)
+		slog.Error("error making update contact details request", "request_id", requestID, "reference", req.GetReference(), "error", err)
 		return nil, status.Errorf(codes.Internal, "error making update contact detail request: %v", err)
 	}
 
 	mappedResp, mappedErr := l.mapper.UpdateContactDetailsResponse(resp)
 	if mappedErr != nil {
-		logrus.Errorf("error in update contact details response(%d) for reference(%s): %v", requestID, req.GetReference(), mappedErr)
+		slog.Error("error in update contact details response", "request_id", requestID, "reference", req.GetReference(), "error", mappedErr)
 		return nil, getStatusFromError("error making update contact detail request: %v", metrics.UpdateContactDetails, mappedErr)
 	}
 	return mappedResp, nil
@@ -310,10 +310,7 @@ func (l *LowriBeckAPI) validateCredentials(ctx context.Context, action string) e
 		ResourceID: resourceID,
 	})
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"action":   action,
-			"resource": auth.LowribeckAPIResource,
-		}).Error("Authorize error: ", err)
+		slog.Error("authorise error", "error", err, "action", action, "resource", auth.LowribeckAPIResource)
 		return err
 	}
 	if !authorised {

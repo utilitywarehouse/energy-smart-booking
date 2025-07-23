@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	smart "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -35,7 +35,7 @@ func Handle(accountStore OptOutAccountStore, accountsRepo AccountsRepository) su
 			}
 
 			if env.Message == nil {
-				logrus.Info("skipping empty message")
+				slog.Info("skipping empty message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}

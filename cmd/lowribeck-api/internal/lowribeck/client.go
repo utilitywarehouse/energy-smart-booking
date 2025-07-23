@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 
-	"github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/lowribeck-api/internal/metrics"
 	"github.com/utilitywarehouse/uwos-go/telemetry/tracing"
 	"go.opentelemetry.io/otel/attribute"
@@ -242,7 +242,7 @@ func (c *Client) doRequest(ctx context.Context, payload []byte, endpoint string)
 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := fmt.Errorf("received status code [%d] (expected 200): %s", resp.StatusCode, bodyBytes)
-		logrus.Error(statusErr)
+		slog.Error("status not ok", "error", statusErr)
 		metrics.LBErrorsCount.WithLabelValues(metrics.LBStatus, endpoint).Inc()
 		return nil, statusErr
 	}
@@ -269,8 +269,8 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 
 	resp, err := c.http.Do(request)
 	if err != nil {
-		if os.IsTimeout(err) {
-			logrus.Error("healthcheck request timeout occurred")
+		if errors.Is(err, os.ErrDeadlineExceeded) {
+			slog.Error("healthcheck request timeout occurred")
 
 			return ErrTimeout
 		}
@@ -284,16 +284,16 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 	case http.StatusOK:
 		return nil
 	case http.StatusUnauthorized:
-		logrus.Error("health check got an unauthorised (401) status code, check the username and password being used")
+		slog.Error("health check got an unauthorised (401) status code, check the username and password being used")
 
 		return ErrNotOKStatusCode
 	case http.StatusNotFound:
-		logrus.Errorf("health check failed got a not found(404) status code, the request URL is: %s", requestURL)
+		slog.Error("health check failed got a not found(404) status code", "request_url", requestURL)
 
 		return ErrNotOKStatusCode
 
 	default:
-		logrus.Errorf("health check got status code: %d", resp.StatusCode)
+		slog.Error("health check got status code", "status_code", resp.StatusCode)
 
 		return ErrNotOKStatusCode
 	}

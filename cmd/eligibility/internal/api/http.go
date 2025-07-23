@@ -2,12 +2,12 @@ package api
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 type occupancyStore interface {
@@ -52,11 +52,11 @@ func (s *Handler) runFullEvaluation(_ context.Context) http.Handler {
 			jobCtx := context.Background()
 			occupancies, err := s.occupancyStore.GetLiveOccupanciesPendingEvaluation(jobCtx)
 			if err != nil {
-				logrus.WithError(err).Error("failed to get live occupancies to evaluate")
+				slog.Error("failed to get live occupancies to evaluate", "error", err)
 				return
 			}
 			s.runEvaluation(jobCtx, occupancies)
-			logrus.WithField("elapsed", time.Since(start).String()).Info("full evaluation process completed")
+			slog.Info("full evaluation process completed", "elapsed", time.Since(start).String())
 		}()
 
 		w.Write([]byte("full evaluation started"))
@@ -70,11 +70,11 @@ func (s *Handler) rerunFullEvaluation(_ context.Context) http.Handler {
 			jobCtx := context.Background()
 			occupancies, err := s.occupancyStore.GetLiveOccupancies(jobCtx)
 			if err != nil {
-				logrus.WithError(err).Error("failed to get live occupancies to evaluate")
+				slog.Error("failed to get live occupancies to evaluate", "error", err)
 				return
 			}
 			s.runEvaluation(jobCtx, occupancies)
-			logrus.WithField("elapsed", time.Since(start).String()).Info("full evaluation process completed")
+			slog.Info("full evaluation process completed", "elapsed", time.Since(start).String())
 		}()
 
 		w.Write([]byte("full evaluation started"))
@@ -97,9 +97,9 @@ func (s *Handler) runEvaluation(ctx context.Context, ids []string) {
 				now := time.Now()
 				err := s.evaluator.RunFull(ctx, id)
 				if err != nil {
-					logrus.Errorf("failed to run evaluation of occupancy ID %s", id)
+					slog.Error("failed to run evaluation", "occupancy_id", id, "error", err)
 				} else {
-					logrus.WithField("occupancy", id).WithField("elapsed", time.Since(now).String()).Debug("evaluation successfully run")
+					slog.Debug("evaluation successfully ran", "occupancy_id", id, "elapsed", time.Since(now).String())
 				}
 			}
 		}()

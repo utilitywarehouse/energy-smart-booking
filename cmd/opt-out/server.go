@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -98,7 +98,7 @@ func runServer(c *cli.Context) error {
 	})
 
 	g.Go(func() error {
-		defer log.Info("server exited")
+		defer slog.Info("server exited")
 		return httpServer.ListenAndServe()
 	})
 
@@ -108,7 +108,7 @@ func runServer(c *cli.Context) error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer log.Debug("signal handler finished")
+		defer slog.Debug("signal handler finished")
 		select {
 		case <-ctx.Done():
 			httpServer.Close()

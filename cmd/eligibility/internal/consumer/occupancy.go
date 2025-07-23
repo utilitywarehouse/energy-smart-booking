@@ -3,9 +3,9 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	energy_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -28,7 +28,7 @@ func HandleOccupancy(store OccupancyStore, evaluator Evaluator, stateRebuild boo
 			}
 
 			if env.Message == nil {
-				log.Info("skipping empty occupancy message")
+				slog.Info("skipping empty occupancy message")
 				metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 				continue
 			}

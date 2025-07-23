@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"os"
 	"os/signal"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5/stdlib"
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	bookingv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/booking/v1"
 	eligibilityv1 "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
@@ -160,7 +160,7 @@ func init() {
 }
 
 func serverAction(c *cli.Context) error {
-	log.WithField("git_hash", gitHash).WithField("command", commandNameServer).Info("starting app")
+	slog.Info("starting app", "git_hash", gitHash, "command", commandNameServer)
 
 	opsServer := makeOps(c)
 
@@ -250,7 +250,7 @@ func serverAction(c *cli.Context) error {
 		telemetry.WithServiceVersion(gitHash),
 	)
 	if err != nil {
-		log.Errorf("Telemetry cannot be registered: %v", err)
+		slog.Error("Telemetry cannot be registered", "error", err)
 	}
 	defer closer.Close()
 
@@ -338,19 +338,19 @@ func serverAction(c *cli.Context) error {
 	bookingv1.RegisterBookingAPIServer(grpcServer, bookingAPI)
 
 	g.Go(func() error {
-		defer log.Info("ops server finished")
+		defer slog.Info("ops server finished")
 		return opsServer.Start(ctx)
 	})
 
 	g.Go(func() error {
-		defer log.Info("grpc server finished")
+		defer slog.Info("grpc server finished")
 		return grpcServer.Serve(listen)
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer log.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			grpcServer.GracefulStop()

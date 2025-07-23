@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"cloud.google.com/go/bigquery"
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	accountService "github.com/utilitywarehouse/account-platform-protobuf-model/gen/go/account/api/v1"
 	"github.com/utilitywarehouse/energy-pkg/app"
@@ -64,7 +64,8 @@ func runBigQueryIndexer(c *cli.Context) error {
 
 	bqClient, err := bigquery.NewClient(ctx, c.String(bigQueryProjectID), option.WithCredentialsFile(c.String(bigQueryCredentialsFile)))
 	if err != nil {
-		log.WithError(err).Panic("unable to create bigquery client")
+		slog.Error("unable to create bigquery client", "error", err)
+		return err
 	}
 
 	dataset := bqClient.Dataset(c.String(bigQueryDatasetID))
@@ -78,14 +79,14 @@ func runBigQueryIndexer(c *cli.Context) error {
 	}
 
 	g.Go(func() error {
-		defer log.Info("opt out big query indexer finished")
+		defer slog.Info("opt out big query indexer finished")
 		return substratemessage.BatchConsumer(ctx, c.Int(batchSize), time.Second, optOutEventsSource, &indexer)
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer log.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

@@ -3,8 +3,8 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	smart_contracts "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart/v1"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -46,7 +46,7 @@ func (h *OccupancyEligibleHandler) Handle(_ context.Context, message substrate.M
 
 	eventUUID := env.Uuid
 	if env.Message == nil {
-		log.WithField("event-uuid", eventUUID).Info("skipping empty message", eventUUID)
+		slog.Info("skipping empty message", "event_uuid", eventUUID)
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}

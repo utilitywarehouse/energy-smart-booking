@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"github.com/utilitywarehouse/energy-pkg/app"
 	"github.com/utilitywarehouse/energy-pkg/ops"
@@ -119,7 +119,7 @@ func startConsumers(ctx context.Context, g *errgroup.Group, sources SourceMap, c
 		handler := config.Handler
 
 		g.Go(func() error {
-			defer log.Infof("%s consumer finished", topic)
+			defer slog.Info("consumer finished", "topic", topic)
 			return substratemessage.BatchConsumer(ctx, batchSize, time.Second, source, handler)
 		})
 	}
@@ -200,20 +200,20 @@ func projectorAction(c *cli.Context) error {
 	}
 
 	g.Go(func() error {
-		defer log.Info("ops server finished")
+		defer slog.Info("ops server finished")
 		return opsServer.Start(ctx)
 	})
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	g.Go(func() error {
-		defer log.Info("signal handler finished")
+		defer slog.Info("signal handler finished")
 		select {
 		case <-ctx.Done():
-			log.Debug("received on done channel")
+			slog.Debug("received on done channel")
 			return ctx.Err()
 		case <-sigChan:
-			log.Debug("received sigterm")
+			slog.Debug("received sigterm")
 			cancel()
 		}
 		return nil

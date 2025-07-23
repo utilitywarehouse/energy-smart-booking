@@ -31,11 +31,7 @@ func (s *AccountOptOutStore) Add(ctx context.Context, id, number, addedBy string
 	INSERT INTO opt_out_account (id, number, added_by, created_at) 
 	VALUES ($1, $2, $3, $4);`
 	_, err := s.pool.Exec(ctx, q, id, number, addedBy, at)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *AccountOptOutStore) Get(ctx context.Context, id string) (*Account, error) {
@@ -53,10 +49,7 @@ func (s *AccountOptOutStore) Get(ctx context.Context, id string) (*Account, erro
 
 func (s *AccountOptOutStore) Remove(ctx context.Context, id string) error {
 	_, err := s.pool.Exec(ctx, `DELETE FROM opt_out_account WHERE id = $1`, id)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *AccountOptOutStore) List(ctx context.Context) ([]Account, error) {

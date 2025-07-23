@@ -1,6 +1,6 @@
 module github.com/utilitywarehouse/energy-smart-booking
 
-go 1.24.2
+go 1.24.4
 
 require (
 	cloud.google.com/go/bigquery v1.61.0
@@ -21,7 +21,7 @@ require (
 	github.com/utilitywarehouse/bill-contracts v1.0.1
 	github.com/utilitywarehouse/click.uw.co.uk v0.0.0-20231012104247-b8d0609ca912
 	github.com/utilitywarehouse/energy-contracts v1.229.0
-	github.com/utilitywarehouse/energy-pkg/app v1.5.1
+	github.com/utilitywarehouse/energy-pkg/app v1.7.0
 	github.com/utilitywarehouse/energy-pkg/fabrication v1.8.1
 	github.com/utilitywarehouse/energy-pkg/grpc v0.1.8
 	github.com/utilitywarehouse/energy-pkg/metrics v1.0.6

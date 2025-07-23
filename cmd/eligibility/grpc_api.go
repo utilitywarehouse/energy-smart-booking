@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	ecoesv2 "github.com/utilitywarehouse/energy-contracts/pkg/generated/third_party/ecoes/v2"
@@ -166,7 +166,7 @@ func runGRPCApi(c *cli.Context) error {
 			httpServer.Close()
 			return ctx.Err()
 		case <-sigChan:
-			logrus.Info("cancelling context")
+			slog.Info("cancelling context")
 			cancel()
 		}
 		return nil

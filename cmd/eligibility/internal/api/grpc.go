@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
-	"github.com/sirupsen/logrus"
 	smart_booking "github.com/utilitywarehouse/energy-contracts/pkg/generated/smart_booking/eligibility/v1"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/domain"
 	"github.com/utilitywarehouse/energy-smart-booking/cmd/eligibility/internal/evaluation"
@@ -101,7 +101,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 	account, err := a.accountStore.GetAccount(ctx, req.AccountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
+		slog.Debug("failed to get account for account ID", "account_id", req.GetAccountId(), "error", err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountId)
 	}
 
@@ -122,7 +122,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 	occupancyIDs, err := a.occupancyStore.GetLiveOccupanciesIDsByAccountID(ctx, req.AccountId)
 	if err != nil {
-		logrus.Debugf("failed to get live occupancies for account ID %s: %s", req.GetAccountId(), err.Error())
+		slog.Debug("failed to get live occupancies for account ID", "account_id", req.GetAccountId(), "error", err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 	}
 	span.AddEvent("get-occupancy", trace.WithAttributes(attribute.String("ids", fmt.Sprintf("%v", occupancyIDs))))
@@ -136,20 +136,20 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 			eligibility, err := a.eligibilityStore.Get(ctx, occupancyID, req.AccountId)
 			if err != nil {
 				if errors.Is(err, store.ErrEligibilityNotFound) {
-					logrus.Debugf("eligibility not computed for account %s, occupancy %s", req.AccountId, occupancyID)
+					slog.Debug("eligibility not computed", "account_id", req.AccountId, "occupancy_id", occupancyID)
 					return nil, status.Errorf(codes.NotFound, "eligibility not found for account %s", req.AccountId)
 				}
-				logrus.Debugf("failed to get eligibility for account %s: %s", req.AccountId, err.Error())
+				slog.Debug("failed to get eligibility", "account_id", req.AccountId, "error", err.Error())
 				return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 			}
 
 			suppliability, err := a.suppliabilityStore.Get(ctx, occupancyID, req.AccountId)
 			if err != nil {
 				if errors.Is(err, store.ErrSuppliabilityNotFound) {
-					logrus.Debugf("suppliability not computed for account %s, occupancy %s", req.AccountId, occupancyID)
+					slog.Debug("suppliability not computed", "account_id", req.AccountId, "occupancy_id", occupancyID)
 					return nil, status.Errorf(codes.NotFound, "suppliability not found for account %s", req.AccountId)
 				}
-				logrus.Debugf("failed to get suppliability for account %s: %s", req.AccountId, err.Error())
+				slog.Debug("failed to get suppliability", "account_id", req.AccountId, "error", err.Error())
 				return nil, status.Errorf(codes.Internal, "failed to get suppliability for account %s", req.AccountId)
 			}
 
@@ -158,7 +158,7 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 				// check it has booking references assigned
 				serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, occupancyID)
 				if err != nil {
-					logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, occupancyID, err.Error())
+					slog.Debug("failed to get service booking references", "account_id", req.AccountId, "occupancy_id", occupancyID, "error", err.Error())
 					return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
 				}
 				serviceBookingRefAttr := helpers.CreateSpanAttribute(serviceBookingRef, "get-live-services", span)
@@ -193,8 +193,8 @@ func (a *EligibilityGRPCApi) GetAccountEligibleForSmartBooking(ctx context.Conte
 
 	protoReasons, err := reasons.MapToProto()
 	if err != nil {
-		logrus.Debugf("failed to get eligibility for account %s: %s", req.AccountId, err.Error())
-		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
+		slog.Debug("failed to map reason to proto", "account_id", req.AccountId, "error", err.Error())
+		return nil, status.Errorf(codes.Internal, "failed to map reason to proto %s", req.AccountId)
 	}
 
 	return &smart_booking.GetAccountEligibleForSmartBookingResponse{
@@ -226,7 +226,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 
 	account, err := a.accountStore.GetAccount(ctx, req.AccountId)
 	if err != nil && !errors.Is(err, store.ErrAccountNotFound) {
-		logrus.Debugf("failed to get account for account ID %s: %s", req.GetAccountId(), err.Error())
+		slog.Debug("failed to get account", "account_id", req.GetAccountId(), "error", err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account ID %s", req.AccountId)
 	}
 
@@ -244,19 +244,20 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 	eligibility, err := a.eligibilityStore.Get(ctx, req.OccupancyId, req.AccountId)
 	if err != nil {
 		if errors.Is(err, store.ErrEligibilityNotFound) {
-			logrus.Debugf("eligibility not computed for account %s, occupancy %s", req.AccountId, req.OccupancyId)
+			slog.Debug("eligibility not computed", "account_id", req.AccountId, "occupancy_id", req.OccupancyId)
 			return nil, status.Errorf(codes.NotFound, "eligibility not found for account %s", req.AccountId)
+
 		}
-		logrus.Debugf("failed to get eligibility for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
+		slog.Debug("failed to get eligibility", "account_id", req.AccountId, "occupancy_id", req.OccupancyId, "error", err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get eligibility for account %s", req.AccountId)
 	}
 	suppliability, err := a.suppliabilityStore.Get(ctx, req.OccupancyId, req.AccountId)
 	if err != nil {
 		if errors.Is(err, store.ErrEligibilityNotFound) {
-			logrus.Debugf("suppliability not computed for account %s, occupancy %s", req.AccountId, req.OccupancyId)
+			slog.Debug("suppliability not computed", "account_id", req.AccountId, "occupancy_id", req.OccupancyId)
 			return nil, status.Errorf(codes.NotFound, "suppliability not found for account %s", req.AccountId)
 		}
-		logrus.Debugf("failed to get suppliability for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
+		slog.Debug("failed to get suppliability", "account_id", req.AccountId, "occupancy_id", req.OccupancyId, "error", err.Error())
 		return nil, status.Errorf(codes.Internal, "failed to get suppliability for account %s", req.AccountId)
 	}
 
@@ -265,7 +266,7 @@ func (a *EligibilityGRPCApi) GetAccountOccupancyEligibleForSmartBooking(ctx cont
 		// check it has booking references assigned
 		serviceBookingRef, err := a.serviceStore.GetLiveServicesWithBookingRef(ctx, req.OccupancyId)
 		if err != nil {
-			logrus.Debugf("failed to get service booking references for account %s, occupancy %s: %s", req.AccountId, req.OccupancyId, err.Error())
+			slog.Debug("failed to get service booking references", "account_id", req.AccountId, "occupancy_id", req.OccupancyId, "error", err.Error())
 			return nil, status.Errorf(codes.Internal, "failed to check service booking references for account %s", req.AccountId)
 		}
 		serviceBookingRefAttr := helpers.CreateSpanAttribute(serviceBookingRef, "get-live-services", span)
@@ -351,10 +352,7 @@ func (a *EligibilityGRPCApi) validateCredentials(ctx context.Context, action, re
 		ResourceID: requestAccountID,
 	})
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
-			"action":   action,
-			"resource": resource,
-		}).Error("Authorize error: ", err)
+		slog.Error("authorise error", "error", err, "action", action, "resource", resource)
 		return err
 	}
 	if !authorised {

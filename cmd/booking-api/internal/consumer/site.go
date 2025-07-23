@@ -3,8 +3,8 @@ package consumer
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated"
 	"github.com/utilitywarehouse/energy-contracts/pkg/generated/platform"
 	"github.com/utilitywarehouse/energy-pkg/metrics"
@@ -45,7 +45,7 @@ func (h *SiteHandler) Handle(_ context.Context, message substrate.Message) error
 
 	eventUUID := env.Uuid
 	if env.Message == nil {
-		log.Infof("skipping empty message [%s]", eventUUID)
+		slog.Info("skipping empty message", "event_uuid", eventUUID)
 		metrics.SkippedMessageCounter.WithLabelValues("empty_message").Inc()
 		return nil
 	}
@@ -60,7 +60,7 @@ func (h *SiteHandler) Handle(_ context.Context, message substrate.Message) error
 		{
 			address := ev.GetAddress()
 			if address == nil {
-				log.Infof("skip event [%s] for site [%s]: empty address", eventUUID, ev.GetSiteId())
+				slog.Info("skip event, empty address", "event_uuid", eventUUID, "site_id", ev.GetSiteId())
 				return nil
 			}
 
