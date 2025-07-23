@@ -269,7 +269,7 @@ func (c *Client) HealthCheck(ctx context.Context) error {
 
 	resp, err := c.http.Do(request)
 	if err != nil {
-		if os.IsTimeout(err) {
+		if errors.Is(err, os.ErrDeadlineExceeded) {
 			slog.Error("healthcheck request timeout occurred")
 
 			return ErrTimeout
