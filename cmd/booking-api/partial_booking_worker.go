@@ -99,6 +99,7 @@ func partialBookingWorkerAction(c *cli.Context) error {
 		if _, err := cron.AddFunc(c.String(flagPartialBookingCron), func() {
 			if err := partialBookingWorker.Run(ctx); err != nil {
 				slog.Error("failed to run partial booking cron", "error", err)
+				os.Exit(1)
 			}
 		}); err != nil {
 			return fmt.Errorf("cron job failed for partial booking cron, %w", err)

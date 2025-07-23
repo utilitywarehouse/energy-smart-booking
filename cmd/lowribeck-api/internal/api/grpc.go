@@ -193,7 +193,7 @@ func (l *LowriBeckAPI) CreateBookingPointOfSale(ctx context.Context, req *contra
 
 	mappedResp, mappedErr := l.mapper.BookingResponsePointOfSale(resp)
 	if mappedErr != nil {
-		slog.Error("error in booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "elec_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", err)
+		slog.Error("error in booking point of sale request", "request_id", requestID, "mpan", req.Mpan, "mprn", req.Mprn, "elec_tariff", req.ElectricityTariffType.String(), "gas_tariff", req.GasTariffType.String(), "postcode", req.SiteAddress.Paf.GetPostcode(), "error", mappedErr)
 		return nil, getStatusFromError("error making booking point of sale request: %v", metrics.CreateBooking, mappedErr)
 	}
 	return mappedResp, nil
@@ -222,7 +222,7 @@ func (l *LowriBeckAPI) UpdateContactDetails(ctx context.Context, req *contract.U
 
 	mappedResp, mappedErr := l.mapper.UpdateContactDetailsResponse(resp)
 	if mappedErr != nil {
-		slog.Error("error in update contact details response", "request_id", requestID, "reference", req.GetReference(), "error", err)
+		slog.Error("error in update contact details response", "request_id", requestID, "reference", req.GetReference(), "error", mappedErr)
 		return nil, getStatusFromError("error making update contact detail request: %v", metrics.UpdateContactDetails, mappedErr)
 	}
 	return mappedResp, nil

@@ -45,11 +45,11 @@ func HandleSite(store SiteStore, occupancyStore OccupancySiteStore, evaluator Ev
 				return nil
 			case *platform.SiteDiscoveredEvent:
 				if x.GetAddress() == nil {
-					slog.Info("skipping site event", "site_id", x.GetSiteId())
+					slog.Info("skipping site event, empty address", "site_id", x.GetSiteId())
 					continue
 				}
 				if x.GetAddress().GetPostcode() == "" {
-					slog.Info("skipping site event", "site_id", x.GetSiteId())
+					slog.Info("skipping site event, empty postcode", "site_id", x.GetSiteId())
 					continue
 				}
 				err = store.Add(ctx, x.GetSiteId(), x.GetAddress().GetPostcode(), env.OccurredAt.AsTime())

@@ -345,5 +345,6 @@ func main() {
 	}
 	if err := app.Run(os.Args); err != nil {
 		slog.Error("unable to run app", "error", err)
+		os.Exit(1)
 	}
 }

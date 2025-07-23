@@ -46,7 +46,7 @@ func (c *MeterpointEligibilityCacheWrapper) GetMeterpointEligibility(ctx context
 
 	err = c.cache.SetEligibilityForMpxn(ctx, mpan, mprn, eligible)
 	if err != nil {
-		slog.Warn("unable to write to cache", mpan, "mpan")
+		slog.Warn("unable to write to cache", "mpan", mpan, "error", err)
 	}
 	return eligible, nil
 }

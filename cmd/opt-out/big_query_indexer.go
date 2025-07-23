@@ -65,6 +65,7 @@ func runBigQueryIndexer(c *cli.Context) error {
 	bqClient, err := bigquery.NewClient(ctx, c.String(bigQueryProjectID), option.WithCredentialsFile(c.String(bigQueryCredentialsFile)))
 	if err != nil {
 		slog.Error("unable to create bigquery client", "error", err)
+		return err
 	}
 
 	dataset := bqClient.Dataset(c.String(bigQueryDatasetID))

@@ -97,7 +97,7 @@ func (s *Handler) runEvaluation(ctx context.Context, ids []string) {
 				now := time.Now()
 				err := s.evaluator.RunFull(ctx, id)
 				if err != nil {
-					slog.Error("failed to run evaluation", "occupancy_id", id)
+					slog.Error("failed to run evaluation", "occupancy_id", id, "error", err)
 				} else {
 					slog.Debug("evaluation successfully ran", "occupancy_id", id, "elapsed", time.Since(now).String())
 				}

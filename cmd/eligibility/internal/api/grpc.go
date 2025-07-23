@@ -352,7 +352,7 @@ func (a *EligibilityGRPCApi) validateCredentials(ctx context.Context, action, re
 		ResourceID: requestAccountID,
 	})
 	if err != nil {
-		slog.Error("autorise error", "error", err, "action", action, "resource", resource)
+		slog.Error("authorise error", "error", err, "action", action, "resource", resource)
 		return err
 	}
 	if !authorised {
