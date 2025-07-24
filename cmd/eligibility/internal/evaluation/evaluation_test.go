@@ -2,6 +2,7 @@ package evaluation
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -1923,81 +1924,10 @@ func TestRunEligibility(t *testing.T) {
 
 	testCases := []testCase{
 		{
-			description: "occupancy not eligible for if account has psr codes",
-			occupancyID: "occupancy-id",
-			evaluator: Evaluator{
-				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
-					"occupancy-id": {
-						ID: "occupancy-id",
-						Account: domain.Account{
-							ID:       "account-id",
-							PSRCodes: []string{"10"},
-						},
-						Site: &domain.Site{
-							ID:          "site-id",
-							Postcode:    "AP 24X",
-							WanCoverage: true,
-						},
-						EvaluationResult: domain.OccupancyEvaluation{
-							OccupancyID:              "occupancy-id",
-							EligibilityEvaluated:     false,
-							Eligibility:              nil,
-							SuppliabilityEvaluated:   false,
-							Suppliability:            nil,
-							CampaignabilityEvaluated: true,
-							Campaignability:          nil,
-						},
-					},
-				}},
-				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
-					"occupancy-id": {
-						{
-							ID:         "service-id",
-							Mpxn:       "mpxn",
-							SupplyType: energy_domain.SupplyTypeElectricity,
-							Meterpoint: &domain.Meterpoint{
-								Mpxn:         "mpxn",
-								AltHan:       false,
-								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
-								SSC:          "ssc",
-							},
-							BookingReference: "booking-ref",
-						},
-					},
-				}},
-				meterStore: &mockStore{meters: map[string]domain.Meter{
-					"mpxn": {
-						ID:         "meter-id",
-						Mpxn:       "mpxn",
-						MSN:        "msn",
-						SupplyType: energy_domain.SupplyTypeElectricity,
-						MeterType:  "some_type",
-					},
-				}},
-				eligibilitySync:        &eMockSync,
-				suppliabilitySync:      &sMockSync,
-				campaignabilitySync:    &cMockSync,
-				bookingEligibilitySync: &bMockSync,
-			},
-			checkOutput: func() {
-				// only eligible + booking events should be published
-				assert.True(len(sMockSync.Msgs) == 0)
-				assert.True(len(cMockSync.Msgs) == 0)
-
-				assert.True(len(eMockSync.Msgs) == 1)
-				assert.True(len(bMockSync.Msgs) == 0)
-
-				assert.Equal(&smart.EligibleOccupancyRemovedEvent{
-					OccupancyId: "occupancy-id",
-					AccountId:   "account-id",
-					Reasons:     []smart.IneligibleReason{smart.IneligibleReason_INELIGIBLE_REASON_ACCOUNT_PSR_VULNERABILITIES},
-				}, eMockSync.Msgs[0])
-			},
-		},
-		{
 			description: "occupancy not eligible for if site missing",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2064,6 +1994,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for if site does not have wan coverage",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2135,6 +2066,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for if no active services",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2191,6 +2123,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for if missing meterpoint data",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2256,6 +2189,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for if it has complex tariff",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2327,6 +2261,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for if missing meter data",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2390,6 +2325,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for if meter already smart",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2458,9 +2394,81 @@ func TestRunEligibility(t *testing.T) {
 			},
 		},
 		{
+			description: "occupancy eligible, meter is already smart but is in MSN exception list",
+			occupancyID: "occupancy-id",
+			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
+				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
+					"occupancy-id": {
+						ID: "occupancy-id",
+						Account: domain.Account{
+							ID: "account-id",
+						},
+						Site: &domain.Site{
+							ID:          "site-id",
+							Postcode:    "AP 24X",
+							WanCoverage: true,
+						},
+						EvaluationResult: domain.OccupancyEvaluation{
+							OccupancyID:              "occupancy-id",
+							EligibilityEvaluated:     false,
+							Eligibility:              nil,
+							SuppliabilityEvaluated:   false,
+							Suppliability:            nil,
+							CampaignabilityEvaluated: true,
+							Campaignability:          nil,
+						},
+					},
+				}},
+				serviceStore: &mockStore{servicesByOccupancy: map[string][]domain.Service{
+					"occupancy-id": {
+						{
+							ID:         "service-id",
+							Mpxn:       "mpxn",
+							SupplyType: energy_domain.SupplyTypeElectricity,
+							Meterpoint: &domain.Meterpoint{
+								Mpxn:         "mpxn",
+								AltHan:       false,
+								ProfileClass: platform.ProfileClass_PROFILE_CLASS_06,
+								SSC:          "ssc",
+							},
+							BookingReference: "booking-ref",
+						},
+					},
+				}},
+				meterStore: &mockStore{meters: map[string]domain.Meter{
+					"mpxn": {
+						ID:         "meter-id",
+						Mpxn:       "mpxn",
+						MSN:        exceptionMSN,
+						SupplyType: energy_domain.SupplyTypeElectricity,
+						MeterType:  platform.MeterTypeElec_METER_TYPE_ELEC_S2A.String(),
+					},
+				}},
+				eligibilitySync:        &eMockSync,
+				suppliabilitySync:      &sMockSync,
+				campaignabilitySync:    &cMockSync,
+				bookingEligibilitySync: &bMockSync,
+			},
+			checkOutput: func() {
+				// only eligible + booking events should be published
+				assert.True(len(sMockSync.Msgs) == 0)
+				assert.True(len(cMockSync.Msgs) == 0)
+
+				assert.True(len(eMockSync.Msgs) == 1)
+				assert.True(len(bMockSync.Msgs) == 0)
+
+				assert.Equal(&smart.EligibleOccupancyAddedEvent{
+					OccupancyId: "occupancy-id",
+					AccountId:   "account-id",
+				}, eMockSync.Msgs[0])
+			},
+		},
+		{
 			description: "occupancy not eligible for smart booking journey with no previous eligibility evaluation",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2535,6 +2543,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for smart booking journey with previous eligbility evaluation",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2606,6 +2615,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy not eligible for smart booking journey with different previous eligibility evaluation results",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2680,6 +2690,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy becoming eligible for smart booking journey with no booking ref",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2753,6 +2764,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy becoming eligible for smart booking journey with booking ref",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2827,6 +2839,7 @@ func TestRunEligibility(t *testing.T) {
 			description: "occupancy becoming eligible for smart booking journey with booking ref but not all criteria evaluated",
 			occupancyID: "occupancy-id",
 			evaluator: Evaluator{
+				meterSerialNumberStore: &mockMeterSerialNumberStore{},
 				occupancyStore: &mockStore{occupancies: map[string]domain.Occupancy{
 					"occupancy-id": {
 						ID: "occupancy-id",
@@ -2914,6 +2927,14 @@ type mockStore struct {
 	occupancies         map[string]domain.Occupancy
 	servicesByOccupancy map[string][]domain.Service
 	meters              map[string]domain.Meter
+}
+
+type mockMeterSerialNumberStore struct{}
+
+const exceptionMSN = "expcetion_msn"
+
+func (m *mockMeterSerialNumberStore) FindMeterSerialNumber(s string) bool {
+	return strings.EqualFold(s, exceptionMSN)
 }
 
 func (s *mockStore) LoadOccupancy(_ context.Context, id string) (domain.Occupancy, error) {

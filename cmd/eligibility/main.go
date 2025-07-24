@@ -24,7 +24,6 @@ const (
 
 	altHanTopic       = "alt-han-events-topic"
 	optOutTopic       = "opt-out-events-topic"
-	accountPsrTopic   = "account-psr-events-topic"
 	bookingRefTopic   = "booking-reference-events-topic"
 	meterTopic        = "meter-events-topic"
 	meterpointTopic   = "meterpoint-events-topic"
@@ -36,6 +35,9 @@ const (
 	batchSize    = "batch-size"
 	postgresDSN  = "postgres-dsn"
 	stateRebuild = "state-rebuild"
+
+	//eligibility
+	msnExceptionFilePath = "msn-exception-file-path"
 
 	// gRPC
 	grpcPort    = "grpc-port"
@@ -184,11 +186,6 @@ func main() {
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     accountPsrTopic,
-						EnvVars:  []string{"ACCOUNT_PSR_EVENTS_TOPIC"},
-						Required: true,
-					},
-					&cli.StringFlag{
 						Name:     bookingRefTopic,
 						EnvVars:  []string{"BOOKING_REF_EVENTS_TOPIC"},
 						Required: true,
@@ -236,6 +233,11 @@ func main() {
 					&cli.BoolFlag{
 						Name:     stateRebuild,
 						EnvVars:  []string{"STATE_REBUILD"},
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     msnExceptionFilePath,
+						EnvVars:  []string{"MSN_EXCEPTION_FILE_PATH"},
 						Required: true,
 					},
 				),

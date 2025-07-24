@@ -24,7 +24,7 @@ func (e *Evaluator) RunFull(ctx context.Context, occupancyID string) error {
 		return fmt.Errorf("failed to evaluate campaignability for occupancy %s: %w", occupancyID, err)
 	}
 
-	eReasons := evaluateEligibility(occupancy)
+	eReasons := e.evaluateEligibility(occupancy)
 	err = e.publishEligibilityIfChanged(ctx, occupancy, eReasons)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate eligibility for occupancy %s: %w", occupancyID, err)
@@ -100,7 +100,7 @@ func (e *Evaluator) RunEligibility(ctx context.Context, occupancyID string) erro
 		return fmt.Errorf("failed to load occupanncy for ID %s: %w", occupancyID, err)
 	}
 
-	reasons := evaluateEligibility(occupancy)
+	reasons := e.evaluateEligibility(occupancy)
 	err = e.publishEligibilityIfChanged(ctx, occupancy, reasons)
 	if err != nil {
 		return fmt.Errorf("failed to evaluate eligibility for occupancy %s: %w", occupancyID, err)

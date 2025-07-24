@@ -144,6 +144,7 @@ func runServer(c *cli.Context) error {
 	)
 	if err != nil {
 		slog.Error("telemetry cannot be registered", "error", err)
+		return err
 	}
 	defer closer.Close()
 

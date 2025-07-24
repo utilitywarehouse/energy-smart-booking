@@ -18,7 +18,6 @@ const (
 	IneligibleReasonNoWanCoverage
 	IneligibleReasonNoActiveService
 	IneligibleReasonMeterLargeCapacity
-	IneligibleReasonPSRVulnerabilities
 	IneligibleReasonAbortedBookings
 	IneligibleReasonBookingScheduled
 	IneligibleReasonBookingCompleted
@@ -45,8 +44,6 @@ func (r IneligibleReason) String() string {
 		return "NoActiveService"
 	case IneligibleReasonMeterLargeCapacity:
 		return "LargeCapacityMeter"
-	case IneligibleReasonPSRVulnerabilities:
-		return "AccountPSRVulnerabilities"
 	case IneligibleReasonAbortedBookings:
 		return "AbortedBookings"
 	case IneligibleReasonBookingScheduled:
@@ -86,8 +83,6 @@ func fromString(str string) (IneligibleReason, error) {
 		return IneligibleReasonNoActiveService, nil
 	case "LargeCapacityMeter":
 		return IneligibleReasonMeterLargeCapacity, nil
-	case "AccountPSRVulnerabilities":
-		return IneligibleReasonPSRVulnerabilities, nil
 	case "AbortedBookings":
 		return IneligibleReasonAbortedBookings, nil
 	case "BookingScheduled":
@@ -157,8 +152,6 @@ func MapIneligibleProtoToDomainReason(reason smart.IneligibleReason) (Ineligible
 		return IneligibleReasonNoActiveService, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_METER_LARGE_CAPACITY:
 		return IneligibleReasonMeterLargeCapacity, nil
-	case smart.IneligibleReason_INELIGIBLE_REASON_ACCOUNT_PSR_VULNERABILITIES:
-		return IneligibleReasonPSRVulnerabilities, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_ABORTED_BOOKINGS:
 		return IneligibleReasonAbortedBookings, nil
 	case smart.IneligibleReason_INELIGIBLE_REASON_BOOKING_SCHEDULED:
@@ -230,8 +223,6 @@ func mapDomainToProtoReason(reason IneligibleReason) (smart.IneligibleReason, er
 		return smart.IneligibleReason_INELIGIBLE_REASON_NOT_ACTIVE, nil
 	case IneligibleReasonMeterLargeCapacity:
 		return smart.IneligibleReason_INELIGIBLE_REASON_METER_LARGE_CAPACITY, nil
-	case IneligibleReasonPSRVulnerabilities:
-		return smart.IneligibleReason_INELIGIBLE_REASON_ACCOUNT_PSR_VULNERABILITIES, nil
 	case IneligibleReasonAbortedBookings:
 		return smart.IneligibleReason_INELIGIBLE_REASON_ABORTED_BOOKINGS, nil
 	case IneligibleReasonBookingScheduled:

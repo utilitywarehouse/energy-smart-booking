@@ -216,7 +216,6 @@ func (s *OccupancyStore) LoadOccupancy(ctx context.Context, occupancyID string) 
 		ID: occupancyAccountID,
 	}
 	if accountID.Valid {
-		occupancy.Account.PSRCodes = psrCodes
 		if optOut.Valid {
 			occupancy.Account.OptOut = optOut.Bool
 		}

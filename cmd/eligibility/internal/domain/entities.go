@@ -16,9 +16,8 @@ type Occupancy struct {
 
 // Account customer account of the occupancy.
 type Account struct {
-	ID       string
-	OptOut   bool
-	PSRCodes []string
+	ID     string
+	OptOut bool
 }
 
 type Site struct {
